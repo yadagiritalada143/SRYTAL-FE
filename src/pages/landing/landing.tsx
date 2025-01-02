@@ -19,7 +19,7 @@ const Landing = () => {
       <div
         className="relative h-screen flex flex-col justify-between"
         style={{
-          backgroundImage: "url(/wal2.jpg)",
+          backgroundImage: "url(public/wal2.jpg)",
           backgroundSize: "cover",
           backgroundRepeat: "no-repeat",
           backgroundPosition: "center center",

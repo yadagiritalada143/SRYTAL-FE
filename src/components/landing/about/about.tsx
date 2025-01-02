@@ -54,7 +54,7 @@ const About = () => {
             >
               <img
                 className="w-full h-full object-cover rounded-3xl"
-                src="/img-2.jpg"
+                src="public/img-2.jpg"
                 alt="Front"
               />
             </div>
@@ -67,7 +67,7 @@ const About = () => {
             >
               <img
                 className="w-full h-full object-cover rounded-3xl"
-                src="/img-4.jpg"
+                src="public/img-4.jpg"
                 alt="Back"
               />
             </div>

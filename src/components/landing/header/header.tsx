@@ -27,7 +27,7 @@ const Header = () => {
             className=" cursor-pointer  shadow-md transition-transform duration-300 ease-in-out hover:scale-110  "
           >
             <img
-              src="/logo.jpg"
+              src="public/logo.jpg"
               style={{ width: "auto", maxWidth: "280px", height: "auto" }}
               alt="Logo"
             />
@@ -38,9 +38,8 @@ const Header = () => {
           </div>
         </div>
         <div
-          className={`${
-            opened ? "max-h-screen opacity-100" : "max-h-0 opacity-0"
-          } lg:max-h-none lg:opacity-100 overflow-hidden transition-all duration-500 ease-in-out lg:flex justify-center items-center text-center w-full mt-4 lg:mt-0 space-y-4 lg:space-y-0 lg:space-x-8`}
+          className={`${opened ? "max-h-screen opacity-100" : "max-h-0 opacity-0"
+            } lg:max-h-none lg:opacity-100 overflow-hidden transition-all duration-500 ease-in-out lg:flex justify-center items-center text-center w-full mt-4 lg:mt-0 space-y-4 lg:space-y-0 lg:space-x-8`}
         >
           <nav className="flex flex-col lg:flex-row gap-4 lg:gap-8">
             <Link
