@@ -61,7 +61,15 @@ export const getCompanyDetailsByIdByRecruiter = async (id: string) => {
 };
 
 export const updatePasswordForEmployee = async (form: UpdatePasswordForm) => {
-  const token = localStorage.getItem("employeeToken");
+  const userRole = localStorage.getItem("userRole");
+
+  let token;
+
+  if (userRole === "admin") {
+    token = localStorage.getItem("adminToken");
+  } else {
+    token = localStorage.getItem("employeeToken");
+  }
   try {
     if (!token) {
       throw "Not authorized, Please login and try again";
