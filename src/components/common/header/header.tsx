@@ -13,7 +13,8 @@ import {
 import { useRecoilValue } from "recoil";
 import { userDetailsAtom } from "../../../atoms/user";
 import { useDisclosure } from "@mantine/hooks";
-import ChangePasswordPopup from "../../../pages/user/changePassword/changePassword";
+
+import ChangePasswordPopup from "../updatePassword/updatePassword";
 const Header = ({
   color,
   organization,
