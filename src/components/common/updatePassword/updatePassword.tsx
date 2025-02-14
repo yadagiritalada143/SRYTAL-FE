@@ -3,14 +3,13 @@ import { toast } from "react-toastify";
 import { useForm } from "react-hook-form";
 import { organizationThemeAtom } from "../../../atoms/organization-atom";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {useState} from 'react';
+import { useState } from "react";
 import {
   updatePasswordSchema,
   UpdatePasswordForm,
 } from "../../../forms/update-password";
 import { updatePasswordForEmployee } from "../../../services/user-services";
-import { useRecoilValue, useSetRecoilState } from "recoil";
-import { userDetailsAtom } from "../../../atoms/user";
+import { useRecoilValue } from "recoil";
 
 interface ChangePasswordPopupProps {
   opened: boolean;
@@ -22,10 +21,11 @@ interface UpdatePasswordResponse {
   message?: string;
 }
 
-const ChangePasswordPopup: React.FC<ChangePasswordPopupProps> = ({ opened, close }) => {
-  const user = useRecoilValue(userDetailsAtom);
-  const setUser = useSetRecoilState(userDetailsAtom);
-    const organizationConfig = useRecoilValue(organizationThemeAtom);
+const ChangePasswordPopup: React.FC<ChangePasswordPopupProps> = ({
+  opened,
+  close,
+}) => {
+  const organizationConfig = useRecoilValue(organizationThemeAtom);
   const [isLoading, setIsLoading] = useState(false);
 
   const {
@@ -33,7 +33,9 @@ const ChangePasswordPopup: React.FC<ChangePasswordPopupProps> = ({ opened, close
     formState: { errors },
     handleSubmit,
     reset,
-  } = useForm<UpdatePasswordForm>({ resolver: zodResolver(updatePasswordSchema) });
+  } = useForm<UpdatePasswordForm>({
+    resolver: zodResolver(updatePasswordSchema),
+  });
 
   const onSubmit = async (data: UpdatePasswordForm) => {
     if (data.newPassword !== data.confirmNewPassword) {
@@ -43,11 +45,12 @@ const ChangePasswordPopup: React.FC<ChangePasswordPopupProps> = ({ opened, close
     setIsLoading(true);
 
     try {
-      const response: UpdatePasswordResponse = await updatePasswordForEmployee(data);
-      
+      const response: UpdatePasswordResponse = await updatePasswordForEmployee(
+        data
+      );
+
       if (response.success) {
         close();
-        setUser({ ...user, passwordResetRequired: "false" });
         toast.success("Password updated successfully");
         reset();
         close();
@@ -56,7 +59,7 @@ const ChangePasswordPopup: React.FC<ChangePasswordPopupProps> = ({ opened, close
       }
     } catch (error: any) {
       toast.error(error?.response?.data?.message || "Something went wrong !");
-    }finally{
+    } finally {
       setIsLoading(false);
     }
   };
@@ -65,18 +68,30 @@ const ChangePasswordPopup: React.FC<ChangePasswordPopupProps> = ({ opened, close
     <Modal opened={opened} onClose={close} size="md" centered>
       <div className="flex justify-center items-center p-4">
         <form onSubmit={handleSubmit(onSubmit)} className="w-full">
-          <PasswordInput {...register("oldPassword")} label="Enter the old password" error={errors.oldPassword?.message} />
-          <PasswordInput {...register("newPassword")} label="Enter the new password" error={errors.newPassword?.message} />
-          <PasswordInput {...register("confirmNewPassword")} label="Confirm the new password" error={errors.confirmNewPassword?.message} />
+          <PasswordInput
+            {...register("oldPassword")}
+            label="Enter the old password"
+            error={errors.oldPassword?.message}
+          />
+          <PasswordInput
+            {...register("newPassword")}
+            label="Enter the new password"
+            error={errors.newPassword?.message}
+          />
+          <PasswordInput
+            {...register("confirmNewPassword")}
+            label="Confirm the new password"
+            error={errors.confirmNewPassword?.message}
+          />
           <div className="text-right mt-4">
             <Button
-                bg={organizationConfig.organization_theme.theme.backgroundColor}
-                c={organizationConfig.organization_theme.theme.color}
-                type="submit"
-                disabled={isLoading}
-              >
-                {isLoading ? "Updating... " : "Update"}
-              </Button>
+              bg={organizationConfig.organization_theme.theme.backgroundColor}
+              c={organizationConfig.organization_theme.theme.color}
+              type="submit"
+              disabled={isLoading}
+            >
+              {isLoading ? "Updating... " : "Update"}
+            </Button>
           </div>
         </form>
       </div>
