@@ -121,21 +121,24 @@ const EmployeeRoutes = () => {
         >
           <Route path="/dashboard" element={<EmployeeDashboard />}>
             <Route element={<EmployeeProtectedRoutes />}>
+              <Route path="profile" element={<EmployeeProfile />} />
               <Route element={<RecruiterProtectedRoutes />}>
-                <Route path="" element={<PoolCandidateList />} />
+                <Route path="pool-candidates" element={<PoolCandidateList />} />
                 <Route
-                  path="add_pool_candidate"
+                  path="add-pool-candidate"
                   element={<AddPoolCandidate />}
                 />
                 <Route
-                  path=":candidateId/edit_pool_candidate"
+                  path=":candidateId/edit-pool-candidate"
                   element={<UpdatePoolCandidateForm />}
                 />
-                <Route path="pool_companies" element={<Companies />} />
+                <Route path="pool-companies" element={<Companies />} />
                 <Route path="addcompany" element={<AddCompany />} />
-                <Route path="update/:companyId" element={<UpdateCompany />} />
+                <Route
+                  path="update-pool-company/:companyId"
+                  element={<UpdateCompany />}
+                />
               </Route>
-              <Route path="profile" element={<EmployeeProfile />} />
               <Route
                 path="timesheet"
                 element={

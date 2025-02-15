@@ -3,6 +3,7 @@ import {
   IconNetwork,
   IconUser,
   IconUserEdit,
+  IconWorldCheck,
 } from "@tabler/icons-react";
 
 export const adminNavLinks = [
@@ -23,6 +24,12 @@ export const adminNavLinks = [
     url: "dashboard/employment-type-management",
     icon: IconNetwork,
     name: "Employment-Types",
+  },
+  {
+    role: "admin",
+    url: "dashboard/employment-role-management",
+    icon: IconWorldCheck,
+    name: "Employment-Roles",
   },
   {
     role: "admin",

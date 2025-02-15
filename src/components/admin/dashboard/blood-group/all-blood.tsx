@@ -137,8 +137,8 @@ const BloodGroupTable = () => {
       blood.type.toString().toLowerCase();
       blood.type.toString().trim();
       return (
-        blood.type.toString().includes(query) ||
-        blood.id.toString().includes(query)
+        blood.type.toString().toLowerCase().includes(query.toLowerCase()) ||
+        blood.id.toString().toLowerCase().includes(query.toLowerCase())
       );
     });
     setFilteredBloodGroups(filtered);
@@ -153,13 +153,11 @@ const BloodGroupTable = () => {
       className="h-auto"
     >
       <div>
-        <div className="flex justify-between items-center mx-4 my-4">
-          <h1 className="text-2xl font-bold text-center">
-            Manage Blood Groups
-          </h1>
-          <div>
-            <Button onClick={openAddModal}>Add Blood Group</Button>
-          </div>
+        <h1 className="text-3xl font-extrabold underline text-center">
+          Manage Blood Groups
+        </h1>
+        <div className="text-right">
+          <Button onClick={openAddModal}>Add Blood Group</Button>
         </div>
 
         <SearchBarFullWidht
@@ -226,10 +224,15 @@ const BloodGroupTable = () => {
           </div>
         )}
       </div>
+
       <Modal
         opened={addModalOpened}
         onClose={closeAddModal}
-        title="Add New Blood Group"
+        title={
+          <Text className="text-center font-bold text-xl">
+            Add New Blood Group
+          </Text>
+        }
         centered
       >
         <Box>
@@ -261,11 +264,14 @@ const BloodGroupTable = () => {
           </Group>
         </Box>
       </Modal>
-
       <Modal
         opened={editModalOpened}
         onClose={closeEditModal}
-        title="Edit Blood Group"
+        title={
+          <Text className="text-center font-bold text-xl">
+            Edit Blood Group
+          </Text>
+        }
         centered
       >
         <Box>
@@ -279,26 +285,46 @@ const BloodGroupTable = () => {
             mb="md"
           />
           <Group justify="flex-end">
-            <Button variant="outline" onClick={closeEditModal}>
+            <Button
+              bg={organizationConfig.organization_theme.theme.backgroundColor}
+              c={organizationConfig.organization_theme.theme.color}
+              variant="outline"
+              onClick={closeEditModal}
+            >
               Cancel
             </Button>
-            <Button onClick={confirmEdit}>Save Changes</Button>
+            <Button
+              bg={organizationConfig.organization_theme.theme.backgroundColor}
+              c={organizationConfig.organization_theme.theme.color}
+              variant="outline"
+              onClick={confirmEdit}
+            >
+              Save Changes
+            </Button>
             <Button bg="red" onClick={() => handleDelete(selectedGroup.id)}>
               Delete
             </Button>
           </Group>
         </Box>
       </Modal>
-
       <Modal
         opened={deleteModalOpened}
         onClose={closeDeleteModal}
-        title="Confirm Deletion"
+        title={
+          <Text className="text-center font-bold text-xl">
+            Delete Blood Group
+          </Text>
+        }
         centered
       >
         <Text size="sm">Are you sure you want to delete this blood group?</Text>
         <Group justify="flex-end" mt="md">
-          <Button variant="outline" onClick={closeDeleteModal}>
+          <Button
+            bg={organizationConfig.organization_theme.theme.backgroundColor}
+            c={organizationConfig.organization_theme.theme.color}
+            variant="outline"
+            onClick={closeDeleteModal}
+          >
             Cancel
           </Button>
           <Button bg="red" onClick={confirmDelete}>
