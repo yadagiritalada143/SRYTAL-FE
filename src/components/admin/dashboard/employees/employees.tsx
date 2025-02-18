@@ -59,21 +59,22 @@ const Employees = () => {
       className="h-auto"
     >
       <div>
-        <div className="flex justify-between items-center mx-4 my-4">
-          <h1 className="text-2xl font-bold text-center">Manage Employee</h1>
-          <div>
-            <Button
-              onClick={() =>
-                navigate(
-                  `${organizationAdminUrls(
-                    organizationConfig.organization_name
-                  )}/dashboard/addemployee`
-                )
-              }
-            >
-              Add Employee
-            </Button>
-          </div>
+        <h1 className="text-3xl font-extrabold underline text-center">
+          Manage Employee
+        </h1>
+
+        <div className="text-right">
+          <Button
+            onClick={() =>
+              navigate(
+                `${organizationAdminUrls(
+                  organizationConfig.organization_name
+                )}/dashboard/addemployee`
+              )
+            }
+          >
+            Add Employee
+          </Button>
         </div>
 
         <SearchBarFullWidht

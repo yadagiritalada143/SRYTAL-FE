@@ -59,9 +59,7 @@ export const getUserDetails = async () => {
     } else {
       token = localStorage.getItem("employeeToken");
     }
-    if (!userRole || !token) {
-      throw "Not authorized to access";
-    }
+
     const response = await apiClient("/getEmployeeDetails", {
       headers: { auth_token: token },
     });

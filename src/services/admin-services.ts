@@ -41,12 +41,28 @@ export const updateEmployeeDetailsByAdmin = async (
   }
 };
 
+export const handlePasswordResetByAdmin = async (id: string) => {
+  const adminToken = localStorage.getItem("adminToken");
+  try {
+    const response = await apiClient.post(
+      "/admin/employeePasswordResetByAdmin",
+      { employeeId: id },
+      {
+        headers: { auth_token: adminToken },
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const deleteEmployeeByAdmin = async (data: {
   id: string;
   confirmDelete: boolean;
 }) => {
   const adminToken = localStorage.getItem("adminToken");
-  console.log(data);
   try {
     const response = await apiClient.post(
       "/admin/deleteEmployeeByAdmin",
@@ -55,7 +71,6 @@ export const deleteEmployeeByAdmin = async (data: {
         headers: { auth_token: adminToken },
       }
     );
-    console.log(response);
     return response.data;
   } catch (error) {
     throw error;
@@ -115,6 +130,7 @@ export const addBloodGroupByAdmin = async (data: { type: string }) => {
     throw error;
   }
 };
+
 export const addEmploymentTypeByAdmin = async (data: {
   employmentType: string;
 }) => {
@@ -134,12 +150,49 @@ export const addEmploymentTypeByAdmin = async (data: {
   }
 };
 
+export const addEmployeeRoleByAdmin = async (data: { designation: string }) => {
+  const adminToken = localStorage.getItem("adminToken");
+  try {
+    const response = await apiClient.post(
+      "/admin/addEmployeeRoleByAdmin",
+      data,
+      {
+        headers: { auth_token: adminToken },
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const updateBloodGroupByAdmin = async (id: string, type: string) => {
   const adminToken = localStorage.getItem("adminToken");
   try {
     const response = await apiClient.put(
       `/admin/updateBloodGroupByAdmin`,
       { id, type },
+      {
+        headers: { auth_token: adminToken },
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const updateEmployeeRoleByAdmin = async (
+  id: string,
+  designation: string
+) => {
+  const adminToken = localStorage.getItem("adminToken");
+  try {
+    const response = await apiClient.put(
+      `/admin/updateEmployeeRoleByAdmin`,
+      { id, designation },
       {
         headers: { auth_token: adminToken },
       }
@@ -180,6 +233,35 @@ export const getAllEmploymentTypes = async () => {
     );
     console.log(response);
     return response.data.employmentTypesList;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getAllEmployeeRoleByAdmin = async () => {
+  const adminToken = localStorage.getItem("adminToken");
+  try {
+    const response = await apiClient.get("/admin/getAllEmployeeRoleByAdmin", {
+      headers: { auth_token: adminToken },
+    });
+    console.log(response);
+    return response.data.employeeRoles;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const deleteEmployeeRoleByAdmin = async (id: string) => {
+  const adminToken = localStorage.getItem("adminToken");
+  try {
+    const response = await apiClient.delete(
+      `/admin/deleteEmployeeRoleByAdmin/${id}`,
+      {
+        headers: { auth_token: adminToken },
+      }
+    );
+
+    return response.data;
   } catch (error) {
     throw error;
   }

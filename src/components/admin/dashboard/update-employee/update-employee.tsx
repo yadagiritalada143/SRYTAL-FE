@@ -19,9 +19,10 @@ import {
   updateEmployeeDetailsByAdmin,
   deleteEmployeeByAdmin,
   getAllEmploymentTypes,
+  getAllEmployeeRoleByAdmin,
+  handlePasswordResetByAdmin,
 } from "../../../../services/admin-services";
 import { toast } from "react-toastify";
-import { IconCircleDashedCheck } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { organizationAdminUrls } from "../../../../utils/common/constants";
 import { BgDiv } from "../../../common/style-components/bg-div";
@@ -29,6 +30,7 @@ import { Modal } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { useRecoilValue } from "recoil";
 import { organizationThemeAtom } from "../../../../atoms/organization-atom";
+import { useCustomToast } from "../../../../utils/common/toast";
 
 const UpdateEmployee = () => {
   const navigate = useNavigate();
@@ -49,8 +51,10 @@ const UpdateEmployee = () => {
 
   const [opened, { open, close }] = useDisclosure(false);
   const [bloodGroupOptions, setBloodGroupOptions] = useState([]);
+  const [employmentRolesOptions, setEmploymentRolesOptions] = useState([]);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
+  const { showSuccessToast } = useCustomToast();
 
   const [employmentTypeOptions, setEmploymentTypes] = useState([]);
 
@@ -69,14 +73,16 @@ const UpdateEmployee = () => {
       });
   }, []);
 
-  const employeeRoles = [
-    { value: "66d332c2bc7f50be0a7a573f", label: "Trainee" },
-    { value: "66d332c2bc7f50be0a7a5740", label: "Trainer" },
-    { value: "66d332c2bc7f50be0a7a5741", label: "Junior Software Engineer" },
-    { value: "66d332c2bc7f50be0a7a5742", label: "Senior Software Engineer" },
-    { value: "66d332c2bc7f50be0a7a5743", label: "Technical Lead" },
-    { value: "66d332c2bc7f50be0a7a5744", label: "Senior Executive" },
-  ];
+  useEffect(() => {
+    getAllEmployeeRoleByAdmin().then((response) => {
+      const filterEmploymentRoles = response.map(
+        (res: { _id: string; designation: string }) => {
+          return { value: res._id, label: res.designation };
+        }
+      );
+      setEmploymentRolesOptions(filterEmploymentRoles);
+    });
+  }, []);
 
   useEffect(() => {
     getAllBloodGroupByAdmin().then((response) => {
@@ -105,17 +111,7 @@ const UpdateEmployee = () => {
 
     updateEmployeeDetailsByAdmin(updatedData)
       .then(() => {
-        toast("Employee details updated !", {
-          style: {
-            color: theme.colors.primary[2],
-            backgroundColor:
-              organizationConfig.organization_theme.theme.backgroundColor,
-          },
-          progressStyle: {
-            background: theme.colors.primary[8],
-          },
-          icon: <IconCircleDashedCheck width={32} height={32} />,
-        });
+        showSuccessToast("Employee details updated !");
         navigate(
           `${organizationAdminUrls(
             organizationConfig.organization_name
@@ -152,17 +148,7 @@ const UpdateEmployee = () => {
 
     deleteEmployeeByAdmin(payload)
       .then(() => {
-        toast("Employee deleted successfully!", {
-          style: {
-            color: theme.colors.primary[2],
-            backgroundColor:
-              organizationConfig.organization_theme.theme.backgroundColor,
-          },
-          progressStyle: {
-            background: theme.colors.primary[8],
-          },
-          icon: <IconCircleDashedCheck width={32} height={32} />,
-        });
+        showSuccessToast("Employee deleted successfully !");
         navigate(
           `${organizationAdminUrls(
             organizationConfig.organization_name
@@ -172,6 +158,16 @@ const UpdateEmployee = () => {
       .catch((error: { response: { data: { message: any } } }) => {
         toast.error(error.response?.data?.message || "Something went wrong");
       });
+  };
+
+  const handlePasswordReset = () => {
+    handlePasswordResetByAdmin(employeeId)
+      .then(() => {
+        showSuccessToast("Password reset successfull ");
+      })
+      .catch((error) =>
+        toast.error(error?.response?.data?.message || "Something went wrong")
+      );
   };
 
   return (
@@ -249,7 +245,7 @@ const UpdateEmployee = () => {
                 control={control}
                 render={({ field }) => (
                   <MultiSelect
-                    data={employeeRoles}
+                    data={employmentRolesOptions}
                     label="Employee Role"
                     placeholder="Select employee roles"
                     value={
@@ -304,7 +300,9 @@ const UpdateEmployee = () => {
           />
 
           <div className=" flex flex-wrap justify-between mt-8">
-            <Button bg={theme.colors.primary[5]}>Reset Password</Button>
+            <Button bg={theme.colors.primary[5]} onClick={handlePasswordReset}>
+              Reset Password
+            </Button>
             <button
               className="bg-red-500 py-2 px-4 rounded"
               onClick={(e) => {

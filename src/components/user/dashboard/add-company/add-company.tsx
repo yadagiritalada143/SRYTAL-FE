@@ -10,7 +10,7 @@ import { toast } from "react-toastify";
 import { IconCircleDashedCheck } from "@tabler/icons-react";
 import { useMantineTheme } from "@mantine/core";
 import { useNavigate } from "react-router-dom";
-import { organizationEmployeeUrls } from "../../../../utils/common/constants";
+import { commonUrls } from "../../../../utils/common/constants";
 import { useRecoilValue } from "recoil";
 import { organizationThemeAtom } from "../../../../atoms/organization-atom";
 
@@ -43,9 +43,9 @@ const AddCompany = () => {
         icon: <IconCircleDashedCheck width={32} height={32} />,
       });
       navigate(
-        `${organizationEmployeeUrls(
+        `${commonUrls(
           organizationConfig.organization_name
-        )}/dashboard`
+        )}/dashboard/pool-companies`
       );
     } catch (error: any) {
       toast.error(error.response.data.message || "Something went wrong");
