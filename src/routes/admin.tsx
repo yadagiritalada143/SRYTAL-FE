@@ -3,6 +3,7 @@ import AddEmployee from "../components/admin/dashboard/add-employee/add-employee
 import { OrganizationConfig } from "../interfaces/organization";
 import AdminDashboard from "../pages/admin/dashboard/dashboard";
 import AdminLogin from "../pages/admin/login/login";
+import AddCompany from "../components/user/dashboard/add-company/add-company";
 import Employees from "../components/admin/dashboard/employees/employees";
 import UpdateEmployee from "../components/admin/dashboard/update-employee/update-employee";
 import { Outlet } from "react-router-dom";
@@ -121,6 +122,7 @@ const AdminRoutes = () => {
             <Route path="" element={<Employees />} />
             <Route path="profile" element={<AdminProfile />} />
             <Route path="pool-companies" element={<Companies />} />
+            <Route path="add-pool-companies" element={<AddCompany />} />
             <Route path="add-pool-candidate" element={<AddPoolCandidate />} />
             <Route
               path=":candidateId/edit-pool-candidate"
