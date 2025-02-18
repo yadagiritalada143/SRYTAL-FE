@@ -122,7 +122,7 @@ const AdminRoutes = () => {
             <Route path="" element={<Employees />} />
             <Route path="profile" element={<AdminProfile />} />
             <Route path="pool-companies" element={<Companies />} />
-            <Route path="add-company" element={<AddCompany />} />
+            <Route path="add-pool-companies" element={<AddCompany />} />
             <Route path="add-pool-candidate" element={<AddPoolCandidate />} />
             <Route
               path=":candidateId/edit-pool-candidate"
