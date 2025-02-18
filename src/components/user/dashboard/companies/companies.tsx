@@ -60,7 +60,7 @@ const Companies = () => {
             navigate(
               `${commonUrls(
                 organizationConfig.organization_name
-              )}/dashboard/addcompany`
+              )}/dashboard/add-company`
             )
           }
         >
