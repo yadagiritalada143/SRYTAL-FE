@@ -133,7 +133,7 @@ const EmployeeRoutes = () => {
                   element={<UpdatePoolCandidateForm />}
                 />
                 <Route path="pool-companies" element={<Companies />} />
-                <Route path="add-company" element={<AddCompany />} />
+                <Route path="add-pool-companies" element={<AddCompany />} />
                 <Route
                   path="update-pool-company/:companyId"
                   element={<UpdateCompany />}
