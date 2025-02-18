@@ -1,45 +1,22 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "@mantine/core";
-import {
-  IconUser,
-  IconUpload,
-  IconLoader,
-  IconCircleDashedCheck,
-} from "@tabler/icons-react";
+import { IconUser, IconUpload, IconLoader } from "@tabler/icons-react";
 import { OrganizationConfig } from "../../../interfaces/organization";
 import { toast } from "react-toastify";
-import {
-  getProfileImage,
-  uploadProfileImage,
-} from "../../../services/common-services";
-import { useMantineTheme } from "@mantine/core";
+import { uploadProfileImage } from "../../../services/common-services";
+import { useCustomToast } from "../../../utils/common/toast";
+import { useRecoilState } from "recoil";
+import { profileImageAtom } from "../../../atoms/profile-image";
 
 interface Props {
   organizationConfig: OrganizationConfig;
 }
 
-const ProfileImageUploader: React.FC<Props> = ({ organizationConfig }) => {
-  const [loading, setLoading] = useState<boolean>(false);
+const ProfileImageUploader: React.FC<Props> = () => {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [image, setImage] = useState<File | null>(null);
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const theme = useMantineTheme();
-
-  useEffect(() => {
-    setLoading(true);
-    getProfileImage()
-      .then((response) => {
-        const blobUrl = URL.createObjectURL(response);
-        setImageUrl(blobUrl);
-      })
-      .catch((error) => {
-        if (error === "NoImage") {
-          setImageUrl("");
-        } else {
-          toast.error("Failed to load profile image.");
-        }
-      })
-      .finally(() => setLoading(false));
-  }, []);
+  const [imageUrl, setImageUrl] = useRecoilState(profileImageAtom);
+  const { showSuccessToast } = useCustomToast();
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -50,35 +27,38 @@ const ProfileImageUploader: React.FC<Props> = ({ organizationConfig }) => {
     }
   };
 
-  const handleUploadImage = () => {
-    if (!image) return;
+  useEffect(() => {
+    setIsLoading(true);
+    if (imageUrl) {
+      setIsLoading(false);
+    }
+  }, [imageUrl]);
 
-    setLoading(true);
+  const handleUploadImage = () => {
+    if (!image) {
+      toast.warning("Please select an image before uploading.");
+      return;
+    }
+    setIsLoading(true);
     uploadProfileImage(image)
       .then(() => {
-        toast.success("Profile image uploaded successfully!", {
-          style: {
-            color: theme.colors.primary[2],
-            backgroundColor:
-              organizationConfig.organization_theme.theme.backgroundColor,
-          },
-          progressStyle: {
-            background: theme.colors.primary[8],
-          },
-          icon: <IconCircleDashedCheck width={32} height={32} />,
-        });
+        const newImageUrl = URL.createObjectURL(image);
+        setImageUrl(newImageUrl);
         setImage(null);
+
+        showSuccessToast("Profile image uploaded successfully !");
       })
       .catch((error) => {
+        console.error("Upload failed:", error);
         toast.error(error?.response?.data?.message || "Something went wrong");
       })
-      .finally(() => setLoading(false));
+      .finally(() => setIsLoading(false));
   };
 
   return (
     <div className="flex flex-col items-center">
       <div className="relative group w-32 h-32 mx-5 mb-4">
-        {loading ? (
+        {isLoading ? (
           <div className="flex items-center justify-center w-full h-full bg-gray-200 rounded-lg">
             <IconLoader className="animate-spin text-gray-500" size={40} />
           </div>
@@ -86,6 +66,8 @@ const ProfileImageUploader: React.FC<Props> = ({ organizationConfig }) => {
           <img
             src={imageUrl}
             className="w-full h-full object-cover rounded-lg"
+            onError={() => setImageUrl("")}
+            alt="Profile"
           />
         ) : (
           <div className="flex items-center justify-center w-full h-full bg-gray-200 rounded-lg">
@@ -100,7 +82,7 @@ const ProfileImageUploader: React.FC<Props> = ({ organizationConfig }) => {
         >
           <label className="cursor-pointer flex flex-col items-center justify-center">
             <IconUpload className="text-white" size={24} />
-            <span className="text-white text-sm">Change Image</span>
+            <span className="text-white text-sm">Upload Image</span>
             <input
               type="file"
               className="hidden"

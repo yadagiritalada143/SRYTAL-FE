@@ -24,6 +24,7 @@ const AddComment = ({
     formState: { errors, isSubmitting },
     handleSubmit,
     reset,
+    setValue,
   } = useForm<AddCommentForm>({
     resolver: zodResolver(commentSchema),
   });
@@ -33,9 +34,10 @@ const AddComment = ({
     data.id = candidateId;
     addPoolCandidateCommentByRecruiter(data)
       .then((data) => {
-        setComments(data.comments);
-        showSuccessToast("Comment added successfully");
         reset();
+        showSuccessToast("Comment added successfully");
+        setComments(data.comments);
+        setValue("comment", "");
       })
       .catch((error) =>
         toast.error(error?.response?.data?.message || "Something went wrong")

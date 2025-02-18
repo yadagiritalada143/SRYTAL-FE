@@ -39,11 +39,14 @@ const EmployeeDashboard = () => {
   const toggleDrawer = () => setDrawerOpen(!isDrawerOpen);
 
   useEffect(() => {
-    const passwordReset = user.passwordResetRequired;
-    if (passwordReset === "true") {
+    if (
+      user &&
+      user.passwordResetRequired &&
+      user.passwordResetRequired === "true"
+    ) {
       open();
     }
-  });
+  }, [user, open]);
 
   const onSubmit = (data: UpdatePasswordForm) => {
     setIsLoading(true);
@@ -51,8 +54,8 @@ const EmployeeDashboard = () => {
       updatePasswordForEmployee(data)
         .then((response) => {
           if (response.success) {
-            close();
             setUser({ ...user, passwordResetRequired: "false" });
+            close();
           }
         })
         .catch((error: any) =>
