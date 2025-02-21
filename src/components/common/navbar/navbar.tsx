@@ -1,6 +1,7 @@
 import {
   Icon,
   IconBuildings,
+  IconNotebook,
   IconUsersGroup,
   // IconBackpack, IconBuildings,
   IconX,
@@ -91,7 +92,7 @@ const Navbar = ({
               }
               end
               className={({ isActive }) =>
-                `flex items-center  p-4 py-6 hover:shadow-xl ${
+                `flex items-center  p-4 py-6 shadow-md hover:shadow-xl ${
                   isActive ? "font-bold" : ""
                 } hover:bg-opacity-75 transition-all`
               }
@@ -139,7 +140,7 @@ const Navbar = ({
               }
               end
               className={({ isActive }) =>
-                `flex items-center  p-4 py-6 hover:shadow-xl ${
+                `flex items-center  p-4 py-6 shadow-md hover:shadow-xl ${
                   isActive ? "font-bold" : ""
                 } hover:bg-opacity-75 transition-all`
               }
@@ -155,6 +156,34 @@ const Navbar = ({
             >
               <IconUsersGroup size={24} className="mr-2" />
               <span>Pool Candidates</span>
+            </NavLink>
+
+            <NavLink
+              to={
+                localStorage.getItem("userRole") === "admin"
+                  ? `/${organizationConfig.organization_name}/admin/dashboard/reports`
+                  : localStorage.getItem("userRole") === "recruiter"
+                  ? `/${organizationConfig.organization_name}/employee/dashboard/reports`
+                  : ""
+              }
+              end
+              className={({ isActive }) =>
+                `flex items-center  p-4 py-6 shadow-md hover:shadow-xl ${
+                  isActive ? "font-bold" : ""
+                } hover:bg-opacity-75 transition-all`
+              }
+              style={({ isActive }) => ({
+                backgroundColor: isActive
+                  ? organizationConfig.organization_theme.theme.backgroundColor
+                  : "transparent",
+                color: isActive
+                  ? theme.colors.primary[5]
+                  : organizationConfig.organization_theme.theme.button
+                      .textColor,
+              })}
+            >
+              <IconNotebook size={24} className="mr-2" />
+              <span>Reports</span>
             </NavLink>
           </>
         )}
