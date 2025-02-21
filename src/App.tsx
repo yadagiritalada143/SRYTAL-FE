@@ -6,7 +6,7 @@ import AdminRoutes from "./routes/admin";
 import EmployeeRoutes from "./routes/user";
 import SuperAdminRoutes from "./routes/super-admin";
 import { RecoilRoot } from "recoil";
-import CommonForgetPassword from "./routes/common";
+import CommonForgetPassword from  "./routes/common";
 
 const App: React.FC = () => {
   return (

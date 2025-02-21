@@ -6,7 +6,7 @@ const CommonRoutes: React.FC = () => {
   return (
     <MantineProvider>
     <Routes>
-      <Route path="/forgot-password" element={<ForgotPassword />}>
+      <Route path="/forgot-password" element={<ForgotPassword closeModal={()=>""} />}>
       </Route>
     </Routes>
     </MantineProvider>

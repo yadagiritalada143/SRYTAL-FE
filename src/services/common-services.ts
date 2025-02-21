@@ -17,6 +17,15 @@ export const login = async (Credentials: LoginForm) => {
   }
 };
 
+export const forgetPassword = async (username: string) => {
+  try {
+    const response = await apiClient.post("/forgotPassword", {username});
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getVisitorCount = async () => {
   try {
     const response = await apiClient("/getVisitorCount");
