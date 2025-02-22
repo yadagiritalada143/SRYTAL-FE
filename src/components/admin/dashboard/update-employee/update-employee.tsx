@@ -246,16 +246,20 @@ const UpdateEmployee = () => {
                 />
               )}
             />
-           <Controller
-              name="dob"
+            <Controller
+              name="dateOfBirth"
               control={control}
               render={({ field }) => (
                 <DatePickerInput
                   label="Date of Birth"
                   placeholder="Select date of birth"
                   value={field.value ? new Date(field.value) : null}
-                  onChange={(date) => field.onChange(date ? date.toISOString().split("T")[0] : null)}
-                  error={errors.dob?.message}
+                  onChange={(date) =>
+                    field.onChange(
+                      date ? date.toISOString().split("T")[0] : null
+                    )
+                  }
+                  error={errors.dateOfBirth?.message}
                 />
               )}
             />

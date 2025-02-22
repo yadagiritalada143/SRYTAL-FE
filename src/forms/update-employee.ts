@@ -1,7 +1,10 @@
 import { z } from "zod";
 
 export const employeeSchema = z.object({
-  employeeId: z.string().min(1, "Employee Id is required").regex(/^\d+$/, { message: "Employee Id must contain only digits" }),
+  employeeId: z
+    .string()
+    .min(1, "Employee Id is required")
+    .regex(/^\d+$/, { message: "Employee Id must contain only digits" }),
   firstName: z.string().min(1, "First Name is required"),
   lastName: z.string().min(1, "Last Name is required"),
   email: z.string().email("Invalid email address"),
@@ -12,7 +15,12 @@ export const employeeSchema = z.object({
     .regex(/^\d+$/, { message: "Phone number must contain only digits" })
     .or(z.number()),
   bloodGroup: z.string().optional(),
-  dob: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { message: "DOB must be in YYYY-MM-DD format" }).optional(),
+  dateOfBirth: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, {
+      message: "DOB must be in YYYY-MM-DD format",
+    })
+    .optional(),
   bankDetailsInfo: z
     .object({
       accountNumber: z.union([
