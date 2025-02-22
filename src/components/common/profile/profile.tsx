@@ -33,7 +33,7 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
             <div className="font-bold">Mobile:</div>
             <div>{details?.mobileNumber}</div>
             <div className="font-bold">Date Of Birth:</div>
-            <div>{details?.dateOfBirth}</div>
+            <div>{details?.dob}</div>
           </div>
         </div>
       </div>

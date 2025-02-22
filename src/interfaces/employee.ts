@@ -5,7 +5,7 @@ export interface EmployeeInterface {
   lastName: string;
   email: string;
   mobileNumber: string;
-  dateOfBirth:string;
+  dob:string;
   userRole: string;
   passwordResetRequired: string;
   employeeRole: [{ _id: string; designation: string }];
