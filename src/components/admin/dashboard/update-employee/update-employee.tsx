@@ -6,6 +6,7 @@ import {
   useMantineTheme,
   MultiSelect,
   Checkbox,
+  Loader,
 } from "@mantine/core";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -55,6 +56,7 @@ const UpdateEmployee = () => {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
   const { showSuccessToast } = useCustomToast();
+  const [isLoading, setIsLoading] = useState(false);
 
   const [employmentTypeOptions, setEmploymentTypes] = useState([]);
 
@@ -124,6 +126,7 @@ const UpdateEmployee = () => {
   };
 
   useEffect(() => {
+    setIsLoading(true);
     getEmployeeDetailsByAdmin(employeeId)
       .then((emp) => {
         reset({
@@ -137,6 +140,9 @@ const UpdateEmployee = () => {
       })
       .catch((error) => {
         toast.error(error.response?.data?.message || "Something went wrong");
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
   }, [employeeId, reset]);
 
@@ -173,148 +179,160 @@ const UpdateEmployee = () => {
   return (
     <div className="flex justify-center items-center py-12">
       <BgDiv>
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          style={{
-            backgroundColor:
-              organizationConfig.organization_theme.theme.backgroundColor,
-          }}
-          className="rounded-lg shadow-lg w-full max-w-4xl p-8"
-        >
-          <div className="px-4 flex justify-between">
-            <div></div>
-            <h2 className="text-2xl font-bold text-center mb-6">
-              Update Profile
-            </h2>
-            <Button
-              bg={theme.colors.primary[5]}
-              onClick={() =>
-                navigate(
-                  `${organizationAdminUrls(
-                    organizationConfig.organization_name
-                  )}/dashboard`
-                )
-              }
-            >
-              {" "}
-              Cancel
-            </Button>
-          </div>
-
-          <h3 className="text-lg font-bold mb-4">Personal Information</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <TextInput
-              label="First Name"
-              {...register("firstName")}
-              error={errors.firstName?.message}
-            />
-            <TextInput
-              label="Last Name"
-              {...register("lastName")}
-              error={errors.lastName?.message}
-            />
-            <TextInput
-              label="Email"
-              {...register("email")}
-              error={errors.email?.message}
-            />
-            <TextInput
-              label="Mobile Number"
-              {...register("mobileNumber")}
-              error={errors.mobileNumber?.message}
+        {isLoading ? (
+          <div className="flex justify-center items-center h-48">
+            <Loader
+              size="xl"
+              color={organizationConfig.organization_theme.theme.button.color}
             />
           </div>
+        ) : (
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            style={{
+              backgroundColor:
+                organizationConfig.organization_theme.theme.backgroundColor,
+            }}
+            className="rounded-lg shadow-lg w-full max-w-4xl p-8"
+          >
+            <div className="px-4 flex justify-between">
+              <div></div>
+              <h2 className="text-2xl font-bold text-center mb-6">
+                Update Profile
+              </h2>
+              <Button
+                bg={theme.colors.primary[5]}
+                onClick={() =>
+                  navigate(
+                    `${organizationAdminUrls(
+                      organizationConfig.organization_name
+                    )}/dashboard`
+                  )
+                }
+              >
+                {" "}
+                Cancel
+              </Button>
+            </div>
 
-          <div className="grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <Controller
-              name="bloodGroup"
-              control={control}
-              render={({ field }) => (
-                <Select
-                  data={bloodGroupOptions}
-                  label="Blood Group"
-                  placeholder="Enter blood group"
-                  {...field}
-                  error={errors.bloodGroup?.message}
-                />
-              )}
-            />
-            <div className="mt-8">
+            <h3 className="text-lg font-bold mb-4">Personal Information</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <TextInput
+                label="First Name"
+                {...register("firstName")}
+                error={errors.firstName?.message}
+              />
+              <TextInput
+                label="Last Name"
+                {...register("lastName")}
+                error={errors.lastName?.message}
+              />
+              <TextInput
+                label="Email"
+                {...register("email")}
+                error={errors.email?.message}
+              />
+              <TextInput
+                label="Mobile Number"
+                {...register("mobileNumber")}
+                error={errors.mobileNumber?.message}
+              />
+            </div>
+
+            <div className="grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <Controller
-                name="employeeRole"
+                name="bloodGroup"
                 control={control}
                 render={({ field }) => (
-                  <MultiSelect
-                    data={employmentRolesOptions}
-                    label="Employee Role"
-                    placeholder="Select employee roles"
-                    value={
-                      field.value?.filter(
-                        (role) => role !== undefined
-                      ) as string[]
-                    }
-                    onChange={field.onChange}
-                    onBlur={field.onBlur}
-                    error={errors.employeeRole?.message}
+                  <Select
+                    data={bloodGroupOptions}
+                    label="Blood Group"
+                    placeholder="Enter blood group"
+                    {...field}
+                    error={errors.bloodGroup?.message}
                   />
                 )}
               />
+              <div className="mt-8">
+                <Controller
+                  name="employeeRole"
+                  control={control}
+                  render={({ field }) => (
+                    <MultiSelect
+                      data={employmentRolesOptions}
+                      label="Employee Role"
+                      placeholder="Select employee roles"
+                      value={
+                        field.value?.filter(
+                          (role) => role !== undefined
+                        ) as string[]
+                      }
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      error={errors.employeeRole?.message}
+                    />
+                  )}
+                />
+              </div>
             </div>
-          </div>
 
-          <h3 className="text-lg font-bold mt-8 mb-4">Bank Details</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <TextInput
-              label="Account Number"
-              {...register("bankDetailsInfo.accountNumber")}
-              error={errors.bankDetailsInfo?.accountNumber?.message}
-              placeholder="Enter bank account number"
-            />
-            <TextInput
-              label="Account Holder Name"
-              placeholder="Enter bank account holder name"
-              {...register("bankDetailsInfo.accountHolderName")}
-              error={errors.bankDetailsInfo?.accountHolderName?.message}
-            />
-            <TextInput
-              label="IFSC Code"
-              placeholder="Enter bank ifsc code"
-              {...register("bankDetailsInfo.ifscCode")}
-              error={errors?.bankDetailsInfo?.ifscCode?.message}
-            />
-          </div>
-
-          <h3 className="text-lg font-bold mt-8 mb-4">Employment Details</h3>
-          <Controller
-            name="employmentType"
-            control={control}
-            render={({ field }) => (
-              <Select
-                label="Employment Type"
-                placeholder="Enter employment type"
-                data={employmentTypeOptions}
-                {...field}
-                error={errors.employmentType?.message}
+            <h3 className="text-lg font-bold mt-8 mb-4">Bank Details</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <TextInput
+                label="Account Number"
+                {...register("bankDetailsInfo.accountNumber")}
+                error={errors.bankDetailsInfo?.accountNumber?.message}
+                placeholder="Enter bank account number"
               />
-            )}
-          />
+              <TextInput
+                label="Account Holder Name"
+                placeholder="Enter bank account holder name"
+                {...register("bankDetailsInfo.accountHolderName")}
+                error={errors.bankDetailsInfo?.accountHolderName?.message}
+              />
+              <TextInput
+                label="IFSC Code"
+                placeholder="Enter bank ifsc code"
+                {...register("bankDetailsInfo.ifscCode")}
+                error={errors?.bankDetailsInfo?.ifscCode?.message}
+              />
+            </div>
 
-          <div className=" flex flex-wrap justify-between mt-8">
-            <Button bg={theme.colors.primary[5]} onClick={handlePasswordReset}>
-              Reset Password
-            </Button>
-            <button
-              className="bg-red-500 py-2 px-4 rounded"
-              onClick={(e) => {
-                e.preventDefault();
-                open();
-              }}
-            >
-              Delete Employee
-            </button>
-            <Button type="submit">Update Employee</Button>
-          </div>
-        </form>
+            <h3 className="text-lg font-bold mt-8 mb-4">Employment Details</h3>
+            <Controller
+              name="employmentType"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  label="Employment Type"
+                  placeholder="Enter employment type"
+                  data={employmentTypeOptions}
+                  {...field}
+                  error={errors.employmentType?.message}
+                />
+              )}
+            />
+
+            <div className=" flex flex-wrap justify-between mt-8">
+              <Button
+                bg={theme.colors.primary[5]}
+                onClick={handlePasswordReset}
+              >
+                Reset Password
+              </Button>
+              <button
+                className="bg-red-500 py-2 px-4 rounded"
+                onClick={(e) => {
+                  e.preventDefault();
+                  open();
+                }}
+              >
+                Delete Employee
+              </button>
+              <Button type="submit">Update Employee</Button>
+            </div>
+          </form>
+        )}
       </BgDiv>
       <Modal size="md" opened={opened} onClose={close}>
         <div>
