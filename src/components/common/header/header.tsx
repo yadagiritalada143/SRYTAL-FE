@@ -7,6 +7,7 @@ import {
 } from "@tabler/icons-react";
 import { useNavigate } from "react-router-dom";
 import {
+  commonUrls,
   organizationAdminUrls,
   organizationEmployeeUrls,
 } from "../../../utils/common/constants";
@@ -90,6 +91,7 @@ const Header = ({
                   leftSection={
                     <IconUser style={{ width: rem(14), height: rem(14) }} />
                   }
+                  onClick={() => navigate(`${commonUrls(organization)}/dashboard/profile`)}
                 >
                   Profile
                 </Menu.Item>
@@ -102,7 +104,7 @@ const Header = ({
                     />
                   }
                   onClick={open}
-                >
+                > 
                   Change Password
                 </Menu.Item>
 

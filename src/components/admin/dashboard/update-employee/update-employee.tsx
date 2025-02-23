@@ -31,6 +31,7 @@ import { useDisclosure } from "@mantine/hooks";
 import { useRecoilValue } from "recoil";
 import { organizationThemeAtom } from "../../../../atoms/organization-atom";
 import { useCustomToast } from "../../../../utils/common/toast";
+import { DatePickerInput } from "@mantine/dates";
 
 const UpdateEmployee = () => {
   const navigate = useNavigate();
@@ -202,6 +203,12 @@ const UpdateEmployee = () => {
           </div>
 
           <h3 className="text-lg font-bold mb-4">Personal Information</h3>
+          <TextInput
+            className="mb-2"
+            label="Employee Id"
+            {...register("employeeId")}
+            error={errors.employeeId?.message}
+          />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <TextInput
               label="First Name"
@@ -225,7 +232,7 @@ const UpdateEmployee = () => {
             />
           </div>
 
-          <div className="grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <Controller
               name="bloodGroup"
               control={control}
@@ -239,27 +246,45 @@ const UpdateEmployee = () => {
                 />
               )}
             />
-            <div className="mt-8">
-              <Controller
-                name="employeeRole"
-                control={control}
-                render={({ field }) => (
-                  <MultiSelect
-                    data={employmentRolesOptions}
-                    label="Employee Role"
-                    placeholder="Select employee roles"
-                    value={
-                      field.value?.filter(
-                        (role) => role !== undefined
-                      ) as string[]
-                    }
-                    onChange={field.onChange}
-                    onBlur={field.onBlur}
-                    error={errors.employeeRole?.message}
-                  />
-                )}
-              />
-            </div>
+            <Controller
+              name="dateOfBirth"
+              control={control}
+              render={({ field }) => (
+                <DatePickerInput
+                  label="Date of Birth"
+                  placeholder="Select date of birth"
+                  value={field.value ? new Date(field.value) : null}
+                  onChange={(date) =>
+                    field.onChange(
+                      date ? date.toISOString().split("T")[0] : null
+                    )
+                  }
+                  error={errors.dateOfBirth?.message}
+                />
+              )}
+            />
+          </div>
+
+          <div className="mt-8">
+            <Controller
+              name="employeeRole"
+              control={control}
+              render={({ field }) => (
+                <MultiSelect
+                  data={employmentRolesOptions}
+                  label="Employee Role"
+                  placeholder="Select employee roles"
+                  value={
+                    field.value?.filter(
+                      (role) => role !== undefined
+                    ) as string[]
+                  }
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  error={errors.employeeRole?.message}
+                />
+              )}
+            />
           </div>
 
           <h3 className="text-lg font-bold mt-8 mb-4">Bank Details</h3>
