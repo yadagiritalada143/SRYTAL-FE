@@ -245,29 +245,6 @@ const UpdateEmployee = () => {
                 error={errors.mobileNumber?.message}
               />
             </div>
-            <h3 className="text-lg font-bold mb-4">Personal Information</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              <TextInput
-                label="First Name"
-                {...register("firstName")}
-                error={errors.firstName?.message}
-              />
-              <TextInput
-                label="Last Name"
-                {...register("lastName")}
-                error={errors.lastName?.message}
-              />
-              <TextInput
-                label="Email"
-                {...register("email")}
-                error={errors.email?.message}
-              />
-              <TextInput
-                label="Mobile Number"
-                {...register("mobileNumber")}
-                error={errors.mobileNumber?.message}
-              />
-            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <Controller
@@ -322,42 +299,6 @@ const UpdateEmployee = () => {
                   />
                 )}
               />
-            </div>
-            <div className="grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              <Controller
-                name="bloodGroup"
-                control={control}
-                render={({ field }) => (
-                  <Select
-                    data={bloodGroupOptions}
-                    label="Blood Group"
-                    placeholder="Enter blood group"
-                    {...field}
-                    error={errors.bloodGroup?.message}
-                  />
-                )}
-              />
-              <div className="mt-8">
-                <Controller
-                  name="employeeRole"
-                  control={control}
-                  render={({ field }) => (
-                    <MultiSelect
-                      data={employmentRolesOptions}
-                      label="Employee Role"
-                      placeholder="Select employee roles"
-                      value={
-                        field.value?.filter(
-                          (role) => role !== undefined
-                        ) as string[]
-                      }
-                      onChange={field.onChange}
-                      onBlur={field.onBlur}
-                      error={errors.employeeRole?.message}
-                    />
-                  )}
-                />
-              </div>
             </div>
 
             <h3 className="text-lg font-bold mt-8 mb-4">Bank Details</h3>
