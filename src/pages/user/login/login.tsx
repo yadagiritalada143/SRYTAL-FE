@@ -92,11 +92,6 @@ const EmployeeLogin = () => {
               e.target.value = e.target.value.replace(/\s/g, "");
             }}
           />
-          <TextInput
-            {...register("email")}
-            label="Email"
-            error={errors.email?.message}
-          />
         </div>
         <div className="mb-4">
           <PasswordInput
