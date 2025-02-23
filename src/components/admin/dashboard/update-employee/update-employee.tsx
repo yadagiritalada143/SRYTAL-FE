@@ -19,9 +19,10 @@ import {
   updateEmployeeDetailsByAdmin,
   deleteEmployeeByAdmin,
   getAllEmploymentTypes,
+  getAllEmployeeRoleByAdmin,
+  handlePasswordResetByAdmin,
 } from "../../../../services/admin-services";
 import { toast } from "react-toastify";
-import { IconCircleDashedCheck } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { organizationAdminUrls } from "../../../../utils/common/constants";
 import { BgDiv } from "../../../common/style-components/bg-div";
@@ -29,6 +30,8 @@ import { Modal } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { useRecoilValue } from "recoil";
 import { organizationThemeAtom } from "../../../../atoms/organization-atom";
+import { useCustomToast } from "../../../../utils/common/toast";
+import { DatePickerInput } from "@mantine/dates";
 
 const UpdateEmployee = () => {
   const navigate = useNavigate();
@@ -49,8 +52,10 @@ const UpdateEmployee = () => {
 
   const [opened, { open, close }] = useDisclosure(false);
   const [bloodGroupOptions, setBloodGroupOptions] = useState([]);
+  const [employmentRolesOptions, setEmploymentRolesOptions] = useState([]);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
+  const { showSuccessToast } = useCustomToast();
 
   const [employmentTypeOptions, setEmploymentTypes] = useState([]);
 
@@ -69,14 +74,16 @@ const UpdateEmployee = () => {
       });
   }, []);
 
-  const employeeRoles = [
-    { value: "66d332c2bc7f50be0a7a573f", label: "Trainee" },
-    { value: "66d332c2bc7f50be0a7a5740", label: "Trainer" },
-    { value: "66d332c2bc7f50be0a7a5741", label: "Junior Software Engineer" },
-    { value: "66d332c2bc7f50be0a7a5742", label: "Senior Software Engineer" },
-    { value: "66d332c2bc7f50be0a7a5743", label: "Technical Lead" },
-    { value: "66d332c2bc7f50be0a7a5744", label: "Senior Executive" },
-  ];
+  useEffect(() => {
+    getAllEmployeeRoleByAdmin().then((response) => {
+      const filterEmploymentRoles = response.map(
+        (res: { _id: string; designation: string }) => {
+          return { value: res._id, label: res.designation };
+        }
+      );
+      setEmploymentRolesOptions(filterEmploymentRoles);
+    });
+  }, []);
 
   useEffect(() => {
     getAllBloodGroupByAdmin().then((response) => {
@@ -105,17 +112,7 @@ const UpdateEmployee = () => {
 
     updateEmployeeDetailsByAdmin(updatedData)
       .then(() => {
-        toast("Employee details updated !", {
-          style: {
-            color: theme.colors.primary[2],
-            backgroundColor:
-              organizationConfig.organization_theme.theme.backgroundColor,
-          },
-          progressStyle: {
-            background: theme.colors.primary[8],
-          },
-          icon: <IconCircleDashedCheck width={32} height={32} />,
-        });
+        showSuccessToast("Employee details updated !");
         navigate(
           `${organizationAdminUrls(
             organizationConfig.organization_name
@@ -152,17 +149,7 @@ const UpdateEmployee = () => {
 
     deleteEmployeeByAdmin(payload)
       .then(() => {
-        toast("Employee deleted successfully!", {
-          style: {
-            color: theme.colors.primary[2],
-            backgroundColor:
-              organizationConfig.organization_theme.theme.backgroundColor,
-          },
-          progressStyle: {
-            background: theme.colors.primary[8],
-          },
-          icon: <IconCircleDashedCheck width={32} height={32} />,
-        });
+        showSuccessToast("Employee deleted successfully !");
         navigate(
           `${organizationAdminUrls(
             organizationConfig.organization_name
@@ -172,6 +159,16 @@ const UpdateEmployee = () => {
       .catch((error: { response: { data: { message: any } } }) => {
         toast.error(error.response?.data?.message || "Something went wrong");
       });
+  };
+
+  const handlePasswordReset = () => {
+    handlePasswordResetByAdmin(employeeId)
+      .then(() => {
+        showSuccessToast("Password reset successfull ");
+      })
+      .catch((error) =>
+        toast.error(error?.response?.data?.message || "Something went wrong")
+      );
   };
 
   return (
@@ -206,6 +203,12 @@ const UpdateEmployee = () => {
           </div>
 
           <h3 className="text-lg font-bold mb-4">Personal Information</h3>
+          <TextInput
+            className="mb-2"
+            label="Employee Id"
+            {...register("employeeId")}
+            error={errors.employeeId?.message}
+          />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <TextInput
               label="First Name"
@@ -229,7 +232,7 @@ const UpdateEmployee = () => {
             />
           </div>
 
-          <div className="grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <Controller
               name="bloodGroup"
               control={control}
@@ -243,27 +246,45 @@ const UpdateEmployee = () => {
                 />
               )}
             />
-            <div className="mt-8">
-              <Controller
-                name="employeeRole"
-                control={control}
-                render={({ field }) => (
-                  <MultiSelect
-                    data={employeeRoles}
-                    label="Employee Role"
-                    placeholder="Select employee roles"
-                    value={
-                      field.value?.filter(
-                        (role) => role !== undefined
-                      ) as string[]
-                    }
-                    onChange={field.onChange}
-                    onBlur={field.onBlur}
-                    error={errors.employeeRole?.message}
-                  />
-                )}
-              />
-            </div>
+            <Controller
+              name="dateOfBirth"
+              control={control}
+              render={({ field }) => (
+                <DatePickerInput
+                  label="Date of Birth"
+                  placeholder="Select date of birth"
+                  value={field.value ? new Date(field.value) : null}
+                  onChange={(date) =>
+                    field.onChange(
+                      date ? date.toISOString().split("T")[0] : null
+                    )
+                  }
+                  error={errors.dateOfBirth?.message}
+                />
+              )}
+            />
+          </div>
+
+          <div className="mt-8">
+            <Controller
+              name="employeeRole"
+              control={control}
+              render={({ field }) => (
+                <MultiSelect
+                  data={employmentRolesOptions}
+                  label="Employee Role"
+                  placeholder="Select employee roles"
+                  value={
+                    field.value?.filter(
+                      (role) => role !== undefined
+                    ) as string[]
+                  }
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  error={errors.employeeRole?.message}
+                />
+              )}
+            />
           </div>
 
           <h3 className="text-lg font-bold mt-8 mb-4">Bank Details</h3>
@@ -304,7 +325,9 @@ const UpdateEmployee = () => {
           />
 
           <div className=" flex flex-wrap justify-between mt-8">
-            <Button bg={theme.colors.primary[5]}>Reset Password</Button>
+            <Button bg={theme.colors.primary[5]} onClick={handlePasswordReset}>
+              Reset Password
+            </Button>
             <button
               className="bg-red-500 py-2 px-4 rounded"
               onClick={(e) => {

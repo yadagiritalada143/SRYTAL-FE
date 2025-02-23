@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { getAllPoolCandidatesByEmployee } from "../../../../services/user-services";
 import {
+  commonUrls,
   organizationAdminUrls,
   organizationEmployeeUrls,
 } from "../../../../utils/common/constants";
@@ -38,13 +39,13 @@ const PoolCandidateList = () => {
       navigate(
         `${organizationAdminUrls(
           organizationConfig.organization_name
-        )}/dashboard/${id}/edit_pool_candidate`
+        )}/dashboard/${id}/edit-pool-candidate`
       );
     } else {
       navigate(
         `${organizationEmployeeUrls(
           organizationConfig.organization_name
-        )}/dashboard/${id}/edit_pool_candidate`
+        )}/dashboard/${id}/edit-pool-candidate`
       );
     }
   };
@@ -75,27 +76,22 @@ const PoolCandidateList = () => {
       }}
       className="p-6"
     >
-      <div className="flex flex-col md:flex-row justify-between items-center mx-4 my-4">
-        <h1 className="text-2xl font-bold text-center md:text-left">
-          Manage Candidates
-        </h1>
-        <div className="mt-4 md:mt-0">
-          {localStorage.getItem("userRole") === "recruiter" ? (
-            <Button
-              onClick={() =>
-                navigate(
-                  `${organizationEmployeeUrls(
-                    organizationConfig.organization_name
-                  )}/dashboard/add_pool_candidate`
-                )
-              }
-            >
-              Add Candidate
-            </Button>
-          ) : (
-            <div></div>
-          )}
-        </div>
+      <h1 className="text-3xl font-extrabold underline text-center">
+        Manage Candidates
+      </h1>
+
+      <div className="text-right">
+        <Button
+          onClick={() =>
+            navigate(
+              `${commonUrls(
+                organizationConfig.organization_name
+              )}/dashboard/add-pool-candidate`
+            )
+          }
+        >
+          Add Candidate
+        </Button>
       </div>
 
       <SearchBarFullWidht

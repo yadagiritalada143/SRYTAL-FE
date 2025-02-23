@@ -1,5 +1,7 @@
 import {
   Icon,
+  IconBuildings,
+  IconNotebook,
   IconUsersGroup,
   // IconBackpack, IconBuildings,
   IconX,
@@ -50,80 +52,6 @@ const Navbar = ({
         </div>
       </div>
       <div className="flex flex-col mt-6  px-2">
-        {(localStorage.getItem("userRole") === "recruiter" ||
-          localStorage.getItem("userRole") === "admin") && (
-          <>
-            {/* <NavLink
-              to={`/${organizationConfig.organization_name}/employee/dashboard`}
-              end
-              className={({ isActive }) =>
-                `flex items-center  p-4 py-6 hover:shadow-xl ${
-                  isActive ? "font-bold" : ""
-                } hover:bg-opacity-75 transition-all`
-              }
-              style={({ isActive }) => ({
-                backgroundColor: isActive
-                  ? organizationConfig.organization_theme.theme.backgroundColor
-                  : "transparent",
-                color: isActive
-                  ? theme.colors.primary[5]
-                  : organizationConfig.organization_theme.theme.button
-                      .textColor,
-              })}
-            >
-              <IconBuildings size={24} className="mr-2" />
-              <span>Manage Companies</span>
-            </NavLink> */}
-            {/* <NavLink
-              to={`/${organizationConfig.organization_name}/employee/dashboard/poolEmployees`}
-              end
-              className={({ isActive }) =>
-                `flex items-center  p-4 py-6 hover:shadow-xl ${
-                  isActive ? "font-bold" : ""
-                } hover:bg-opacity-75 transition-all`
-              }
-              style={({ isActive }) => ({
-                backgroundColor: isActive
-                  ? organizationConfig.organization_theme.theme.backgroundColor
-                  : "transparent",
-                color: isActive
-                  ? theme.colors.primary[5]
-                  : organizationConfig.organization_theme.theme.button
-                      .textColor,
-              })}
-            >
-              <IconBackpack size={24} className="mr-2" />
-              <span>Pool Employees</span>
-            </NavLink> */}
-            <NavLink
-              to={
-                localStorage.getItem("userRole") === "admin"
-                  ? `/${organizationConfig.organization_name}/admin/dashboard/pool_candidates`
-                  : localStorage.getItem("userRole") === "recruiter"
-                  ? `/${organizationConfig.organization_name}/employee/dashboard`
-                  : ""
-              }
-              end
-              className={({ isActive }) =>
-                `flex items-center  p-4 py-6 hover:shadow-xl ${
-                  isActive ? "font-bold" : ""
-                } hover:bg-opacity-75 transition-all`
-              }
-              style={({ isActive }) => ({
-                backgroundColor: isActive
-                  ? organizationConfig.organization_theme.theme.backgroundColor
-                  : "transparent",
-                color: isActive
-                  ? theme.colors.primary[5]
-                  : organizationConfig.organization_theme.theme.button
-                      .textColor,
-              })}
-            >
-              <IconUsersGroup size={24} className="mr-2" />
-              <span>Pool Candidates</span>
-            </NavLink>
-          </>
-        )}
         {navLinks.map((link) => {
           const Icon = link.icon;
           return (
@@ -151,6 +79,114 @@ const Navbar = ({
             </NavLink>
           );
         })}
+        {(localStorage.getItem("userRole") === "recruiter" ||
+          localStorage.getItem("userRole") === "admin") && (
+          <>
+            <NavLink
+              to={
+                localStorage.getItem("userRole") === "admin"
+                  ? `/${organizationConfig.organization_name}/admin/dashboard/pool-companies`
+                  : localStorage.getItem("userRole") === "recruiter"
+                  ? `/${organizationConfig.organization_name}/employee/dashboard/pool-companies`
+                  : ""
+              }
+              end
+              className={({ isActive }) =>
+                `flex items-center  p-4 py-6 shadow-md hover:shadow-xl ${
+                  isActive ? "font-bold" : ""
+                } hover:bg-opacity-75 transition-all`
+              }
+              style={({ isActive }) => ({
+                backgroundColor: isActive
+                  ? organizationConfig.organization_theme.theme.backgroundColor
+                  : "transparent",
+                color: isActive
+                  ? theme.colors.primary[5]
+                  : organizationConfig.organization_theme.theme.button
+                      .textColor,
+              })}
+            >
+              <IconBuildings size={24} className="mr-2" />
+              <span>Manage Companies</span>
+            </NavLink>
+            {/* <NavLink
+              to={`/${organizationConfig.organization_name}/employee/dashboard/pool_employees`}
+              end
+              className={({ isActive }) =>
+                `flex items-center  p-4 py-6 hover:shadow-xl ${
+                  isActive ? "font-bold" : ""
+                } hover:bg-opacity-75 transition-all`
+              }
+              style={({ isActive }) => ({
+                backgroundColor: isActive
+                  ? organizationConfig.organization_theme.theme.backgroundColor
+                  : "transparent",
+                color: isActive
+                  ? theme.colors.primary[5]
+                  : organizationConfig.organization_theme.theme.button
+                      .textColor,
+              })}
+            >
+              <IconBackpack size={24} className="mr-2" />
+              <span>Pool Employees</span>
+            </NavLink> */}
+            <NavLink
+              to={
+                localStorage.getItem("userRole") === "admin"
+                  ? `/${organizationConfig.organization_name}/admin/dashboard/pool-candidates`
+                  : localStorage.getItem("userRole") === "recruiter"
+                  ? `/${organizationConfig.organization_name}/employee/dashboard/pool-candidates`
+                  : ""
+              }
+              end
+              className={({ isActive }) =>
+                `flex items-center  p-4 py-6 shadow-md hover:shadow-xl ${
+                  isActive ? "font-bold" : ""
+                } hover:bg-opacity-75 transition-all`
+              }
+              style={({ isActive }) => ({
+                backgroundColor: isActive
+                  ? organizationConfig.organization_theme.theme.backgroundColor
+                  : "transparent",
+                color: isActive
+                  ? theme.colors.primary[5]
+                  : organizationConfig.organization_theme.theme.button
+                      .textColor,
+              })}
+            >
+              <IconUsersGroup size={24} className="mr-2" />
+              <span>Pool Candidates</span>
+            </NavLink>
+
+            <NavLink
+              to={
+                localStorage.getItem("userRole") === "admin"
+                  ? `/${organizationConfig.organization_name}/admin/dashboard/reports`
+                  : localStorage.getItem("userRole") === "recruiter"
+                  ? `/${organizationConfig.organization_name}/employee/dashboard/reports`
+                  : ""
+              }
+              end
+              className={({ isActive }) =>
+                `flex items-center  p-4 py-6 shadow-md hover:shadow-xl ${
+                  isActive ? "font-bold" : ""
+                } hover:bg-opacity-75 transition-all`
+              }
+              style={({ isActive }) => ({
+                backgroundColor: isActive
+                  ? organizationConfig.organization_theme.theme.backgroundColor
+                  : "transparent",
+                color: isActive
+                  ? theme.colors.primary[5]
+                  : organizationConfig.organization_theme.theme.button
+                      .textColor,
+              })}
+            >
+              <IconNotebook size={24} className="mr-2" />
+              <span>Reports</span>
+            </NavLink>
+          </>
+        )}
       </div>
     </nav>
   );

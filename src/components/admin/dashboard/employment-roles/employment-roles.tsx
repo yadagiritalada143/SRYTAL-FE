@@ -13,27 +13,27 @@ import { toast } from "react-toastify";
 import { useDisclosure } from "@mantine/hooks";
 import { IconEdit } from "@tabler/icons-react";
 import {
-  addEmploymentTypeByAdmin,
-  updateEmploymentTypeByAdmin,
-  deleteEmploymentTypeByAdmin,
-  getAllEmploymentTypes,
+  addEmployeeRoleByAdmin,
+  deleteEmployeeRoleByAdmin,
+  getAllEmployeeRoleByAdmin,
+  updateEmployeeRoleByAdmin,
 } from "../../../../services/admin-services";
 import { useRecoilValue } from "recoil";
 import { organizationThemeAtom } from "../../../../atoms/organization-atom";
 import { useMantineTheme } from "@mantine/core";
 import { SearchBarFullWidht } from "../../../common/search-bar/search-bar";
 
-const EmploymentTypes = () => {
-  const [employmentTypes, setEmploymentTypes] = useState<
-    { id: string; employmentType: string }[]
+const EmploymentRoles = () => {
+  const [employmentRoles, setEmploymentRoles] = useState<
+    { id: string; designation: string }[]
   >([]);
-  const [filteredEmployementType, setFilteredEmployementType] = useState<any[]>(
+  const [filteredEmployementRole, setFilteredEmployementRole] = useState<any[]>(
     []
   );
   const [isLoading, setIsLoading] = useState(true);
   const [activePage, setActivePage] = useState(1);
-  const [selectedType, setSelectedType] = useState<any | null>(null);
-  const [newTypeName, setNewTypeName] = useState("");
+  const [selectedRole, setSelectedRole] = useState<any | null>(null);
+  const [newTypeRole, setNewRoleName] = useState("");
   const organizationConfig = useRecoilValue(organizationThemeAtom);
   const [search, setSearch] = useState("");
   const theme = useMantineTheme();
@@ -48,15 +48,15 @@ const EmploymentTypes = () => {
     useDisclosure(false);
 
   useEffect(() => {
-    fetchEmployementTypes();
+    fetchEmployementRoles();
   }, []);
 
-  const fetchEmployementTypes = async () => {
+  const fetchEmployementRoles = async () => {
     setIsLoading(true);
     try {
-      const data = await getAllEmploymentTypes();
-      setEmploymentTypes(data);
-      setFilteredEmployementType(data);
+      const data = await getAllEmployeeRoleByAdmin();
+      setEmploymentRoles(data);
+      setFilteredEmployementRole(data);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       toast.error("Failed to fetch employment types");
@@ -66,24 +66,24 @@ const EmploymentTypes = () => {
   };
 
   const handleEdit = (group: any) => {
-    setSelectedType(group);
+    setSelectedRole(group);
     openEditModal();
   };
 
   const handleDelete = (id: string) => {
-    setSelectedType({ id });
+    setSelectedRole({ id });
     openDeleteModal();
   };
 
   const confirmEdit = async () => {
     setIsLoading(true);
     try {
-      await updateEmploymentTypeByAdmin(
-        selectedType.id,
-        selectedType.employmentType
+      await updateEmployeeRoleByAdmin(
+        selectedRole.id,
+        selectedRole.designation
       );
       toast.success(" Updated successfully");
-      fetchEmployementTypes();
+      fetchEmployementRoles();
       closeEditModal();
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
@@ -97,9 +97,9 @@ const EmploymentTypes = () => {
   const confirmDelete = async () => {
     setIsLoading(true);
     try {
-      await deleteEmploymentTypeByAdmin(selectedType.id);
+      await deleteEmployeeRoleByAdmin(selectedRole.id);
       toast.success(" Deleted successfully");
-      fetchEmployementTypes();
+      fetchEmployementRoles();
       closeDeleteModal();
       closeEditModal();
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -114,11 +114,11 @@ const EmploymentTypes = () => {
   const handleAdd = async () => {
     setIsLoading(true);
     try {
-      await addEmploymentTypeByAdmin({ employmentType: newTypeName });
+      await addEmployeeRoleByAdmin({ designation: newTypeRole });
       toast.success("Added successfully");
-      fetchEmployementTypes();
+      fetchEmployementRoles();
       closeAddModal();
-      setNewTypeName("");
+      setNewRoleName("");
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       toast.error("Failed to add ");
@@ -129,8 +129,8 @@ const EmploymentTypes = () => {
 
   // Pagination
   const itemsPerPage = 10;
-  const totalPages = Math.ceil(filteredEmployementType.length / itemsPerPage);
-  const paginatedData = filteredEmployementType.slice(
+  const totalPages = Math.ceil(filteredEmployementRole.length / itemsPerPage);
+  const paginatedData = filteredEmployementRole.slice(
     (activePage - 1) * itemsPerPage,
     activePage * itemsPerPage
   );
@@ -139,21 +139,18 @@ const EmploymentTypes = () => {
     const query = e.target.value;
     setSearch(query);
 
-    const filtered = employmentTypes.filter((type) => {
-      type.employmentType.toString().toLowerCase();
-      type.employmentType.toString().trim();
+    const filtered = employmentRoles.filter((role) => {
+      role.designation.toString().toLowerCase();
+      role.designation.toString().trim();
       return (
-        type.employmentType
+        role.designation
           .toLowerCase()
           .toString()
           .includes(query.toLowerCase()) ||
-        type.employmentType
-          .toLowerCase()
-          .toString()
-          .includes(query.toLowerCase())
+        role.designation.toLowerCase().toString().includes(query.toLowerCase())
       );
     });
-    setFilteredEmployementType(filtered);
+    setFilteredEmployementRole(filtered);
   };
 
   return (
@@ -166,16 +163,16 @@ const EmploymentTypes = () => {
     >
       <div>
         <h1 className="text-3xl font-extrabold underline text-center">
-          Manage Employment Types
+          Manage Employment Roles
         </h1>
         <div className="text-right">
-          <Button onClick={openAddModal}> Add Employment Type</Button>
+          <Button onClick={openAddModal}> Add Employment Role</Button>
         </div>
 
         <SearchBarFullWidht
           search={search}
           handleSearch={handleSearch}
-          placeHolder="Search by employment type"
+          placeHolder="Search by employment role"
         />
 
         {isLoading ? (
@@ -203,21 +200,21 @@ const EmploymentTypes = () => {
               >
                 <tr>
                   <th className="p-2 border">Id</th>
-                  <th className="p-2 border">Employment Type</th>
+                  <th className="p-2 border">Employment Role</th>
                   <th className="p-2 border">Action</th>
                 </tr>
               </thead>
               <tbody className="text-sm">
-                {paginatedData.map((employmentT, index) => (
-                  <tr key={employmentT._id}>
+                {paginatedData.map((employmentR, index) => (
+                  <tr key={employmentR._id}>
                     <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
                       {index + 1}
                     </td>
                     <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                      {employmentT.employmentType}
+                      {employmentR.designation}
                     </td>
                     <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                      <Button onClick={() => handleEdit(employmentT)}>
+                      <Button onClick={() => handleEdit(employmentR)}>
                         <IconEdit />
                       </Button>
                     </td>
@@ -241,7 +238,7 @@ const EmploymentTypes = () => {
         onClose={closeAddModal}
         title={
           <Text className="text-center font-bold text-xl">
-            Add New Employment Type
+            Add New Employment Role
           </Text>
         }
         centered
@@ -249,8 +246,8 @@ const EmploymentTypes = () => {
         <Box>
           <TextInput
             label="Name"
-            value={newTypeName}
-            onChange={(e) => setNewTypeName(e.target.value)}
+            value={newTypeRole}
+            onChange={(e) => setNewRoleName(e.target.value)}
             placeholder="Enter name"
             required
             mb="md"
@@ -281,7 +278,7 @@ const EmploymentTypes = () => {
         onClose={closeEditModal}
         title={
           <Text className="text-center font-bold text-xl">
-            Edit Employment Type
+            Edit Employment Role
           </Text>
         }
         centered
@@ -289,11 +286,11 @@ const EmploymentTypes = () => {
         <Box>
           <TextInput
             label="Name"
-            value={selectedType?.employmentType || ""}
+            value={selectedRole?.designation || ""}
             onChange={(e) =>
-              setSelectedType({
-                ...selectedType,
-                employmentType: e.target.value,
+              setSelectedRole({
+                ...selectedRole,
+                designation: e.target.value,
               })
             }
             required
@@ -316,7 +313,7 @@ const EmploymentTypes = () => {
             >
               Save Changes
             </Button>
-            <Button bg="red" onClick={() => handleDelete(selectedType.id)}>
+            <Button bg="red" onClick={() => handleDelete(selectedRole.id)}>
               Delete
             </Button>
           </Group>
@@ -328,12 +325,12 @@ const EmploymentTypes = () => {
         onClose={closeDeleteModal}
         title={
           <Text className="text-center font-bold text-xl">
-            Delete Employment Type
+            Delete Employment Role
           </Text>
         }
         centered
       >
-        <Text size="sm">Are you sure you want to delete this type?</Text>
+        <Text size="sm">Are you sure you want to delete this role?</Text>
         <Group justify="flex-end" mt="md">
           <Button
             bg={organizationConfig.organization_theme.theme.backgroundColor}
@@ -352,4 +349,4 @@ const EmploymentTypes = () => {
   );
 };
 
-export default EmploymentTypes;
+export default EmploymentRoles;

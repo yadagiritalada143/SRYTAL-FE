@@ -76,6 +76,9 @@ const AdminLogin = () => {
             {...register("email")}
             label="Email"
             error={errors.email?.message}
+            onChange={(e) => {
+              e.target.value = e.target.value.replace(/\s/g, "");
+            }}
           />
         </div>
         <div className="mb-4">

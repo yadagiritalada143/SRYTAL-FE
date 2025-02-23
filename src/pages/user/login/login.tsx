@@ -43,7 +43,7 @@ const EmployeeLogin = () => {
         navigate(
           `${organizationEmployeeUrls(
             organizationConfig.organization_name
-          )}/dashboard`
+          )}/dashboard/pool-companies`
         );
       } else {
         navigate(
@@ -74,28 +74,36 @@ const EmployeeLogin = () => {
         }}
       >
         <div className="flex flex-col items-center">
-        <h1 className="text-3xl font-bold text-center mb-4">
-              EMPLOYEE LOGIN
-            </h1>
-            <img
+          <h1 className="text-3xl font-bold text-center mb-4">
+            EMPLOYEE LOGIN
+          </h1>
+          <img
             src={organizationConfig.organization_theme.logo}
             className="mb-4 p-4 max-h-40 object-contain"
             alt={organizationConfig.organization_name}
           />
         </div>
         <div className="mb-4">
-        <TextInput
-              {...register("email")}
-              label="Email"
-              error={errors.email?.message}
-            />
+          <TextInput
+            {...register("email")}
+            label="Email"
+            error={errors.email?.message}
+            onChange={(e) => {
+              e.target.value = e.target.value.replace(/\s/g, "");
+            }}
+          />
+          <TextInput
+            {...register("email")}
+            label="Email"
+            error={errors.email?.message}
+          />
         </div>
         <div className="mb-4">
-        <PasswordInput
-              {...register("password")}
-              label="Password"
-              error={errors.password?.message}
-            />
+          <PasswordInput
+            {...register("password")}
+            label="Password"
+            error={errors.password?.message}
+          />
         </div>
         <div className="flex flex-wrap justify-between items-center gap-4 mt-8">
           <div className="w-full md:w-auto flex justify-center md:justify-start order-2 md:order-1">

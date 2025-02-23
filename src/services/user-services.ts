@@ -61,7 +61,15 @@ export const getCompanyDetailsByIdByRecruiter = async (id: string) => {
 };
 
 export const updatePasswordForEmployee = async (form: UpdatePasswordForm) => {
-  const token = localStorage.getItem("employeeToken");
+  const userRole = localStorage.getItem("userRole");
+
+  let token;
+
+  if (userRole === "admin") {
+    token = localStorage.getItem("adminToken");
+  } else {
+    token = localStorage.getItem("employeeToken");
+  }
   try {
     if (!token) {
       throw "Not authorized, Please login and try again";
@@ -78,16 +86,21 @@ export const updatePasswordForEmployee = async (form: UpdatePasswordForm) => {
 };
 
 export const addCommentByRecruiter = async (id: string, comment: string) => {
-  const token = localStorage.getItem("employeeToken");
   const userRole = localStorage.getItem("userRole");
+
+  let token;
+
+  if (userRole === "admin") {
+    token = localStorage.getItem("adminToken");
+  } else {
+    token = localStorage.getItem("employeeToken");
+  }
 
   try {
     if (!token) {
       throw "Not authorized, Please login and try again";
     }
-    if (userRole !== "recruiter") {
-      throw "Not authorized, Please login and try again";
-    }
+
     const response = await apiClient.post(
       "/recruiter/addCommentByRecruiter",
       {
@@ -154,7 +167,13 @@ export const getAllPoolCandidatesByEmployee = async () => {
 };
 
 export const addPoolCandidateByRecruiter = async (data: AddCandidateForm) => {
-  const token = localStorage.getItem("employeeToken");
+  const userRole = localStorage.getItem("userRole");
+  let token;
+  if (userRole === "admin") {
+    token = localStorage.getItem("adminToken");
+  } else {
+    token = localStorage.getItem("employeeToken");
+  }
 
   try {
     const response = await apiClient.post(

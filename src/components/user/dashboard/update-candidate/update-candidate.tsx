@@ -32,10 +32,7 @@ import { organizationThemeAtom } from "../../../../atoms/organization-atom";
 import { useRecoilValue } from "recoil";
 import { PoolCandidatesComments } from "../../../../interfaces/candidate";
 import { BgDiv } from "../../../common/style-components/bg-div";
-import {
-  organizationAdminUrls,
-  organizationEmployeeUrls,
-} from "../../../../utils/common/constants";
+import { commonUrls } from "../../../../utils/common/constants";
 import AddComment from "./add-comment";
 import CommentsTable from "./comments-table";
 
@@ -93,19 +90,12 @@ const UpdatePoolCandidateForm = () => {
     updatePoolCandidateByRecruiter(data)
       .then(() => {
         toast.success("Candidate updated successfully!");
-        if (localStorage.getItem("userRole") === "admin") {
-          navigate(
-            `${organizationAdminUrls(
-              organizationConfig.organization_name
-            )}/dashboard`
-          );
-        } else {
-          navigate(
-            `${organizationEmployeeUrls(
-              organizationConfig.organization_name
-            )}/dashboard`
-          );
-        }
+
+        navigate(
+          `${commonUrls(
+            organizationConfig.organization_name
+          )}/dashboard/pool-candidates`
+        );
       })
       .catch(() => {
         toast.error("Failed to update candidate.");

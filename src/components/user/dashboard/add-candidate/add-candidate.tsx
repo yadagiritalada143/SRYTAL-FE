@@ -19,7 +19,7 @@ import { BgDiv } from "../../../common/style-components/bg-div";
 import { toast } from "react-toastify";
 import { addPoolCandidateByRecruiter } from "../../../../services/user-services";
 import { useNavigate } from "react-router-dom";
-import { organizationEmployeeUrls } from "../../../../utils/common/constants";
+import { commonUrls } from "../../../../utils/common/constants";
 import { useCustomToast } from "../../../../utils/common/toast";
 import { DateTimePicker } from "@mantine/dates";
 import { useRecoilValue } from "recoil";
@@ -68,9 +68,9 @@ const AddPoolCandidate = () => {
       .then(() => {
         showSuccessToast("Candidate added successfully !");
         navigate(
-          `${organizationEmployeeUrls(
+          `${commonUrls(
             organizationConfig.organization_name
-          )}/dashboard`
+          )}/dashboard/pool-candidates`
         );
       })
       .catch((error) => {
