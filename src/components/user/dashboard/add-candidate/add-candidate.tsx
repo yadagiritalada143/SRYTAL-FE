@@ -94,6 +94,9 @@ const AddPoolCandidate = () => {
           }}
           className="rounded-lg shadow-lg w-full p-8"
         >
+          <h1 className="text-3xl font-extrabold underline text-center">
+          Add Candidate
+        </h1>
           <Grid gutter="md">
             <Grid.Col span={12}>
               <Controller
