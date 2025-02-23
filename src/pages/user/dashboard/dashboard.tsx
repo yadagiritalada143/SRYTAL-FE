@@ -65,8 +65,8 @@ const EmployeeDashboard = () => {
         );
     } else {
       toast.error("New password and confirm password doesn't match");
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   return (

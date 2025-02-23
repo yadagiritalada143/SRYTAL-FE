@@ -22,6 +22,8 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
           <div className="grid grid-cols-2 gap-2">
             {" "}
             {/* Reduced gap */}
+            <div className="font-bold">Employee Id:</div>
+            <div>{details?.employeeId}</div>
             <div className="font-bold">First Name:</div>
             <div>{details?.firstName}</div>
             <div className="font-bold">Last Name:</div>
@@ -30,6 +32,8 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
             <div>{details?.email}</div>
             <div className="font-bold">Mobile:</div>
             <div>{details?.mobileNumber}</div>
+            <div className="font-bold">Date Of Birth:</div>
+            <div>{details?.dob}</div>
           </div>
         </div>
       </div>

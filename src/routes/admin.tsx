@@ -27,6 +27,7 @@ import Companies from "../components/user/dashboard/companies/companies";
 import AddPoolCandidate from "../components/user/dashboard/add-candidate/add-candidate";
 import UpdateCompany from "../components/user/dashboard/update-company/update-company";
 import EmploymentRoles from "../components/admin/dashboard/employment-roles/employment-roles";
+import Reports from "../components/admin/dashboard/reports/reports";
 
 const AdminRoutes = () => {
   const { organization } = useParams<{ organization: string }>();
@@ -124,6 +125,7 @@ const AdminRoutes = () => {
             <Route path="pool-companies" element={<Companies />} />
             <Route path="add-pool-companies" element={<AddCompany />} />
             <Route path="add-pool-candidate" element={<AddPoolCandidate />} />
+            <Route path="reports" element={<Reports />} />
             <Route
               path=":candidateId/edit-pool-candidate"
               element={<UpdatePoolCandidateForm />}
