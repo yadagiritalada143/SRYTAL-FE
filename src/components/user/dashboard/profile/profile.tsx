@@ -7,10 +7,14 @@ import { EmployeeInterface } from "../../../../interfaces/employee";
 const EmployeeProfile = () => {
   const [employeeDetails, setEmployeeDetails] = useState<EmployeeInterface>({
     _id: "",
+    employeeId:"",
     firstName: "",
     lastName: "",
     email: "",
     mobileNumber: "",
+    dob:"",
+    presentAddress:"",
+    permanentAddress:"",
     userRole: "",
     passwordResetRequired: "false",
     employeeRole: [{ _id: "", designation: "" }],
@@ -26,12 +30,22 @@ const EmployeeProfile = () => {
   useEffect(() => {
     getUserDetails()
       .then((user) => {
-        setEmployeeDetails(user);
+        setEmployeeDetails({
+          ...user,
+          dob: user.dateOfBirth ? formatDate(user.dateOfBirth) : "",
+        });
       })
       .catch((error) =>
         toast.error(error || error.message || error.response.data.message)
       );
   }, []);
+  const formatDate = (dateString:any) => {
+    const date = new Date(dateString);
+    const day = date.getDate().toString().padStart(2, "0");
+    const month = date.toLocaleString("en-US", { month: "short" });
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
 
   return (
     <>

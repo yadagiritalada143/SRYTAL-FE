@@ -7,10 +7,14 @@ import { EmployeeInterface } from "../../../../interfaces/employee";
 const AdminProfile = () => {
   const [adminDetails, setAdminDetails] = useState<EmployeeInterface>({
     _id: "",
+    employeeId:"",
     firstName: "",
     lastName: "",
     email: "",
     mobileNumber: "",
+    dob:"",
+    presentAddress:"",
+    permanentAddress:"",
     userRole: "",
     passwordResetRequired: "false",
     employeeRole: [{ _id: "", designation: "" }],

@@ -111,6 +111,7 @@ const Employees = () => {
                 }}
               >
                 <tr>
+                  <th className="p-2 border">Employee ID</th>
                   <th className="p-2 border">First Name</th>
                   <th className="p-2 border">Last Name</th>
                   <th className="p-2 border">Email</th>
@@ -122,64 +123,78 @@ const Employees = () => {
                   <th className="p-2 border">Update Details</th>
                 </tr>
               </thead>
-              <tbody className="text-sm">
-                {filteredEmployees.length > 0 ? (
-                  filteredEmployees.map((employee) => (
-                    <tr key={employee._id}>
-                      <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                        {employee.firstName}
-                      </td>
-                      <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                        {employee.lastName}
-                      </td>
-                      <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                        {employee.email}
-                      </td>
-                      <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                        {employee.mobileNumber}
-                      </td>
-                      <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                        {employee.userRole}
-                      </td>
-                      <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                        {employee.employmentType?.employmentType}
-                      </td>
-                      <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                        {employee.bloodGroup?.type}
-                      </td>
-                      <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                        <ul>
-                          {employee.employeeRole?.map((role, index) => (
-                            <li key={role._id}>
-                              {index + 1}. {role.designation}
-                            </li>
-                          ))}
-                        </ul>
-                      </td>
-                      <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                        <Button
-                          onClick={() =>
-                            navigate(
-                              `${organizationAdminUrls(
-                                organizationConfig.organization_name
-                              )}/dashboard/update/${employee._id}`
-                            )
-                          }
-                        >
-                          <IconUser /> {"  "}
-                          <IconEdit />
-                        </Button>
+              {isLoading ? (
+                <div className="flex justify-center items-center h-48">
+                  <Loader
+                    size="xl"
+                    color={
+                      organizationConfig.organization_theme.theme.button.color
+                    }
+                  />
+                </div>
+              ) : (
+                <tbody className="text-sm">
+                  {filteredEmployees.length > 0 ? (
+                    filteredEmployees.map((employee) => (
+                      <tr key={employee._id}>
+                        <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
+                          {employee.employeeId}
+                        </td>
+                        <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
+                          {employee.firstName}
+                        </td>
+                        <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
+                          {employee.lastName}
+                        </td>
+                        <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
+                          {employee.email}
+                        </td>
+                        <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
+                          {employee.mobileNumber}
+                        </td>
+                        <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
+                          {employee.userRole}
+                        </td>
+                        <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
+                          {employee.employmentType?.employmentType}
+                        </td>
+                        <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
+                          {employee.bloodGroup?.type}
+                        </td>
+                        <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
+                          <ul>
+                            {employee.employeeRole?.map((role, index) => (
+                              <li key={role._id}>
+                                {index + 1}. {role.designation}
+                              </li>
+                            ))}
+                          </ul>
+                        </td>
+                        <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
+                          <Button
+                            onClick={() =>
+                              navigate(
+                                `${organizationAdminUrls(
+                                  organizationConfig.organization_name
+                                )}/dashboard/update/${employee._id}`
+                              )
+                            }
+                          >
+                            <IconUser /> {"  "}
+                            <IconEdit />
+                          </Button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={9} className="px-4 py-2">
+                        No employees found.
                       </td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={9} className="px-4 py-2">
-                      No employees found.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
+                  )}
+                </tbody>
+              )}
             </table>
           </div>
         )}

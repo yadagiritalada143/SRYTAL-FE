@@ -1,9 +1,13 @@
 export interface EmployeeInterface {
   _id: string;
+  employeeId:string;
   firstName: string;
   lastName: string;
   email: string;
   mobileNumber: string;
+  dob:string;
+  presentAddress:string;
+  permanentAddress:string;
   userRole: string;
   passwordResetRequired: string;
   employeeRole: [{ _id: string; designation: string }];

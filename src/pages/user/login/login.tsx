@@ -1,8 +1,9 @@
-import { Button, Loader, PasswordInput, TextInput } from "@mantine/core";
+import { Button, Loader, PasswordInput, TextInput, Modal } from "@mantine/core";
 import { useForm } from "react-hook-form";
 import { LoginForm, loginSchema } from "../../../forms/login";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { login } from "../../../services/common-services";
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -12,11 +13,13 @@ import { organizationThemeAtom } from "../../../atoms/organization-atom";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import { organizationEmployeeUrls } from "../../../utils/common/constants";
 import { userDetailsAtom } from "../../../atoms/user";
+import ForgotPassword from "../../../components/common/forgetPassword/forgetPassword";
 
 const EmployeeLogin = () => {
   const { showSuccessToast } = useCustomToast();
   const organizationConfig = useRecoilValue(organizationThemeAtom);
   const setUser = useSetRecoilState(userDetailsAtom);
+  const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
   const {
     register,
     formState: { errors, isSubmitting },
@@ -99,15 +102,13 @@ const EmployeeLogin = () => {
         </div>
         <div className="flex flex-wrap justify-between items-center gap-4 mt-8">
           <div className="w-full md:w-auto flex justify-center md:justify-start order-2 md:order-1">
-            <Link
-              to="forgot-password"
-              style={{
-                textDecoration: "underline",
-              }}
-              className="text-sm"
+            <button
+              type="button"
+              onClick={() => setForgotPasswordOpen(true)}
+              className="text-sm underline"
             >
               Forgot Password
-            </Link>
+            </button>
           </div>
           <div className="w-full md:w-auto flex justify-center order-1 md:order-2">
             <Button
@@ -133,6 +134,15 @@ const EmployeeLogin = () => {
           </div>
         </div>
       </form>
+      <Modal
+        opened={forgotPasswordOpen}
+        onClose={() => setForgotPasswordOpen(false)}
+        title="Forgot Password"
+        centered
+        size="md"
+      >
+        <ForgotPassword closeModal={() => setForgotPasswordOpen(false)} />
+      </Modal>
     </BgDiv>
   );
 };
