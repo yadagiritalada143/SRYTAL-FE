@@ -2,9 +2,7 @@ import { z } from "zod";
 
 export const employeeSchema = z.object({
   employeeId: z
-    .string()
-    .min(1, "Employee Id is required")
-    .regex(/^\d+$/, { message: "Employee Id must contain only digits" }),
+    .string(),
   firstName: z.string().min(1, "First Name is required"),
   lastName: z.string().min(1, "Last Name is required"),
   email: z.string().email("Invalid email address"),
@@ -21,6 +19,10 @@ export const employeeSchema = z.object({
       message: "DOB must be in YYYY-MM-DD format",
     })
     .optional(),
+  presentAddress: z.string().min(1, "Present Address is required"),
+  permanentAddress: z.string().min(1, "Permanent Address is required"),   
+  employmentType: z.string().optional(),
+  employeeRole: z.array(z.string().optional()), 
   bankDetailsInfo: z
     .object({
       accountNumber: z.union([
@@ -40,8 +42,6 @@ export const employeeSchema = z.object({
       ]),
     })
     .optional(),
-  employmentType: z.string().optional(),
-  employeeRole: z.array(z.string().optional()),
 });
 
 export type EmployeeUpdateForm = z.infer<typeof employeeSchema>;
