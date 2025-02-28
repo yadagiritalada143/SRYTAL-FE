@@ -6,6 +6,8 @@ export interface EmployeeInterface {
   email: string;
   mobileNumber: string;
   dob:string;
+  presentAddress:string;
+  permanentAddress:string;
   userRole: string;
   passwordResetRequired: string;
   employeeRole: [{ _id: string; designation: string }];

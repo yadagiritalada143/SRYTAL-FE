@@ -30,10 +30,12 @@ export const registerEmployee = async (employeeDetails: AddEmployeeForm) => {
 export const updateEmployeeDetailsByAdmin = async (
   employeeDetails: EmployeeUpdateForm
 ) => {
+  const adminToken = localStorage.getItem("adminToken");
   try {
     const response = await apiClient.put(
       "/admin/updateEmployeeDetailsByAdmin",
-      employeeDetails
+      employeeDetails,
+      {headers:{auth_token:adminToken}}
     );
     return response.data;
   } catch (error) {
@@ -78,9 +80,13 @@ export const deleteEmployeeByAdmin = async (data: {
 };
 
 export const getEmployeeDetailsByAdmin = async (id: string) => {
+  const adminToken = localStorage.getItem("adminToken");
   try {
     const response = await apiClient.get(
-      `/admin/getEmployeeDetailsByAdmin/${id}`
+      `/admin/getEmployeeDetailsByAdmin/${id}`,
+      {
+        headers: { auth_token: adminToken },
+      }
     );
     return response.data.userDetails;
   } catch (error) {

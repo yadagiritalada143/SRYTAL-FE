@@ -111,6 +111,7 @@ const Employees = () => {
                 }}
               >
                 <tr>
+                  <th className="p-2 border">Employee ID</th>
                   <th className="p-2 border">First Name</th>
                   <th className="p-2 border">Last Name</th>
                   <th className="p-2 border">Email</th>
@@ -136,6 +137,9 @@ const Employees = () => {
                   {filteredEmployees.length > 0 ? (
                     filteredEmployees.map((employee) => (
                       <tr key={employee._id}>
+                        <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
+                          {employee.employeeId}
+                        </td>
                         <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
                           {employee.firstName}
                         </td>
