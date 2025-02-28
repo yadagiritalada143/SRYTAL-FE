@@ -220,12 +220,14 @@ const UpdateEmployee = () => {
             <div className="flex items-center gap-1 mb-5">
               <label className="text-sm font-medium w-32">Employee Id</label>
               <TextInput
-              className="w-full"
+                className="w-full"
                 {...register("employeeId")}
                 error={errors.employeeId?.message}
               />
             </div>
-            <h3 className="text-lg font-bold mb-2 text-decoration: underline">Personal Information</h3>
+            <h3 className="text-lg font-bold mb-2 text-decoration: underline">
+              Personal Information
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <TextInput
                 label="First Name"
@@ -273,7 +275,9 @@ const UpdateEmployee = () => {
                     value={field.value ? new Date(field.value) : null}
                     onChange={(date) => {
                       if (date) {
-                        const adjustedDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+                        const adjustedDate = new Date(
+                          date.getTime() - date.getTimezoneOffset() * 60000
+                        )
                           .toISOString()
                           .split("T")[0];
                         field.onChange(adjustedDate);
@@ -287,7 +291,7 @@ const UpdateEmployee = () => {
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <Textarea
+              <Textarea
                 label="Present Address"
                 {...register("presentAddress")}
                 error={errors.presentAddress?.message}
@@ -300,13 +304,16 @@ const UpdateEmployee = () => {
                 className="h-20"
               />
             </div>
-            
-            <h3 className="text-lg font-bold mt-8 mb-4 text-decoration: underline">Employment Details</h3>
-            <Controller 
+
+            <h3 className="text-lg font-bold mt-8 mb-4 text-decoration: underline">
+              Employment Details
+            </h3>
+            <Controller
               name="employmentType"
               control={control}
               render={({ field }) => (
-                <Select className="mb-2"
+                <Select
+                  className="mb-2"
                   label="Employment Type"
                   placeholder="Enter employment type"
                   data={employmentTypeOptions}
@@ -315,27 +322,30 @@ const UpdateEmployee = () => {
                 />
               )}
             />
-              <Controller
-                name="employeeRole"
-                control={control}
-                render={({ field }) => (
-                  <MultiSelect className="mb-2"
-                    data={employmentRolesOptions}
-                    label="Employee Role"
-                    placeholder="Select employee roles"
-                    value={
-                      field.value?.filter(
-                        (role) => role !== undefined
-                      ) as string[]
-                    }
-                    onChange={field.onChange}
-                    onBlur={field.onBlur}
-                    error={errors.employeeRole?.message}
-                  />
-                )}
-              />
+            <Controller
+              name="employeeRole"
+              control={control}
+              render={({ field }) => (
+                <MultiSelect
+                  className="mb-2"
+                  data={employmentRolesOptions}
+                  label="Employee Role"
+                  placeholder="Select employee roles"
+                  value={
+                    field.value?.filter(
+                      (role) => role !== undefined
+                    ) as string[]
+                  }
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  error={errors.employeeRole?.message}
+                />
+              )}
+            />
 
-            <h3 className="text-lg font-bold mt-5 mb-4 text-decoration: underline">Bank Details</h3>
+            <h3 className="text-lg font-bold mt-5 mb-4 text-decoration: underline">
+              Bank Details
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <TextInput
                 label="Account Number"

@@ -22,18 +22,52 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
           <div className="grid grid-cols-2 gap-2">
             {" "}
             {/* Reduced gap */}
-            <div className="font-bold">Employee Id:</div>
-            <div>{details?.employeeId}</div>
-            <div className="font-bold">First Name:</div>
-            <div>{details?.firstName}</div>
-            <div className="font-bold">Last Name:</div>
-            <div>{details?.lastName}</div>
-            <div className="font-bold">Email:</div>
-            <div>{details?.email}</div>
-            <div className="font-bold">Mobile:</div>
-            <div>{details?.mobileNumber}</div>
-            <div className="font-bold">Date Of Birth:</div>
-            <div>{details?.dob}</div>
+            {details?.employeeId && (
+              <>
+                <div className="font-bold">Employee Id:</div>
+                <div>{details.employeeId}</div>
+              </>
+            )}
+            {details?.firstName && (
+              <>
+                <div className="font-bold">First Name:</div>
+                <div>{details.firstName}</div>
+              </>
+            )}
+            {details?.lastName && (
+              <>
+                <div className="font-bold">Last Name:</div>
+                <div>{details.lastName}</div>
+              </>
+            )}
+            {details?.dob && (
+              <>
+                <div className="font-bold">Date Of Birth:</div>
+                <div>{details.dob}</div>
+              </>
+            )}
+            {details?.bloodGroup?.type && (
+              <>
+                <div className="font-bold">Blood Group:</div>
+                <div>{details.bloodGroup.type}</div>
+              </>
+            )}
+            {details?.email && (
+              <>
+                <div className="font-bold">Email:</div>
+                <div>{details.email}</div>
+              </>
+            )}
+            {details?.mobileNumber && (
+              <>
+                <div className="font-bold">Mobile:</div>
+                <div>{details.mobileNumber}</div>
+              </>
+            )}
+            {/* <div className="font-bold">Present Address:</div>
+            <div>{details?.presentAddress}</div>
+            <div className="font-bold">Permanent Address:</div>
+            <div>{details?.permanentAddress}</div> */}
           </div>
         </div>
       </div>
@@ -49,6 +83,9 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
           <Tabs.List className="my-2" grow>
             {" "}
             {/* Reduced margin */}
+            <Tabs.Tab className="font-bold" value="address">
+              Address
+            </Tabs.Tab>
             <Tabs.Tab className="font-bold" value="employment">
               Employment Details
             </Tabs.Tab>
@@ -56,6 +93,19 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
               Bank Details
             </Tabs.Tab>
           </Tabs.List>
+
+          <Tabs.Panel style={{ padding: "5px 0" }} value="address">
+            {" "}
+            {/* Reduced padding */}
+            <div className="grid grid-cols-2 gap-2">
+              {" "}
+              {/* Reduced gap */}
+              <div className="font-bold">Present Address:</div>
+              <div>{details?.presentAddress}</div>
+              <div className="font-bold">Permanent Address:</div>
+              <div>{details?.permanentAddress}</div>
+            </div>
+          </Tabs.Panel>
 
           <Tabs.Panel style={{ padding: "5px 0" }} value="employment">
             {" "}
@@ -77,8 +127,6 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                     ))
                   : "N/A"}
               </div>
-              <div className="font-bold">Blood Group:</div>
-              <div>{details.bloodGroup?.type || "N/A"}</div>
             </div>
           </Tabs.Panel>
 
