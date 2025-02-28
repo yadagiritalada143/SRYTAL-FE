@@ -1,7 +1,7 @@
 import { ReactNode, useEffect } from "react";
 import { useRecoilState } from "recoil";
 import { userDetailsAtom } from "../atoms/user";
-import { getUserDetails } from "../services/common-services";
+import { getUserDetails } from "../services/user-services";
 import { toast } from "react-toastify";
 import { EmployeeInterface } from "../interfaces/employee";
 
@@ -14,9 +14,9 @@ const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const adminToken = localStorage.getItem("adminToken");
-      const employeeToken = localStorage.getItem("employeeToken");
-      if (!adminToken && !employeeToken) {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
         return;
       }
       try {

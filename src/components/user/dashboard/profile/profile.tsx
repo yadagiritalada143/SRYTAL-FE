@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Profile from "../../../common/profile/profile";
-import { getUserDetails } from "../../../../services/common-services";
+import { getUserDetails } from "../../../../services/user-services";
 import { toast } from "react-toastify";
 import { EmployeeInterface } from "../../../../interfaces/employee";
 
@@ -16,6 +16,8 @@ const EmployeeProfile = () => {
     employeeRole: [{ _id: "", designation: "" }],
     bloodGroup: { _id: "", type: "" },
     employmentType: { _id: "", employmentType: "" },
+    dob: "",
+    employeeId: "",
     bankDetailsInfo: {
       accountNumber: "",
       accountHolderName: "",

@@ -1,18 +1,18 @@
 import { useEffect, useState } from "react";
 import Profile from "../../../common/profile/profile";
-import { getUserDetails } from "../../../../services/common-services";
+import { getUserDetails } from "../../../../services/user-services";
 import { toast } from "react-toastify";
 import { EmployeeInterface } from "../../../../interfaces/employee";
 
 const AdminProfile = () => {
   const [adminDetails, setAdminDetails] = useState<EmployeeInterface>({
     _id: "",
-    employeeId:"",
+    employeeId: "",
     firstName: "",
     lastName: "",
     email: "",
     mobileNumber: "",
-    dateOfBirth:"",
+    dob: "",
     userRole: "",
     passwordResetRequired: "false",
     employeeRole: [{ _id: "", designation: "" }],
