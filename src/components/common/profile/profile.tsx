@@ -34,6 +34,10 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
             <div>{details?.mobileNumber}</div>
             <div className="font-bold">Date Of Birth:</div>
             <div>{details?.dob}</div>
+            <div className="font-bold">Present Address:</div>
+            <div>{details?.presentAddress}</div>
+            <div className="font-bold">Permanent Address:</div>
+            <div>{details?.permanentAddress}</div>
           </div>
         </div>
       </div>

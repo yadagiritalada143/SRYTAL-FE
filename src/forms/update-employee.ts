@@ -2,9 +2,7 @@ import { z } from "zod";
 
 export const employeeSchema = z.object({
   employeeId: z
-    .string()
-    .min(1, "Employee Id is required")
-    .regex(/^\d+$/, { message: "Employee Id must contain only digits" }),
+    .string(),
   firstName: z.string().min(1, "First Name is required"),
   lastName: z.string().min(1, "Last Name is required"),
   email: z.string().email("Invalid email address"),
