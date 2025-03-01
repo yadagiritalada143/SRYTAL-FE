@@ -7,6 +7,7 @@ import {
   MultiSelect,
   Checkbox,
   Loader,
+  Textarea,
 } from "@mantine/core";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -216,13 +217,17 @@ const UpdateEmployee = () => {
               </Button>
             </div>
 
-            <h3 className="text-lg font-bold mb-4">Personal Information</h3>
-            <TextInput
-              className="mb-2"
-              label="Employee Id"
-              {...register("employeeId")}
-              error={errors.employeeId?.message}
-            />
+            <div className="flex items-center gap-1 mb-5">
+              <label className="text-sm font-medium w-32">Employee Id</label>
+              <TextInput
+                className="w-full"
+                {...register("employeeId")}
+                error={errors.employeeId?.message}
+              />
+            </div>
+            <h3 className="text-lg font-bold mb-2 text-decoration: underline">
+              Personal Information
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <TextInput
                 label="First Name"
@@ -268,40 +273,79 @@ const UpdateEmployee = () => {
                     label="Date of Birth"
                     placeholder="Select date of birth"
                     value={field.value ? new Date(field.value) : null}
-                    onChange={(date) =>
-                      field.onChange(
-                        date ? date.toISOString().split("T")[0] : null
-                      )
-                    }
+                    onChange={(date) => {
+                      if (date) {
+                        const adjustedDate = new Date(
+                          date.getTime() - date.getTimezoneOffset() * 60000
+                        )
+                          .toISOString()
+                          .split("T")[0];
+                        field.onChange(adjustedDate);
+                      } else {
+                        field.onChange(null);
+                      }
+                    }}
                     error={errors.dateOfBirth?.message}
                   />
                 )}
               />
             </div>
-
-            <div className="mt-8">
-              <Controller
-                name="employeeRole"
-                control={control}
-                render={({ field }) => (
-                  <MultiSelect
-                    data={employmentRolesOptions}
-                    label="Employee Role"
-                    placeholder="Select employee roles"
-                    value={
-                      field.value?.filter(
-                        (role) => role !== undefined
-                      ) as string[]
-                    }
-                    onChange={field.onChange}
-                    onBlur={field.onBlur}
-                    error={errors.employeeRole?.message}
-                  />
-                )}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <Textarea
+                label="Present Address"
+                {...register("presentAddress")}
+                error={errors.presentAddress?.message}
+                className="h-20"
+              />
+              <Textarea
+                label="Permanent Address"
+                {...register("permanentAddress")}
+                error={errors.permanentAddress?.message}
+                className="h-20"
               />
             </div>
 
-            <h3 className="text-lg font-bold mt-8 mb-4">Bank Details</h3>
+            <h3 className="text-lg font-bold mt-8 mb-4 text-decoration: underline">
+              Employment Details
+            </h3>
+            <Controller
+              name="employmentType"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  className="mb-2"
+                  label="Employment Type"
+                  placeholder="Enter employment type"
+                  data={employmentTypeOptions}
+                  {...field}
+                  error={errors.employmentType?.message}
+                />
+              )}
+            />
+            <Controller
+              name="employeeRole"
+              control={control}
+              render={({ field }) => (
+                <MultiSelect
+                  className="mb-2"
+                  data={employmentRolesOptions}
+                  label="Employee Role"
+                  placeholder="Select employee roles"
+                  value={
+                    field.value?.filter(
+                      (role) => role !== undefined
+                    ) as string[]
+                  }
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  error={errors.employeeRole?.message}
+                />
+              )}
+            />
+
+            <h3 className="text-lg font-bold mt-5 mb-4 text-decoration: underline">
+              Bank Details
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <TextInput
                 label="Account Number"
@@ -322,21 +366,6 @@ const UpdateEmployee = () => {
                 error={errors?.bankDetailsInfo?.ifscCode?.message}
               />
             </div>
-
-            <h3 className="text-lg font-bold mt-8 mb-4">Employment Details</h3>
-            <Controller
-              name="employmentType"
-              control={control}
-              render={({ field }) => (
-                <Select
-                  label="Employment Type"
-                  placeholder="Enter employment type"
-                  data={employmentTypeOptions}
-                  {...field}
-                  error={errors.employmentType?.message}
-                />
-              )}
-            />
 
             <div className=" flex flex-wrap justify-between mt-8">
               <Button

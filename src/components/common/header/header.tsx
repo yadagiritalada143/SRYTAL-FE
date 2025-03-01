@@ -6,19 +6,16 @@ import {
   IconPasswordUser,
 } from "@tabler/icons-react";
 import { useNavigate } from "react-router-dom";
-import {
-  commonUrls,
-  organizationAdminUrls,
-  organizationEmployeeUrls,
-} from "../../../utils/common/constants";
+import { commonUrls } from "../../../utils/common/constants";
 import { useRecoilState, useRecoilValue } from "recoil";
 import { userDetailsAtom } from "../../../atoms/user";
 import { useDisclosure } from "@mantine/hooks";
 
 import ChangePasswordPopup from "../updatePassword/updatePassword";
 import { useEffect, useState } from "react";
-import { getProfileImage } from "../../../services/common-services";
+import { getProfileImage, logoutUser } from "../../../services/user-services";
 import { profileImageAtom } from "../../../atoms/profile-image";
+import { useCustomToast } from "../../../utils/common/toast";
 const Header = ({
   color,
   organization,
@@ -31,16 +28,12 @@ const Header = ({
   const [opened, { open, close }] = useDisclosure(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [imageUrl, setImageUrl] = useRecoilState(profileImageAtom);
+  const { showSuccessToast } = useCustomToast();
 
   const handleLogout = () => {
-    const userRole = localStorage.getItem("userRole");
-
-    if (userRole === "admin") {
-      navigate(`${organizationAdminUrls(organization)}/login`);
-    } else {
-      navigate(`${organizationEmployeeUrls(organization)}/login`);
-    }
-    localStorage.clear();
+    console.log("logout");
+    logoutUser();
+    showSuccessToast("Successfully logged out");
   };
 
   useEffect(() => {
@@ -91,7 +84,9 @@ const Header = ({
                   leftSection={
                     <IconUser style={{ width: rem(14), height: rem(14) }} />
                   }
-                  onClick={() => navigate(`${commonUrls(organization)}/dashboard/profile`)}
+                  onClick={() =>
+                    navigate(`${commonUrls(organization)}/dashboard/profile`)
+                  }
                 >
                   Profile
                 </Menu.Item>
@@ -104,7 +99,7 @@ const Header = ({
                     />
                   }
                   onClick={open}
-                > 
+                >
                   Change Password
                 </Menu.Item>
 

@@ -156,7 +156,7 @@ const AdminRoutes = () => {
 };
 
 const AdminProtectedRoutes = () => {
-  const token = localStorage.getItem("adminToken");
+  const token = localStorage.getItem("token");
   const userRole = localStorage.getItem("userRole");
   const organizationConfig = useRecoilValue(organizationThemeAtom);
   const navigate = useNavigate();

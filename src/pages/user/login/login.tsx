@@ -30,8 +30,6 @@ const EmployeeLogin = () => {
   const Submit = async (formData: LoginForm) => {
     try {
       const data = await login(formData);
-      localStorage.setItem("employeeToken", data.token);
-      localStorage.setItem("userRole", data.userRole);
       setUser({
         firstName: data.firstName,
         lastName: data.lastName,

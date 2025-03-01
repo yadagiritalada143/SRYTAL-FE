@@ -8,11 +8,22 @@ const apiClient = axios.create({
   baseURL: BASE_URL,
   headers: { "Content-Type": "application/json" },
 });
+
 export const login = async (Credentials: LoginForm) => {
   try {
     const response = await apiClient.post("/admin/login", Credentials);
+
+    const { token, userRole, refreshToken } = response.data;
+
+    if (token && userRole) {
+      localStorage.setItem("token", token);
+      localStorage.setItem("userRole", userRole);
+      localStorage.setItem("refreshToken", refreshToken);
+    }
+
     return response.data;
   } catch (error) {
+    console.error("Login Error:", error);
     throw error;
   }
 };
@@ -20,22 +31,21 @@ export const login = async (Credentials: LoginForm) => {
 export const forgetPassword = async (username: string) => {
   try {
     const response = await apiClient.post("/forgotPassword", { username });
-
     return response.data;
   } catch (error) {
+    console.error("Forget Password Error:", error);
     throw error;
   }
 };
 
 export const getVisitorCount = async () => {
   try {
-    const response = await apiClient("/getVisitorCount");
-    if (typeof response.data.count === "number") {
-      return response.data.visitorCount;
-    } else {
-      return String(response.data.visitorCount);
-    }
+    const response = await apiClient.get("/getVisitorCount");
+    const count = response.data.visitorCount;
+
+    return typeof count === "number" ? count : String(count);
   } catch (error) {
+    console.error("Error fetching visitor count:", error);
     throw error;
   }
 };
@@ -45,90 +55,19 @@ export const sendContactUsMail = async (data: ContactForm) => {
     const response = await apiClient.post("/sendContactUsMail", data);
     return response.data;
   } catch (error) {
+    console.error("Contact Us Mail Error:", error);
     throw error;
   }
 };
 
 export const getOrganizationConfig = async (organizationName: string) => {
   try {
-    const response = await apiClient(
+    const response = await apiClient.get(
       `/getOrganizationThemes/${organizationName}`
     );
     return response.data.themesResponse;
   } catch (error) {
-    throw error;
-  }
-};
-
-export const getUserDetails = async () => {
-  try {
-    const userRole = localStorage.getItem("userRole");
-    let token;
-    if (userRole === "admin") {
-      token = localStorage.getItem("adminToken");
-    } else {
-      token = localStorage.getItem("employeeToken");
-    }
-
-    const response = await apiClient("/getEmployeeDetails", {
-      headers: { auth_token: token },
-    });
-
-    return response.data.employeeDetails;
-  } catch (error) {
-    throw error;
-  }
-};
-
-export const uploadProfileImage = async (image: File) => {
-  try {
-    const userRole = localStorage.getItem("userRole");
-    let token;
-    if (userRole === "admin") {
-      token = localStorage.getItem("adminToken");
-    } else {
-      token = localStorage.getItem("employeeToken");
-    }
-    if (!userRole || !token) {
-      throw "Not authorized to access";
-    }
-    const response = await apiClient.post(
-      "/uploadProfileImage",
-      { profileImage: image },
-      { headers: { auth_token: token, "Content-Type": "multipart/form-data" } }
-    );
-
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
-};
-
-export const getProfileImage = async () => {
-  try {
-    const userRole = localStorage.getItem("userRole");
-    let token;
-    if (userRole === "admin") {
-      token = localStorage.getItem("adminToken");
-    } else {
-      token = localStorage.getItem("employeeToken");
-    }
-
-    if (!userRole || !token) {
-      throw new Error("Not authorized to access");
-    }
-
-    const response = await apiClient.get("/getProfileImage", {
-      headers: { auth_token: token },
-      responseType: "blob",
-    });
-
-    if (response.data.size < 1) {
-      throw "NoImage";
-    }
-
-    return response.data;
-  } catch (error) {
+    console.error("Error fetching organization config:", error);
     throw error;
   }
 };

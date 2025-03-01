@@ -1,4 +1,3 @@
-import axios from "axios";
 import { AddCompanyForm } from "../forms/add-company";
 import { UpdatePasswordForm } from "../forms/update-password";
 import {
@@ -7,12 +6,105 @@ import {
   UpdateCandidateSchema,
 } from "../forms/add-candidate";
 
+import axios from "axios";
+
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
-const apiClient = axios.create({
+export const apiClient = axios.create({
   baseURL: BASE_URL,
   headers: { "Content-Type": "application/json" },
 });
+const refreshAccessToken = async () => {
+  try {
+    const refreshToken = localStorage.getItem("refreshToken");
+    if (!refreshToken) {
+      throw new Error("No refresh token found.");
+    }
+
+    const response = await apiClient.get("/admin/refreshToken", {
+      headers: { refresh_token: refreshToken },
+    });
+
+    const { token: newAccessToken } = response.data;
+
+    localStorage.setItem("token", newAccessToken);
+
+    return newAccessToken;
+  } catch (error) {
+    console.error("Refresh Token Expired. Redirecting to Login...");
+    logoutUser();
+    throw error;
+  }
+};
+
+export const logoutUser = async () => {
+  const pathnameParts = window.location.pathname.split("/");
+  const subdomain = pathnameParts[1];
+  const userRole = pathnameParts[2];
+
+  let loginPath = `/`;
+
+  loginPath = `/${subdomain}/${userRole}/login`;
+
+  try {
+    await apiClient("/admin/logout");
+  } catch (error) {
+    console.log(error);
+  } finally {
+    localStorage.clear();
+
+    window.location.href = loginPath;
+  }
+};
+
+apiClient.interceptors.request.use(
+  async (config) => {
+    let token = localStorage.getItem("token");
+
+    if (!token) {
+      try {
+        token = await refreshAccessToken();
+      } catch (error) {
+        console.error("Failed to refresh token. Redirecting to login...");
+        logoutUser();
+        return Promise.reject(error);
+      }
+    }
+
+    config.headers["auth_token"] = token;
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+apiClient.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (originalRequest.url.includes("/admin/refreshToken")) {
+      console.error("Refresh Token Expired. Redirecting to login...");
+      logoutUser();
+      return Promise.reject(error);
+    }
+
+    if (error.response?.status === 403 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      try {
+        const newAccessToken = await refreshAccessToken();
+        originalRequest.headers["auth_token"] = newAccessToken;
+        return apiClient(originalRequest);
+      } catch (refreshError) {
+        console.error("Session expired. Please log in again.");
+        logoutUser();
+        return Promise.reject(refreshError);
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
 
 export const getCompanyDetails = async () => {
   try {
@@ -61,24 +153,8 @@ export const getCompanyDetailsByIdByRecruiter = async (id: string) => {
 };
 
 export const updatePasswordForEmployee = async (form: UpdatePasswordForm) => {
-  const userRole = localStorage.getItem("userRole");
-
-  let token;
-
-  if (userRole === "admin") {
-    token = localStorage.getItem("adminToken");
-  } else {
-    token = localStorage.getItem("employeeToken");
-  }
   try {
-    if (!token) {
-      throw "Not authorized, Please login and try again";
-    }
-    await apiClient.post(
-      "/updatePassword",
-      { ...form },
-      { headers: { auth_token: token } }
-    );
+    await apiClient.post("/updatePassword", { ...form });
     return { success: true };
   } catch (error) {
     throw error;
@@ -86,29 +162,11 @@ export const updatePasswordForEmployee = async (form: UpdatePasswordForm) => {
 };
 
 export const addCommentByRecruiter = async (id: string, comment: string) => {
-  const userRole = localStorage.getItem("userRole");
-
-  let token;
-
-  if (userRole === "admin") {
-    token = localStorage.getItem("adminToken");
-  } else {
-    token = localStorage.getItem("employeeToken");
-  }
-
   try {
-    if (!token) {
-      throw "Not authorized, Please login and try again";
-    }
-
-    const response = await apiClient.post(
-      "/recruiter/addCommentByRecruiter",
-      {
-        id,
-        comment,
-      },
-      { headers: { auth_token: token } }
-    );
+    const response = await apiClient.post("/recruiter/addCommentByRecruiter", {
+      id,
+      comment,
+    });
     return response.data;
   } catch (error) {
     console.log(error);
@@ -119,23 +177,10 @@ export const addCommentByRecruiter = async (id: string, comment: string) => {
 export const addPoolCandidateCommentByRecruiter = async (
   data: AddCommentForm
 ) => {
-  const userRole = localStorage.getItem("userRole");
-  let token;
-  if (userRole === "admin") {
-    token = localStorage.getItem("adminToken");
-  } else {
-    token = localStorage.getItem("employeeToken");
-  }
-
   try {
-    if (!token) {
-      throw "Not authorized, Please login and try again";
-    }
-
     const response = await apiClient.post(
       "/recruiter/addCommentToTalentPoolCandidate",
-      data,
-      { headers: { auth_token: token } }
+      data
     );
 
     return response.data.responseAfterCommentAdded;
@@ -145,21 +190,10 @@ export const addPoolCandidateCommentByRecruiter = async (
   }
 };
 export const getAllPoolCandidatesByEmployee = async () => {
-  const userRole = localStorage.getItem("userRole");
-  let token;
-  if (userRole === "admin") {
-    token = localStorage.getItem("adminToken");
-  } else {
-    token = localStorage.getItem("employeeToken");
-  }
-
   try {
     const response = await apiClient.get(
-      "/recruiter/getAllTalentPoolCandidates",
-
-      { headers: { auth_token: token } }
+      "/recruiter/getAllTalentPoolCandidates"
     );
-
     return response.data.talentPoolCandidatesList;
   } catch (error) {
     throw error;
@@ -167,19 +201,10 @@ export const getAllPoolCandidatesByEmployee = async () => {
 };
 
 export const addPoolCandidateByRecruiter = async (data: AddCandidateForm) => {
-  const userRole = localStorage.getItem("userRole");
-  let token;
-  if (userRole === "admin") {
-    token = localStorage.getItem("adminToken");
-  } else {
-    token = localStorage.getItem("employeeToken");
-  }
-
   try {
     const response = await apiClient.post(
       "/recruiter/addTalentPoolCandidateToTracker",
-      data,
-      { headers: { auth_token: token } }
+      data
     );
     return response.data;
   } catch (error) {
@@ -191,19 +216,10 @@ export const addPoolCandidateByRecruiter = async (data: AddCandidateForm) => {
 export const updatePoolCandidateByRecruiter = async (
   data: UpdateCandidateSchema
 ) => {
-  const userRole = localStorage.getItem("userRole");
-  let token;
-  if (userRole === "admin") {
-    token = localStorage.getItem("adminToken");
-  } else {
-    token = localStorage.getItem("employeeToken");
-  }
-
   try {
     const response = await apiClient.post(
       "/recruiter/updatePoolCandidateByRecruiter",
-      data,
-      { headers: { auth_token: token } }
+      data
     );
     return response.data;
   } catch (error) {
@@ -212,24 +228,65 @@ export const updatePoolCandidateByRecruiter = async (
   }
 };
 export const getPoolCandidateByRecruiter = async (id: string) => {
-  const userRole = localStorage.getItem("userRole");
-  let token;
-  if (userRole === "admin") {
-    token = localStorage.getItem("adminToken");
-  } else {
-    token = localStorage.getItem("employeeToken");
-  }
-
   try {
     const response = await apiClient.get(
-      `/recruiter/getTalentPoolCandidateById/${id}`,
-      {
-        headers: { auth_token: token },
-      }
+      `/recruiter/getTalentPoolCandidateById/${id}`
     );
 
     return response.data.talentPoolCandidateDetails;
   } catch (error) {
     throw error;
+  }
+};
+
+export const getUserDetails = async () => {
+  try {
+    const response = await apiClient.get("/getEmployeeDetails");
+    return response.data.employeeDetails;
+  } catch (error: any) {
+    console.error(
+      "Error fetching user details:",
+      error?.response?.data || error.message
+    );
+    throw new Error("Failed to fetch user details");
+  }
+};
+
+export const uploadProfileImage = async (image: File) => {
+  try {
+    const formData = new FormData();
+    formData.append("profileImage", image);
+
+    const response = await apiClient.post("/uploadProfileImage", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    return response.data;
+  } catch (error: any) {
+    console.error(
+      "Profile Image Upload Error:",
+      error?.response?.data || error.message
+    );
+    throw new Error("Failed to upload profile image");
+  }
+};
+
+export const getProfileImage = async (): Promise<Blob> => {
+  try {
+    const response = await apiClient.get("/getProfileImage", {
+      responseType: "blob",
+    });
+
+    if (response.data.size === 0) {
+      throw new Error("No image found");
+    }
+
+    return response.data;
+  } catch (error: any) {
+    console.error(
+      "Error fetching profile image:",
+      error?.response?.data || error.message
+    );
+    throw new Error("Failed to fetch profile image");
   }
 };

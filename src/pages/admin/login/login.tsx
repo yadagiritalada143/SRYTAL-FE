@@ -1,4 +1,4 @@
-import { Button, Loader, PasswordInput, TextInput,Modal } from "@mantine/core";
+import { Button, Loader, PasswordInput, TextInput, Modal } from "@mantine/core";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, LoginForm } from "../../../forms/login";
@@ -30,8 +30,6 @@ const AdminLogin = () => {
   const Submit = async (formData: LoginForm) => {
     try {
       const data = await login(formData);
-      localStorage.setItem("adminToken", data.token);
-      localStorage.setItem("userRole", data.userRole);
       if (data.userRole === "admin") {
         showSuccessToast("Login successfully !");
         navigate(
@@ -90,7 +88,7 @@ const AdminLogin = () => {
         </div>
         <div className="flex flex-wrap justify-between items-center gap-4 mt-8">
           <div className="w-full md:w-auto flex justify-center md:justify-start order-2 md:order-1">
-          <button
+            <button
               type="button"
               onClick={() => setForgotPasswordOpen(true)}
               className="text-sm underline"
