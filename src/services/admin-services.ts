@@ -166,6 +166,44 @@ export const deleteEmployeeByAdmin = async (data: {
   }
 };
 
+export const deletePoolCandidatesByAdmin = async (data: {
+  candidateId: string;
+  confirmDelete: boolean;
+}) => {
+  const token = localStorage.getItem("token");
+  try {
+    const response = await apiClient.post(
+      "/admin/deletePoolCandidatesByAdmin",
+      data,
+      {
+        headers: { auth_token: token },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const deleteCompanyByAdmin = async (data: {
+  companyId: string;
+  confirmDelete: boolean;
+}) => {
+  const token = localStorage.getItem("token");
+  try {
+    const response = await apiClient.post(
+      "/admin/deleteCompanyByAdmin",
+      data,
+      {
+        headers: { auth_token: token },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getEmployeeDetailsByAdmin = async (id: string) => {
   const adminToken = localStorage.getItem("adminToken");
   try {
