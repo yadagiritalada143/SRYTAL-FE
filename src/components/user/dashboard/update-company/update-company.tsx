@@ -1,10 +1,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useDisclosure } from "@mantine/hooks";
 import {
   AddCompanyForm,
   addCompanySchema,
 } from "../../../../forms/add-company";
 import { useForm, Controller } from "react-hook-form";
-import { Button, Select, TextInput } from "@mantine/core";
+import { Button, Checkbox, Modal, Select, TextInput } from "@mantine/core";
 import {
   getCompanyDetailsByIdByRecruiter,
   updateCompanyByRecruiter,
@@ -14,7 +15,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { useNavigate } from "react-router-dom";
-import { commonUrls } from "../../../../utils/common/constants";
+import { commonUrls, organizationAdminUrls } from "../../../../utils/common/constants";
 import { useRecoilValue } from "recoil";
 import { organizationThemeAtom } from "../../../../atoms/organization-atom";
 import { userDetailsAtom } from "../../../../atoms/user";
@@ -22,6 +23,7 @@ import { BgDiv } from "../../../common/style-components/bg-div";
 import { useCustomToast } from "../../../../utils/common/toast";
 import PoolCompaniesCommentsTable from "./comments";
 import AddCommentPoolCompany from "./add-comment";
+import { deleteCompanyByAdmin } from "../../../../services/admin-services";
 
 const UpdateCompany = () => {
   const params = useParams();
@@ -29,6 +31,9 @@ const UpdateCompany = () => {
   const navigate = useNavigate();
   const organizationConfig = useRecoilValue(organizationThemeAtom);
   const user = useRecoilValue(userDetailsAtom);
+  const [opened, { open, close }] = useDisclosure(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [agreeTerms, setAgreeTerms] = useState(false);
 
   const [comments, setComments] = useState<
     {
@@ -75,7 +80,27 @@ const UpdateCompany = () => {
       toast.error(error.response.data.message || "Something went wrong");
     }
   };
-
+  
+  const handleDeleteCompany = () => {
+    const payload = {
+      companyId: companyId,
+      confirmDelete: agreeTerms,
+    };
+  
+    deleteCompanyByAdmin(payload) 
+      .then(() => {
+        showSuccessToast("Company deleted successfully!");
+        navigate(
+          `${organizationAdminUrls(
+            organizationConfig.organization_name
+          )}/dashboard`
+        );
+      })
+      .catch((error: { response?: { data?: { message?: string } } }) => {
+        toast.error(error.response?.data?.message || "Something went wrong");
+      });
+  };
+  
   return (
     <div>
       <BgDiv>
@@ -196,7 +221,16 @@ const UpdateCompany = () => {
             </fieldset>
           </div>
           <div className="text-right">
-            <div className="m-4 mb-8">
+            <div className="m-4 mb-8 flex justify-between">
+              <button
+                className="bg-red-500 text-white py-2 px-4 rounded"
+                onClick={(e) => {
+                  e.preventDefault();
+                  open();
+                }}
+              >
+                Delete Company
+              </button>
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? "Loading..." : "Update Company"}
               </Button>
@@ -204,6 +238,40 @@ const UpdateCompany = () => {
           </div>
         </form>
       </BgDiv>
+      <Modal size="md" opened={opened} onClose={close}>
+              <div>
+                <h2 className="font-bold text-lg">
+                  Sure want to delete this Company?{" "}
+                </h2>
+                <p className="mt-4 font-bold">
+                  Please be aware of doing this action! Deleting company is an
+                  un-reversible action and you should be aware while doing this.
+                </p>
+                <div className="mt-4">
+                  <Checkbox
+                    label="I understand what are the consequences of doing this action!"
+                    checked={confirmDelete}
+                    onChange={(e) => setConfirmDelete(e.currentTarget.checked)}
+                    required
+                  />
+                  <Checkbox
+                    label="I understand that this employee details are not a part of our application forever. I agreed to the Terms and Conditions to perform this action"
+                    checked={agreeTerms}
+                    onChange={(e) => setAgreeTerms(e.currentTarget.checked)}
+                  />
+                </div>
+                <div className=" flex flex-wrap justify-between mt-8">
+                  <button
+                    className="bg-red-500 text-white py-2 px-4 rounded"
+                    onClick={handleDeleteCompany}
+                    disabled={!confirmDelete}
+                  >
+                    Delete
+                  </button>
+                  <Button onClick={close}>Cancel</Button>
+                </div>
+              </div>
+            </Modal>
 
       <AddCommentPoolCompany
         organizationConfig={organizationConfig}

@@ -138,6 +138,7 @@ const UpdateEmployee = () => {
           employeeRole: emp.employeeRole.map(
             (role: { id: string }) => role?.id
           ),
+          dateOfBirth: emp.dateOfBirth ? new Date(emp.dateOfBirth).toISOString().split("T")[0] : "",
         });
       })
       .catch((error) => {
