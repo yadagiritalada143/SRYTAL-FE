@@ -6,14 +6,12 @@ import { useNavigate } from "react-router-dom";
 import { IconBuildings, IconUserEdit } from "@tabler/icons-react";
 import { CompaniesInterface } from "../../../../interfaces/companies";
 import moment from "moment";
-import { useMantineTheme } from "@mantine/core";
 import { commonUrls } from "../../../../utils/common/constants";
 import { useRecoilValue } from "recoil";
 import { organizationThemeAtom } from "../../../../atoms/organization-atom";
 import { SearchBarFullWidht } from "../../../common/search-bar/search-bar";
 
 const Companies = () => {
-  const theme = useMantineTheme();
   const [companies, setCompanies] = useState<CompaniesInterface[]>([]);
   const navigate = useNavigate();
   const [search, setSearch] = useState<string>("");
@@ -47,9 +45,9 @@ const Companies = () => {
     <div
       style={{
         color: organizationConfig.organization_theme.theme.button.textColor,
-        fontFamily: theme.fontFamily,
+        fontFamily: organizationConfig.organization_theme.theme.fontFamily,
       }}
-      className=" h-screen  "
+      className="p-6"
     >
       <h1 className="text-3xl font-extrabold underline text-center">
         Manage Pool Companies
