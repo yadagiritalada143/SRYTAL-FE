@@ -136,7 +136,7 @@ const Companies = () => {
             {filteredCompanies.map((company: CompaniesInterface) => {
               return (
                 <tr key={company.id}>
-                  <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
+                  <td className="px-4 py-2 border sticky left-0 z-10 text-ellipsis">
                     {company.companyName}
                   </td>
                   <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
