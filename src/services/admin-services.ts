@@ -166,15 +166,11 @@ export const deleteEmployeeByAdmin = async (data: {
   }
 };
 
-export const deletePoolCandidatesByAdmin = async (data: {
-  candidateId: string;
-  confirmDelete: boolean;
-}) => {
+export const deletePoolCandidatesByAdmin = async (candidateId: string) => {
   const token = localStorage.getItem("token");
   try {
-    const response = await apiClient.post(
-      "/admin/deletePoolCandidatesByAdmin",
-      data,
+    const response = await apiClient.delete(
+      `/admin/deletePoolCandidatesByAdmin/${candidateId}`,
       {
         headers: { auth_token: token },
       }
@@ -185,18 +181,10 @@ export const deletePoolCandidatesByAdmin = async (data: {
   }
 };
 
-export const deleteCompanyByAdmin = async (data: {
-  companyId: string;
-  confirmDelete: boolean;
-}) => {
-  const token = localStorage.getItem("token");
+export const deleteCompanyByAdmin = async (companyId: string) => {
   try {
-    const response = await apiClient.post(
-      "/admin/deleteCompanyByAdmin",
-      data,
-      {
-        headers: { auth_token: token },
-      }
+    const response = await apiClient.delete(
+      `/admin/deletePoolCompanyByAdmin/${companyId}`
     );
     return response.data;
   } catch (error) {

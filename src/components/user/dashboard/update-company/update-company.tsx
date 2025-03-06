@@ -5,7 +5,7 @@ import {
   addCompanySchema,
 } from "../../../../forms/add-company";
 import { useForm, Controller } from "react-hook-form";
-import { Button, Checkbox, Modal, Select, TextInput } from "@mantine/core";
+import { Button, Modal, Select, TextInput } from "@mantine/core";
 import {
   getCompanyDetailsByIdByRecruiter,
   updateCompanyByRecruiter,
@@ -15,7 +15,10 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { useNavigate } from "react-router-dom";
-import { commonUrls, organizationAdminUrls } from "../../../../utils/common/constants";
+import {
+  commonUrls,
+  organizationAdminUrls,
+} from "../../../../utils/common/constants";
 import { useRecoilValue } from "recoil";
 import { organizationThemeAtom } from "../../../../atoms/organization-atom";
 import { userDetailsAtom } from "../../../../atoms/user";
@@ -32,8 +35,6 @@ const UpdateCompany = () => {
   const organizationConfig = useRecoilValue(organizationThemeAtom);
   const user = useRecoilValue(userDetailsAtom);
   const [opened, { open, close }] = useDisclosure(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
-  const [agreeTerms, setAgreeTerms] = useState(false);
 
   const [comments, setComments] = useState<
     {
@@ -80,27 +81,22 @@ const UpdateCompany = () => {
       toast.error(error.response.data.message || "Something went wrong");
     }
   };
-  
+
   const handleDeleteCompany = () => {
-    const payload = {
-      companyId: companyId,
-      confirmDelete: agreeTerms,
-    };
-  
-    deleteCompanyByAdmin(payload) 
+    deleteCompanyByAdmin(companyId)
       .then(() => {
         showSuccessToast("Company deleted successfully!");
         navigate(
           `${organizationAdminUrls(
             organizationConfig.organization_name
-          )}/dashboard`
+          )}/dashboard/pool-companies`
         );
       })
       .catch((error: { response?: { data?: { message?: string } } }) => {
         toast.error(error.response?.data?.message || "Something went wrong");
       });
   };
-  
+
   return (
     <div>
       <BgDiv>
@@ -238,40 +234,27 @@ const UpdateCompany = () => {
           </div>
         </form>
       </BgDiv>
-      <Modal size="md" opened={opened} onClose={close}>
-              <div>
-                <h2 className="font-bold text-lg">
-                  Sure want to delete this Company?{" "}
-                </h2>
-                <p className="mt-4 font-bold">
-                  Please be aware of doing this action! Deleting company is an
-                  un-reversible action and you should be aware while doing this.
-                </p>
-                <div className="mt-4">
-                  <Checkbox
-                    label="I understand what are the consequences of doing this action!"
-                    checked={confirmDelete}
-                    onChange={(e) => setConfirmDelete(e.currentTarget.checked)}
-                    required
-                  />
-                  <Checkbox
-                    label="I understand that this employee details are not a part of our application forever. I agreed to the Terms and Conditions to perform this action"
-                    checked={agreeTerms}
-                    onChange={(e) => setAgreeTerms(e.currentTarget.checked)}
-                  />
-                </div>
-                <div className=" flex flex-wrap justify-between mt-8">
-                  <button
-                    className="bg-red-500 text-white py-2 px-4 rounded"
-                    onClick={handleDeleteCompany}
-                    disabled={!confirmDelete}
-                  >
-                    Delete
-                  </button>
-                  <Button onClick={close}>Cancel</Button>
-                </div>
-              </div>
-            </Modal>
+      <Modal padding={0} size="md" opened={opened} onClose={close} centered>
+        <div className="p-6 text-center">
+          <h1 className="text-lg font-semibold mb-4">
+            Are you sure you want to delete?
+          </h1>
+          <div className="flex justify-center gap-4">
+            <Button bg="red" onClick={handleDeleteCompany}>
+              Delete
+            </Button>
+            <Button
+              bg={organizationConfig.organization_theme.theme.backgroundColor}
+              c={organizationConfig.organization_theme.theme.color}
+              variant="outline"
+              onClick={close}
+              className="px-5 py-2"
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      </Modal>
 
       <AddCommentPoolCompany
         organizationConfig={organizationConfig}
