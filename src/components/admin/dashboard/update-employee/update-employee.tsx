@@ -181,15 +181,13 @@ const UpdateEmployee = () => {
 
   return (
     <div className="flex justify-center items-center py-12">
-      <BgDiv>
         {isLoading ? (
-          <div className="flex justify-center items-center h-48">
             <Loader
               size="xl"
-              color={organizationConfig.organization_theme.theme.button.color}
+               color={organizationConfig.organization_theme.theme.button.color}
             />
-          </div>
         ) : (
+          <BgDiv>
           <form
             onSubmit={handleSubmit(onSubmit)}
             style={{
@@ -387,8 +385,8 @@ const UpdateEmployee = () => {
               <Button type="submit">Update Employee</Button>
             </div>
           </form>
+          </BgDiv>
         )}
-      </BgDiv>
       <Modal size="md" opened={opened} onClose={close}>
         <div>
           <h2 className="font-bold text-lg">
