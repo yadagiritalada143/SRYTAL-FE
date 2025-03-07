@@ -64,10 +64,6 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                 <div>{details.mobileNumber}</div>
               </>
             )}
-            {/* <div className="font-bold">Present Address:</div>
-            <div>{details?.presentAddress}</div>
-            <div className="font-bold">Permanent Address:</div>
-            <div>{details?.permanentAddress}</div> */}
           </div>
         </div>
       </div>
@@ -97,6 +93,7 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
           <Tabs.Panel style={{ padding: "5px 0" }} value="address">
             {" "}
             {/* Reduced padding */}
+            <div className="flex justify-start">
             <div className="grid grid-cols-2 gap-2">
               {" "}
               {/* Reduced gap */}
@@ -105,11 +102,13 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
               <div className="font-bold">Permanent Address:</div>
               <div>{details?.permanentAddress}</div>
             </div>
+            </div>
           </Tabs.Panel>
 
           <Tabs.Panel style={{ padding: "5px 0" }} value="employment">
             {" "}
             {/* Reduced padding */}
+            <div className="flex justify-center">
             <div className="grid grid-cols-2 gap-2">
               {" "}
               {/* Reduced gap */}
@@ -128,11 +127,13 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                   : "N/A"}
               </div>
             </div>
+            </div>
           </Tabs.Panel>
 
           <Tabs.Panel style={{ padding: "5px 0" }} value="bankDetails">
             {" "}
             {/* Reduced padding */}
+            <div className="flex justify-end">
             <div className="grid grid-cols-2 gap-2">
               {" "}
               {/* Reduced gap */}
@@ -142,6 +143,7 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
               <div>{details.bankDetailsInfo?.accountHolderName || "N/A"}</div>
               <div className="font-bold">IFSC Code:</div>
               <div>{details.bankDetailsInfo?.ifscCode || "N/A"}</div>
+            </div>
             </div>
           </Tabs.Panel>
         </Tabs>

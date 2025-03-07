@@ -10,6 +10,7 @@ import {
   Input,
   Modal,
   Checkbox,
+  useMantineTheme,
 } from "@mantine/core";
 import { useCustomToast } from "../../../../utils/common/toast";
 import { useEffect, useState } from "react";
@@ -51,6 +52,8 @@ const UpdatePoolCandidateForm = () => {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
   const { showSuccessToast } = useCustomToast();
+  const theme = useMantineTheme();
+
 
   const {
     control,
@@ -84,21 +87,21 @@ const UpdatePoolCandidateForm = () => {
     const payload = {
       candidateId: candidateId,
       confirmDelete: agreeTerms,
-    };
-  
-    deletePoolCandidatesByAdmin(payload)
+    };  
+        deletePoolCandidatesByAdmin(payload)
       .then(() => {
         showSuccessToast("Candidate deleted successfully!");
         navigate(
           `${organizationAdminUrls(
             organizationConfig.organization_name
-          )}/dashboard/candidates`
+          )}/dashboard/pool-candidates`
         );
       })
       .catch((error: { response?: { data?: { message?: string } } }) => {
         toast.error(error.response?.data?.message || "Something went wrong");
       });
   };
+  
 
   const handleSkillAdd = () => {
     if (skillInput.trim() && !skills.includes(skillInput.trim())) {
@@ -152,9 +155,25 @@ const UpdatePoolCandidateForm = () => {
           className="rounded-lg shadow-lg w-full max-w-3xl  mx-auto p-8"
         >
           <Container>
+          <div className="px-4 flex justify-between">
+          <div></div>
             <Title className="text-center" order={3}>
               Candidate Details
             </Title>
+            <Button
+                bg={theme.colors.primary[5]}
+                onClick={() =>
+                  navigate(
+                    `${organizationAdminUrls(
+                      organizationConfig.organization_name
+                    )}/dashboard/pool-candidates`
+                  )
+                }
+              >
+                {" "}
+                Cancel
+              </Button>
+            </div>
             <Grid gutter="md">
               <Grid.Col span={12}>
                 <Controller

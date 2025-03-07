@@ -5,7 +5,7 @@ import {
   addCompanySchema,
 } from "../../../../forms/add-company";
 import { useForm, Controller } from "react-hook-form";
-import { Button, Checkbox, Modal, Select, TextInput } from "@mantine/core";
+import { Button, Checkbox, Modal, Select, TextInput, useMantineTheme } from "@mantine/core";
 import {
   getCompanyDetailsByIdByRecruiter,
   updateCompanyByRecruiter,
@@ -23,13 +23,14 @@ import { BgDiv } from "../../../common/style-components/bg-div";
 import { useCustomToast } from "../../../../utils/common/toast";
 import PoolCompaniesCommentsTable from "./comments";
 import AddCommentPoolCompany from "./add-comment";
-import { deleteCompanyByAdmin } from "../../../../services/admin-services";
+import { deletePoolCompanyByAdmin } from "../../../../services/admin-services";
 
 const UpdateCompany = () => {
   const params = useParams();
   const companyId = params.companyId as string;
   const navigate = useNavigate();
   const organizationConfig = useRecoilValue(organizationThemeAtom);
+  const theme = useMantineTheme();
   const user = useRecoilValue(userDetailsAtom);
   const [opened, { open, close }] = useDisclosure(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -87,13 +88,13 @@ const UpdateCompany = () => {
       confirmDelete: agreeTerms,
     };
   
-    deleteCompanyByAdmin(payload) 
+    deletePoolCompanyByAdmin(payload) 
       .then(() => {
         showSuccessToast("Company deleted successfully!");
         navigate(
           `${organizationAdminUrls(
             organizationConfig.organization_name
-          )}/dashboard`
+          )}/dashboard/pool-companies`
         );
       })
       .catch((error: { response?: { data?: { message?: string } } }) => {
@@ -112,9 +113,25 @@ const UpdateCompany = () => {
           onSubmit={handleSubmit(onSubmit)}
           className="space-y-4 rounded-lg shadow-lg w-full max-w-3xl  mx-auto p-8"
         >
+          <div className="px-4 flex justify-between">
+          <div></div>
           <h1 className="text-center text-2xl font-bold mb-4">
             Update Company
           </h1>
+          <Button
+                bg={theme.colors.primary[5]}
+                onClick={() =>
+                  navigate(
+                    `${organizationAdminUrls(
+                      organizationConfig.organization_name
+                    )}/dashboard/pool-companies`
+                  )
+                }
+              >
+                {" "}
+                Cancel
+              </Button>
+              </div>
           <div className="px-4 flex flex-wrap space-x-10 ">
             <TextInput
               {...register("companyName")}
