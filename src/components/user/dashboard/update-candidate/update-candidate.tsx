@@ -36,7 +36,10 @@ import { organizationThemeAtom } from "../../../../atoms/organization-atom";
 import { useRecoilValue } from "recoil";
 import { PoolCandidatesComments } from "../../../../interfaces/candidate";
 import { BgDiv } from "../../../common/style-components/bg-div";
-import { commonUrls, organizationAdminUrls } from "../../../../utils/common/constants";
+import {
+  commonUrls,
+  organizationAdminUrls,
+} from "../../../../utils/common/constants";
 import AddComment from "./add-comment";
 import CommentsTable from "./comments-table";
 import { useDisclosure } from "@mantine/hooks";
@@ -49,8 +52,6 @@ const UpdatePoolCandidateForm = () => {
   const [comments, setComments] = useState<PoolCandidatesComments[]>([]);
   const organizationConfig = useRecoilValue(organizationThemeAtom);
   const [opened, { open, close }] = useDisclosure(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
-  const [agreeTerms, setAgreeTerms] = useState(false);
   const { showSuccessToast } = useCustomToast();
   const theme = useMantineTheme();
 
@@ -83,12 +84,9 @@ const UpdatePoolCandidateForm = () => {
     }
   }, [candidateId, reset]);
 
-  const handleDeleteCandidate = (candidateId: string, agreeTerms: boolean) => {
-    const payload = {
-      candidateId: candidateId,
-      confirmDelete: agreeTerms,
-    };  
-        deletePoolCandidatesByAdmin(payload)
+  const handleDeleteCandidate = () => {
+    const candidate = candidateId as string;
+    deletePoolCandidatesByAdmin(candidate)
       .then(() => {
         showSuccessToast("Candidate deleted successfully!");
         navigate(
@@ -101,7 +99,7 @@ const UpdatePoolCandidateForm = () => {
         toast.error(error.response?.data?.message || "Something went wrong");
       });
   };
-  
+
 
   const handleSkillAdd = () => {
     if (skillInput.trim() && !skills.includes(skillInput.trim())) {
@@ -155,12 +153,12 @@ const UpdatePoolCandidateForm = () => {
           className="rounded-lg shadow-lg w-full max-w-3xl  mx-auto p-8"
         >
           <Container>
-          <div className="px-4 flex justify-between">
-          <div></div>
-            <Title className="text-center" order={3}>
-              Candidate Details
-            </Title>
-            <Button
+            <div className="px-4 flex justify-between">
+              <div></div>
+              <Title className="text-center" order={3}>
+                Candidate Details
+              </Title>
+              <Button
                 bg={theme.colors.primary[5]}
                 onClick={() =>
                   navigate(
@@ -270,55 +268,43 @@ const UpdatePoolCandidateForm = () => {
           </Container>
 
           <Group mt="lg" className="m-4 mb-8 flex justify-between">
-              <button
-                className="bg-red-500 text-white py-2 px-4 rounded"
-                onClick={(e) => {
-                  e.preventDefault();
-                  open();
-                }}
-              >
-                Delete Candidate
-              </button>
+            <button
+              className="bg-red-500 text-white py-2 px-4 rounded"
+              onClick={(e) => {
+                e.preventDefault();
+                open();
+              }}
+            >
+              Delete Candidate
+            </button>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? "Updating" : "Update Candidate"}
             </Button>
           </Group>
         </form>
       </BgDiv>
-      <Modal size="md" opened={opened} onClose={close}>
-                    <div>
-                      <h2 className="font-bold text-lg">
-                        Sure want to delete this Candidate?{" "}
-                      </h2>
-                      <p className="mt-4 font-bold">
-                        Please be aware of doing this action! Deleting candidate is an
-                        un-reversible action and you should be aware while doing this.
-                      </p>
-                      <div className="mt-4">
-                        <Checkbox
-                          label="I understand what are the consequences of doing this action!"
-                          checked={confirmDelete}
-                          onChange={(e) => setConfirmDelete(e.currentTarget.checked)}
-                          required
-                        />
-                        <Checkbox
-                          label="I understand that this employee details are not a part of our application forever. I agreed to the Terms and Conditions to perform this action"
-                          checked={agreeTerms}
-                          onChange={(e) => setAgreeTerms(e.currentTarget.checked)}
-                        />
-                      </div>
-                      <div className=" flex flex-wrap justify-between mt-8">
-                        <button
-                          className="bg-red-500 text-white py-2 px-4 rounded"
-                          onClick={() => handleDeleteCandidate(candidateId!, agreeTerms)}
-                          disabled={!confirmDelete}
-                        >
-                          Delete
-                        </button>
-                        <Button onClick={close}>Cancel</Button>
-                      </div>
-                    </div>
-                  </Modal>
+      <Modal padding={0} size="md" opened={opened} onClose={close} centered>
+        <div className="p-6 text-center">
+          <h1 className="text-lg font-semibold mb-4">
+            Are you sure you want to delete?
+          </h1>
+          <div className="flex justify-center gap-4">
+            <Button bg="red" onClick={handleDeleteCandidate}>
+              Delete
+            </Button>
+            <Button
+              bg={organizationConfig.organization_theme.theme.backgroundColor}
+              c={organizationConfig.organization_theme.theme.color}
+              variant="outline"
+              onClick={close}
+              className="px-5 py-2"
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
       <AddComment
         organizationConfig={organizationConfig}
         candidateId={candidateId}

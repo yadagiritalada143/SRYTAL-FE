@@ -166,17 +166,14 @@ export const deleteEmployeeByAdmin = async (data: {
   }
 };
 
-export const deletePoolCandidatesByAdmin = async (data: {
-  candidateId: string;
-  confirmDelete: boolean;
-}) => {
+export const deletePoolCandidatesByAdmin = async (candidateId: string) => {
   const token = localStorage.getItem("token");
   try {
     const response = await apiClient.delete(
       `/admin/deletePoolCandidatesByAdmin/${data.candidateId}`,
       {
         headers: { auth_token: token },
-        data:{confirmDelete:data.confirmDelete},
+        data: { confirmDelete: data.confirmDelete },
       }
     );
     return response.data;
@@ -195,7 +192,7 @@ export const deletePoolCompanyByAdmin = async (data: {
       `/admin/deletePoolCompanyByAdmin/${data.companyId}`,
       {
         headers: { auth_token: token },
-        data:{confimDelete:data.confirmDelete},
+        data: { confimDelete: data.confirmDelete },
       }
     );
     return response.data;
