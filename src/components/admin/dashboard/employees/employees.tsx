@@ -9,6 +9,7 @@ import { organizationAdminUrls } from "../../../../utils/common/constants";
 import { SearchBarFullWidht } from "../../../common/search-bar/search-bar";
 import { useRecoilValue } from "recoil";
 import { organizationThemeAtom } from "../../../../atoms/organization-atom";
+import useHorizontalScroll from "../../../../hooks/horizontal-scroll";
 
 const Employees = () => {
   const theme = useMantineTheme();
@@ -21,6 +22,8 @@ const Employees = () => {
   const navigate = useNavigate();
   const organizationConfig = useRecoilValue(organizationThemeAtom);
 
+  const { scrollRef, handleMouseDown, handleMouseMove, handleMouseUp } =
+    useHorizontalScroll();
   useEffect(() => {
     getAllEmployeeDetailsByAdmin()
       .then((employeesList) => {
@@ -50,13 +53,46 @@ const Employees = () => {
     setFilteredEmployees(filtered);
   };
 
+  const handleEmployeeSelect = (employeeId: string) => {
+    localStorage.setItem("selectedEmployee", employeeId);
+    navigate(
+      `${organizationAdminUrls(
+        organizationConfig.organization_name
+      )}/dashboard/update/${employeeId}`
+    );
+  };
+
+  useEffect(() => {
+    const selectedEmployee = localStorage.getItem("selectedEmployee");
+    if (selectedEmployee && filteredEmployees.length > 0) {
+      const rowElement = document.getElementById(
+        `employee-${selectedEmployee}`
+      );
+      if (rowElement) {
+        rowElement.scrollIntoView({ behavior: "smooth", block: "center" });
+        rowElement.style.backgroundColor =
+          organizationConfig.organization_theme.theme.backgroundColor;
+        rowElement.style.color =
+          organizationConfig.organization_theme.theme.color;
+        setTimeout(() => {
+          rowElement.style.backgroundColor = "";
+          rowElement.style.color = "";
+        }, 2000);
+      }
+      localStorage.removeItem("selectedEmployee");
+    }
+  }, [
+    filteredEmployees,
+    organizationConfig.organization_theme.theme.backgroundColor,
+    organizationConfig.organization_theme.theme.color,
+  ]);
+
   return (
     <div
       style={{
         color: organizationConfig.organization_theme.theme.button.textColor,
         fontFamily: theme.fontFamily,
       }}
-      className="h-auto"
     >
       <div>
         <h1 className="text-3xl font-extrabold underline text-center">
@@ -90,8 +126,16 @@ const Employees = () => {
             />
           </div>
         ) : (
-          <div className="overflow-auto max-w-full shadow-lg rounded-lg">
-            <table className="w-full text-center shadow-md border table-auto">
+          <div
+            className="overflow-hidden max-w-full shadow-lg rounded-lg"
+            ref={scrollRef}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+            style={{ userSelect: "none" }}
+          >
+            <table className="w-full text-center shadow-md border ">
               <colgroup>
                 <col className="w-56" />
                 <col className="w-32" />
@@ -136,7 +180,7 @@ const Employees = () => {
                 <tbody className="text-sm">
                   {filteredEmployees.length > 0 ? (
                     filteredEmployees.map((employee) => (
-                      <tr key={employee._id}>
+                      <tr key={employee._id} id={`employee-${employee._id}`}>
                         <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
                           {employee.employeeId}
                         </td>
@@ -170,15 +214,12 @@ const Employees = () => {
                             ))}
                           </ul>
                         </td>
-                        <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
+                        <td
+                          id={`employee-${employee._id}`}
+                          className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis"
+                        >
                           <Button
-                            onClick={() =>
-                              navigate(
-                                `${organizationAdminUrls(
-                                  organizationConfig.organization_name
-                                )}/dashboard/update/${employee._id}`
-                              )
-                            }
+                            onClick={() => handleEmployeeSelect(employee._id)}
                           >
                             <IconUser /> {"  "}
                             <IconEdit />
