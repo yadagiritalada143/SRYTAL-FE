@@ -176,7 +176,7 @@ export const deletePoolCandidatesByAdmin = async (data: {
       `/admin/deletePoolCandidatesByAdmin/${data.candidateId}`,
       {
         headers: { auth_token: token },
-        data:{confirmDelete:data.confirmDelete},
+        data: { confirmDelete: data.confirmDelete },
       }
     );
     return response.data;
@@ -195,7 +195,7 @@ export const deletePoolCompanyByAdmin = async (data: {
       `/admin/deletePoolCompanyByAdmin/${data.companyId}`,
       {
         headers: { auth_token: token },
-        data:{confimDelete:data.confirmDelete},
+        data: { confimDelete: data.confirmDelete },
       }
     );
     return response.data;
