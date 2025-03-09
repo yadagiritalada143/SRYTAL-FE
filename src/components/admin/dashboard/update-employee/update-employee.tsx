@@ -5,7 +5,6 @@ import {
   Select,
   useMantineTheme,
   MultiSelect,
-  Checkbox,
   Loader,
   Textarea,
 } from "@mantine/core";
@@ -28,12 +27,13 @@ import { toast } from "react-toastify";
 import { useEffect, useState } from "react";
 import { organizationAdminUrls } from "../../../../utils/common/constants";
 import { BgDiv } from "../../../common/style-components/bg-div";
-import { Modal } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { useRecoilValue } from "recoil";
 import { organizationThemeAtom } from "../../../../atoms/organization-atom";
 import { useCustomToast } from "../../../../utils/common/toast";
 import { DatePickerInput } from "@mantine/dates";
+import { DeleteEmployeeModel } from "./delete-model";
+import { BackButton } from "../../../common/style-components/buttons";
 
 const UpdateEmployee = () => {
   const navigate = useNavigate();
@@ -138,7 +138,9 @@ const UpdateEmployee = () => {
           employeeRole: emp.employeeRole.map(
             (role: { id: string }) => role?.id
           ),
-          dateOfBirth: emp.dateOfBirth ? new Date(emp.dateOfBirth).toISOString().split("T")[0] : "",
+          dateOfBirth: emp.dateOfBirth
+            ? new Date(emp.dateOfBirth).toISOString().split("T")[0]
+            : "",
         });
       })
       .catch((error) => {
@@ -198,35 +200,23 @@ const UpdateEmployee = () => {
             }}
             className="rounded-lg shadow-lg w-full max-w-4xl p-8"
           >
-            <div className="px-4 flex justify-between">
-              <div></div>
-              <h2 className="text-2xl font-bold text-center mb-6">
-                Update Profile
+            <div className="flex items-center justify-between flex-wrap mb-6">
+              <h2 className="text-2xl font-bold underline text-center flex-grow">
+                Update Employee Profile
               </h2>
-              <Button
-                bg={theme.colors.primary[5]}
-                onClick={() =>
-                  navigate(
-                    `${organizationAdminUrls(
-                      organizationConfig.organization_name
-                    )}/dashboard`
-                  )
-                }
-              >
-                {" "}
-                Cancel
-              </Button>
+              <BackButton id={employeeId} />
             </div>
 
-            <div className="flex items-center gap-1 mb-5">
-              <label className="text-sm font-medium w-32">Employee Id</label>
+            <div className="mb-5">
               <TextInput
+                label="Employee Id"
                 className="w-full"
                 {...register("employeeId")}
                 error={errors.employeeId?.message}
               />
             </div>
-            <h3 className="text-lg font-bold mb-2 text-decoration: underline">
+
+            <h3 className="text-lg font-bold underline mb-2">
               Personal Information
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -291,6 +281,7 @@ const UpdateEmployee = () => {
                 )}
               />
             </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <Textarea
                 label="Present Address"
@@ -306,7 +297,7 @@ const UpdateEmployee = () => {
               />
             </div>
 
-            <h3 className="text-lg font-bold mt-8 mb-4 text-decoration: underline">
+            <h3 className="text-lg font-bold underline mt-8 mb-4">
               Employment Details
             </h3>
             <Controller
@@ -344,7 +335,8 @@ const UpdateEmployee = () => {
               )}
             />
 
-            <h3 className="text-lg font-bold mt-5 mb-4 text-decoration: underline">
+            {/* Bank Details */}
+            <h3 className="text-lg font-bold underline mt-5 mb-4">
               Bank Details
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -356,19 +348,20 @@ const UpdateEmployee = () => {
               />
               <TextInput
                 label="Account Holder Name"
-                placeholder="Enter bank account holder name"
                 {...register("bankDetailsInfo.accountHolderName")}
                 error={errors.bankDetailsInfo?.accountHolderName?.message}
+                placeholder="Enter account holder name"
               />
               <TextInput
                 label="IFSC Code"
-                placeholder="Enter bank ifsc code"
                 {...register("bankDetailsInfo.ifscCode")}
                 error={errors?.bankDetailsInfo?.ifscCode?.message}
+                placeholder="Enter IFSC code"
               />
             </div>
 
-            <div className=" flex flex-wrap justify-between mt-8">
+            {/* Buttons Section */}
+            <div className="flex flex-wrap justify-between mt-8">
               <Button
                 bg={theme.colors.primary[5]}
                 onClick={handlePasswordReset}
@@ -376,7 +369,7 @@ const UpdateEmployee = () => {
                 Reset Password
               </Button>
               <button
-                className="bg-red-500 py-2 px-4 rounded"
+                className="bg-red-500 text-white py-2 px-4 rounded"
                 onClick={(e) => {
                   e.preventDefault();
                   open();
@@ -389,40 +382,16 @@ const UpdateEmployee = () => {
           </form>
         )}
       </BgDiv>
-      <Modal size="md" opened={opened} onClose={close}>
-        <div>
-          <h2 className="font-bold text-lg">
-            Sure want to delete the employee?{" "}
-          </h2>
-          <p className="mt-4 font-bold">
-            Please be aware of doing this action! Deleting employee is an
-            un-reversible action and you should be aware while doing this.
-          </p>
-          <div className="mt-4">
-            <Checkbox
-              label="I understand what are the consequences of doing this action!"
-              checked={confirmDelete}
-              onChange={(e) => setConfirmDelete(e.currentTarget.checked)}
-              required
-            />
-            <Checkbox
-              label="I understand that this employee details are not a part of our application forever. I agreed to the Terms and Conditions to perform this action"
-              checked={agreeTerms}
-              onChange={(e) => setAgreeTerms(e.currentTarget.checked)}
-            />
-          </div>
-          <div className=" flex flex-wrap justify-between mt-8">
-            <button
-              className="bg-red-500 text-white py-2 px-4 rounded"
-              onClick={handleDeleteEmployee}
-              disabled={!confirmDelete}
-            >
-              Delete
-            </button>
-            <Button onClick={close}>Cancel</Button>
-          </div>
-        </div>
-      </Modal>
+
+      <DeleteEmployeeModel
+        agreeTerms={agreeTerms}
+        close={close}
+        opened={opened}
+        confirmDelete={confirmDelete}
+        handleDeleteEmployee={handleDeleteEmployee}
+        setAgreeTerms={setAgreeTerms}
+        setConfirmDelete={setConfirmDelete}
+      />
     </div>
   );
 };

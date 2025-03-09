@@ -3,7 +3,6 @@ import {
   Group,
   Button,
   TextInput,
-  Title,
   Grid,
   NumberInput,
   Chip,
@@ -42,6 +41,7 @@ import AddComment from "./add-comment";
 import CommentsTable from "./comments-table";
 import { useDisclosure } from "@mantine/hooks";
 import { deletePoolCandidatesByAdmin } from "../../../../services/admin-services";
+import { BackButton } from "../../../common/style-components/buttons";
 
 const UpdatePoolCandidateForm = () => {
   const [skills, setSkills] = useState<string[]>([]);
@@ -63,7 +63,8 @@ const UpdatePoolCandidateForm = () => {
   });
 
   const navigate = useNavigate();
-  const { candidateId } = useParams();
+  const params = useParams();
+  const candidateId = params.candidateId as string;
 
   useEffect(() => {
     if (candidateId) {
@@ -148,9 +149,12 @@ const UpdatePoolCandidateForm = () => {
           className="rounded-lg shadow-lg w-full max-w-3xl  mx-auto p-8"
         >
           <Container>
-            <Title className="text-center" order={3}>
-              Candidate Details
-            </Title>
+            <div className="flex items-center justify-between flex-wrap mb-6">
+              <h2 className="text-2xl font-bold underline text-center flex-grow">
+                Update Candidate Details
+              </h2>
+              <BackButton id={candidateId} />
+            </div>
             <Grid gutter="md">
               <Grid.Col span={12}>
                 <Controller

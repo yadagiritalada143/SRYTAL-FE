@@ -37,7 +37,12 @@ const Navbar = ({
       }}
     >
       <div className="p-6 flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <img
+          src={organizationConfig.organization_theme.logo}
+          alt="Organization Logo"
+          className="rounded-md transition-transform duration-300 hover:scale-110"
+        />
+
         <div className="lg:hidden  z-50">
           <button onClick={toggleDrawer} className="p-2 rounded-md">
             {isDrawerOpen && (
@@ -169,7 +174,8 @@ const Navbar = ({
                 }
                 style={({ isActive }) => ({
                   backgroundColor: isActive
-                    ? organizationConfig.organization_theme.theme.backgroundColor
+                    ? organizationConfig.organization_theme.theme
+                        .backgroundColor
                     : "transparent",
                   color: isActive
                     ? theme.colors.primary[5]
