@@ -54,7 +54,6 @@ const Employees = () => {
   };
 
   const handleEmployeeSelect = (employeeId: string) => {
-    localStorage.setItem("selectedEmployee", employeeId);
     navigate(
       `${organizationAdminUrls(
         organizationConfig.organization_name
@@ -63,7 +62,7 @@ const Employees = () => {
   };
 
   useEffect(() => {
-    const selectedEmployee = localStorage.getItem("selectedEmployee");
+    const selectedEmployee = localStorage.getItem("id");
     if (selectedEmployee && filteredEmployees.length > 0) {
       const rowElement = document.getElementById(
         `employee-${selectedEmployee}`
@@ -79,7 +78,7 @@ const Employees = () => {
           rowElement.style.color = "";
         }, 2000);
       }
-      localStorage.removeItem("selectedEmployee");
+      localStorage.removeItem("id");
     }
   }, [
     filteredEmployees,

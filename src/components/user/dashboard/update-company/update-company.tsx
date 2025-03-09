@@ -27,6 +27,7 @@ import { useCustomToast } from "../../../../utils/common/toast";
 import PoolCompaniesCommentsTable from "./comments";
 import AddCommentPoolCompany from "./add-comment";
 import { deleteCompanyByAdmin } from "../../../../services/admin-services";
+import { BackButton } from "../../../common/style-components/buttons";
 
 const UpdateCompany = () => {
   const params = useParams();
@@ -108,9 +109,12 @@ const UpdateCompany = () => {
           onSubmit={handleSubmit(onSubmit)}
           className="space-y-4 rounded-lg shadow-lg w-full max-w-3xl  mx-auto p-8"
         >
-          <h1 className="text-center text-2xl font-bold mb-4">
-            Update Company
-          </h1>
+          <div className="flex items-center justify-between flex-wrap mb-6">
+            <h2 className="text-2xl font-bold underline text-center flex-grow">
+              Update Company Details
+            </h2>
+            <BackButton id={companyId} />
+          </div>
           <div className="px-4 flex flex-wrap space-x-10 ">
             <TextInput
               {...register("companyName")}
