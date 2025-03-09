@@ -104,7 +104,7 @@ const Companies = () => {
         onMouseLeave={handleMouseUp}
         style={{ userSelect: "none" }}
       >
-        <table className="min-w-full table-fixed text-center shadow-md">
+        <table className="min-w-full table-fixed text-center shadow-md border-separate border-spacing-0">
           <colgroup>
             <col className="w-56" />
             <col className="w-32" />
@@ -129,9 +129,13 @@ const Companies = () => {
             className="text-xs uppercase"
           >
             <tr>
-              <th className="p-4 border sticky left-0 z-10" rowSpan={2}>
+              <th
+                className="w-1/6 border p-3 sticky left-0  z-20  backdrop-blur-sm"
+                rowSpan={3}
+              >
                 Company Name
               </th>
+
               <th className="p-4 border" colSpan={3}>
                 Primary Contact
               </th>
@@ -167,7 +171,7 @@ const Companies = () => {
             {filteredCompanies.map((company: CompaniesInterface) => {
               return (
                 <tr id={`company-${company.id}`} key={company.id}>
-                  <td className="px-4 py-2 border sticky left-0 z-10 text-ellipsis">
+                  <td className="border px-4 py-2 sticky left-0 z-10 backdrop-blur-sm">
                     {company.companyName}
                   </td>
                   <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">

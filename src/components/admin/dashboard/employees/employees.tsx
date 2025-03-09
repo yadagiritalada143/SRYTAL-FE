@@ -126,7 +126,7 @@ const Employees = () => {
           </div>
         ) : (
           <div
-            className="overflow-hidden max-w-full shadow-lg rounded-lg"
+            className="flex overflow-auto sm:overflow-hidden max-w-full shadow-lg rounded-lg"
             ref={scrollRef}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
