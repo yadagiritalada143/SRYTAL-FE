@@ -70,45 +70,51 @@ const Companies = () => {
         handleSearch={handleSearch}
         placeHolder="Search by company name"
       />
-      <div className="overflow-x-auto ">
-        <table className="min-w-full table-fixed text-center shadow-md">
-          <colgroup>
-            <col className="w-56" />
-            <col className="w-32" />
-            <col className="w-32" />
-            <col className="w-32" />
-            <col className="w-32" />
-            <col className="w-32" />
-            <col className="w-32" />
-            <col className="w-32" />
-            <col className="w-32" />
-            <col className="w-32" />
-            <col className="w-32" />
-            <col className="w-32" />
-            <col className="w-32" />
-          </colgroup>
-          <thead
-            style={{
-              backgroundColor:
-                organizationConfig.organization_theme.theme.backgroundColor,
-              color: organizationConfig.organization_theme.theme.color,
-            }}
-            className="text-xs uppercase"
-          >
-            <tr>
-              <th className="p-4 border sticky left-0 z-10" rowSpan={2}>
-                Company Name
-              </th>
-              <th className="p-4 border" colSpan={3}>
-                Primary Contact
-              </th>
-              <th className="p-4 border" colSpan={3}>
-                Secondary Contact 1
-              </th>
-              <th className="p-4 border" colSpan={3}>
-                Secondary Contact 2
-              </th>
-              <th className="p-4 border" rowSpan={2}>
+      <div className="flex overflow-x-auto ">
+        <div className="w-1/5">
+          <table className="min-w-full text-center shadow-md text-xs">
+            <thead
+              style={{
+                backgroundColor:
+                  organizationConfig.organization_theme.theme.backgroundColor,
+                color: organizationConfig.organization_theme.theme.color,
+              }}
+            >
+              <tr className="h-20">
+                <th className="p-3 border align-middle">Company name</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredCompanies.map((company) => (
+                <tr key={company.id} className="h-10">
+                  <td className="px-3 py-5 border">{company.companyName}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Contact Info Table */}
+        <div className="w-3/2 overflow-x-auto">
+          <table className="min-w-full text-center shadow-md text-xs">
+            <thead
+              style={{
+                backgroundColor:
+                  organizationConfig.organization_theme.theme.backgroundColor,
+                color: organizationConfig.organization_theme.theme.color,
+              }}
+            >
+              <tr className=" text-xs uppercase">
+                <th className="p-3 border" colSpan={3}>
+                  Primary contact
+                </th>
+                <th className="p-3 border" colSpan={3}>
+                  Secondary contact 1
+                </th>
+                <th className="p-3 border" colSpan={3}>
+                  Secondary contact 2
+                </th>
+                <th className="p-4 border" rowSpan={2}>
                 Status
               </th>
               <th className="p-4 border" rowSpan={2}>
@@ -117,60 +123,36 @@ const Companies = () => {
               <th className="p-4 border" rowSpan={2}>
                 Update
               </th>
-            </tr>
-            <tr>
-              <th className="p-2 border">Name</th>
-              <th className="p-2 border">Email</th>
-              <th className="p-2 border">Phone</th>
-              <th className="p-2 border">Name</th>
-              <th className="p-2 border">Email</th>
-              <th className="p-2 border">Phone</th>
-              <th className="p-2 border">Name</th>
-              <th className="p-2 border">Email</th>
-              <th className="p-2 border">Phone</th>
-            </tr>
-          </thead>
-          <tbody className="text-sm">
-            {filteredCompanies.map((company: CompaniesInterface) => {
-              return (
+              </tr>
+              <tr className="h-10">
+                <th className="p-2 border">Name</th>
+                <th className="p-2 border">Email</th>
+                <th className="p-2 border">Phone</th>
+                <th className="p-2 border">Name</th>
+                <th className="p-2 border">Email</th>
+                <th className="p-2 border">Phone</th>
+                <th className="p-2 border">Name</th>
+                <th className="p-2 border">Email</th>
+                <th className="p-2 border">Phone</th>
+              </tr>
+            </thead>
+            <tbody className="text-sm">
+              {filteredCompanies.map((company:CompaniesInterface) => (
                 <tr key={company.id}>
-                  <td className="px-4 py-2 border sticky left-0 z-10 text-ellipsis">
-                    {company.companyName}
-                  </td>
-                  <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                    {company.primaryContact.name}
-                  </td>
-                  <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                    {company.primaryContact.email}
-                  </td>
-                  <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                    {company.primaryContact.phone}
-                  </td>
-                  <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                    {company.secondaryContact_1.name}
-                  </td>
-                  <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                    {company.secondaryContact_1.email}
-                  </td>
-                  <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                    {company.secondaryContact_1.phone}
-                  </td>
-                  <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                    {company.secondaryContact_2.name}
-                  </td>
-                  <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                    {company.secondaryContact_2.email}
-                  </td>
-                  <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                    {company.secondaryContact_2.phone}
-                  </td>
-                  <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                    {company.status}
-                  </td>
-                  <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
+                  <td className="px-3 py-4 border whitespace-nowrap overflow-hidden text-ellipsis">{company.primaryContact.name}</td>
+                  <td className="px-3 py-4 border whitespace-nowrap overflow-hidden text-ellipsis">{company.primaryContact.email}</td>
+                  <td className="px-3 py-4 border whitespace-nowrap overflow-hidden text-ellipsis">{company.primaryContact.phone}</td>
+                  <td className="px-3 py-4 border whitespace-nowrap overflow-hidden text-ellipsis">{company.secondaryContact_1.name}</td>
+                  <td className="px-3 py-4 border whitespace-nowrap overflow-hidden text-ellipsis">{company.secondaryContact_1.email}</td>
+                  <td className="px-3 py-4 border whitespace-nowrap overflow-hidden text-ellipsis">{company.secondaryContact_1.phone}</td>
+                  <td className="px-3 py-4 border whitespace-nowrap overflow-hidden text-ellipsis">{company.secondaryContact_2.name}</td>
+                  <td className="px-3 py-4 border whitespace-nowrap overflow-hidden text-ellipsis">{company.secondaryContact_2.email}</td>
+                  <td className="px-3 py-4 border whitespace-nowrap overflow-hidden text-ellipsis">{company.secondaryContact_2.phone}</td>
+                  <td className="px-3 py-4 border whitespace-nowrap overflow-hidden text-ellipsis">{company.status}</td>
+                  <td className="px-3 py-4 border whitespace-nowrap overflow-hidden text-ellipsis">
                     {moment(company.lastUpdatedAt).format("DD MMM YYYY")}
                   </td>
-                  <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
+                  <td className="px-3 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
                     <Button
                       onClick={() =>
                         navigate(
@@ -186,10 +168,10 @@ const Companies = () => {
                     </Button>
                   </td>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
