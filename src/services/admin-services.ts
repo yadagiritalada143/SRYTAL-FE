@@ -195,7 +195,7 @@ export const deletePoolCompanyByAdmin = async (data: {
       `/admin/deletePoolCompanyByAdmin/${data.companyId}`,
       { 
         headers: { auth_token: token },
-        data:{confimDelete:data.confirmDelete},
+        data: { confirmDelete: data.confirmDelete },
       }
     );
     return response.data;
