@@ -10,6 +10,7 @@ import {
   Modal,
   Checkbox,
   useMantineTheme,
+  Title,
 } from "@mantine/core";
 import { useCustomToast } from "../../../../utils/common/toast";
 import { useEffect, useState } from "react";
