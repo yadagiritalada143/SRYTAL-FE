@@ -97,7 +97,8 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
           <Tabs.Panel style={{ padding: "5px 0" }} value="address">
             {" "}
             {/* Reduced padding */}
-            <div className="grid grid-cols-2 gap-2">
+            <div className="flex justify-start">
+            <div className="grid grid-cols-2 gap-2 text-start">
               {" "}
               {/* Reduced gap */}
               <div className="font-bold">Present Address:</div>
@@ -105,35 +106,34 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
               <div className="font-bold">Permanent Address:</div>
               <div>{details?.permanentAddress}</div>
             </div>
-          </Tabs.Panel>
-
-          <Tabs.Panel style={{ padding: "5px 0" }} value="employment">
-            {" "}
-            {/* Reduced padding */}
-            <div className="grid grid-cols-2 gap-2">
-              {" "}
-              {/* Reduced gap */}
-              <div className="font-bold">Employment Type:</div>
-              <div>{details.employmentType?.employmentType || "N/A"}</div>
-              <div className="font-bold">Employment Roles:</div>
-              <div>
-                {details.employeeRole.length > 0
-                  ? details.employeeRole.map((role) => (
-                      <Code key={role._id} className="mr-1">
-                        {" "}
-                        {/* Reduced margin */}
-                        {role.designation}
-                      </Code>
-                    ))
-                  : "N/A"}
-              </div>
             </div>
           </Tabs.Panel>
+            <Tabs.Panel style={{ padding: "5px 0" }} value="employment">
+              {/* Centering the panel while keeping content left-aligned */}
+              <div className="flex justify-center">
+                <div className="grid grid-cols-2 gap-2 text-left">
+                  <div className="font-bold">Employment Type:</div>
+                  <div>{details.employmentType?.employmentType || "N/A"}</div>
+                  
+                  <div className="font-bold">Employment Roles:</div>
+                  <div className="flex flex-col">
+                    {details.employeeRole.length > 0
+                      ? details.employeeRole.map((role) => (
+                          <Code key={role._id} className="mb-1">
+                            {role.designation}
+                          </Code>
+                        ))
+                      : "N/A"}
+                  </div>
+                </div>
+              </div>
+            </Tabs.Panel>
 
           <Tabs.Panel style={{ padding: "5px 0" }} value="bankDetails">
             {" "}
             {/* Reduced padding */}
-            <div className="grid grid-cols-2 gap-2">
+            <div className="flex justify-end">
+            <div className="grid grid-cols-2 gap-2 text-left">
               {" "}
               {/* Reduced gap */}
               <div className="font-bold">Account Number:</div>
@@ -142,6 +142,7 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
               <div>{details.bankDetailsInfo?.accountHolderName || "N/A"}</div>
               <div className="font-bold">IFSC Code:</div>
               <div>{details.bankDetailsInfo?.ifscCode || "N/A"}</div>
+            </div>
             </div>
           </Tabs.Panel>
         </Tabs>
