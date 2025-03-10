@@ -10,7 +10,10 @@ import { toast } from "react-toastify";
 import { IconCircleDashedCheck } from "@tabler/icons-react";
 import { useMantineTheme } from "@mantine/core";
 import { useNavigate } from "react-router-dom";
-import { commonUrls } from "../../../../utils/common/constants";
+import {
+  commonUrls,
+  organizationAdminUrls,
+} from "../../../../utils/common/constants";
 import { useRecoilValue } from "recoil";
 import { organizationThemeAtom } from "../../../../atoms/organization-atom";
 import { BgDiv } from "../../../common/style-components/bg-div";
@@ -63,8 +66,25 @@ const AddCompany = () => {
         onSubmit={handleSubmit(onSubmit)}
         className="space-y-4 rounded-lg shadow-lg w-full max-w-3xl  mx-auto p-8"
       >
-        <h1 className="text-center">Add Company</h1>
-
+        <div className="px-4 flex justify-between">
+          <div></div>
+          <h1 className="text-3xl font-extrabold underline text-center">
+            Add Company
+          </h1>
+          <Button
+            bg={theme.colors.primary[5]}
+            onClick={() =>
+              navigate(
+                `${organizationAdminUrls(
+                  organizationConfig.organization_name
+                )}/dashboard/pool-companies`
+              )
+            }
+          >
+            {" "}
+            Cancel
+          </Button>
+        </div>
         <TextInput
           {...register("companyName")}
           label="Company Name"

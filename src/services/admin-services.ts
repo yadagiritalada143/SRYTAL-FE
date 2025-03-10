@@ -166,13 +166,17 @@ export const deleteEmployeeByAdmin = async (data: {
   }
 };
 
-export const deletePoolCandidatesByAdmin = async (candidateId: string) => {
+export const deletePoolCandidatesByAdmin = async (data: {
+  candidateId: string;
+  confirmDelete: boolean;
+}) => {
   const token = localStorage.getItem("token");
   try {
     const response = await apiClient.delete(
-      `/admin/deletePoolCandidatesByAdmin/${candidateId}`,
+      `/admin/deletePoolCandidatesByAdmin/${data.candidateId}`,
       {
         headers: { auth_token: token },
+        data:{confirmDelete:data.confirmDelete},
       }
     );
     return response.data;
@@ -181,10 +185,18 @@ export const deletePoolCandidatesByAdmin = async (candidateId: string) => {
   }
 };
 
-export const deleteCompanyByAdmin = async (companyId: string) => {
+export const deletePoolCompanyByAdmin = async (data: {
+  companyId: string;
+  confirmDelete: boolean;
+}) => {
+  const token = localStorage.getItem("token");
   try {
     const response = await apiClient.delete(
-      `/admin/deletePoolCompanyByAdmin/${companyId}`
+      `/admin/deletePoolCompanyByAdmin/${data.companyId}`,
+      { 
+        headers: { auth_token: token },
+        data: { confirmDelete: data.confirmDelete },
+      }
     );
     return response.data;
   } catch (error) {
@@ -417,3 +429,4 @@ export const deleteEmploymentTypeByAdmin = async (id: string) => {
     throw error;
   }
 };
+  
