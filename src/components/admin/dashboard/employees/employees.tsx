@@ -136,6 +136,7 @@ const Employees = () => {
           >
             <table className="w-full text-center shadow-md border ">
               <colgroup>
+                <col className="w-32" />
                 <col className="w-56" />
                 <col className="w-32" />
                 <col className="w-32" />
@@ -154,6 +155,7 @@ const Employees = () => {
                 }}
               >
                 <tr>
+                  <th className="p-2 border ">Id</th>
                   <th className="p-2 border">Employee ID</th>
                   <th className="p-2 border">First Name</th>
                   <th className="p-2 border">Last Name</th>
@@ -178,8 +180,11 @@ const Employees = () => {
               ) : (
                 <tbody className="text-sm">
                   {filteredEmployees.length > 0 ? (
-                    filteredEmployees.map((employee) => (
+                    filteredEmployees.map((employee, index) => (
                       <tr key={employee._id} id={`employee-${employee._id}`}>
+                        <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
+                          {index + 1}
+                        </td>
                         <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
                           {employee.employeeId}
                         </td>
