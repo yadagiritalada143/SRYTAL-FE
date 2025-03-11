@@ -2,6 +2,7 @@ import {
   Icon,
   IconBuildings,
   IconNotebook,
+  IconPackage,
   IconUsersGroup,
   // IconBackpack, IconBuildings,
   IconX,
@@ -162,6 +163,31 @@ const Navbar = ({
               <IconUsersGroup size={24} className="mr-2" />
               <span>Pool Candidates</span>
             </NavLink>
+
+            {localStorage.getItem("userRole") === "admin" && (
+              <NavLink
+                to={`/${organizationConfig.organization_name}/admin/dashboard/packages`}
+                end
+                className={({ isActive }) =>
+                  `flex items-center  p-4 py-6 shadow-md hover:shadow-xl ${
+                    isActive ? "font-bold" : ""
+                  } hover:bg-opacity-75 transition-all`
+                }
+                style={({ isActive }) => ({
+                  backgroundColor: isActive
+                    ? organizationConfig.organization_theme.theme
+                        .backgroundColor
+                    : "transparent",
+                  color: isActive
+                    ? theme.colors.primary[5]
+                    : organizationConfig.organization_theme.theme.button
+                        .textColor,
+                })}
+              >
+                <IconPackage size={24} className="mr-2" />
+                <span>Packages</span>
+              </NavLink>
+            )}
 
             {localStorage.getItem("userRole") === "admin" && (
               <NavLink
