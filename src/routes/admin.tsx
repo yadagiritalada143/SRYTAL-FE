@@ -29,6 +29,7 @@ import UpdateCompany from "../components/user/dashboard/update-company/update-co
 import EmploymentRoles from "../components/admin/dashboard/employment-roles/employment-roles";
 import Reports from "../components/admin/dashboard/reports/reports";
 import Packages from "../components/admin/dashboard/packages/packages";
+import AddPackage from "../components/admin/dashboard/add-package/add-package";
 
 const AdminRoutes = () => {
   const { organization } = useParams<{ organization: string }>();
@@ -127,6 +128,7 @@ const AdminRoutes = () => {
             <Route path="add-pool-companies" element={<AddCompany />} />
             <Route path="add-pool-candidate" element={<AddPoolCandidate />} />
             <Route path="packages" element={<Packages />} />
+            <Route path="/dashboard/addPackage" element={<AddPackage />} />
             <Route path="reports" element={<Reports />} />
             <Route
               path=":candidateId/edit-pool-candidate"
