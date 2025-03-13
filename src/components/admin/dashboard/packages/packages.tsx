@@ -134,7 +134,7 @@ const Packages = () => {
               </thead>
               <tbody className="text-sm">
                 {filteredPackages.length > 0 ? (
-                  filteredPackages.map((pkg, index) => (
+                  filteredPackages.map((pkg: PackageInterface, index) => (
                     <tr key={pkg._id}>
                       <td className="px-4 py-2 border">{index + 1}</td>
                       <td className="px-4 py-2 border">{pkg.packageId}</td>
