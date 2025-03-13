@@ -1,4 +1,4 @@
-import { Button, useMantineTheme, Loader } from "@mantine/core";
+import { Button, useMantineTheme, Loader, Tooltip } from "@mantine/core";
 import { IconEdit } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -10,17 +10,21 @@ import { SearchBarFullWidht } from "../../../common/search-bar/search-bar";
 import { useRecoilValue } from "recoil";
 import { organizationThemeAtom } from "../../../../atoms/organization-atom";
 import useHorizontalScroll from "../../../../hooks/horizontal-scroll";
+import moment from "moment";
 
 const Packages = () => {
   const theme = useMantineTheme();
   const [packages, setPackages] = useState<PackageInterface[]>([]);
-  const [filteredPackages, setFilteredPackages] = useState<PackageInterface[]>([]);
+  const [filteredPackages, setFilteredPackages] = useState<PackageInterface[]>(
+    []
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
   const organizationConfig = useRecoilValue(organizationThemeAtom);
 
-  const { scrollRef, handleMouseDown, handleMouseMove, handleMouseUp } = useHorizontalScroll();
+  const { scrollRef, handleMouseDown, handleMouseMove, handleMouseUp } =
+    useHorizontalScroll();
 
   useEffect(() => {
     getAllPackagesByAdmin()
@@ -34,7 +38,9 @@ const Packages = () => {
         setIsLoading(false);
       })
       .catch((error) => {
-        toast.error(error?.response?.data?.message || "Failed to fetch packages.");
+        toast.error(
+          error?.response?.data?.message || "Failed to fetch packages."
+        );
         setIsLoading(false);
       });
   }, []);
@@ -43,9 +49,10 @@ const Packages = () => {
     const query = e.target.value.toLowerCase();
     setSearchQuery(query);
 
-    const filtered = packages.filter((pkg) => 
-      pkg.title.toLowerCase().includes(query) ||
-      pkg.description.toLowerCase().includes(query)
+    const filtered = packages.filter(
+      (pkg) =>
+        pkg.title.toLowerCase().includes(query) ||
+        pkg.description.toLowerCase().includes(query)
     );
     setFilteredPackages(filtered);
   };
@@ -58,11 +65,17 @@ const Packages = () => {
       }}
     >
       <div>
-        <h1 className="text-3xl font-extrabold underline text-center">Manage Packages</h1>
+        <h1 className="text-3xl font-extrabold underline text-center">
+          Manage Packages
+        </h1>
         <div className="text-right">
           <Button
             onClick={() =>
-              navigate(`${organizationAdminUrls(organizationConfig.organization_name)}/dashboard/addPackage`)
+              navigate(
+                `${organizationAdminUrls(
+                  organizationConfig.organization_name
+                )}/dashboard/addPackage`
+              )
             }
           >
             Add Package
@@ -77,7 +90,10 @@ const Packages = () => {
 
         {isLoading ? (
           <div className="flex justify-center items-center h-48">
-            <Loader size="xl" color={organizationConfig.organization_theme.theme.button.color} />
+            <Loader
+              size="xl"
+              color={organizationConfig.organization_theme.theme.button.color}
+            />
           </div>
         ) : (
           <div
@@ -101,7 +117,8 @@ const Packages = () => {
               <thead
                 className="text-xs"
                 style={{
-                  backgroundColor: organizationConfig.organization_theme.theme.backgroundColor,
+                  backgroundColor:
+                    organizationConfig.organization_theme.theme.backgroundColor,
                   color: organizationConfig.organization_theme.theme.color,
                 }}
               >
@@ -122,11 +139,27 @@ const Packages = () => {
                       <td className="px-4 py-2 border">{index + 1}</td>
                       <td className="px-4 py-2 border">{pkg.packageId}</td>
                       <td className="px-4 py-2 border">{pkg.title}</td>
-                      <td className="px-4 py-2 border">{pkg.description}</td>
-                      <td className="px-4 py-2 border">{pkg.startDate}</td>
-                      <td className="px-4 py-2 border">{pkg.endDate}</td>
                       <td className="px-4 py-2 border">
-                        <Button onClick={() => navigate(`/dashboard/editpackage/${pkg.packageId}`)}>
+                        <Tooltip label={pkg.description} withArrow>
+                          <span>
+                            {pkg.description.length > 20
+                              ? pkg.description.substring(0, 20) + "..."
+                              : pkg.description}
+                          </span>
+                        </Tooltip>
+                      </td>
+                      <td className="px-4 py-2 border">
+                        {moment(pkg.startDate).format("YYYY-MM-DD")}
+                      </td>
+                      <td className="px-4 py-2 border">
+                        {moment(pkg.endDate).format("YYYY-MM-DD")}
+                      </td>
+                      <td className="px-4 py-2 border">
+                        <Button
+                          onClick={() =>
+                            navigate(`/dashboard/editpackage/${pkg.packageId}`)
+                          }
+                        >
                           <IconEdit />
                         </Button>
                       </td>
@@ -134,7 +167,9 @@ const Packages = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={7} className="px-4 py-2">No Packages found.</td>
+                    <td colSpan={7} className="px-4 py-2">
+                      No Packages found.
+                    </td>
                   </tr>
                 )}
               </tbody>

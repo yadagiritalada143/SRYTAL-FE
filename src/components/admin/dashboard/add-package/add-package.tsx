@@ -1,17 +1,18 @@
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { TextInput, Button, Loader } from "@mantine/core";
-import { toast } from "react-toastify";
+import { TextInput, Button, Loader, Textarea } from "@mantine/core";
+import { DateInput } from "@mantine/dates";
 import { useMantineTheme } from "@mantine/core";
 import { registerPackage } from "../../../../services/admin-services";
-import axios from "axios";
-import { IconCircleDashedCheck, IconX } from "@tabler/icons-react";
 import { useNavigate } from "react-router";
-import { organizationAdminUrls } from "../../../../utils/common/constants";
 import { BgDiv } from "../../../common/style-components/bg-div";
 import { useRecoilValue } from "recoil";
 import { organizationThemeAtom } from "../../../../atoms/organization-atom";
-import { AddPackageForm, addPackageSchema } from "../../../../forms/add-package";
+import { useCustomToast } from "../../../../utils/common/toast";
+import {
+  AddPackageForm,
+  addPackageSchema,
+} from "../../../../forms/add-package";
 
 const AddPackage = () => {
   const navigate = useNavigate();
@@ -21,64 +22,111 @@ const AddPackage = () => {
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<AddPackageForm>({
     resolver: zodResolver(addPackageSchema),
   });
+  const { showSuccessToast } = useCustomToast();
 
   const onSubmit = async (packageDetails: AddPackageForm) => {
     try {
       await registerPackage(packageDetails);
-      toast.success(`${packageDetails.title} created successfully!`, {
-        style: {
-          color: theme.colors.primary[2],
-          backgroundColor: organizationConfig.organization_theme.theme.backgroundColor,
-        },
-        progressStyle: {
-          background: theme.colors.primary[8],
-        },
-        icon: <IconCircleDashedCheck width={32} height={32} />,
-      });
-  
+      showSuccessToast(`${packageDetails.title} created successfully!`);
+
       reset();
-      
-      navigate(`${organizationAdminUrls(organizationConfig.organization_name)}/dashboard/packages`);
+
+      navigate(-1);
     } catch (error) {
-      throw(error);
+      throw error;
     }
   };
-  
+
   return (
-    <div className="flex items-center justify-center h-screen">
+    <div className="w-full max-w-3xl mx-auto my-6">
       <BgDiv>
         <form
           onSubmit={handleSubmit(onSubmit)}
           style={{
-            backgroundColor: organizationConfig.organization_theme.theme.backgroundColor,
+            backgroundColor:
+              organizationConfig.organization_theme.theme.backgroundColor,
           }}
-          className="w-full max-w-2xl p-8 shadow-lg rounded-lg"
+          className="rounded-lg shadow-lg w-full p-8"
         >
-          <div className="flex justify-between">
-            <h2 className="text-2xl font-bold text-center mb-6 w-full">Add Package</h2>
-            <Button
-              className="rounded-full"
-              onClick={() => navigate(`${organizationAdminUrls(organizationConfig.organization_name)}/dashboard/packages`)}
-            >
-              <IconX />
+          <div className="px-4 py-4 flex justify-between">
+            <div></div>
+            <h1 className="text-3xl font-extrabold underline text-center">
+              Add Package
+            </h1>
+            <Button bg={theme.colors.primary[5]} onClick={() => navigate(-1)}>
+              {" "}
+              Cancel
             </Button>
           </div>
-
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
-            <TextInput label="Title" placeholder="Enter Title" {...register("title")} error={errors.title?.message} />
-            <TextInput label="Description" placeholder="Enter Description" {...register("description")} error={errors.description?.message} />
-            <TextInput label="Start Date" type="date" {...register("startDate")} error={errors.startDate?.message} />
-            <TextInput label="End Date" type="date" {...register("endDate")} error={errors.endDate?.message} />
+            <TextInput
+              label="Title"
+              placeholder="Enter Title"
+              {...register("title")}
+              error={errors.title?.message}
+            />
 
+            <Controller
+              control={control}
+              name="startDate"
+              render={({ field }) => (
+                <DateInput
+                  label="Start Date"
+                  placeholder="Pick a date"
+                  value={field.value}
+                  onChange={field.onChange}
+                  error={errors.startDate?.message}
+                  valueFormat="YYYY-MM-DD"
+                  popoverProps={{ withinPortal: true }}
+                />
+              )}
+            />
+
+            <Controller
+              control={control}
+              name="endDate"
+              render={({ field }) => (
+                <DateInput
+                  label="End Date"
+                  placeholder="Pick a date"
+                  value={field.value}
+                  onChange={field.onChange}
+                  error={errors.endDate?.message}
+                  valueFormat="YYYY-MM-DD"
+                  popoverProps={{ withinPortal: true }}
+                />
+              )}
+            />
+          </div>
+
+          <Textarea
+            label="Description"
+            placeholder="Enter Description"
+            {...register("description")}
+            maxRows={4}
+            error={errors.description?.message}
+          />
+
+          <div className="flex justify-end py-4">
             <Button
-              className="mt-7 rounded-md"
+              className="rounded-md"
               type="submit"
               data-testid="submitButton"
-              leftSection={isSubmitting && <Loader size="xs" color={organizationConfig.organization_theme.theme.button.color} />}
+              leftSection={
+                isSubmitting && (
+                  <Loader
+                    size="xs"
+                    color={
+                      organizationConfig.organization_theme.theme.button.color
+                    }
+                  />
+                )
+              }
               disabled={isSubmitting}
             >
               {isSubmitting ? "Creating..." : "Create Package"}

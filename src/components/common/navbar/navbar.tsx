@@ -31,10 +31,13 @@ const Navbar = ({
   const theme = useMantineTheme();
   return (
     <nav
-      className="h-full flex flex-col shadow-lg"
+      className={`h-full flex flex-col shadow-lg transition-all ${
+        isDrawerOpen ? "overflow-y-auto" : "overflow-hidden"
+      }`}
       style={{
         backgroundColor: theme.colors.primary[1],
         color: organizationConfig.organization_theme.theme.button.textColor,
+        scrollbarWidth: "none",
       }}
     >
       <div className="p-6 flex justify-between items-center">

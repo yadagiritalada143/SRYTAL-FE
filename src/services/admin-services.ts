@@ -126,7 +126,7 @@ export const registerPackage = async (packageDetails: AddPackageForm) => {
       packageDetails,
       { headers: { Auth_token: token } }
     );
-    
+
     return response.data;
   } catch (error) {
     throw error;
@@ -195,7 +195,7 @@ export const deletePoolCandidatesByAdmin = async (data: {
       `/admin/deletePoolCandidatesByAdmin/${data.candidateId}`,
       {
         headers: { auth_token: token },
-        data:{confirmDelete:data.confirmDelete},
+        data: { confirmDelete: data.confirmDelete },
       }
     );
     return response.data;
@@ -212,7 +212,7 @@ export const deletePoolCompanyByAdmin = async (data: {
   try {
     const response = await apiClient.delete(
       `/admin/deletePoolCompanyByAdmin/${data.companyId}`,
-      { 
+      {
         headers: { auth_token: token },
         data: { confirmDelete: data.confirmDelete },
       }
@@ -258,11 +258,11 @@ export const getAllPackagesByAdmin = async () => {
   try {
     if (!token) {
       throw "Not authorized to access";
-    } 
+    }
     const response = await apiClient.get("/admin/getAllPackagesByAdmin", {
       headers: { auth_token: token },
     });
-    return response.data.packagesList;
+    return response.data.pacakgesList;
   } catch (error) {
     throw error;
   }
@@ -463,4 +463,3 @@ export const deleteEmploymentTypeByAdmin = async (id: string) => {
     throw error;
   }
 };
-  
