@@ -1,6 +1,7 @@
 import axios from "axios";
 import { AddEmployeeForm } from "../forms/add-employee";
 import { EmployeeUpdateForm } from "../forms/update-employee";
+import { AddPackageForm } from "../forms/add-package";
 
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -114,6 +115,24 @@ export const registerEmployee = async (employeeDetails: AddEmployeeForm) => {
   }
 };
 
+export const registerPackage = async (packageDetails: AddPackageForm) => {
+  const token = localStorage.getItem("token");
+  try {
+    if (!token) {
+      throw "Not authorized to access";
+    }
+    const response = await apiClient.post(
+      "/admin/addPackageByAdmin",
+      packageDetails,
+      { headers: { Auth_token: token } }
+    );
+
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const updateEmployeeDetailsByAdmin = async (
   employeeDetails: EmployeeUpdateForm
 ) => {
@@ -176,7 +195,7 @@ export const deletePoolCandidatesByAdmin = async (data: {
       `/admin/deletePoolCandidatesByAdmin/${data.candidateId}`,
       {
         headers: { auth_token: token },
-        data:{confirmDelete:data.confirmDelete},
+        data: { confirmDelete: data.confirmDelete },
       }
     );
     return response.data;
@@ -193,7 +212,7 @@ export const deletePoolCompanyByAdmin = async (data: {
   try {
     const response = await apiClient.delete(
       `/admin/deletePoolCompanyByAdmin/${data.companyId}`,
-      { 
+      {
         headers: { auth_token: token },
         data: { confirmDelete: data.confirmDelete },
       }
@@ -229,6 +248,21 @@ export const getAllEmployeeDetailsByAdmin = async () => {
       headers: { auth_token: token },
     });
     return response.data.usersList;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getAllPackagesByAdmin = async () => {
+  const token = localStorage.getItem("token");
+  try {
+    if (!token) {
+      throw "Not authorized to access";
+    }
+    const response = await apiClient.get("/admin/getAllPackagesByAdmin", {
+      headers: { auth_token: token },
+    });
+    return response.data.pacakgesList;
   } catch (error) {
     throw error;
   }
@@ -429,4 +463,3 @@ export const deleteEmploymentTypeByAdmin = async (id: string) => {
     throw error;
   }
 };
-  
