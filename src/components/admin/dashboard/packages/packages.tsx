@@ -26,6 +26,13 @@ const Packages = () => {
   const { scrollRef, handleMouseDown, handleMouseMove, handleMouseUp } =
     useHorizontalScroll();
 
+  const handlePackageSelect=(packageId:string)=>{
+    navigate(
+      `${organizationAdminUrls(
+        organizationConfig.organization_name
+      )}/dashboard/updates/${packageId}`
+    );
+  }
   useEffect(() => {
     getAllPackagesByAdmin()
       .then((packagesList) => {
@@ -156,8 +163,7 @@ const Packages = () => {
                       </td>
                       <td className="px-4 py-2 border">
                         <Button
-                          onClick={() =>
-                            navigate(`/dashboard/editpackage/${pkg.packageId}`)
+                          onClick={() => handlePackageSelect(pkg._id)
                           }
                         >
                           <IconEdit />
