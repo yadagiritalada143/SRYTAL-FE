@@ -151,15 +151,17 @@ export const updateEmployeeDetailsByAdmin = async (
 };
 
 export const updatePackageByAdmin = async (
-packageId: string, packageDetails: PackageUpdateForm) => {
+  packageId: string,
+  packageDetails: PackageUpdateForm
+) => {
   const adminToken = localStorage.getItem("adminToken");
   try {
     const response = await apiClient.put(
       "/admin/updatePackageByAdmin",
-      packageDetails,
+      { id: packageId, detailsToUpdate: packageDetails },
       { headers: { auth_token: adminToken } }
     );
-    console.log("Response received after updating: ", response.data);
+
     return response.data;
   } catch (error) {
     throw error;
