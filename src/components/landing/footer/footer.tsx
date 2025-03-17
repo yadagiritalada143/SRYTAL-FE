@@ -107,7 +107,7 @@ const Footer = () => {
         </div>
       </div>
       <p className="text-xs text-gray-400">
-        &copy; SRYTAL Systems India Pvt Ltd 2024 | All Rights Reserved
+        &copy; SRYTAL Systems India Pvt Ltd 2024 - 2025 | All Rights Reserved
       </p>
     </div>
   );
