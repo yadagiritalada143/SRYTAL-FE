@@ -28,16 +28,28 @@ import {
 import { useDisclosure } from "@mantine/hooks";
 import { useCustomToast } from "../../../../utils/common/toast";
 import { DeletePackageModel } from "./delete-models";
+import AddTasksPackage from "./add-tasks";
+import PackageTasksTable from "./tasks";
+import { userDetailsAtom } from "../../../../atoms/user";
 
 const UpdatePackage = () => {
   const [opened, { open, close }] = useDisclosure(false);
   const navigate = useNavigate();
   const theme = useMantineTheme();
-    const [confirmDelete, setConfirmDelete] = useState(false);
-    const [agreeTerms, setAgreeTerms] = useState(false);
-    const { showSuccessToast } = useCustomToast();
-  const { packageId } = useParams();
+  const params = useParams();
+  const packageId = params.packageId as string;
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [agreeTerms, setAgreeTerms] = useState(false);
+  const { showSuccessToast } = useCustomToast();
+  const user = useRecoilValue(userDetailsAtom);
   const organizationConfig = useRecoilValue(organizationThemeAtom);
+  const [tasks, setTasks] = useState<
+    {
+      updateAt: string;
+      userId: { firstName: string; lastName: string };
+      tasks: string;
+    }[]
+  >([]);
 
   const {
     register,
@@ -81,7 +93,8 @@ const UpdatePackage = () => {
         const errorMessage =
           error instanceof Error
             ? error.message
-            : error?.response?.data?.message || "Failed to fetch package details.";
+            : error?.response?.data?.message ||
+              "Failed to fetch package details.";
         toast.error(errorMessage);
       })
       .finally(() => {
@@ -89,30 +102,29 @@ const UpdatePackage = () => {
       });
   }, [packageId, reset]);
 
-
   const handleDeletePackage = () => {
     if (!packageId) {
-        toast.error("Invalid package ID.");
-        return;
-      }
-      const payload = {
-        id: packageId,
-        confirmDelete: agreeTerms,
-      };
-  
-      deletePackageByAdmin(payload.id)
-        .then(() => {
-          showSuccessToast("Package deleted successfully !");
-          navigate(
-            `${organizationAdminUrls(
-              organizationConfig.organization_name
-            )}/dashboard/packages`
-          );
-        })
-        .catch((error: { response: { data: { message: any } } }) => {
-          toast.error(error.response?.data?.message || "Something went wrong");
-        });
+      toast.error("Invalid package ID.");
+      return;
+    }
+    const payload = {
+      id: packageId,
+      confirmDelete: agreeTerms,
     };
+
+    deletePackageByAdmin(payload.id)
+      .then(() => {
+        showSuccessToast("Package deleted successfully !");
+        navigate(
+          `${organizationAdminUrls(
+            organizationConfig.organization_name
+          )}/dashboard/packages`
+        );
+      })
+      .catch((error: { response: { data: { message: any } } }) => {
+        toast.error(error.response?.data?.message || "Something went wrong");
+      });
+  };
 
   const onSubmit = (data: PackageUpdateForm) => {
     if (!packageId) return;
@@ -136,16 +148,19 @@ const UpdatePackage = () => {
   };
 
   return (
-    <div className="flex justify-center items-center py-12">
+    <div>
       {isLoading ? (
         <div className="flex justify-center items-center h-48">
-          <Loader size="xl" color={organizationConfig.organization_theme.theme.button.color} />
+          <Loader
+            size="xl"
+            color={organizationConfig.organization_theme.theme.button.color}
+          />
         </div>
       ) : (
         <BgDiv>
           <form
             onSubmit={handleSubmit(onSubmit)}
-            className="rounded-lg shadow-lg w-full max-w-4xl p-8"
+            className="rounded-lg shadow-lg w-full max-w-2xl p-8 ml-auto mr-auto"
             style={{
               backgroundColor: organizationConfig.organization_theme.theme.backgroundColor,
             }}
@@ -222,9 +237,9 @@ const UpdatePackage = () => {
                 className="bg-red-500 text-white py-2 px-4 rounded"
                 type="button"
                 onClick={(e) => {
-                    e.preventDefault();
-                    open();
-                  }}
+                  e.preventDefault();
+                  open();
+                }}
               >
                 Delete Package
               </button>
@@ -234,14 +249,26 @@ const UpdatePackage = () => {
       )}
 
       <DeletePackageModel
-              agreeTerms={agreeTerms}
-              close={close}
-              opened={opened}
-              confirmDelete={confirmDelete}
-              handleDeletePackage={handleDeletePackage}
-              setAgreeTerms={setAgreeTerms}
-              setConfirmDelete={setConfirmDelete}
-            />
+        agreeTerms={agreeTerms}
+        close={close}
+        opened={opened}
+        confirmDelete={confirmDelete}
+        handleDeletePackage={handleDeletePackage}
+        setAgreeTerms={setAgreeTerms}
+        setConfirmDelete={setConfirmDelete}
+      />
+      <AddTasksPackage
+        organizationConfig={organizationConfig}
+        tasks={tasks}
+        setTasks={setTasks}
+        user={user}
+        packageId={packageId}
+        required={true}
+      />
+      <PackageTasksTable
+        organizationConfig={organizationConfig}
+        tasks={tasks}
+      />
     </div>
   );
 };

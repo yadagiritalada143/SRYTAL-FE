@@ -437,6 +437,18 @@ export const getAllEmploymentTypes = async () => {
   }
 };
 
+export const addTasksByAdmin = async (title: string) => {
+  try {
+    const response = await apiClient.post("/admin/addTaskToPackageByAdmin", {
+      title,
+    });
+    return response.data;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
 export const getAllEmployeeRoleByAdmin = async () => {
   const token = localStorage.getItem("token");
   try {
