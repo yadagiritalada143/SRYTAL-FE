@@ -62,7 +62,7 @@ const AdminDashboard = () => {
             organization={organizationConfig.organization_name}
           />
         </div>
-        <div className="h-full overflow-auto">
+        <div>
           <Outlet />
         </div>
       </BgDiv>

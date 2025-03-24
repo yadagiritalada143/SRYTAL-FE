@@ -156,7 +156,7 @@ const EmployeeRoutes = () => {
 };
 
 const RecruiterProtectedRoutes = () => {
-  const token = localStorage.getItem("employeeToken");
+  const token = localStorage.getItem("token");
   const userRole = localStorage.getItem("userRole");
   const organizationConfig = useRecoilValue(organizationThemeAtom);
   const navigate = useNavigate();
@@ -182,7 +182,7 @@ const RecruiterProtectedRoutes = () => {
 };
 
 const EmployeeProtectedRoutes = () => {
-  const token = localStorage.getItem("employeeToken");
+  const token = localStorage.getItem("token");
   const userRole = localStorage.getItem("userRole");
   const organizationConfig = useRecoilValue(organizationThemeAtom);
   const navigate = useNavigate();

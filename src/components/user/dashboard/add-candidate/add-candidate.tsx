@@ -8,6 +8,7 @@ import {
   Chip,
   Input,
   Textarea,
+  useMantineTheme,
 } from "@mantine/core";
 import { Controller, useForm } from "react-hook-form";
 import { useState } from "react";
@@ -19,7 +20,10 @@ import { BgDiv } from "../../../common/style-components/bg-div";
 import { toast } from "react-toastify";
 import { addPoolCandidateByRecruiter } from "../../../../services/user-services";
 import { useNavigate } from "react-router-dom";
-import { commonUrls } from "../../../../utils/common/constants";
+import {
+  commonUrls,
+  organizationAdminUrls,
+} from "../../../../utils/common/constants";
 import { useCustomToast } from "../../../../utils/common/toast";
 import { DateTimePicker } from "@mantine/dates";
 import { useRecoilValue } from "recoil";
@@ -45,6 +49,7 @@ const AddPoolCandidate = () => {
   const navigate = useNavigate();
   const { showSuccessToast } = useCustomToast();
   const organizationConfig = useRecoilValue(organizationThemeAtom);
+  const theme = useMantineTheme();
 
   const [skills, setSkills] = useState<string[]>([]);
   const [skillInput, setSkillInput] = useState("");
@@ -94,9 +99,25 @@ const AddPoolCandidate = () => {
           }}
           className="rounded-lg shadow-lg w-full p-8"
         >
-          <h1 className="text-3xl font-extrabold underline text-center">
-          Add Candidate
-        </h1>
+          <div className="px-4 flex justify-between">
+            <div></div>
+            <h1 className="text-3xl font-extrabold underline text-center">
+              Add Candidate
+            </h1>
+            <Button
+              bg={theme.colors.primary[5]}
+              onClick={() =>
+                navigate(
+                  `${organizationAdminUrls(
+                    organizationConfig.organization_name
+                  )}/dashboard/pool-candidates`
+                )
+              }
+            >
+              {" "}
+              Cancel
+            </Button>
+          </div>
           <Grid gutter="md">
             <Grid.Col span={12}>
               <Controller

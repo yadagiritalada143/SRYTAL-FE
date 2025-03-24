@@ -5,8 +5,8 @@ import {
   Select,
   useMantineTheme,
   MultiSelect,
-  Checkbox,
   Loader,
+  Textarea,
 } from "@mantine/core";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -27,12 +27,13 @@ import { toast } from "react-toastify";
 import { useEffect, useState } from "react";
 import { organizationAdminUrls } from "../../../../utils/common/constants";
 import { BgDiv } from "../../../common/style-components/bg-div";
-import { Modal } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { useRecoilValue } from "recoil";
 import { organizationThemeAtom } from "../../../../atoms/organization-atom";
 import { useCustomToast } from "../../../../utils/common/toast";
 import { DatePickerInput } from "@mantine/dates";
+import { DeleteEmployeeModel } from "./delete-model";
+import { BackButton } from "../../../common/style-components/buttons";
 
 const UpdateEmployee = () => {
   const navigate = useNavigate();
@@ -137,6 +138,9 @@ const UpdateEmployee = () => {
           employeeRole: emp.employeeRole.map(
             (role: { id: string }) => role?.id
           ),
+          dateOfBirth: emp.dateOfBirth
+            ? new Date(emp.dateOfBirth).toISOString().split("T")[0]
+            : "",
         });
       })
       .catch((error) => {
@@ -179,15 +183,15 @@ const UpdateEmployee = () => {
 
   return (
     <div className="flex justify-center items-center py-12">
-      <BgDiv>
         {isLoading ? (
           <div className="flex justify-center items-center h-48">
             <Loader
               size="xl"
               color={organizationConfig.organization_theme.theme.button.color}
-            />
+              />
           </div>
         ) : (
+          <BgDiv>
           <form
             onSubmit={handleSubmit(onSubmit)}
             style={{
@@ -196,33 +200,25 @@ const UpdateEmployee = () => {
             }}
             className="rounded-lg shadow-lg w-full max-w-4xl p-8"
           >
-            <div className="px-4 flex justify-between">
-              <div></div>
-              <h2 className="text-2xl font-bold text-center mb-6">
-                Update Profile
+            <div className="flex items-center justify-between flex-wrap mb-6">
+              <h2 className="text-2xl font-bold underline text-center flex-grow">
+                Update Employee Profile
               </h2>
-              <Button
-                bg={theme.colors.primary[5]}
-                onClick={() =>
-                  navigate(
-                    `${organizationAdminUrls(
-                      organizationConfig.organization_name
-                    )}/dashboard`
-                  )
-                }
-              >
-                {" "}
-                Cancel
-              </Button>
+              <BackButton id={employeeId} />
             </div>
 
-            <h3 className="text-lg font-bold mb-4">Personal Information</h3>
-            <TextInput
-              className="mb-2"
-              label="Employee Id"
-              {...register("employeeId")}
-              error={errors.employeeId?.message}
-            />
+            <div className="mb-5">
+              <TextInput
+                label="Employee Id"
+                className="w-full"
+                {...register("employeeId")}
+                error={errors.employeeId?.message}
+              />
+            </div>
+
+            <h3 className="text-lg font-bold underline mb-2">
+              Personal Information
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <TextInput
                 label="First Name"
@@ -268,40 +264,81 @@ const UpdateEmployee = () => {
                     label="Date of Birth"
                     placeholder="Select date of birth"
                     value={field.value ? new Date(field.value) : null}
-                    onChange={(date) =>
-                      field.onChange(
-                        date ? date.toISOString().split("T")[0] : null
-                      )
-                    }
+                    onChange={(date) => {
+                      if (date) {
+                        const adjustedDate = new Date(
+                          date.getTime() - date.getTimezoneOffset() * 60000
+                        )
+                          .toISOString()
+                          .split("T")[0];
+                        field.onChange(adjustedDate);
+                      } else {
+                        field.onChange(null);
+                      }
+                    }}
                     error={errors.dateOfBirth?.message}
                   />
                 )}
               />
             </div>
 
-            <div className="mt-8">
-              <Controller
-                name="employeeRole"
-                control={control}
-                render={({ field }) => (
-                  <MultiSelect
-                    data={employmentRolesOptions}
-                    label="Employee Role"
-                    placeholder="Select employee roles"
-                    value={
-                      field.value?.filter(
-                        (role) => role !== undefined
-                      ) as string[]
-                    }
-                    onChange={field.onChange}
-                    onBlur={field.onBlur}
-                    error={errors.employeeRole?.message}
-                  />
-                )}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <Textarea
+                label="Present Address"
+                {...register("presentAddress")}
+                error={errors.presentAddress?.message}
+                className="h-20"
+              />
+              <Textarea
+                label="Permanent Address"
+                {...register("permanentAddress")}
+                error={errors.permanentAddress?.message}
+                className="h-20"
               />
             </div>
 
-            <h3 className="text-lg font-bold mt-8 mb-4">Bank Details</h3>
+            <h3 className="text-lg font-bold underline mt-8 mb-4">
+              Employment Details
+            </h3>
+            <Controller
+              name="employmentType"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  className="mb-2"
+                  label="Employment Type"
+                  placeholder="Enter employment type"
+                  data={employmentTypeOptions}
+                  {...field}
+                  error={errors.employmentType?.message}
+                />
+              )}
+            />
+            <Controller
+              name="employeeRole"
+              control={control}
+              render={({ field }) => (
+                <MultiSelect
+                  className="mb-2"
+                  data={employmentRolesOptions}
+                  label="Employee Role"
+                  placeholder="Select employee roles"
+                  value={
+                    field.value?.filter(
+                      (role) => role !== undefined
+                    ) as string[]
+                  }
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  error={errors.employeeRole?.message}
+                />
+              )}
+            />
+
+            {/* Bank Details */}
+            <h3 className="text-lg font-bold underline mt-5 mb-4">
+              Bank Details
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <TextInput
                 label="Account Number"
@@ -311,34 +348,20 @@ const UpdateEmployee = () => {
               />
               <TextInput
                 label="Account Holder Name"
-                placeholder="Enter bank account holder name"
                 {...register("bankDetailsInfo.accountHolderName")}
                 error={errors.bankDetailsInfo?.accountHolderName?.message}
+                placeholder="Enter account holder name"
               />
               <TextInput
                 label="IFSC Code"
-                placeholder="Enter bank ifsc code"
                 {...register("bankDetailsInfo.ifscCode")}
                 error={errors?.bankDetailsInfo?.ifscCode?.message}
+                placeholder="Enter IFSC code"
               />
             </div>
 
-            <h3 className="text-lg font-bold mt-8 mb-4">Employment Details</h3>
-            <Controller
-              name="employmentType"
-              control={control}
-              render={({ field }) => (
-                <Select
-                  label="Employment Type"
-                  placeholder="Enter employment type"
-                  data={employmentTypeOptions}
-                  {...field}
-                  error={errors.employmentType?.message}
-                />
-              )}
-            />
-
-            <div className=" flex flex-wrap justify-between mt-8">
+            {/* Buttons Section */}
+            <div className="flex flex-wrap justify-between mt-8">
               <Button
                 bg={theme.colors.primary[5]}
                 onClick={handlePasswordReset}
@@ -346,7 +369,7 @@ const UpdateEmployee = () => {
                 Reset Password
               </Button>
               <button
-                className="bg-red-500 py-2 px-4 rounded"
+                className="bg-red-500 text-white py-2 px-4 rounded"
                 onClick={(e) => {
                   e.preventDefault();
                   open();
@@ -357,42 +380,18 @@ const UpdateEmployee = () => {
               <Button type="submit">Update Employee</Button>
             </div>
           </form>
-        )}
       </BgDiv>
-      <Modal size="md" opened={opened} onClose={close}>
-        <div>
-          <h2 className="font-bold text-lg">
-            Sure want to delete the employee?{" "}
-          </h2>
-          <p className="mt-4 font-bold">
-            Please be aware of doing this action! Deleting employee is an
-            un-reversible action and you should be aware while doing this.
-          </p>
-          <div className="mt-4">
-            <Checkbox
-              label="I understand what are the consequences of doing this action!"
-              checked={confirmDelete}
-              onChange={(e) => setConfirmDelete(e.currentTarget.checked)}
-              required
-            />
-            <Checkbox
-              label="I understand that this employee details are not a part of our application forever. I agreed to the Terms and Conditions to perform this action"
-              checked={agreeTerms}
-              onChange={(e) => setAgreeTerms(e.currentTarget.checked)}
-            />
-          </div>
-          <div className=" flex flex-wrap justify-between mt-8">
-            <button
-              className="bg-red-500 text-white py-2 px-4 rounded"
-              onClick={handleDeleteEmployee}
-              disabled={!confirmDelete}
-            >
-              Delete
-            </button>
-            <Button onClick={close}>Cancel</Button>
-          </div>
-        </div>
-      </Modal>
+        )}
+
+      <DeleteEmployeeModel
+        agreeTerms={agreeTerms}
+        close={close}
+        opened={opened}
+        confirmDelete={confirmDelete}
+        handleDeleteEmployee={handleDeleteEmployee}
+        setAgreeTerms={setAgreeTerms}
+        setConfirmDelete={setConfirmDelete}
+      />
     </div>
   );
 };

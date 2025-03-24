@@ -12,6 +12,7 @@ import { SearchBarFullWidht } from "../../../common/search-bar/search-bar";
 import { useRecoilValue } from "recoil";
 import { organizationThemeAtom } from "../../../../atoms/organization-atom";
 import moment from "moment";
+import useHorizontalScroll from "../../../../hooks/horizontal-scroll";
 
 const PoolCandidateList = () => {
   const navigate = useNavigate();
@@ -20,6 +21,8 @@ const PoolCandidateList = () => {
   const [filteredCandidates, setFilteredCandidates] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const organizationConfig = useRecoilValue(organizationThemeAtom);
+  const { scrollRef, handleMouseDown, handleMouseMove, handleMouseUp } =
+    useHorizontalScroll();
 
   useEffect(() => {
     getAllPoolCandidatesByEmployee()
@@ -68,6 +71,31 @@ const PoolCandidateList = () => {
     setFilteredCandidates(filtered);
   };
 
+  useEffect(() => {
+    const selectedCandidate = localStorage.getItem("id");
+    if (selectedCandidate && filteredCandidates.length > 0) {
+      const rowElement = document.getElementById(
+        `candidate-${selectedCandidate}`
+      );
+      if (rowElement) {
+        rowElement.scrollIntoView({ behavior: "smooth", block: "center" });
+        rowElement.style.backgroundColor =
+          organizationConfig.organization_theme.theme.backgroundColor;
+        rowElement.style.color =
+          organizationConfig.organization_theme.theme.color;
+        setTimeout(() => {
+          rowElement.style.backgroundColor = "";
+          rowElement.style.color = "";
+        }, 2000);
+      }
+      localStorage.removeItem("id");
+    }
+  }, [
+    filteredCandidates,
+    organizationConfig.organization_theme.theme.backgroundColor,
+    organizationConfig.organization_theme.theme.color,
+  ]);
+
   return (
     <div
       style={{
@@ -100,7 +128,15 @@ const PoolCandidateList = () => {
         placeHolder="Search by Name, Email, Phone, Skills"
       />
 
-      <div className="overflow-auto max-w-full shadow-lg rounded-lg">
+      <div
+        className="flex overflow-auto sm:overflow-hidden max-w-full shadow-lg rounded-lg"
+        ref={scrollRef}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+        style={{ userSelect: "none" }}
+      >
         <Table className="w-full text-center shadow-md border table-auto">
           <colgroup>
             <col className="w-16" />
@@ -150,6 +186,7 @@ const PoolCandidateList = () => {
             <tbody>
               {filteredCandidates.map((candidate: any, index: number) => (
                 <tr
+                  id={`candidate-${candidate._id}`}
                   key={candidate._id}
                   className="border-b transition-all duration-200 text-left"
                 >
