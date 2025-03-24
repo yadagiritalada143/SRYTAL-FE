@@ -63,14 +63,13 @@ const AddPackage = () => {
               Cancel
             </Button>
           </div>
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
             <TextInput
               label="Title"
               placeholder="Enter Title"
               {...register("title")}
               error={errors.title?.message}
             />
-
+          <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 mt-4">
             <Controller
               control={control}
               name="startDate"
@@ -105,16 +104,16 @@ const AddPackage = () => {
           </div>
 
           <Textarea
-            label="Description"
+            label="Description" className="mt-4"
             placeholder="Enter Description"
             {...register("description")}
             maxRows={4}
             error={errors.description?.message}
           />
 
-          <div className="flex justify-end py-4">
+          <div className="flex justify-end py-3">
             <Button
-              className="rounded-md"
+              className="rounded-md mt-4"
               type="submit"
               data-testid="submitButton"
               leftSection={

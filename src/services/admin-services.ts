@@ -2,6 +2,7 @@ import axios from "axios";
 import { AddEmployeeForm } from "../forms/add-employee";
 import { EmployeeUpdateForm } from "../forms/update-employee";
 import { AddPackageForm } from "../forms/add-package";
+import { PackageUpdateForm } from "../forms/update-package";
 
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -149,6 +150,24 @@ export const updateEmployeeDetailsByAdmin = async (
   }
 };
 
+export const updatePackageByAdmin = async (
+  packageId: string,
+  packageDetails: PackageUpdateForm
+) => {
+  const adminToken = localStorage.getItem("adminToken");
+  try {
+    const response = await apiClient.put(
+      "/admin/updatePackageByAdmin",
+      { id: packageId, detailsToUpdate: packageDetails },
+      { headers: { auth_token: adminToken } }
+    );
+
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const handlePasswordResetByAdmin = async (id: string) => {
   const token = localStorage.getItem("token");
   try {
@@ -175,6 +194,21 @@ export const deleteEmployeeByAdmin = async (data: {
     const response = await apiClient.post(
       "/admin/deleteEmployeeByAdmin",
       data,
+      {
+        headers: { auth_token: token },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const deletePackageByAdmin = async (id: string) => {
+  const token = localStorage.getItem("token");
+  try {
+    const response = await apiClient.delete(
+      `/admin/deletePackageByAdmin/${id}`,
       {
         headers: { auth_token: token },
       }
@@ -399,6 +433,18 @@ export const getAllEmploymentTypes = async () => {
     console.log(response);
     return response.data.employmentTypesList;
   } catch (error) {
+    throw error;
+  }
+};
+
+export const addTasksByAdmin = async (title: string) => {
+  try {
+    const response = await apiClient.post("/admin/addTaskToPackageByAdmin", {
+      title,
+    });
+    return response.data;
+  } catch (error) {
+    console.log(error);
     throw error;
   }
 };
