@@ -43,7 +43,7 @@ export const getVisitorCount = async () => {
     const response = await apiClient.get("/getVisitorCount");
     const count = response.data.visitorCount;
 
-    return typeof count === "number" ? count : String(count);
+    return Number(count);
   } catch (error) {
     console.error("Error fetching visitor count:", error);
     throw error;
