@@ -45,6 +45,7 @@ const UpdatePackage = () => {
   const organizationConfig = useRecoilValue(organizationThemeAtom);
   const [tasks, setTasks] = useState<
     {
+      packageId: string;
       updateAt: string;
       userId: { firstName: string; lastName: string };
       tasks: string;
@@ -75,6 +76,8 @@ const UpdatePackage = () => {
           return;
         }
 
+        setTasks(packageDetails.tasks);
+
         reset({
           ...packageDetails,
           startDate: packageDetails.startDate
@@ -103,11 +106,7 @@ const UpdatePackage = () => {
     deletePackageByAdmin(packageId)
       .then(() => {
         showSuccessToast("Package deleted successfully!");
-        navigate(
-          `${organizationAdminUrls(
-            organizationConfig.organization_name
-          )}/dashboard/packages`
-        );
+        navigate(-1);
       })
       .catch((error) => {
         toast.error(error?.response?.data?.message || "Something went wrong");
@@ -116,22 +115,18 @@ const UpdatePackage = () => {
 
   const onSubmit = async (data: PackageUpdateForm) => {
     if (!packageId) return;
-  
+
     try {
       setIsLoading(true);
       await updatePackageByAdmin(packageId, data);
       toast.success("Package updated successfully!");
       const updatedPackageDetails = await getPackageDetailsByAdmin(packageId);
       if (updatedPackageDetails) {
-        navigate(
-          `${organizationAdminUrls(
-            organizationConfig.organization_name
-          )}/dashboard/packages/${packageId}`
-        );
+        navigate(-1);
       } else {
         toast.error("Failed to fetch updated package details.");
       }
-    } catch (error:any) {
+    } catch (error: any) {
       toast.error(error?.response?.data?.message || "Something went wrong");
     } finally {
       setIsLoading(false);
@@ -153,7 +148,8 @@ const UpdatePackage = () => {
             onSubmit={handleSubmit(onSubmit)}
             className="rounded-lg shadow-lg w-full max-w-2xl p-8 ml-auto mr-auto"
             style={{
-              backgroundColor: organizationConfig.organization_theme.theme.backgroundColor,
+              backgroundColor:
+                organizationConfig.organization_theme.theme.backgroundColor,
             }}
           >
             <div className="flex items-center justify-between flex-wrap mb-6">
