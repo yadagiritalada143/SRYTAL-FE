@@ -289,39 +289,39 @@ const UpdatePoolCandidateForm = () => {
         </form>
       </BgDiv>
       <Modal size="md" opened={opened} onClose={close}>
-                    <div>
-                      <h2 className="font-bold text-lg">
-                        Sure want to delete this Candidate?{" "}
-                      </h2>
-                      <p className="mt-4 font-bold">
-                        Please be aware of doing this action! Deleting candidate is an
-                        un-reversible action and you should be aware while doing this.
-                      </p>
-                      <div className="mt-4">
-                        <Checkbox
-                          label="I understand what are the consequences of doing this action!"
-                          checked={confirmDelete}
-                          onChange={(e) => setConfirmDelete(e.currentTarget.checked)}
-                          required
-                        />
-                        <Checkbox
-                          label="I understand that this employee details are not a part of our application forever. I agreed to the Terms and Conditions to perform this action"
-                          checked={agreeTerms}
-                          onChange={(e) => setAgreeTerms(e.currentTarget.checked)}
-                        />
-                      </div>
-                      <div className=" flex flex-wrap justify-between mt-8">
-                        <button
-                          className="bg-red-500 text-white py-2 px-4 rounded"
-                          onClick={() => handleDeleteCandidate(candidateId!, agreeTerms)}
-                          disabled={!confirmDelete}
-                        >
-                          Delete
-                        </button>
-                        <Button onClick={close}>Cancel</Button>
-                      </div>
-                    </div>
-                  </Modal>
+        <div>
+          <h2 className="font-bold text-lg">
+            Sure want to delete this Candidate?{" "}
+          </h2>
+          <p className="mt-4 font-bold">
+            Please be aware of doing this action! Deleting candidate is an
+            un-reversible action and you should be aware while doing this.
+          </p>
+          <div className="mt-4">
+            <Checkbox
+              label="I understand what are the consequences of doing this action!"
+              checked={confirmDelete}
+              onChange={(e) => setConfirmDelete(e.currentTarget.checked)}
+              required
+            />
+            <Checkbox
+              label="I understand that this employee details are not a part of our application forever. I agreed to the Terms and Conditions to perform this action"
+              checked={agreeTerms}
+              onChange={(e) => setAgreeTerms(e.currentTarget.checked)}
+            />
+          </div>
+          <div className=" flex flex-wrap justify-between mt-8">
+            <button
+              className="bg-red-500 text-white py-2 px-4 rounded"
+              onClick={() => handleDeleteCandidate(candidateId!, agreeTerms)}
+              disabled={!confirmDelete}
+            >
+              Delete
+            </button>
+            <Button onClick={close}>Cancel</Button>
+          </div>
+        </div>
+      </Modal>
 
       <AddComment
         organizationConfig={organizationConfig}

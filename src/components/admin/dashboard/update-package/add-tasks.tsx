@@ -11,6 +11,7 @@ const AddTasksPackage = ({
   organizationConfig,
   setTasks,
   user,
+  packageId,
   required=false,
 }: {
   organizationConfig: OrganizationConfig;
@@ -30,8 +31,8 @@ const AddTasksPackage = ({
         return;
       }
     setError("");
-    addTasksByAdmin(newTasks)
-      .then(() => {
+    addTasksByAdmin(packageId, newTasks)
+      .then((data) => {
         showSuccessToast("Your tasks has been added !");
         const tasks = {
           userId: {

@@ -13,6 +13,7 @@ import {
   AddPackageForm,
   addPackageSchema,
 } from "../../../../forms/add-package";
+import { toast } from "react-toastify";
 
 const AddPackage = () => {
   const navigate = useNavigate();
@@ -37,8 +38,8 @@ const AddPackage = () => {
       reset();
 
       navigate(-1);
-    } catch (error) {
-      throw error;
+    } catch (error: any) {
+      toast.error(error.message);
     }
   };
 
@@ -63,12 +64,12 @@ const AddPackage = () => {
               Cancel
             </Button>
           </div>
-            <TextInput
-              label="Title"
-              placeholder="Enter Title"
-              {...register("title")}
-              error={errors.title?.message}
-            />
+          <TextInput
+            label="Title"
+            placeholder="Enter Title"
+            {...register("title")}
+            error={errors.title?.message}
+          />
           <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 mt-4">
             <Controller
               control={control}

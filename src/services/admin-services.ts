@@ -23,7 +23,7 @@ const refreshAccessToken = async () => {
     });
 
     const { token: newAccessToken } = response.data;
-
+    
     localStorage.setItem("token", newAccessToken);
 
     return newAccessToken;
@@ -125,9 +125,9 @@ export const registerPackage = async (packageDetails: AddPackageForm) => {
     const response = await apiClient.post(
       "/admin/addPackageByAdmin",
       packageDetails,
-      { headers: { Auth_token: token } }
+      { headers: { Auth_token: `Bearer ${token}` } }
     );
-
+    
     return response.data;
   } catch (error) {
     throw error;
@@ -159,7 +159,7 @@ export const updatePackageByAdmin = async (
     const response = await apiClient.put(
       "/admin/updatePackageByAdmin",
       { id: packageId, detailsToUpdate: packageDetails },
-      { headers: { auth_token: adminToken } }
+      { headers: { auth_token: `Bearer ${adminToken}` } }
     );
 
     return response.data;
@@ -211,6 +211,21 @@ export const deletePackageByAdmin = async (id: string) => {
       `/admin/deletePackageByAdmin/${id}`,
       {
         headers: { auth_token: token },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const deleteTaskByAdmin = async (taskId: string) => {
+  const token = localStorage.getItem("token");
+  try {
+    const response = await apiClient.delete(
+      `/admin/deleteTaskByAdmin/${taskId}`,
+      {
+        headers: { auth_token: `Bearer ${token}` },
       }
     );
     return response.data;
@@ -293,10 +308,25 @@ export const getAllPackagesByAdmin = async () => {
     if (!token) {
       throw "Not authorized to access";
     }
-    const response = await apiClient.get("/admin/getAllPackagesByAdmin", {
-      headers: { auth_token: token },
+    const response = await apiClient("/admin/getAllPackagesByAdmin", {
+      headers: { auth_token: `Bearer ${token}` },
     });
     return response.data.pacakgesList;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getPackageDetailsByAdmin = async (packageId:string) => {
+  const token = localStorage.getItem("token");
+  try {
+    if (!token) {
+      throw "Not authorized to access";
+    }
+    const response = await apiClient.get(`/admin/getPackageDetailsByAdmin/${packageId}`, {
+      headers: { auth_token: token },
+    });
+    return response.data.packageDetails;
   } catch (error) {
     throw error;
   }
@@ -437,9 +467,10 @@ export const getAllEmploymentTypes = async () => {
   }
 };
 
-export const addTasksByAdmin = async (title: string) => {
+export const addTasksByAdmin = async (packageId: string, title: string) => {
   try {
     const response = await apiClient.post("/admin/addTaskToPackageByAdmin", {
+      packageId,
       title,
     });
     return response.data;

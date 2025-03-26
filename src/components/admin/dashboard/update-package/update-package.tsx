@@ -22,7 +22,7 @@ import { organizationThemeAtom } from "../../../../atoms/organization-atom";
 import { DateInput } from "@mantine/dates";
 import {
   deletePackageByAdmin,
-  getAllPackagesByAdmin,
+  getPackageDetailsByAdmin,
   updatePackageByAdmin,
 } from "../../../../services/admin-services";
 import { useDisclosure } from "@mantine/hooks";
@@ -68,34 +68,27 @@ const UpdatePackage = () => {
 
     setIsLoading(true);
 
-    getAllPackagesByAdmin()
-      .then((packagesList: any) => {
-        const selectedPackage = packagesList.find(
-          (pkg: any) => pkg._id === packageId
-        );
-
-        if (!selectedPackage) {
+    getPackageDetailsByAdmin(packageId)
+      .then((packageDetails: any) => {
+        if (!packageDetails) {
           toast.error("Package not found.");
           return;
         }
 
         reset({
-          ...selectedPackage,
-          startDate: selectedPackage.startDate
-            ? new Date(selectedPackage.startDate)
+          ...packageDetails,
+          startDate: packageDetails.startDate
+            ? new Date(packageDetails.startDate)
             : null,
-          endDate: selectedPackage.endDate
-            ? new Date(selectedPackage.endDate)
+          endDate: packageDetails.endDate
+            ? new Date(packageDetails.endDate)
             : null,
         });
       })
       .catch((error) => {
-        const errorMessage =
-          error instanceof Error
-            ? error.message
-            : error?.response?.data?.message ||
-              "Failed to fetch package details.";
-        toast.error(errorMessage);
+        toast.error(
+          error?.response?.data?.message || "Failed to fetch package details."
+        );
       })
       .finally(() => {
         setIsLoading(false);
@@ -107,31 +100,9 @@ const UpdatePackage = () => {
       toast.error("Invalid package ID.");
       return;
     }
-    const payload = {
-      id: packageId,
-      confirmDelete: agreeTerms,
-    };
-
-    deletePackageByAdmin(payload.id)
+    deletePackageByAdmin(packageId)
       .then(() => {
-        showSuccessToast("Package deleted successfully !");
-        navigate(
-          `${organizationAdminUrls(
-            organizationConfig.organization_name
-          )}/dashboard/packages`
-        );
-      })
-      .catch((error: { response: { data: { message: any } } }) => {
-        toast.error(error.response?.data?.message || "Something went wrong");
-      });
-  };
-
-  const onSubmit = (data: PackageUpdateForm) => {
-    if (!packageId) return;
-
-    updatePackageByAdmin(packageId, data)
-      .then(() => {
-        toast.success("Package updated successfully!");
+        showSuccessToast("Package deleted successfully!");
         navigate(
           `${organizationAdminUrls(
             organizationConfig.organization_name
@@ -139,12 +110,32 @@ const UpdatePackage = () => {
         );
       })
       .catch((error) => {
-        const errorMessage =
-          error instanceof Error
-            ? error.message
-            : error?.response?.data?.message || "Something went wrong";
-        toast.error(errorMessage);
+        toast.error(error?.response?.data?.message || "Something went wrong");
       });
+  };
+
+  const onSubmit = async (data: PackageUpdateForm) => {
+    if (!packageId) return;
+  
+    try {
+      setIsLoading(true);
+      await updatePackageByAdmin(packageId, data);
+      toast.success("Package updated successfully!");
+      const updatedPackageDetails = await getPackageDetailsByAdmin(packageId);
+      if (updatedPackageDetails) {
+        navigate(
+          `${organizationAdminUrls(
+            organizationConfig.organization_name
+          )}/dashboard/packages/${packageId}`
+        );
+      } else {
+        toast.error("Failed to fetch updated package details.");
+      }
+    } catch (error:any) {
+      toast.error(error?.response?.data?.message || "Something went wrong");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -181,22 +172,18 @@ const UpdatePackage = () => {
               </Button>
             </div>
             <div className="grid grid-cols-1 gap-4 mb-6">
-              <div>
-                <TextInput
-                  label="Title"
-                  {...register("title")}
-                  error={errors.title?.message}
-                  className="w-full"
-                />
-              </div>
-              <div>
-                <Textarea
-                  label="Description"
-                  {...register("description")}
-                  error={errors.description?.message}
-                  className="w-full"
-                />
-              </div>
+              <TextInput
+                label="Title"
+                {...register("title")}
+                error={errors.title?.message}
+                className="w-full"
+              />
+              <Textarea
+                label="Description"
+                {...register("description")}
+                error={errors.description?.message}
+                className="w-full"
+              />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -230,7 +217,6 @@ const UpdatePackage = () => {
               />
             </div>
 
-            {/* Buttons Section */}
             <div className="flex flex-wrap justify-between mt-8">
               <Button type="submit">Update Package</Button>
               <button
