@@ -69,7 +69,7 @@ const PackageTasksTable = ({
             taskList.map((task, index) => (
               <tr key={task._id} className="border-b text-left ">
                 <td className="px-4 py-2 border-r">{index + 1}</td>
-                <td className="px-4 py-2 border-r">{task.task || "No Task"}</td>
+                <td className="px-4 py-2 border-r">{task.title}</td>
                 <td className="px-4 py-2 border-r">
                   {task?.userId?.firstName || ""} {task?.userId?.lastName || ""}
                 </td>
