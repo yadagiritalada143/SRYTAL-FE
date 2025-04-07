@@ -5,6 +5,7 @@ import {
   Textarea,
   Loader,
   useMantineTheme,
+  MultiSelect,
 } from "@mantine/core";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -22,6 +23,7 @@ import { organizationThemeAtom } from "../../../../atoms/organization-atom";
 import { DateInput } from "@mantine/dates";
 import {
   deletePackageByAdmin,
+  getAllEmployeeDetailsByAdmin,
   getPackageDetailsByAdmin,
   updatePackageByAdmin,
 } from "../../../../services/admin-services";
@@ -40,6 +42,7 @@ const UpdatePackage = () => {
   const packageId = params.packageId as string;
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
+  const [approversOptions, setApproversOptions] = useState([]);
   const { showSuccessToast } = useCustomToast();
   const user = useRecoilValue(userDetailsAtom);
   const organizationConfig = useRecoilValue(organizationThemeAtom);
@@ -80,6 +83,7 @@ const UpdatePackage = () => {
 
         reset({
           ...packageDetails,
+          approvers: packageDetails.approvers?.map((a:any) => a._id), //okasari check cheyyandi endhukusan
           startDate: packageDetails.startDate
             ? new Date(packageDetails.startDate)
             : null,
@@ -162,6 +166,26 @@ const UpdatePackage = () => {
     }
   };
 
+  useEffect(() => {
+    const fetchApprovers = async () => {
+      try {
+        const response = await getAllEmployeeDetailsByAdmin();
+        const filterApprovers = response.map(
+          (approver: { _id: string; firstName: string; lastName: string }) => ({
+            value: approver._id,
+            label: `${approver.firstName} ${approver.lastName}`,
+          })
+        );
+
+        console.log("Approvers options: " , filterApprovers)
+        setApproversOptions(filterApprovers);
+      } catch (error) {
+        toast.error("Failed to fetch approvers.");
+      }
+    };
+    fetchApprovers();
+  }, []);
+  
   return (
     <div>
       {isLoading ? (
@@ -196,7 +220,7 @@ const UpdatePackage = () => {
                 Cancel
               </Button>
             </div>
-            <div className="grid grid-cols-1 gap-4 mb-6">
+            <div className="grid grid-cols-1 gap-4 mb-4">
               <TextInput
                 label="Title"
                 {...register("title")}
@@ -208,6 +232,26 @@ const UpdatePackage = () => {
                 {...register("description")}
                 error={errors.description?.message}
                 className="w-full"
+              />
+              <Controller
+                name="approvers"
+                control={control}
+                render={({ field }) => (
+                  <MultiSelect
+                    className="mb-2"
+                    data={approversOptions}
+                    label="Approvers"
+                    placeholder="Select approvers"
+                    value={
+                      field.value?.filter(
+                        (role) => role !== undefined
+                      ) as string[]
+                    }
+                    onChange={field.onChange}
+                    onBlur={field.onBlur}
+                    error={errors.approvers?.message}
+                  />
+                )}
               />
             </div>
 

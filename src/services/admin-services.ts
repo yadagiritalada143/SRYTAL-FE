@@ -494,8 +494,25 @@ export const getAllEmployeeRoleByAdmin = async () => {
     const response = await apiClient.get("/admin/getAllEmployeeRoleByAdmin", {
       headers: { auth_token: token },
     });
-    console.log(response);
     return response.data.employeeRoles;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getAllApproversByAdmin = async () => {
+  const token = localStorage.getItem("token");
+  try {
+    if (!token) {
+      throw "Not authorized to access";
+    }
+    const response = await apiClient.get(
+      "/admin/getAllEmployeeDetailsByAdmin",
+      {
+        headers: { auth_token: token },
+      }
+    );
+    return response.data.approvers;
   } catch (error) {
     throw error;
   }
