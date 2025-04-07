@@ -48,11 +48,9 @@ const AddTasksPackage = ({
         setNewTasks("");
         fetchPackageDetails();
       })
-      .catch((error) =>
-        toast.error(
-          error || error.response.data.message || "Something went wrong"
-        )
-      );
+      .catch((error) => {
+        toast.error(error.response.data.message || "Something went wrong");
+      });
   };
   return (
     <div className="w-full max-w-2xl mx-auto my-6">

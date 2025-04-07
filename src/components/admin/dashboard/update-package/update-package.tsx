@@ -83,7 +83,7 @@ const UpdatePackage = () => {
 
         reset({
           ...packageDetails,
-          approvers: packageDetails.approvers?.map((a:any) => a._id), //okasari check cheyyandi endhukusan
+          approvers: packageDetails.approvers?.map((a: any) => a._id), //okasari check cheyyandi endhukusan
           startDate: packageDetails.startDate
             ? new Date(packageDetails.startDate)
             : null,
@@ -177,15 +177,16 @@ const UpdatePackage = () => {
           })
         );
 
-        console.log("Approvers options: " , filterApprovers)
+        console.log("Approvers options: ", filterApprovers);
         setApproversOptions(filterApprovers);
-      } catch (error) {
+      } catch (error: any) {
+        console.log(error);
         toast.error("Failed to fetch approvers.");
       }
     };
     fetchApprovers();
   }, []);
-  
+
   return (
     <div>
       {isLoading ? (
