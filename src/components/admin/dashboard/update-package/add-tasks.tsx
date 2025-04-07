@@ -13,6 +13,7 @@ const AddTasksPackage = ({
   user,
   packageId,
   required = false,
+  fetchPackageDetails,
 }: {
   organizationConfig: OrganizationConfig;
   user: any;
@@ -20,6 +21,7 @@ const AddTasksPackage = ({
   setTasks: any;
   tasks: any;
   required: boolean;
+  fetchPackageDetails: () => void;
 }) => {
   const { showSuccessToast } = useCustomToast();
   const [newTasks, setNewTasks] = useState<string>("");
@@ -44,6 +46,7 @@ const AddTasksPackage = ({
         };
         setTasks((prev: any) => [tasks, ...prev]);
         setNewTasks("");
+        fetchPackageDetails();
       })
       .catch((error) =>
         toast.error(

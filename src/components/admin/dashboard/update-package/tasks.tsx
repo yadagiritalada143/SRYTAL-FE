@@ -5,27 +5,39 @@ import moment from "moment";
 import { IconTrash } from "@tabler/icons-react";
 import { deleteTaskByAdmin } from "../../../../services/admin-services";
 import { toast } from "react-toastify";
+import { DeleteTaskModel } from "./delete-task";
+import { useDisclosure } from "@mantine/hooks";
 
 const PackageTasksTable = ({
   tasks = [],
   organizationConfig,
+  fetchPackageDetails,
 }: {
   tasks: any[];
   organizationConfig: OrganizationConfig;
+  fetchPackageDetails: () => void;
 }) => {
+  const [opened, { open, close }] = useDisclosure(false);
   const [taskList, setTaskList] = useState([...tasks]);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [agreeTerms, setAgreeTerms] = useState(false);
+  const [selectedTask, setSelectedTask] = useState("");
 
   useEffect(() => {
     setTaskList(tasks);
   }, [tasks]);
 
-  const handleDeleteTask = async (taskId: string) => {
+  const handleDeleteTask = async (taskId: string, hardDelete: boolean) => {
     try {
-      await deleteTaskByAdmin(taskId);
+      await deleteTaskByAdmin(taskId, hardDelete);
       setTaskList((prevTasks) =>
         prevTasks.filter((task) => task._id !== taskId)
       );
+      setConfirmDelete(false);
+      setAgreeTerms(false);
+      close();
       toast.success("Task deleted successfully");
+      fetchPackageDetails();
     } catch (error) {
       console.error("Error deleting task:", error);
       toast.error("Failed to delete task");
@@ -81,7 +93,10 @@ const PackageTasksTable = ({
                     variant="light"
                     color="red"
                     size="xs"
-                    onClick={() => handleDeleteTask(task._id)}
+                    onClick={() => {
+                      open();
+                      setSelectedTask(task._id);
+                    }}
                   >
                     <IconTrash size={18} />
                   </Button>
@@ -97,6 +112,16 @@ const PackageTasksTable = ({
           )}
         </tbody>
       </Table>
+      <DeleteTaskModel
+        agreeTerms={agreeTerms}
+        close={close}
+        opened={opened}
+        confirmDelete={confirmDelete}
+        handleDeleteTask={handleDeleteTask}
+        setAgreeTerms={setAgreeTerms}
+        setConfirmDelete={setConfirmDelete}
+        selectedTask={selectedTask}
+      />
     </div>
   );
 };

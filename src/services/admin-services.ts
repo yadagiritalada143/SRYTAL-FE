@@ -23,7 +23,7 @@ const refreshAccessToken = async () => {
     });
 
     const { token: newAccessToken } = response.data;
-    
+
     localStorage.setItem("token", newAccessToken);
 
     return newAccessToken;
@@ -127,7 +127,7 @@ export const registerPackage = async (packageDetails: AddPackageForm) => {
       packageDetails,
       { headers: { Auth_token: `Bearer ${token}` } }
     );
-    
+
     return response.data;
   } catch (error) {
     throw error;
@@ -204,13 +204,14 @@ export const deleteEmployeeByAdmin = async (data: {
   }
 };
 
-export const deletePackageByAdmin = async (id: string) => {
+export const deletePackageByAdmin = async (id: string, hardDelete: boolean) => {
   const token = localStorage.getItem("token");
   try {
     const response = await apiClient.delete(
       `/admin/deletePackageByAdmin/${id}`,
       {
         headers: { auth_token: token },
+        data: { confirmDelete: hardDelete },
       }
     );
     return response.data;
@@ -219,13 +220,17 @@ export const deletePackageByAdmin = async (id: string) => {
   }
 };
 
-export const deleteTaskByAdmin = async (taskId: string) => {
+export const deleteTaskByAdmin = async (
+  taskId: string,
+  hardDelete: boolean
+) => {
   const token = localStorage.getItem("token");
   try {
     const response = await apiClient.delete(
       `/admin/deleteTaskByAdmin/${taskId}`,
       {
         headers: { auth_token: `Bearer ${token}` },
+        data: { confirmDelete: hardDelete },
       }
     );
     return response.data;
@@ -317,15 +322,18 @@ export const getAllPackagesByAdmin = async () => {
   }
 };
 
-export const getPackageDetailsByAdmin = async (packageId:string) => {
+export const getPackageDetailsByAdmin = async (packageId: string) => {
   const token = localStorage.getItem("token");
   try {
     if (!token) {
       throw "Not authorized to access";
     }
-    const response = await apiClient.get(`/admin/getPackageDetailsByAdmin/${packageId}`, {
-      headers: { auth_token: token },
-    });
+    const response = await apiClient.get(
+      `/admin/getPackageDetailsByAdmin/${packageId}`,
+      {
+        headers: { auth_token: token },
+      }
+    );
     return response.data.packageDetails;
   } catch (error) {
     throw error;
@@ -469,7 +477,7 @@ export const getAllEmploymentTypes = async () => {
 
 export const addTasksByAdmin = async (packageId: string, title: string) => {
   try {
-    const response = await apiClient.post("/admin/addTaskToPackageByAdmin", {
+    const response = await apiClient.post("/admin/addTaskByAdmin", {
       packageId,
       title,
     });

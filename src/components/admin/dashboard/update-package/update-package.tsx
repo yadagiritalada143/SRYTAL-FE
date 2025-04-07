@@ -98,12 +98,12 @@ const UpdatePackage = () => {
       });
   }, [packageId, reset]);
 
-  const handleDeletePackage = () => {
+  const handleDeletePackage = (hardDelete: boolean) => {
     if (!packageId) {
       toast.error("Invalid package ID.");
       return;
     }
-    deletePackageByAdmin(packageId)
+    deletePackageByAdmin(packageId, hardDelete)
       .then(() => {
         showSuccessToast("Package deleted successfully!");
         navigate(-1);
@@ -111,6 +111,35 @@ const UpdatePackage = () => {
       .catch((error) => {
         toast.error(error?.response?.data?.message || "Something went wrong");
       });
+  };
+  const fetchPackageDetails = async () => {
+    if (!packageId) return;
+
+    setIsLoading(true);
+    try {
+      const packageDetails = await getPackageDetailsByAdmin(packageId);
+      if (!packageDetails) {
+        toast.error("Package not found.");
+        return;
+      }
+
+      setTasks(packageDetails.tasks);
+      reset({
+        ...packageDetails,
+        startDate: packageDetails.startDate
+          ? new Date(packageDetails.startDate)
+          : null,
+        endDate: packageDetails.endDate
+          ? new Date(packageDetails.endDate)
+          : null,
+      });
+    } catch (error: any) {
+      toast.error(
+        error?.response?.data?.message || "Failed to fetch package details."
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const onSubmit = async (data: PackageUpdateForm) => {
@@ -246,10 +275,12 @@ const UpdatePackage = () => {
         user={user}
         packageId={packageId}
         required={true}
+        fetchPackageDetails={fetchPackageDetails}
       />
       <PackageTasksTable
         organizationConfig={organizationConfig}
         tasks={tasks}
+        fetchPackageDetails={fetchPackageDetails}
       />
     </div>
   );
