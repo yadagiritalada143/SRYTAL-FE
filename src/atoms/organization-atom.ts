@@ -1,5 +1,6 @@
 import { atom } from "recoil";
 import { OrganizationConfig } from "../interfaces/organization";
+import { EmployeeInterface } from "../interfaces/employee";
 
 export const organizationThemeAtom = atom<OrganizationConfig>({
   key: "organizationTheme",
@@ -51,3 +52,34 @@ export const organizationThemeAtom = atom<OrganizationConfig>({
     },
   },
 });
+
+export const employeeListAtom=atom<EmployeeInterface[]>({
+  key:"employeeList",
+  // default:{
+  //   _id: "",
+  //   employeeId: "",
+  //   firstName: "",
+  //   lastName: "",
+  //   email: "",
+  //   mobileNumber: "",
+  //   dob: "",
+  //   presentAddress: "",
+  //   permanentAddress: "",
+  //   userRole: "",
+  //   passwordResetRequired: "",
+  //   employeeRole: [{ _id: "", designation: "" }],
+  //   bloodGroup: { _id: "", type: "" },
+  //   employmentType: { _id: "", employmentType: "" },
+  //   bankDetailsInfo: {
+  //     accountNumber: "",
+  //     accountHolderName: "",
+  //     ifscCode: "",
+  //   }
+  // }
+  default:[],
+})
+
+export const selectedEmployeeAtom=atom<EmployeeInterface | null>({
+  key:"selectedEmployee",
+  default:null,
+})

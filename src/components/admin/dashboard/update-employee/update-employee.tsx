@@ -34,6 +34,7 @@ import { useCustomToast } from "../../../../utils/common/toast";
 import { DatePickerInput } from "@mantine/dates";
 import { DeleteEmployeeModel } from "./delete-model";
 import { BackButton } from "../../../common/style-components/buttons";
+import { selectedEmployeeAtom } from "../../../../atoms/organization-atom";
 
 const UpdateEmployee = () => {
   const navigate = useNavigate();
@@ -41,6 +42,7 @@ const UpdateEmployee = () => {
   const employeeId = params.employeeId as string;
   const theme = useMantineTheme();
   const organizationConfig = useRecoilValue(organizationThemeAtom);
+  const selectedEmployee=useRecoilValue(selectedEmployeeAtom);
 
   const {
     register,
@@ -128,29 +130,60 @@ const UpdateEmployee = () => {
   };
 
   useEffect(() => {
-    setIsLoading(true);
-    getEmployeeDetailsByAdmin(employeeId)
-      .then((emp) => {
-        reset({
-          ...emp,
-          bloodGroup: emp.bloodGroup?.id,
-          employmentType: emp.employmentType?.id,
-          employeeRole: emp.employeeRole.map(
-            (role: { id: string }) => role?.id
-          ),
-          dateOfBirth: emp.dateOfBirth
-            ? new Date(emp.dateOfBirth).toISOString().split("T")[0]
-            : "",
-        });
-      })
-      .catch((error) => {
-        toast.error(error.response?.data?.message || "Something went wrong");
-      })
-      .finally(() => {
-        setIsLoading(false);
+    if (selectedEmployee && selectedEmployee._id === employeeId) {
+      reset({
+        employeeId: selectedEmployee.employeeId || "",
+        firstName: selectedEmployee.firstName || "",  
+        lastName: selectedEmployee.lastName || "",
+        email: selectedEmployee.email || "",
+        mobileNumber: selectedEmployee.mobileNumber || "",
+        presentAddress: selectedEmployee.presentAddress || "",
+        permanentAddress: selectedEmployee.permanentAddress || "",
+        bloodGroup: selectedEmployee.bloodGroup?._id || "",
+        employmentType: selectedEmployee.employmentType?._id || "",
+        employeeRole: selectedEmployee.employeeRole?.map(role => role?._id) || [],
+        dateOfBirth: selectedEmployee.dob
+          ? new Date(selectedEmployee.dob).toISOString().split("T")[0]
+          : "",
+        bankDetailsInfo: {
+          accountNumber: selectedEmployee.bankDetailsInfo?.accountNumber || "",
+          accountHolderName: selectedEmployee.bankDetailsInfo?.accountHolderName || "",
+          ifscCode: selectedEmployee.bankDetailsInfo?.ifscCode || "",
+        },
       });
-  }, [employeeId, reset]);
-
+    } else {
+      setIsLoading(true);
+      getEmployeeDetailsByAdmin(employeeId)
+        .then((emp) => {
+          reset({
+            employeeId: emp.employeeId || "",
+            firstName: emp.firstName || "",
+            lastName: emp.lastName || "",
+            email: emp.email || "",
+            mobileNumber: emp.mobileNumber || "",
+            presentAddress: emp.presentAddress || "",
+            permanentAddress: emp.permanentAddress || "",
+            bloodGroup: emp.bloodGroup?._id || "",
+            employmentType: emp.employmentType?._id || "",
+            employeeRole: emp.employeeRole?.map((role:any) => role?._id) || [],
+            dateOfBirth: emp.dob
+              ? new Date(emp.dob).toISOString().split("T")[0]
+              : "",
+            bankDetailsInfo: {
+              accountNumber: emp.bankDetailsInfo?.accountNumber || "",
+              accountHolderName: emp.bankDetailsInfo?.accountHolderName || "",
+              ifscCode: emp.bankDetailsInfo?.ifscCode || "",
+            },
+          });
+        })
+        .catch((error) => {
+          toast.error(error.response?.data?.message || "Something went wrong");
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    }
+  }, [selectedEmployee, employeeId, reset]);
   const handleDeleteEmployee = () => {
     const payload = {
       id: employeeId,

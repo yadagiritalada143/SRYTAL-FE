@@ -7,13 +7,18 @@ import { getAllEmployeeDetailsByAdmin } from "../../../../services/admin-service
 import { toast } from "react-toastify";
 import { organizationAdminUrls } from "../../../../utils/common/constants";
 import { SearchBarFullWidht } from "../../../common/search-bar/search-bar";
-import { useRecoilValue } from "recoil";
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 import { organizationThemeAtom } from "../../../../atoms/organization-atom";
 import useHorizontalScroll from "../../../../hooks/horizontal-scroll";
+import {
+  employeeListAtom,
+  selectedEmployeeAtom,
+} from "../../../../atoms/organization-atom";
 
 const Employees = () => {
   const theme = useMantineTheme();
-  const [employees, setEmployees] = useState<EmployeeInterface[]>([]);
+  const [employees, setEmployees] = useRecoilState(employeeListAtom);
+  const setSelectedEmployee = useSetRecoilState(selectedEmployeeAtom);
   const [filteredEmployees, setFilteredEmployees] = useState<
     EmployeeInterface[]
   >([]);
@@ -54,6 +59,10 @@ const Employees = () => {
   };
 
   const handleEmployeeSelect = (employeeId: string) => {
+    const selected=employees.find((emp)=>emp._id === employeeId);
+    if(selected){
+      setSelectedEmployee(selected);
+    }
     navigate(
       `${organizationAdminUrls(
         organizationConfig.organization_name
