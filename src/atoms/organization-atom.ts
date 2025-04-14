@@ -53,33 +53,7 @@ export const organizationThemeAtom = atom<OrganizationConfig>({
   },
 });
 
-export const employeeListAtom=atom<EmployeeInterface[]>({
-  key:"employeeList",
-  // default:{
-  //   _id: "",
-  //   employeeId: "",
-  //   firstName: "",
-  //   lastName: "",
-  //   email: "",
-  //   mobileNumber: "",
-  //   dob: "",
-  //   presentAddress: "",
-  //   permanentAddress: "",
-  //   userRole: "",
-  //   passwordResetRequired: "",
-  //   employeeRole: [{ _id: "", designation: "" }],
-  //   bloodGroup: { _id: "", type: "" },
-  //   employmentType: { _id: "", employmentType: "" },
-  //   bankDetailsInfo: {
-  //     accountNumber: "",
-  //     accountHolderName: "",
-  //     ifscCode: "",
-  //   }
-  // }
-  default:[],
-})
-
-export const selectedEmployeeAtom=atom<EmployeeInterface | null>({
-  key:"selectedEmployee",
-  default:null,
-})
+export const organizationEmployeeAtom = atom<EmployeeInterface[]>({
+  key: "organizationEmployees",
+  default: [],
+});
