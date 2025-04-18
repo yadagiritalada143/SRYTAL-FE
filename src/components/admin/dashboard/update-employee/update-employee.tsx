@@ -152,7 +152,6 @@ const UpdateEmployee = () => {
   };
 
   useEffect(() => {
-    if (!employeeDetails?.employeeId) {
       setIsLoading(true);
       getEmployeeDetailsByAdmin(employeeId)
         .then((emp) => {
@@ -165,7 +164,6 @@ const UpdateEmployee = () => {
               ? new Date(emp.dateOfBirth).toISOString().split("T")[0]
               : "",
           };
-  
           setEmployeeDetails(formatted);
           reset(formatted);
         })
@@ -175,10 +173,7 @@ const UpdateEmployee = () => {
         .finally(() => {
           setIsLoading(false);
         });
-    } else {
-      reset(employeeDetails); 
-    }
-  }, [employeeId, employeeDetails, reset, setEmployeeDetails]);
+    }, [employeeId, reset, setEmployeeDetails]);
   
   
 
