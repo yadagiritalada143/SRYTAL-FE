@@ -10,10 +10,6 @@ import { toast } from "react-toastify";
 import { IconCircleDashedCheck } from "@tabler/icons-react";
 import { useMantineTheme } from "@mantine/core";
 import { useNavigate } from "react-router-dom";
-import {
-  commonUrls,
-  organizationAdminUrls,
-} from "../../../../utils/common/constants";
 import { useRecoilValue } from "recoil";
 import { organizationThemeAtom } from "../../../../atoms/organization-atom";
 import { BgDiv } from "../../../common/style-components/bg-div";
@@ -46,11 +42,7 @@ const AddCompany = () => {
         },
         icon: <IconCircleDashedCheck width={32} height={32} />,
       });
-      navigate(
-        `${commonUrls(
-          organizationConfig.organization_name
-        )}/dashboard/pool-companies`
-      );
+      navigate(-1);
     } catch (error: any) {
       toast.error(error.response.data.message || "Something went wrong");
     }
@@ -71,16 +63,7 @@ const AddCompany = () => {
           <h1 className="text-3xl font-extrabold underline text-center">
             Add Company
           </h1>
-          <Button
-            bg={theme.colors.primary[5]}
-            onClick={() =>
-              navigate(
-                `${organizationAdminUrls(
-                  organizationConfig.organization_name
-                )}/dashboard/pool-companies`
-              )
-            }
-          >
+          <Button bg={theme.colors.primary[5]} onClick={() => navigate(-1)}>
             {" "}
             Cancel
           </Button>

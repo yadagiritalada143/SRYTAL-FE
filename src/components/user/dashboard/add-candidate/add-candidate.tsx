@@ -20,10 +20,6 @@ import { BgDiv } from "../../../common/style-components/bg-div";
 import { toast } from "react-toastify";
 import { addPoolCandidateByRecruiter } from "../../../../services/user-services";
 import { useNavigate } from "react-router-dom";
-import {
-  commonUrls,
-  organizationAdminUrls,
-} from "../../../../utils/common/constants";
 import { useCustomToast } from "../../../../utils/common/toast";
 import { DateTimePicker } from "@mantine/dates";
 import { useRecoilValue } from "recoil";
@@ -72,11 +68,7 @@ const AddPoolCandidate = () => {
     addPoolCandidateByRecruiter(formData)
       .then(() => {
         showSuccessToast("Candidate added successfully !");
-        navigate(
-          `${commonUrls(
-            organizationConfig.organization_name
-          )}/dashboard/pool-candidates`
-        );
+        navigate(-1);
       })
       .catch((error) => {
         toast.error(error.response?.data?.message || "Something went wrong");
@@ -104,16 +96,7 @@ const AddPoolCandidate = () => {
             <h1 className="text-3xl font-extrabold underline text-center">
               Add Candidate
             </h1>
-            <Button
-              bg={theme.colors.primary[5]}
-              onClick={() =>
-                navigate(
-                  `${organizationAdminUrls(
-                    organizationConfig.organization_name
-                  )}/dashboard/pool-candidates`
-                )
-              }
-            >
+            <Button bg={theme.colors.primary[5]} onClick={() => navigate(-1)}>
               {" "}
               Cancel
             </Button>
