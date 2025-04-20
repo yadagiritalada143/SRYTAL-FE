@@ -1,5 +1,5 @@
 import {
-  IconTimeline,
+  // IconTimeline,
   // IconBook,
   // IconTimeline,
   IconUserEdit,
@@ -12,12 +12,12 @@ export const NavLinks = [
     icon: IconUserEdit,
     name: "Profile",
   },
-  {
-    role: "employee" as string,
-    url: "dashboard/timesheet",
-    icon: IconTimeline,
-    name: "Timesheet",
-  },
+  // {
+  //   role: "employee" as string,
+  //   url: "dashboard/timesheet",
+  //   icon: IconTimeline,
+  //   name: "Timesheet",
+  // },
   // {
   //   role: "employee",
   //   url: "dashboard/courses" as string,
