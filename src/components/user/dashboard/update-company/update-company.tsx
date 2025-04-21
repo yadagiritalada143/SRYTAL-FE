@@ -22,10 +22,6 @@ import { toast } from "react-toastify";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import {
-  commonUrls,
-  organizationAdminUrls,
-} from "../../../../utils/common/constants";
 import { useRecoilValue } from "recoil";
 import { organizationThemeAtom } from "../../../../atoms/organization-atom";
 import { userDetailsAtom } from "../../../../atoms/user";
@@ -82,11 +78,7 @@ const UpdateCompany = () => {
     try {
       await updateCompanyByRecruiter(data, companyId);
       showSuccessToast("Company details updated successfully !");
-      navigate(
-        `${commonUrls(
-          organizationConfig.organization_name
-        )}/dashboard/pool-companies`
-      );
+      navigate(-1);
     } catch (error: any) {
       toast.error(error.response.data.message || "Something went wrong");
     }
@@ -100,11 +92,7 @@ const UpdateCompany = () => {
     deletePoolCompanyByAdmin(payload)
       .then(() => {
         showSuccessToast("Company deleted successfully!");
-        navigate(
-          `${organizationAdminUrls(
-            organizationConfig.organization_name
-          )}/dashboard/pool-companies`
-        );
+        navigate(-1);
       })
       .catch((error: { response?: { data?: { message?: string } } }) => {
         toast.error(error.response?.data?.message || "Something went wrong");
@@ -127,16 +115,7 @@ const UpdateCompany = () => {
             <Title className="text-center" order={3}>
               Update Company Details
             </Title>
-            <Button
-              bg={theme.colors.primary[5]}
-              onClick={() =>
-                navigate(
-                  `${organizationAdminUrls(
-                    organizationConfig.organization_name
-                  )}/dashboard/pool-companies`
-                )
-              }
-            >
+            <Button bg={theme.colors.primary[5]} onClick={() => navigate(-1)}>
               {" "}
               Cancel
             </Button>

@@ -36,15 +36,11 @@ import { organizationThemeAtom } from "../../../../atoms/organization-atom";
 import { useRecoilValue } from "recoil";
 import { PoolCandidatesComments } from "../../../../interfaces/candidate";
 import { BgDiv } from "../../../common/style-components/bg-div";
-import {
-  commonUrls,
-  organizationAdminUrls,
-} from "../../../../utils/common/constants";
+import { organizationAdminUrls } from "../../../../utils/common/constants";
 import AddComment from "./add-comment";
 import CommentsTable from "./comments-table";
 import { useDisclosure } from "@mantine/hooks";
 import { deletePoolCandidatesByAdmin } from "../../../../services/admin-services";
-import { BackButton } from "../../../common/style-components/buttons";
 
 const UpdatePoolCandidateForm = () => {
   const [skills, setSkills] = useState<string[]>([]);
@@ -56,7 +52,7 @@ const UpdatePoolCandidateForm = () => {
   const { showSuccessToast } = useCustomToast();
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
-  const theme=useMantineTheme();
+  const theme = useMantineTheme();
 
   const {
     control,
@@ -87,7 +83,7 @@ const UpdatePoolCandidateForm = () => {
     }
   }, [candidateId, reset]);
 
-  const handleDeleteCandidate = (candidateId:string,agreeTerms:boolean) => {
+  const handleDeleteCandidate = (candidateId: string, agreeTerms: boolean) => {
     const payload = {
       candidateId: candidateId,
       confirmDelete: agreeTerms,
@@ -126,11 +122,7 @@ const UpdatePoolCandidateForm = () => {
       .then(() => {
         toast.success("Candidate updated successfully!");
 
-        navigate(
-          `${commonUrls(
-            organizationConfig.organization_name
-          )}/dashboard/pool-candidates`
-        );
+        navigate(-1);
       })
       .catch(() => {
         toast.error("Failed to update candidate.");
@@ -158,25 +150,16 @@ const UpdatePoolCandidateForm = () => {
           className="rounded-lg shadow-lg w-full max-w-3xl  mx-auto p-8"
         >
           <Container>
-          <div className="px-4 flex justify-between">
-          <div></div>
-            <Title className="text-center" order={3}>
-              Candidate Details
-            </Title>
-            <Button
-                bg={theme.colors.primary[5]}
-                onClick={() =>
-                  navigate(
-                    `${organizationAdminUrls(
-                      organizationConfig.organization_name
-                    )}/dashboard/pool-candidates`
-                  )
-                }
-              >
+            <div className="px-4 flex justify-between">
+              <div></div>
+              <Title className="text-center" order={3}>
+                Candidate Details
+              </Title>
+              <Button bg={theme.colors.primary[5]} onClick={() => navigate(-1)}>
                 {" "}
                 Cancel
               </Button>
-              </div>
+            </div>
             <Grid gutter="md">
               <Grid.Col span={12}>
                 <Controller
