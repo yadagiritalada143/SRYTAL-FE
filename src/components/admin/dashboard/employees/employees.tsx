@@ -7,16 +7,14 @@ import { getAllEmployeeDetailsByAdmin } from "../../../../services/admin-service
 import { toast } from "react-toastify";
 import { organizationAdminUrls } from "../../../../utils/common/constants";
 import { SearchBarFullWidht } from "../../../common/search-bar/search-bar";
-import { useRecoilValue } from "recoil";
-import { organizationThemeAtom } from "../../../../atoms/organization-atom";
+import { useRecoilState, useRecoilValue } from "recoil";
+import { organizationEmployeeAtom, organizationThemeAtom } from "../../../../atoms/organization-atom";
 import useHorizontalScroll from "../../../../hooks/horizontal-scroll";
 
 const Employees = () => {
   const theme = useMantineTheme();
-  const [employees, setEmployees] = useState<EmployeeInterface[]>([]);
-  const [filteredEmployees, setFilteredEmployees] = useState<
-    EmployeeInterface[]
-  >([]);
+  const [employees, setEmployees] = useRecoilState(organizationEmployeeAtom);
+  const [filteredEmployees,setFilteredEmployees]= useRecoilState(organizationEmployeeAtom);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
@@ -24,18 +22,24 @@ const Employees = () => {
 
   const { scrollRef, handleMouseDown, handleMouseMove, handleMouseUp } =
     useHorizontalScroll();
-  useEffect(() => {
-    getAllEmployeeDetailsByAdmin()
-      .then((employeesList) => {
-        setEmployees(employeesList);
-        setFilteredEmployees(employeesList);
+    useEffect(() => {
+      if (employees.length > 0) {
+        setFilteredEmployees(employees);
         setIsLoading(false);
-      })
-      .catch((error) => {
-        toast(error?.response?.data?.message || "Something went wrong");
-        setIsLoading(false);
-      });
-  }, []);
+        return;
+      }
+      getAllEmployeeDetailsByAdmin()
+        .then((employeesList) => {
+          setEmployees(employeesList);
+          setFilteredEmployees(employeesList);
+          setIsLoading(false);
+        })
+        .catch((error) => {
+          toast(error?.response?.data?.message || "Something went wrong");
+          setIsLoading(false);
+        });
+    }, []);
+    
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;

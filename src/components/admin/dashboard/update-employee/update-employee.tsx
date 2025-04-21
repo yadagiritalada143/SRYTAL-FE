@@ -34,6 +34,13 @@ import { useCustomToast } from "../../../../utils/common/toast";
 import { DatePickerInput } from "@mantine/dates";
 import { DeleteEmployeeModel } from "./delete-model";
 import { BackButton } from "../../../common/style-components/buttons";
+import {
+  employeeDetailsAtom,
+  bloodGroupOptionsAtom,
+  employmentTypesAtom,
+  employeeRolesAtom,
+} from "../../../../atoms/employee-atom";
+import { useRecoilState } from "recoil";
 
 const UpdateEmployee = () => {
   const navigate = useNavigate();
@@ -53,51 +60,68 @@ const UpdateEmployee = () => {
   });
 
   const [opened, { open, close }] = useDisclosure(false);
-  const [bloodGroupOptions, setBloodGroupOptions] = useState([]);
-  const [employmentRolesOptions, setEmploymentRolesOptions] = useState([]);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
   const { showSuccessToast } = useCustomToast();
   const [isLoading, setIsLoading] = useState(false);
-
-  const [employmentTypeOptions, setEmploymentTypes] = useState([]);
-
-  useEffect(() => {
-    getAllEmploymentTypes()
-      .then((response) => {
-        const filteredEmployment = response.map(
-          (res: { _id: string; employmentType: string }) => {
-            return { value: res._id, label: res.employmentType };
-          }
-        );
-        setEmploymentTypes(filteredEmployment);
-      })
-      .catch((error) => {
-        toast.error(error.response.data.message || "Something went wrong");
-      });
-  }, []);
+  const [bloodGroupOptions, setBloodGroupOptions] = useRecoilState(bloodGroupOptionsAtom);
+  const [employmentRolesOptions, setEmploymentRolesOptions] = useRecoilState(employeeRolesAtom);
+  const [employmentTypeOptions, setEmploymentTypes] = useRecoilState(employmentTypesAtom);
+  const [employeeDetails, setEmployeeDetails] = useRecoilState(employeeDetailsAtom);
 
   useEffect(() => {
-    getAllEmployeeRoleByAdmin().then((response) => {
-      const filterEmploymentRoles = response.map(
-        (res: { _id: string; designation: string }) => {
-          return { value: res._id, label: res.designation };
-        }
-      );
-      setEmploymentRolesOptions(filterEmploymentRoles);
-    });
-  }, []);
+    if (employmentTypeOptions.length === 0) {
+      getAllEmploymentTypes()
+        .then((response) => {
+          const types = response.map((res: any) => ({
+            value: res._id,
+            label: res.employmentType,
+          }));
+          setEmploymentTypes(types);
+        })
+        .catch((error) => {
+          toast.error(error?.response?.data?.message || "Something went wrong");
+        });
+    }
+  }, [employmentTypeOptions, setEmploymentTypes]);
+  
+  
 
   useEffect(() => {
-    getAllBloodGroupByAdmin().then((response) => {
-      const filterBloodGroup = response.map(
-        (res: { _id: string; type: string }) => {
-          return { value: res._id, label: res.type };
-        }
-      );
-      setBloodGroupOptions(filterBloodGroup);
-    });
-  }, []);
+    if (employmentRolesOptions.length === 0) {
+      getAllEmployeeRoleByAdmin()
+        .then((response) => {
+          const roles = response.map((res: any) => ({
+            value: res._id,
+            label: res.designation,
+          }));
+          setEmploymentRolesOptions(roles);
+        })
+        .catch((error) => {
+          toast.error(error?.response?.data?.message || "Something went wrong");
+        });
+    }
+  }, [employmentRolesOptions, setEmploymentRolesOptions]);
+  
+  
+
+  useEffect(() => {
+    if (bloodGroupOptions.length === 0) {
+      getAllBloodGroupByAdmin()
+        .then((response) => {
+          const options = response.map((res: any) => ({
+            value: res._id,
+            label: res.type,
+          }));
+          setBloodGroupOptions(options);
+        })
+        .catch((error) => {
+          toast.error(error?.response?.data?.message || "Something went wrong");
+        });
+    }
+  }, [bloodGroupOptions, setBloodGroupOptions]);
+  
+  
 
   const onSubmit = (data: EmployeeUpdateForm) => {
     const updatedData = {
@@ -128,28 +152,30 @@ const UpdateEmployee = () => {
   };
 
   useEffect(() => {
-    setIsLoading(true);
-    getEmployeeDetailsByAdmin(employeeId)
-      .then((emp) => {
-        reset({
-          ...emp,
-          bloodGroup: emp.bloodGroup?.id,
-          employmentType: emp.employmentType?.id,
-          employeeRole: emp.employeeRole.map(
-            (role: { id: string }) => role?.id
-          ),
-          dateOfBirth: emp.dateOfBirth
-            ? new Date(emp.dateOfBirth).toISOString().split("T")[0]
-            : "",
+      setIsLoading(true);
+      getEmployeeDetailsByAdmin(employeeId)
+        .then((emp) => {
+          const formatted = {
+            ...emp,
+            bloodGroup: emp.bloodGroup?.id,
+            employmentType: emp.employmentType?.id,
+            employeeRole: emp.employeeRole.map((role: any) => role.id),
+            dateOfBirth: emp.dateOfBirth
+              ? new Date(emp.dateOfBirth).toISOString().split("T")[0]
+              : "",
+          };
+          setEmployeeDetails(formatted);
+          reset(formatted);
+        })
+        .catch((error) => {
+          toast.error(error.response?.data?.message || "Something went wrong");
+        })
+        .finally(() => {
+          setIsLoading(false);
         });
-      })
-      .catch((error) => {
-        toast.error(error.response?.data?.message || "Something went wrong");
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-  }, [employeeId, reset]);
+    }, [employeeId, reset, setEmployeeDetails]);
+  
+  
 
   const handleDeleteEmployee = () => {
     const payload = {
