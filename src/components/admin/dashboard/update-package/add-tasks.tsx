@@ -11,14 +11,17 @@ const AddTasksPackage = ({
   organizationConfig,
   setTasks,
   user,
-  required=false,
+  packageId,
+  required = false,
+  fetchPackageDetails,
 }: {
   organizationConfig: OrganizationConfig;
   user: any;
   packageId: string;
   setTasks: any;
   tasks: any;
-  required:boolean;
+  required: boolean;
+  fetchPackageDetails: () => void;
 }) => {
   const { showSuccessToast } = useCustomToast();
   const [newTasks, setNewTasks] = useState<string>("");
@@ -26,11 +29,11 @@ const AddTasksPackage = ({
 
   const handleAddTasks = () => {
     if (required && !newTasks.trim()) {
-        setError("This field is required");
-        return;
-      }
+      setError("This field is required");
+      return;
+    }
     setError("");
-    addTasksByAdmin(newTasks)
+    addTasksByAdmin(packageId, newTasks)
       .then(() => {
         showSuccessToast("Your tasks has been added !");
         const tasks = {
@@ -39,16 +42,15 @@ const AddTasksPackage = ({
             lastName: user.lastName,
           },
           updateAt: new Date().toLocaleDateString(),
-          task: newTasks,
+          title: newTasks,
         };
         setTasks((prev: any) => [tasks, ...prev]);
         setNewTasks("");
+        fetchPackageDetails();
       })
-      .catch((error) =>
-        toast.error(
-          error || error.response.data.message || "Something went wrong"
-        )
-      );
+      .catch((error) => {
+        toast.error(error.response.data.message || "Something went wrong");
+      });
   };
   return (
     <div className="w-full max-w-2xl mx-auto my-6">
@@ -67,9 +69,9 @@ const AddTasksPackage = ({
                 autosize
                 rows={4}
                 value={newTasks}
-                onChange={(e) => setNewTasks(e.target.value)}    
-                />
-                {error && <p className="text-red-500 mt-1">{error}</p>}
+                onChange={(e) => setNewTasks(e.target.value)}
+              />
+              {error && <p className="text-red-500 mt-1">{error}</p>}
             </Grid.Col>
           </Grid>
           <Group justify="right" mt="lg">

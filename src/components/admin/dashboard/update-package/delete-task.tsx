@@ -7,27 +7,29 @@ interface DeletePackageModalProps {
   setConfirmDelete: (value: boolean) => void;
   agreeTerms: boolean;
   setAgreeTerms: (value: boolean) => void;
-  handleDeletePackage: (confirmDelete: boolean) => void;
+  handleDeleteTask: (task: string, hard: boolean) => void;
+  selectedTask: string;
 }
 
-export const DeletePackageModel: React.FC<DeletePackageModalProps> = ({
+export const DeleteTaskModel: React.FC<DeletePackageModalProps> = ({
   opened,
   close,
   confirmDelete,
   setConfirmDelete,
   agreeTerms,
   setAgreeTerms,
-  handleDeletePackage,
+  handleDeleteTask,
+  selectedTask,
 }) => {
   return (
     <Modal size="md" opened={opened} onClose={close}>
       <div>
         <h2 className="font-bold text-lg">
-          Are you sure you want to delete this Package?
+          Are you sure you want to delete this Task?
         </h2>
         <p className="mt-4 font-bold text-gray-600">
-          This action is irreversible. Deleting an Package will permanently
-          remove their details from the system.
+          This action is irreversible. Deleting an Task will permanently remove
+          their details from the system.
         </p>
         <div className="mt-4 space-y-2">
           <Checkbox
@@ -37,7 +39,7 @@ export const DeletePackageModel: React.FC<DeletePackageModalProps> = ({
             required
           />
           <Checkbox
-            label="I agree that this package's details will be permanently deleted."
+            label="I agree that this Tasks's details will be permanently deleted."
             checked={agreeTerms}
             onChange={(e) => setAgreeTerms(e.currentTarget.checked)}
           />
@@ -45,7 +47,7 @@ export const DeletePackageModel: React.FC<DeletePackageModalProps> = ({
         <div className="flex justify-between mt-8">
           <button
             className="bg-red-500 text-white py-2 px-4 rounded disabled:opacity-50"
-            onClick={() => handleDeletePackage(agreeTerms)}
+            onClick={() => handleDeleteTask(selectedTask, agreeTerms)}
             disabled={!confirmDelete}
           >
             Delete

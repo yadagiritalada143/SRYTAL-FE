@@ -5,6 +5,7 @@ export const packageSchema = z.object({
     description: z.string().min(1, { message: "Description is required" }),
     startDate: z.date({ required_error: "Start date is required" }),
     endDate: z.date({ required_error: "End date is required" }),
+    approvers: z.array(z.string().optional()),
 });
 
 export type PackageUpdateForm = z.infer<typeof packageSchema>;
