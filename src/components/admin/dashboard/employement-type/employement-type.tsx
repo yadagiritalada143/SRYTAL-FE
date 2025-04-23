@@ -18,15 +18,14 @@ import {
   deleteEmploymentTypeByAdmin,
   getAllEmploymentTypes,
 } from "../../../../services/admin-services";
-import { useRecoilValue } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 import { organizationThemeAtom } from "../../../../atoms/organization-atom";
 import { useMantineTheme } from "@mantine/core";
 import { SearchBarFullWidht } from "../../../common/search-bar/search-bar";
+import { employeeTypeAtom } from "../../../../atoms/employeetypes-atom";
 
 const EmploymentTypes = () => {
-  const [employmentTypes, setEmploymentTypes] = useState<
-    { id: string; employmentType: string }[]
-  >([]);
+  const [employmentTypes, setEmploymentTypes] =useRecoilState(employeeTypeAtom)
   const [filteredEmployementType, setFilteredEmployementType] = useState<any[]>(
     []
   );
@@ -47,10 +46,15 @@ const EmploymentTypes = () => {
   const [addModalOpened, { open: openAddModal, close: closeAddModal }] =
     useDisclosure(false);
 
-  useEffect(() => {
-    fetchEmployementTypes();
-  }, []);
-
+    useEffect(() => {
+      if (employmentTypes.length === 0) {
+        fetchEmployementTypes();
+      } else {
+        setFilteredEmployementType(employmentTypes);
+        setIsLoading(false);
+      }
+    }, []);
+    
   const fetchEmployementTypes = async () => {
     setIsLoading(true);
     try {
