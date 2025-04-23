@@ -18,13 +18,14 @@ import {
   updateBloodGroupByAdmin,
   deleteBloodGroupByAdmin,
 } from "../../../../services/admin-services";
-import { useRecoilValue } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 import { organizationThemeAtom } from "../../../../atoms/organization-atom";
 import { useMantineTheme } from "@mantine/core";
 import { SearchBarFullWidht } from "../../../common/search-bar/search-bar";
+import { bloodGroupAtom } from "../../../../atoms/bloodgroup-atom";
 
 const BloodGroupTable = () => {
-  const [bloodGroups, setBloodGroups] = useState<any[]>([]);
+  const [bloodGroups, setBloodGroups] = useRecoilState(bloodGroupAtom);
   const [filteredBloodGroups, setFilteredBloodGroups] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activePage, setActivePage] = useState(1);
@@ -45,9 +46,14 @@ const BloodGroupTable = () => {
 
   // Fetch blood groups on mount
   useEffect(() => {
-    fetchBloodGroups();
+    if (bloodGroups.length === 0) {
+      fetchBloodGroups();
+    } else {
+      setFilteredBloodGroups(bloodGroups);
+      setIsLoading(false);
+    }
   }, []);
-
+  
   const fetchBloodGroups = async () => {
     setIsLoading(true);
     try {
