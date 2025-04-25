@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Button, TextInput, Title, Table, Grid } from "@mantine/core";
+import { useEffect, useState } from "react";
+import { Button, TextInput, Title, Table, Grid, Flex } from "@mantine/core";
 import moment from "moment";
 import "moment-timezone";
 import { toast } from "react-toastify";
@@ -18,7 +18,7 @@ const DateTableComponent = () => {
     moment().tz("Asia/Kolkata").format("YYYY-MM-DD")
   );
   const [endDate, setEndDate] = useState<string>(
-    moment().tz("Asia/Kolkata").add(7, "days").format("YYYY-MM-DD")
+    moment().tz("Asia/Kolkata").add(6, "days").format("YYYY-MM-DD")
   );
   const [dateRange, setDateRange] = useState<string[]>([]);
   const [daysInRange, setDaysInRange] = useState<number>(0);
@@ -35,6 +35,17 @@ const DateTableComponent = () => {
     }
     return dates;
   };
+
+  const isWeekend = (date: string) => {
+    const day = moment(date).day();
+    return day === 0 || day === 6;
+  };
+  
+  useEffect(()=>{
+    const initialRange = getDateRange(startDate, endDate);
+    setDateRange(initialRange);
+    setDaysInRange(initialRange.length);
+  },[startDate,endDate])
 
   const handleSearch = () => {
     if (startDate && endDate) {
@@ -195,11 +206,11 @@ const DateTableComponent = () => {
 
   return (
     <ColorDiv className="w-full p-4">
-      <Title order={2} className="mb-4 text-center">
+      <Title order={2} className="mb-4 text-center font-extrabold underline text-3xl">
         Timesheet
       </Title>
 
-      <Grid align="flex-end" className="mb-4">
+      <Grid align="flex-end" className="mb-4 justify-center ">
         <Grid.Col span={3}>
           <TextInput
             type="date"
@@ -219,7 +230,8 @@ const DateTableComponent = () => {
             className="mb-2"
           />
         </Grid.Col>
-        <div className="flex justify-center mb-4">
+        <Grid.Col span={6}>
+        <div className="flex justify-start items-end gap-3 mb-2">
           <Button onClick={handleSearch} className="mx-2">
             Search
           </Button>
@@ -233,6 +245,7 @@ const DateTableComponent = () => {
             Apply For Leave
           </Button>
         </div>
+        </Grid.Col>
       </Grid>
 
       {dateRange.length > 0 && (
@@ -248,7 +261,7 @@ const DateTableComponent = () => {
             }}
           >
             <thead>
-              <tr style={{ backgroundColor: theme.colors.primary[0] }}>
+              <tr style={{ backgroundColor: theme.colors.primary[0],border: `1px solid ${organizationConfig.organization_theme.theme.button.textColor}` }} >
                 <th
                   style={{ padding: "1rem", width: "150px", minWidth: "120px" }}
                 >
@@ -264,18 +277,26 @@ const DateTableComponent = () => {
                 >
                   Task Details
                 </th>
-                {dateRange.map((date) => (
-                  <th
-                    key={date}
-                    style={{
-                      padding: "1rem",
-                      width: "120px",
-                      minWidth: "100px",
-                    }}
-                  >
-                    {moment(date).format("DD MMM")}
-                  </th>
-                ))}
+                {dateRange.map((date) => {
+                  const weekend = isWeekend(date);
+                  return (
+                    <th
+                      key={date}
+                      style={{
+                        padding: "1rem",
+                        width: "120px",
+                        minWidth: "100px",
+                        textAlign: "center",
+                        border: `1px solid ${organizationConfig.organization_theme.theme.button.textColor}`,
+                        backgroundColor: weekend ? "#f8d7da" : undefined, 
+                        color: weekend ? "#721c24" : undefined,
+                      }}
+                    >
+                      {moment(date).format("DD MMM")} <br />
+                      {moment(date).format("ddd")}
+                    </th>
+                  );
+                })}
                 <th
                   style={{
                     padding: "1rem",
@@ -347,14 +368,16 @@ const DateTableComponent = () => {
                             textAlign: "center",
                             width: "120px",
                             border: `1px solid ${organizationConfig.organization_theme.theme.button.textColor}`,
+                            backgroundColor: isWeekend(date) ? "#a8a8a8" : "transparent",
                           }}
                         >
                           <TextInput
                             placeholder="0"
-                            value={hours}
+                            value={hours !== undefined ? hours : ""}
+                            disabled={isWeekend(date)}
                             onChange={(e) =>
                               handleChange(
-                                parseFloat(e.target.value) || 0,
+                                parseFloat(e.target.value || "0"),
                                 projectIndex,
                                 taskIndex,
                                 date
