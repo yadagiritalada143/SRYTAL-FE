@@ -6,7 +6,10 @@ import { toast } from "react-toastify";
 import { useMantineTheme } from "@mantine/core";
 import { data } from "./resources";
 import { TaskPopover } from "./task-popover";
-import { IconPlus, IconX } from "@tabler/icons-react";
+import {
+  IconPlus,
+  IconSearch,
+} from "@tabler/icons-react";
 import { useModals } from "@mantine/modals";
 import { ColorDiv } from "../style-components/c-div";
 import { useRecoilValue } from "recoil";
@@ -36,16 +39,11 @@ const DateTableComponent = () => {
     return dates;
   };
 
-  const isWeekend = (date: string) => {
-    const day = moment(date).day();
-    return day === 0 || day === 6;
-  };
-  
-  useEffect(()=>{
+  useEffect(() => {
     const initialRange = getDateRange(startDate, endDate);
     setDateRange(initialRange);
     setDaysInRange(initialRange.length);
-  },[startDate,endDate])
+  }, [startDate, endDate]);
 
   const handleSearch = () => {
     if (startDate && endDate) {
@@ -205,46 +203,55 @@ const DateTableComponent = () => {
   };
 
   return (
-    <ColorDiv className="w-full p-4">
-      <Title order={2} className="mb-4 text-center font-extrabold underline text-3xl">
+    <ColorDiv className="w-100 p-5">
+      <Title
+        order={2}
+        className="mb-4 text-center font-extrabold underline text-3xl"
+      >
         Timesheet
       </Title>
 
-      <Grid align="flex-end" className="mb-4 justify-center ">
-        <Grid.Col span={3}>
+      <Grid align="flex-end" className="mb-4 ml-4" gutter="md">
+        <Grid.Col span="content">
+          <Button onClick={() => extendRange("backward")} className="px-4">
+            {"<"}
+          </Button>
+        </Grid.Col>
+
+        <Grid.Col span="content">
           <TextInput
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
             label="Start Date"
-            className="mb-2"
+            style={{ minWidth: 180 }}
           />
         </Grid.Col>
-        <Grid.Col span={3}>
+
+        <Grid.Col span="content">
           <TextInput
             type="date"
             value={endDate}
             min={startDate}
             onChange={(e) => setEndDate(e.target.value)}
             label="End Date"
-            className="mb-2"
+            style={{ minWidth: 180 }}
           />
         </Grid.Col>
-        <Grid.Col span={6}>
-        <div className="flex justify-start items-end gap-3 mb-2">
-          <Button onClick={handleSearch} className="mx-2">
-            Search
-          </Button>
-          <Button onClick={() => extendRange("backward")} className="mx-2">
-            {"<"}
-          </Button>
-          <Button onClick={() => extendRange("forward")} className="mx-2">
+
+        <Grid.Col span="content">
+          <Button onClick={() => extendRange("forward")} className="px-4">
             {">"}
           </Button>
-          <Button onClick={ApplyForLeave} className="mx-4">
+        </Grid.Col>
+
+        <Grid.Col span="auto" className="flex justify-end gap-4">
+          <Button onClick={handleSearch} variant="outline" className="px-3">
+            <IconSearch />
+          </Button>
+          <Button onClick={ApplyForLeave} className="px-5 mr-5">
             Apply For Leave
           </Button>
-        </div>
         </Grid.Col>
       </Grid>
 
@@ -261,9 +268,18 @@ const DateTableComponent = () => {
             }}
           >
             <thead>
-              <tr style={{ backgroundColor: theme.colors.primary[0],border: `1px solid ${organizationConfig.organization_theme.theme.button.textColor}` }} >
+              <tr
+                style={{
+                  backgroundColor: theme.colors.primary[0],
+                  border: `1px solid ${organizationConfig.organization_theme.theme.button.textColor}`,
+                }}
+              >
                 <th
-                  style={{ padding: "1rem", width: "150px", minWidth: "120px" }}
+                  style={{
+                    padding: "0.5rem",
+                    width: "140px",
+                    minWidth: "120px",
+                  }}
                 >
                   Project Name
                 </th>
@@ -271,36 +287,36 @@ const DateTableComponent = () => {
                   style={{
                     border: `1px solid ${organizationConfig.organization_theme.theme.button.textColor}`,
                     padding: "1rem",
-                    width: "190px",
-                    minWidth: "180px",
+                    width: "150px",
+                    minWidth: "170px",
                   }}
                 >
                   Task Details
                 </th>
                 {dateRange.map((date) => {
-                  const weekend = isWeekend(date);
                   return (
                     <th
                       key={date}
                       style={{
-                        padding: "1rem",
-                        width: "120px",
-                        minWidth: "100px",
                         textAlign: "center",
+                        padding: "0.25rem",
+                        minWidth: "30px",
+                        maxWidth: "30px",
+                        fontSize: "13px",
                         border: `1px solid ${organizationConfig.organization_theme.theme.button.textColor}`,
-                        backgroundColor: weekend ? "#f8d7da" : undefined, 
-                        color: weekend ? "#721c24" : undefined,
                       }}
                     >
-                      {moment(date).format("DD MMM")} <br />
+                      {moment(date).format("DD MMM")}
+                      <br />
                       {moment(date).format("ddd")}
                     </th>
                   );
                 })}
+
                 <th
                   style={{
-                    padding: "1rem",
-                    width: "120px",
+                    padding: "0.25rem",
+                    width: "160px",
                     textAlign: "center",
                   }}
                 >
@@ -338,17 +354,12 @@ const DateTableComponent = () => {
                     )}
                     <td
                       style={{
-                        padding: "1rem",
+                        padding: "0.25rem",
                         border: `1px solid ${organizationConfig.organization_theme.theme.button.textColor}`,
                       }}
                     >
-                      <div className=" w-full flex justify-between">
+                      <div className=" w-full flex justify-center">
                         <TaskPopover task={task.task_id} />
-                        <p>
-                          <Button className="rounded-full">
-                            <IconX />
-                          </Button>
-                        </p>
                       </div>
                     </td>
                     {dateRange.map((date) => {
@@ -364,17 +375,17 @@ const DateTableComponent = () => {
                         <td
                           key={`${date}-${task.task_id}`}
                           style={{
-                            padding: "1rem",
                             textAlign: "center",
-                            width: "120px",
+                            minWidth: "80px",
+                            maxWidth: "90px",
+                            padding: "0.25rem",
+                            backgroundColor: `${organizationConfig.organization_theme.theme.button.color}`,
                             border: `1px solid ${organizationConfig.organization_theme.theme.button.textColor}`,
-                            backgroundColor: isWeekend(date) ? "#a8a8a8" : "transparent",
                           }}
                         >
                           <TextInput
                             placeholder="0"
                             value={hours !== undefined ? hours : ""}
-                            disabled={isWeekend(date)}
                             onChange={(e) =>
                               handleChange(
                                 parseFloat(e.target.value || "0"),
@@ -383,7 +394,14 @@ const DateTableComponent = () => {
                                 date
                               )
                             }
-                            style={{ textAlign: "center" }}
+                            styles={{
+                              input: {
+                                textAlign: "center",
+                                fontSize: "12px",
+                                padding: "0.2rem 0.4rem",
+                                height: "28px",
+                              },
+                            }}
                           />
                         </td>
                       );
@@ -392,7 +410,6 @@ const DateTableComponent = () => {
                       <td
                         rowSpan={project.activities.length}
                         style={{
-                          padding: "1rem",
                           textAlign: "center",
                           border: `1px solid ${organizationConfig.organization_theme.theme.button.textColor}`,
                         }}
