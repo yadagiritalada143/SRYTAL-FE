@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
-import { Button, TextInput, Title, Table, Grid, Flex } from "@mantine/core";
+import { Button, TextInput, Title, Table, Grid } from "@mantine/core";
 import moment from "moment";
 import "moment-timezone";
 import { toast } from "react-toastify";
-import { useMantineTheme } from "@mantine/core";
 import { data } from "./resources";
 import { TaskPopover } from "./task-popover";
 import {
+  IconChevronLeft,
+  IconChevronRight,
   IconPlus,
   IconSearch,
 } from "@tabler/icons-react";
@@ -15,7 +16,6 @@ import { ColorDiv } from "../style-components/c-div";
 import { useRecoilValue } from "recoil";
 import { organizationThemeAtom } from "../../../atoms/organization-atom";
 const DateTableComponent = () => {
-  const theme = useMantineTheme();
   const modals = useModals();
   const [startDate, setStartDate] = useState<string>(
     moment().tz("Asia/Kolkata").format("YYYY-MM-DD")
@@ -26,6 +26,7 @@ const DateTableComponent = () => {
   const [dateRange, setDateRange] = useState<string[]>([]);
   const [daysInRange, setDaysInRange] = useState<number>(0);
   const [workingHours, setWorkingHours] = useState(data);
+  const [edit, setIsEdit] = useState(false);
   const organizationConfig = useRecoilValue(organizationThemeAtom);
 
   const getDateRange = (start: string, end: string): string[] => {
@@ -202,6 +203,16 @@ const DateTableComponent = () => {
     });
   };
 
+  const isPastDate = (inputDate: Date) => {
+    const today = new Date();
+    const givenDate = new Date(inputDate);
+
+    today.setHours(0, 0, 0, 0);
+    givenDate.setHours(0, 0, 0, 0);
+
+    return givenDate < today;
+  };
+
   return (
     <ColorDiv className="w-100 p-5">
       <Title
@@ -211,45 +222,75 @@ const DateTableComponent = () => {
         Timesheet
       </Title>
 
-      <Grid align="flex-end" className="mb-4 ml-4" gutter="md">
-        <Grid.Col span="content">
-          <Button onClick={() => extendRange("backward")} className="px-4">
-            {"<"}
+      <Grid
+        align="center"
+        gutter="md"
+        className="mb-6 p-4 hover:shadow-lg rounded-md shadow-sm"
+      >
+        <Grid.Col span="auto">
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              color="blue"
+              radius="xl"
+              size="sm"
+              onClick={() => extendRange("backward")}
+              className="px-2 py-1"
+            >
+              <IconChevronLeft size={18} />
+            </Button>
+
+            <TextInput
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              size="sm"
+              radius="md"
+              styles={{ input: { minWidth: 150 } }}
+            />
+
+            <TextInput
+              type="date"
+              value={endDate}
+              min={startDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              size="sm"
+              radius="md"
+              styles={{ input: { minWidth: 150 } }}
+            />
+
+            <Button
+              variant="outline"
+              color="blue"
+              radius="xl"
+              size="sm"
+              onClick={() => extendRange("forward")}
+              className="px-2 py-1"
+            >
+              <IconChevronRight size={18} />
+            </Button>
+          </div>
+        </Grid.Col>
+
+        {/* Actions (Search + Apply For Leave) */}
+        <Grid.Col span="content" className="flex justify-end gap-3">
+          <Button
+            onClick={handleSearch}
+            variant="outline"
+            color="gray"
+            radius="md"
+            size="sm"
+            className="px-3"
+          >
+            <IconSearch size={16} />
           </Button>
-        </Grid.Col>
-
-        <Grid.Col span="content">
-          <TextInput
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            label="Start Date"
-            style={{ minWidth: 180 }}
-          />
-        </Grid.Col>
-
-        <Grid.Col span="content">
-          <TextInput
-            type="date"
-            value={endDate}
-            min={startDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            label="End Date"
-            style={{ minWidth: 180 }}
-          />
-        </Grid.Col>
-
-        <Grid.Col span="content">
-          <Button onClick={() => extendRange("forward")} className="px-4">
-            {">"}
-          </Button>
-        </Grid.Col>
-
-        <Grid.Col span="auto" className="flex justify-end gap-4">
-          <Button onClick={handleSearch} variant="outline" className="px-3">
-            <IconSearch />
-          </Button>
-          <Button onClick={ApplyForLeave} className="px-5 mr-5">
+          <Button
+            onClick={ApplyForLeave}
+            color="green"
+            radius="md"
+            size="sm"
+            className="px-5"
+          >
             Apply For Leave
           </Button>
         </Grid.Col>
@@ -260,52 +301,22 @@ const DateTableComponent = () => {
           <Table
             striped
             highlightOnHover
-            className="mt-4 shadow-lg"
-            style={{
-              border: "1px solid #ddd",
-              borderSpacing: "0 10px",
-              width: "100%",
-            }}
+            className="w-full text-center shadow-md border "
           >
-            <thead>
-              <tr
-                style={{
-                  backgroundColor: theme.colors.primary[0],
-                  border: `1px solid ${organizationConfig.organization_theme.theme.button.textColor}`,
-                }}
-              >
-                <th
-                  style={{
-                    padding: "0.5rem",
-                    width: "140px",
-                    minWidth: "120px",
-                  }}
-                >
-                  Project Name
-                </th>
-                <th
-                  style={{
-                    border: `1px solid ${organizationConfig.organization_theme.theme.button.textColor}`,
-                    padding: "1rem",
-                    width: "150px",
-                    minWidth: "170px",
-                  }}
-                >
-                  Task Details
-                </th>
+            <thead
+              className="text-xs"
+              style={{
+                backgroundColor:
+                  organizationConfig.organization_theme.theme.backgroundColor,
+                color: organizationConfig.organization_theme.theme.color,
+              }}
+            >
+              <tr>
+                <th className="p-2 border ">Project Name</th>
+                <th className="p-2 border ">Task Details</th>
                 {dateRange.map((date) => {
                   return (
-                    <th
-                      key={date}
-                      style={{
-                        textAlign: "center",
-                        padding: "0.25rem",
-                        minWidth: "30px",
-                        maxWidth: "30px",
-                        fontSize: "13px",
-                        border: `1px solid ${organizationConfig.organization_theme.theme.button.textColor}`,
-                      }}
-                    >
+                    <th className="p-2 border " key={date}>
                       {moment(date).format("DD MMM")}
                       <br />
                       {moment(date).format("ddd")}
@@ -313,18 +324,10 @@ const DateTableComponent = () => {
                   );
                 })}
 
-                <th
-                  style={{
-                    padding: "0.25rem",
-                    width: "160px",
-                    textAlign: "center",
-                  }}
-                >
-                  Total Hours
-                </th>
+                <th className="p-2 border ">Total Hours</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="text-sm">
               {workingHours.map((project: any, projectIndex: number) =>
                 project.activities.map((task: any, taskIndex: number) => (
                   <tr
@@ -332,13 +335,13 @@ const DateTableComponent = () => {
                   >
                     {taskIndex === 0 && (
                       <td
-                        rowSpan={project.activities.length}
                         style={{
-                          padding: "1rem",
                           border: `1px solid ${organizationConfig.organization_theme.theme.button.textColor}`,
                         }}
+                        className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis"
+                        rowSpan={project.activities.length}
                       >
-                        <div className="flex flex-col text-center gap-10">
+                        <div className="flex flex-col items-center justify-center gap-2 min-h-[60px]">
                           <p>{project.project_id}</p>
                           <p
                             style={{ cursor: "pointer" }}
@@ -373,36 +376,53 @@ const DateTableComponent = () => {
 
                       return (
                         <td
-                          key={`${date}-${task.task_id}`}
                           style={{
-                            textAlign: "center",
+                            width: "80px",
                             minWidth: "80px",
-                            maxWidth: "90px",
-                            padding: "0.25rem",
-                            backgroundColor: `${organizationConfig.organization_theme.theme.button.color}`,
+                            textAlign: "center",
                             border: `1px solid ${organizationConfig.organization_theme.theme.button.textColor}`,
                           }}
                         >
-                          <TextInput
-                            placeholder="0"
-                            value={hours !== undefined ? hours : ""}
-                            onChange={(e) =>
-                              handleChange(
-                                parseFloat(e.target.value || "0"),
-                                projectIndex,
-                                taskIndex,
-                                date
-                              )
-                            }
-                            styles={{
-                              input: {
+                          {edit ? (
+                            <TextInput
+                              placeholder="0"
+                              disabled={isPastDate(new Date(date))}
+                              value={hours !== undefined ? hours : ""}
+                              onChange={(e) =>
+                                handleChange(
+                                  parseFloat(e.target.value || "0"),
+                                  projectIndex,
+                                  taskIndex,
+                                  date
+                                )
+                              }
+                              styles={{
+                                input: {
+                                  textAlign: "center",
+                                  fontSize: "12px",
+                                  padding: "0.2rem 0.4rem",
+                                  height: "28px",
+                                },
+                              }}
+                            />
+                          ) : (
+                            <div
+                              style={{
                                 textAlign: "center",
                                 fontSize: "12px",
                                 padding: "0.2rem 0.4rem",
                                 height: "28px",
-                              },
-                            }}
-                          />
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                color:
+                                  organizationConfig.organization_theme.theme
+                                    .backgroundColor,
+                              }}
+                            >
+                              {hours ? hours : "0"}
+                            </div>
+                          )}
                         </td>
                       );
                     })}
@@ -424,6 +444,11 @@ const DateTableComponent = () => {
           </Table>
         </div>
       )}
+      <div className="flex justify-end mt-6 ml-6">
+        <Button onClick={() => setIsEdit(!edit)}>
+          {edit ? "Save" : "Edit"}
+        </Button>
+      </div>
     </ColorDiv>
   );
 };
