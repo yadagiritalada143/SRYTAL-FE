@@ -31,6 +31,7 @@ import Reports from "../components/admin/dashboard/reports/reports";
 import Packages from "../components/admin/dashboard/packages/packages";
 import AddPackage from "../components/admin/dashboard/add-package/add-package";
 import UpdatePackage from "../components/admin/dashboard/update-package/update-package";
+import DateTableComponent from "../components/common/timesheet/timesheet";
 
 const AdminRoutes = () => {
   const { organization } = useParams<{ organization: string }>();
@@ -132,6 +133,7 @@ const AdminRoutes = () => {
             <Route path="/dashboard/addPackage" element={<AddPackage />} />
             <Route path="updates/:packageId" element={<UpdatePackage />} />
             <Route path="reports" element={<Reports />} />
+            <Route path="timesheet" element={<DateTableComponent />} />
             <Route
               path=":candidateId/edit-pool-candidate"
               element={<UpdatePoolCandidateForm />}

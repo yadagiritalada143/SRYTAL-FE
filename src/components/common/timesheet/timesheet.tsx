@@ -1,28 +1,32 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, TextInput, Title, Table, Grid } from "@mantine/core";
 import moment from "moment";
 import "moment-timezone";
 import { toast } from "react-toastify";
-import { useMantineTheme } from "@mantine/core";
 import { data } from "./resources";
 import { TaskPopover } from "./task-popover";
-import { IconPlus, IconX } from "@tabler/icons-react";
+import {
+  IconChevronLeft,
+  IconChevronRight,
+  IconPlus,
+  IconSearch,
+} from "@tabler/icons-react";
 import { useModals } from "@mantine/modals";
 import { ColorDiv } from "../style-components/c-div";
 import { useRecoilValue } from "recoil";
 import { organizationThemeAtom } from "../../../atoms/organization-atom";
 const DateTableComponent = () => {
-  const theme = useMantineTheme();
   const modals = useModals();
   const [startDate, setStartDate] = useState<string>(
     moment().tz("Asia/Kolkata").format("YYYY-MM-DD")
   );
   const [endDate, setEndDate] = useState<string>(
-    moment().tz("Asia/Kolkata").add(7, "days").format("YYYY-MM-DD")
+    moment().tz("Asia/Kolkata").add(6, "days").format("YYYY-MM-DD")
   );
   const [dateRange, setDateRange] = useState<string[]>([]);
   const [daysInRange, setDaysInRange] = useState<number>(0);
   const [workingHours, setWorkingHours] = useState(data);
+  const [edit, setIsEdit] = useState(false);
   const organizationConfig = useRecoilValue(organizationThemeAtom);
 
   const getDateRange = (start: string, end: string): string[] => {
@@ -35,6 +39,12 @@ const DateTableComponent = () => {
     }
     return dates;
   };
+
+  useEffect(() => {
+    const initialRange = getDateRange(startDate, endDate);
+    setDateRange(initialRange);
+    setDaysInRange(initialRange.length);
+  }, [startDate, endDate]);
 
   const handleSearch = () => {
     if (startDate && endDate) {
@@ -193,46 +203,97 @@ const DateTableComponent = () => {
     });
   };
 
+  const isPastDate = (inputDate: Date) => {
+    const today = new Date();
+    const givenDate = new Date(inputDate);
+
+    today.setHours(0, 0, 0, 0);
+    givenDate.setHours(0, 0, 0, 0);
+
+    return givenDate < today;
+  };
+
   return (
-    <ColorDiv className="w-full p-4">
-      <Title order={2} className="mb-4 text-center">
+    <ColorDiv className="w-100 p-5">
+      <Title
+        order={2}
+        className="mb-4 text-center font-extrabold underline text-3xl"
+      >
         Timesheet
       </Title>
 
-      <Grid align="flex-end" className="mb-4">
-        <Grid.Col span={3}>
-          <TextInput
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            label="Start Date"
-            className="mb-2"
-          />
+      <Grid
+        align="center"
+        gutter="md"
+        className="mb-6 p-4 hover:shadow-lg rounded-md shadow-sm"
+      >
+        <Grid.Col span="auto">
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              color="blue"
+              radius="xl"
+              size="sm"
+              onClick={() => extendRange("backward")}
+              className="px-2 py-1"
+            >
+              <IconChevronLeft size={18} />
+            </Button>
+
+            <TextInput
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              size="sm"
+              radius="md"
+              styles={{ input: { minWidth: 150 } }}
+            />
+
+            <TextInput
+              type="date"
+              value={endDate}
+              min={startDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              size="sm"
+              radius="md"
+              styles={{ input: { minWidth: 150 } }}
+            />
+
+            <Button
+              variant="outline"
+              color="blue"
+              radius="xl"
+              size="sm"
+              onClick={() => extendRange("forward")}
+              className="px-2 py-1"
+            >
+              <IconChevronRight size={18} />
+            </Button>
+          </div>
         </Grid.Col>
-        <Grid.Col span={3}>
-          <TextInput
-            type="date"
-            value={endDate}
-            min={startDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            label="End Date"
-            className="mb-2"
-          />
-        </Grid.Col>
-        <div className="flex justify-center mb-4">
-          <Button onClick={handleSearch} className="mx-2">
-            Search
+
+        {/* Actions (Search + Apply For Leave) */}
+        <Grid.Col span="content" className="flex justify-end gap-3">
+          <Button
+            onClick={handleSearch}
+            variant="outline"
+            color="gray"
+            radius="md"
+            size="sm"
+            className="px-3"
+          >
+            <IconSearch size={16} />
           </Button>
-          <Button onClick={() => extendRange("backward")} className="mx-2">
-            {"<"}
-          </Button>
-          <Button onClick={() => extendRange("forward")} className="mx-2">
-            {">"}
-          </Button>
-          <Button onClick={ApplyForLeave} className="mx-4">
+          <Button
+            onClick={ApplyForLeave}
+            color="green"
+            radius="md"
+            size="sm"
+            className="px-5"
+          >
             Apply For Leave
           </Button>
-        </div>
+        </Grid.Col>
       </Grid>
 
       {dateRange.length > 0 && (
@@ -240,54 +301,33 @@ const DateTableComponent = () => {
           <Table
             striped
             highlightOnHover
-            className="mt-4 shadow-lg"
-            style={{
-              border: "1px solid #ddd",
-              borderSpacing: "0 10px",
-              width: "100%",
-            }}
+            className="w-full text-center shadow-md border "
           >
-            <thead>
-              <tr style={{ backgroundColor: theme.colors.primary[0] }}>
-                <th
-                  style={{ padding: "1rem", width: "150px", minWidth: "120px" }}
-                >
-                  Project Name
-                </th>
-                <th
-                  style={{
-                    border: `1px solid ${organizationConfig.organization_theme.theme.button.textColor}`,
-                    padding: "1rem",
-                    width: "190px",
-                    minWidth: "180px",
-                  }}
-                >
-                  Task Details
-                </th>
-                {dateRange.map((date) => (
-                  <th
-                    key={date}
-                    style={{
-                      padding: "1rem",
-                      width: "120px",
-                      minWidth: "100px",
-                    }}
-                  >
-                    {moment(date).format("DD MMM")}
-                  </th>
-                ))}
-                <th
-                  style={{
-                    padding: "1rem",
-                    width: "120px",
-                    textAlign: "center",
-                  }}
-                >
-                  Total Hours
-                </th>
+            <thead
+              className="text-xs"
+              style={{
+                backgroundColor:
+                  organizationConfig.organization_theme.theme.backgroundColor,
+                color: organizationConfig.organization_theme.theme.color,
+              }}
+            >
+              <tr>
+                <th className="p-2 border ">Project Name</th>
+                <th className="p-2 border ">Task Details</th>
+                {dateRange.map((date) => {
+                  return (
+                    <th className="p-2 border " key={date}>
+                      {moment(date).format("DD MMM")}
+                      <br />
+                      {moment(date).format("ddd")}
+                    </th>
+                  );
+                })}
+
+                <th className="p-2 border ">Total Hours</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="text-sm">
               {workingHours.map((project: any, projectIndex: number) =>
                 project.activities.map((task: any, taskIndex: number) => (
                   <tr
@@ -295,13 +335,13 @@ const DateTableComponent = () => {
                   >
                     {taskIndex === 0 && (
                       <td
-                        rowSpan={project.activities.length}
                         style={{
-                          padding: "1rem",
                           border: `1px solid ${organizationConfig.organization_theme.theme.button.textColor}`,
                         }}
+                        className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis"
+                        rowSpan={project.activities.length}
                       >
-                        <div className="flex flex-col text-center gap-10">
+                        <div className="flex flex-col items-center justify-center gap-2 min-h-[60px]">
                           <p>{project.project_id}</p>
                           <p
                             style={{ cursor: "pointer" }}
@@ -317,17 +357,12 @@ const DateTableComponent = () => {
                     )}
                     <td
                       style={{
-                        padding: "1rem",
+                        padding: "0.25rem",
                         border: `1px solid ${organizationConfig.organization_theme.theme.button.textColor}`,
                       }}
                     >
-                      <div className=" w-full flex justify-between">
+                      <div className=" w-full flex justify-center">
                         <TaskPopover task={task.task_id} />
-                        <p>
-                          <Button className="rounded-full">
-                            <IconX />
-                          </Button>
-                        </p>
                       </div>
                     </td>
                     {dateRange.map((date) => {
@@ -341,27 +376,53 @@ const DateTableComponent = () => {
 
                       return (
                         <td
-                          key={`${date}-${task.task_id}`}
                           style={{
-                            padding: "1rem",
+                            width: "80px",
+                            minWidth: "80px",
                             textAlign: "center",
-                            width: "120px",
                             border: `1px solid ${organizationConfig.organization_theme.theme.button.textColor}`,
                           }}
                         >
-                          <TextInput
-                            placeholder="0"
-                            value={hours}
-                            onChange={(e) =>
-                              handleChange(
-                                parseFloat(e.target.value) || 0,
-                                projectIndex,
-                                taskIndex,
-                                date
-                              )
-                            }
-                            style={{ textAlign: "center" }}
-                          />
+                          {edit ? (
+                            <TextInput
+                              placeholder="0"
+                              disabled={isPastDate(new Date(date))}
+                              value={hours !== undefined ? hours : ""}
+                              onChange={(e) =>
+                                handleChange(
+                                  parseFloat(e.target.value || "0"),
+                                  projectIndex,
+                                  taskIndex,
+                                  date
+                                )
+                              }
+                              styles={{
+                                input: {
+                                  textAlign: "center",
+                                  fontSize: "12px",
+                                  padding: "0.2rem 0.4rem",
+                                  height: "28px",
+                                },
+                              }}
+                            />
+                          ) : (
+                            <div
+                              style={{
+                                textAlign: "center",
+                                fontSize: "12px",
+                                padding: "0.2rem 0.4rem",
+                                height: "28px",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                color:
+                                  organizationConfig.organization_theme.theme
+                                    .backgroundColor,
+                              }}
+                            >
+                              {hours ? hours : "0"}
+                            </div>
+                          )}
                         </td>
                       );
                     })}
@@ -369,7 +430,6 @@ const DateTableComponent = () => {
                       <td
                         rowSpan={project.activities.length}
                         style={{
-                          padding: "1rem",
                           textAlign: "center",
                           border: `1px solid ${organizationConfig.organization_theme.theme.button.textColor}`,
                         }}
@@ -384,6 +444,11 @@ const DateTableComponent = () => {
           </Table>
         </div>
       )}
+      <div className="flex justify-end mt-6 ml-6">
+        <Button onClick={() => setIsEdit(!edit)}>
+          {edit ? "Save" : "Edit"}
+        </Button>
+      </div>
     </ColorDiv>
   );
 };

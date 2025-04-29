@@ -7,10 +7,13 @@ import EmployeeRoutes from "./routes/user";
 import SuperAdminRoutes from "./routes/super-admin";
 import { RecoilRoot } from "recoil";
 import CommonForgetPassword from "./routes/common";
+import { ModalsProvider } from "@mantine/modals";
 
 const App: React.FC = () => {
   return (
     <RecoilRoot>
+      <MantineProvider>
+        <ModalsProvider>
       <Router>
         <Routes>
           <Route
@@ -31,6 +34,8 @@ const App: React.FC = () => {
           <Route path="/*" element={<CommonForgetPassword />} />
         </Routes>
       </Router>
+      </ModalsProvider>
+      </MantineProvider>
     </RecoilRoot>
   );
 };
