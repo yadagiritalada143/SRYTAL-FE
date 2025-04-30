@@ -139,136 +139,141 @@ const UpdatePoolCandidateForm = () => {
         <form
           onSubmit={handleSubmit(handleUpdateCandidate)}
           onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-            }
+            if (e.key === "Enter") e.preventDefault();
           }}
           style={{
             backgroundColor:
               organizationConfig.organization_theme.theme.backgroundColor,
           }}
-          className="rounded-lg shadow-lg w-full max-w-3xl  mx-auto p-8"
+          className="space-y-4 rounded-lg shadow-lg w-full max-w-3xl mx-auto p-8"
         >
-          <Container>
-            <div className="px-4 flex justify-between">
-              <div></div>
-              <Title className="text-center" order={3}>
-                Candidate Details
-              </Title>
-              <Button bg={theme.colors.primary[5]} onClick={() => navigate(-1)}>
-                {" "}
-                Cancel
+          <div className="px-3 flex items-center justify-between gap-4 flex-wrap">
+            <Title
+              className="text-base sm:text-xl md:text-2xl font-extrabold underline text-left flex-1"
+              order={3}
+            >
+              Candidate Details
+            </Title>
+            <Button
+              bg={theme.colors.primary[5]}
+              onClick={() => navigate(-1)}
+              className="text-sm sm:text-base self-center sm:self-auto"
+            >
+              Cancel
+            </Button>
+          </div>
+          <div className="px-4 space-y-4">
+            <Controller
+              name="candidateName"
+              control={control}
+              render={({ field }) => (
+                <TextInput
+                  label="Candidate Name"
+                  {...field}
+                  error={errors.candidateName?.message}
+                />
+              )}
+            />
+            <div className="flex flex-col sm:flex-row sm:items-end sm:gap-4 gap-2">
+              <Controller
+                name="contact.email"
+                control={control}
+                render={({ field }) => (
+                  <TextInput
+                    label="Email"
+                    {...field}
+                    className="w-full sm:w-1/2 md:w-full"
+                    error={errors.contact?.email?.message}
+                  />
+                )}
+              />
+              <Controller
+                name="contact.phone"
+                control={control}
+                render={({ field }) => (
+                  <TextInput
+                    label="Phone"
+                    {...field}
+                    className="w-full sm:w-1/2 md:w-full"
+                    error={errors.contact?.phone?.message}
+                  />
+                )}
+              />
+            </div>
+            <div className="flex flex-col sm:flex-row sm:items-end sm:gap-4 gap-2">
+              <Controller
+                name="totalYearsOfExperience"
+                control={control}
+                render={({ field }) => (
+                  <NumberInput
+                    label="Total Experience"
+                    {...field}
+                    min={0}
+                    className="w-full sm:w-1/2 md:w-full"
+                    error={errors.totalYearsOfExperience?.message}
+                  />
+                )}
+              />
+              <Controller
+                name="relaventYearsOfExperience"
+                control={control}
+                render={({ field }) => (
+                  <NumberInput
+                    label="Relevant Experience"
+                    {...field}
+                    min={0}
+                    className="w-full sm:w-1/2 md:w-full"
+                    error={
+                      field.value > getValues("totalYearsOfExperience")
+                        ? "Relevant experience cannot be more than total experience"
+                        : errors.relaventYearsOfExperience?.message
+                    }
+                  />
+                )}
+              />
+            </div>
+            <div>
+              <Input.Wrapper label="Skills">
+                <Group>
+                  <TextInput
+                    value={skillInput}
+                    onChange={(e) => setSkillInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSkillAdd()}
+                    className="flex-1"
+                  />
+                  <Button onClick={handleSkillAdd}>Add Skill</Button>
+                </Group>
+              </Input.Wrapper>
+              <Group mt="md">
+                {skills.map((skill) => (
+                  <Chip key={skill} onClick={() => handleSkillRemove(skill)}>
+                    {skill} ✖
+                  </Chip>
+                ))}
+              </Group>
+            </div>
+          </div>
+
+          <div className="px-4">
+            <div className="my-4 flex flex-col sm:flex-row justify-between gap-4 sm:items-center">
+              <button
+                className="bg-red-500 text-white py-2 px-4 rounded w-full sm:w-auto"
+                onClick={(e) => {
+                  e.preventDefault();
+                  open();
+                }}
+              >
+                Delete Candidate
+              </button>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full sm:w-auto"
+              >
+                {isSubmitting ? "Updating..." : "Update Candidate"}
               </Button>
             </div>
-            <Grid gutter="md">
-              <Grid.Col span={12}>
-                <Controller
-                  name="candidateName"
-                  control={control}
-                  render={({ field }) => (
-                    <TextInput
-                      label="Candidate Name"
-                      {...field}
-                      error={errors.candidateName?.message}
-                    />
-                  )}
-                />
-              </Grid.Col>
-              <Grid.Col span={6}>
-                <Controller
-                  name="contact.email"
-                  control={control}
-                  render={({ field }) => (
-                    <TextInput
-                      label="Email"
-                      {...field}
-                      error={errors.contact?.email?.message}
-                    />
-                  )}
-                />
-              </Grid.Col>
-              <Grid.Col span={6}>
-                <Controller
-                  name="contact.phone"
-                  control={control}
-                  render={({ field }) => (
-                    <TextInput
-                      label="Phone"
-                      {...field}
-                      error={errors.contact?.phone?.message}
-                    />
-                  )}
-                />
-              </Grid.Col>
-              <Grid.Col span={6}>
-                <Controller
-                  name="totalYearsOfExperience"
-                  control={control}
-                  render={({ field }) => (
-                    <NumberInput
-                      label="Total Experience"
-                      {...field}
-                      min={0}
-                      error={errors.totalYearsOfExperience?.message}
-                    />
-                  )}
-                />
-              </Grid.Col>
-              <Grid.Col span={6}>
-                <Controller
-                  name="relaventYearsOfExperience"
-                  control={control}
-                  render={({ field }) => (
-                    <NumberInput
-                      label="Relevant Experience"
-                      {...field}
-                      min={0}
-                      error={
-                        field.value > getValues("totalYearsOfExperience")
-                          ? "Relevant experience cannot be more than total experience"
-                          : errors.relaventYearsOfExperience?.message
-                      }
-                    />
-                  )}
-                />
-              </Grid.Col>
-              <Grid.Col span={12}>
-                <Input.Wrapper label="Skills">
-                  <Group>
-                    <TextInput
-                      value={skillInput}
-                      onChange={(e) => setSkillInput(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && handleSkillAdd()}
-                      className="flex-1"
-                    />
-                    <Button onClick={handleSkillAdd}>Add Skill</Button>
-                  </Group>
-                </Input.Wrapper>
-                <Group mt="md">
-                  {skills.map((skill) => (
-                    <Chip key={skill} onClick={() => handleSkillRemove(skill)}>
-                      {skill} ✖
-                    </Chip>
-                  ))}
-                </Group>
-              </Grid.Col>
-            </Grid>
-          </Container>
-
-          <Group mt="lg" className="m-4 mb-8 flex justify-between">
-            <button
-              className="bg-red-500 text-white py-2 px-4 rounded"
-              onClick={(e) => {
-                e.preventDefault();
-                open();
-              }}
-            >
-              Delete Candidate
-            </button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Updating" : "Update Candidate"}
-            </Button>
-          </Group>
+          </div>
         </form>
       </BgDiv>
       <Modal size="md" opened={opened} onClose={close}>

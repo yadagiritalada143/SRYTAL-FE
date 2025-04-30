@@ -81,11 +81,11 @@ const AddEmployee = () => {
         >
           <div className="flex justify-between">
             <div></div>
-            <h2 className="text-2xl font-bold text-center mb-6">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-center mb-4 sm:mb-6 underline">
               Add Employee
             </h2>
             <Button
-              className="rounded-full"
+              className="rounded-full px-2 py-1 text-sm sm:px-3 sm:py-2 sm:text-base"
               onClick={() =>
                 navigate(
                   `${organizationAdminUrls(
@@ -94,7 +94,7 @@ const AddEmployee = () => {
                 )
               }
             >
-              <IconX />
+              <IconX size={18} />
             </Button>
           </div>
 
