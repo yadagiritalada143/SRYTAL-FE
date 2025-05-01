@@ -316,7 +316,7 @@ export const getAllPackagesByAdmin = async () => {
     const response = await apiClient("/admin/getAllPackagesByAdmin", {
       headers: { auth_token: `Bearer ${token}` },
     });
-    return response.data.pacakgesList;
+    return response.data.packagesList;
   } catch (error) {
     throw error;
   }
