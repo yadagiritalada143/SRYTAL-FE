@@ -1,5 +1,15 @@
 import { useEffect, useState } from "react";
-import { Button, TextInput, Title, Table, Grid } from "@mantine/core";
+import {
+  Button,
+  TextInput,
+  Title,
+  Table,
+  Grid,
+  Group,
+  ActionIcon,
+  Box,
+  LoadingOverlay,
+} from "@mantine/core";
 import moment from "moment";
 import "moment-timezone";
 import { toast } from "react-toastify";
@@ -15,21 +25,21 @@ import { useModals } from "@mantine/modals";
 import { ColorDiv } from "../style-components/c-div";
 import { useRecoilValue } from "recoil";
 import { organizationThemeAtom } from "../../../atoms/organization-atom";
+import { DatePickerInput } from "@mantine/dates";
+
 const DateTableComponent = () => {
   const modals = useModals();
-  const [startDate, setStartDate] = useState<string>(
-    moment().tz("Asia/Kolkata").format("YYYY-MM-DD")
-  );
-  const [endDate, setEndDate] = useState<string>(
-    moment().tz("Asia/Kolkata").add(6, "days").format("YYYY-MM-DD")
-  );
-  const [dateRange, setDateRange] = useState<string[]>([]);
-  const [daysInRange, setDaysInRange] = useState<number>(0);
+  const [dateRangeValue, setDateRangeValue] = useState<
+    [Date | null, Date | null]
+  >([new Date(), moment().add(6, "days").toDate()]);
+  const [displayedDateRange, setDisplayedDateRange] = useState<string[]>([]);
   const [workingHours, setWorkingHours] = useState(data);
   const [edit, setIsEdit] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const organizationConfig = useRecoilValue(organizationThemeAtom);
 
-  const getDateRange = (start: string, end: string): string[] => {
+  const getDateRange = (start: Date | null, end: Date | null): string[] => {
+    if (!start || !end) return [];
     const startDt = new Date(start);
     const endDt = new Date(end);
     const dates: string[] = [];
@@ -41,62 +51,60 @@ const DateTableComponent = () => {
   };
 
   useEffect(() => {
-    const initialRange = getDateRange(startDate, endDate);
-    setDateRange(initialRange);
-    setDaysInRange(initialRange.length);
-  }, [startDate, endDate]);
+    const initialRange = getDateRange(dateRangeValue[0], dateRangeValue[1]);
+    setDisplayedDateRange(initialRange);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const handleSearch = () => {
-    if (startDate && endDate) {
-      if (new Date(startDate) > new Date(endDate)) {
-        toast.error("Start date must be before end date.");
-        return;
-      }
-      const range = getDateRange(startDate, endDate);
-      setDateRange(range);
-      setDaysInRange(range.length);
+  const handleSearch = async () => {
+    const [start, end] = dateRangeValue;
+    if (!start || !end) {
+      toast.error("Please select both start and end dates.");
+      return;
+    }
+    if (start > end) {
+      toast.error("Start date must be before end date.");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      // Simulate API call (replace with your actual API call)
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      const range = getDateRange(start, end);
+      setDisplayedDateRange(range);
+      toast.success("Timesheet loaded successfully");
+    } catch (error) {
+      toast.error("Failed to load timesheet");
+      console.error("Search error:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const extendRange = (direction: "forward" | "backward"): void => {
-    if (!startDate || !endDate) return;
+    const [currentStart, currentEnd] = dateRangeValue;
+    if (!currentStart || !currentEnd) return;
 
-    const startDt = new Date(startDate);
-    const endDt = new Date(endDate);
-    const rangeExtension = daysInRange;
+    const rangeExtension = 7; // Always extend by 7 days
+    const newStart = new Date(currentStart);
+    const newEnd = new Date(currentEnd);
 
     if (direction === "backward") {
-      const newStart = new Date(
-        startDt.setDate(startDt.getDate() - rangeExtension)
-      );
-
-      const newEnd = new Date(endDt.setDate(endDt.getDate() - rangeExtension));
-
-      setStartDate(newStart.toISOString().split("T")[0]);
-      setEndDate(newEnd.toISOString().split("T")[0]);
-      const newRange = getDateRange(
-        newStart.toISOString().split("T")[0],
-        newEnd.toISOString().split("T")[0]
-      );
-      setDateRange(newRange);
+      newStart.setDate(newStart.getDate() - rangeExtension);
+      newEnd.setDate(newEnd.getDate() - rangeExtension);
     } else {
-      const newStart = new Date(
-        startDt.setDate(startDt.getDate() + rangeExtension)
-      );
-
-      const newEnd = new Date(endDt.setDate(endDt.getDate() + rangeExtension));
-      setStartDate(newStart.toISOString().split("T")[0]);
-      setEndDate(newEnd.toISOString().split("T")[0]);
-      const newRange = getDateRange(
-        newStart.toISOString().split("T")[0],
-        newEnd.toISOString().split("T")[0]
-      );
-      setDateRange(newRange);
+      newStart.setDate(newStart.getDate() + rangeExtension);
+      newEnd.setDate(newEnd.getDate() + rangeExtension);
     }
+
+    setDateRangeValue([newStart, newEnd]);
   };
 
   const getProjectTotalHours = (projectIndex: number) => {
-    return dateRange.reduce((total, date) => {
+    return displayedDateRange.reduce((total, date) => {
       const hoursForDate = workingHours[projectIndex].activities.reduce(
         (taskTotal, task) => {
           const matchedDate = task.days.find(
@@ -110,6 +118,7 @@ const DateTableComponent = () => {
       return total + hoursForDate;
     }, 0);
   };
+
   const handleChange = (
     newHours: number,
     projectIndex: number,
@@ -162,30 +171,30 @@ const DateTableComponent = () => {
     }
   };
 
-  const AddTask = (projectIndex: number) => {
-    const id = modals.openModal({
-      title: "Add New Task",
-      children: (
-        <TextInput
-          placeholder="Enter task name"
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && e.currentTarget.value) {
-              const newTaskName = e.currentTarget.value;
-              setWorkingHours((prev) => {
-                const updatedHours = [...prev];
-                updatedHours[projectIndex].activities.push({
-                  task_id: newTaskName,
-                  days: [],
-                });
-                return updatedHours;
-              });
-              modals.closeModal(id);
-            }
-          }}
-        />
-      ),
-    });
-  };
+  // const AddTask = (projectIndex: number) => {
+  //   const id = modals.openModal({
+  //     title: "Add New Task",
+  //     children: (
+  //       <TextInput
+  //         placeholder="Enter task name"
+  //         onKeyDown={(e) => {
+  //           if (e.key === "Enter" && e.currentTarget.value) {
+  //             const newTaskName = e.currentTarget.value;
+  //             setWorkingHours((prev) => {
+  //               const updatedHours = [...prev];
+  //               updatedHours[projectIndex].activities.push({
+  //                 task_id: newTaskName,
+  //                 days: [],
+  //               });
+  //               return updatedHours;
+  //             });
+  //             modals.closeModal(id);
+  //           }
+  //         }}
+  //       />
+  //     ),
+  //   });
+  // };
 
   const ApplyForLeave = () => {
     const handleApply = (id: string) => {
@@ -215,6 +224,8 @@ const DateTableComponent = () => {
 
   return (
     <ColorDiv className="w-100 p-5">
+      <LoadingOverlay visible={isLoading} loaderProps={{ size: "lg" }} />
+
       <Title
         order={2}
         className="mb-4 text-center font-extrabold underline text-3xl"
@@ -227,81 +238,115 @@ const DateTableComponent = () => {
         gutter="md"
         className="mb-6 p-4 hover:shadow-lg rounded-md shadow-sm"
       >
-        <Grid.Col span="auto">
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              color="blue"
-              radius="xl"
-              size="sm"
-              onClick={() => extendRange("backward")}
-              className="px-2 py-1"
-            >
-              <IconChevronLeft size={18} />
-            </Button>
-
-            <TextInput
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              size="sm"
-              radius="md"
-              styles={{ input: { minWidth: 150 } }}
+        <Grid.Col span={{ base: 12, md: 8 }}>
+          <Group wrap="nowrap">
+            <DatePickerInput
+              type="range"
+              value={dateRangeValue}
+              onChange={(value) => {
+                if (value[0] && !value[1]) {
+                  const endDate = new Date(value[0]);
+                  endDate.setDate(endDate.getDate() + 10);
+                  setDateRangeValue([value[0], endDate]);
+                } else {
+                  setDateRangeValue(value);
+                }
+              }}
+              allowSingleDateInRange
+              mx="auto"
+              maw={400}
+              w="100%"
+              size="md"
+              placeholder="Select date range"
+              firstDayOfWeek={0}
+              styles={{
+                input: {
+                  borderColor:
+                    organizationConfig.organization_theme.theme.color,
+                  "&:hover": {
+                    borderColor:
+                      organizationConfig.organization_theme.theme.button.color,
+                  },
+                },
+                day: {
+                  "&[data-weekend]": {
+                    color: organizationConfig.organization_theme.theme.color,
+                  },
+                  "&[data-outside]": {
+                    color: `${organizationConfig.organization_theme.theme.color}80`,
+                  },
+                  "&[data-selected]": {
+                    backgroundColor:
+                      organizationConfig.organization_theme.theme
+                        .backgroundColor,
+                    color: organizationConfig.organization_theme.theme.color,
+                  },
+                },
+                calendarHeaderControl: {
+                  color: organizationConfig.organization_theme.theme.color,
+                  "&:hover": {
+                    backgroundColor: `${organizationConfig.organization_theme.theme.backgroundColor}20`,
+                  },
+                },
+                calendarHeaderLevel: {
+                  color: organizationConfig.organization_theme.theme.color,
+                  "&:hover": {
+                    color:
+                      organizationConfig.organization_theme.theme.button.color,
+                  },
+                },
+              }}
             />
-
-            <TextInput
-              type="date"
-              value={endDate}
-              min={startDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              size="sm"
+            <ActionIcon
+              onClick={handleSearch}
+              variant="light"
+              color={
+                organizationConfig.organization_theme.theme.button.textColor
+              }
               radius="md"
-              styles={{ input: { minWidth: 150 } }}
-            />
-
-            <Button
-              variant="outline"
-              color="blue"
-              radius="xl"
-              size="sm"
-              onClick={() => extendRange("forward")}
-              className="px-2 py-1"
+              size="lg"
+              aria-label="Search dates"
+              loading={isLoading}
+              style={{
+                backgroundColor:
+                  organizationConfig.organization_theme.theme.button.color,
+                color:
+                  organizationConfig.organization_theme.theme.button.textColor,
+              }}
             >
-              <IconChevronRight size={18} />
-            </Button>
-          </div>
+              <IconSearch size={18} />
+            </ActionIcon>
+          </Group>
         </Grid.Col>
 
-        {/* Actions (Search + Apply For Leave) */}
-        <Grid.Col span="content" className="flex justify-end gap-3">
-          <Button
-            onClick={handleSearch}
-            variant="outline"
-            color="gray"
-            radius="md"
-            size="sm"
-            className="px-3"
-          >
-            <IconSearch size={16} />
-          </Button>
+        <Grid.Col
+          span={{ base: 12, md: 4 }}
+          style={{ display: "flex", justifyContent: "flex-end" }}
+        >
           <Button
             onClick={ApplyForLeave}
-            color="green"
             radius="md"
-            size="sm"
-            className="px-5"
+            size="md"
+            leftSection={<IconPlus size={18} />}
+            variant="filled"
+            style={{
+              backgroundColor:
+                organizationConfig.organization_theme.theme.button.color,
+              color:
+                organizationConfig.organization_theme.theme.button.textColor,
+            }}
           >
-            Apply For Leave
+            Apply Leave
           </Button>
         </Grid.Col>
       </Grid>
 
-      {dateRange.length > 0 && (
-        <div style={{ overflowX: "auto", padding: "0 1rem" }}>
+      {displayedDateRange.length > 0 && (
+        <Box style={{ overflowX: "auto" }}>
           <Table
             striped
             highlightOnHover
-            className="w-full text-center shadow-md border "
+            className="w-full text-center shadow-md border"
           >
             <thead
               className="text-xs"
@@ -312,19 +357,40 @@ const DateTableComponent = () => {
               }}
             >
               <tr>
-                <th className="p-2 border ">Project Name</th>
-                <th className="p-2 border ">Task Details</th>
-                {dateRange.map((date) => {
-                  return (
-                    <th className="p-2 border " key={date}>
-                      {moment(date).format("DD MMM")}
-                      <br />
-                      {moment(date).format("ddd")}
-                    </th>
-                  );
-                })}
-
-                <th className="p-2 border ">Total Hours</th>
+                <th className="p-2 border">Project Name</th>
+                <th className="p-2 border">Task Details</th>
+                {displayedDateRange.map((date) => (
+                  <th className="p-2 border" key={date}>
+                    <Group gap={2} justify="center">
+                      {date === displayedDateRange[0] && (
+                        <ActionIcon
+                          variant="transparent"
+                          color="gray"
+                          size="sm"
+                          onClick={() => extendRange("backward")}
+                        >
+                          <IconChevronLeft size={14} />
+                        </ActionIcon>
+                      )}
+                      <Box>
+                        <div>{moment(date).format("DD")}</div>
+                        <div>{moment(date).format("ddd")}</div>
+                      </Box>
+                      {date ===
+                        displayedDateRange[displayedDateRange.length - 1] && (
+                        <ActionIcon
+                          variant="transparent"
+                          color="gray"
+                          size="sm"
+                          onClick={() => extendRange("forward")}
+                        >
+                          <IconChevronRight size={14} />
+                        </ActionIcon>
+                      )}
+                    </Group>
+                  </th>
+                ))}
+                <th className="p-2 border">Total Hours</th>
               </tr>
             </thead>
             <tbody className="text-sm">
@@ -341,18 +407,16 @@ const DateTableComponent = () => {
                         className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis"
                         rowSpan={project.activities.length}
                       >
-                        <div className="flex flex-col items-center justify-center gap-2 min-h-[60px]">
-                          <p>{project.project_id}</p>
-                          <p
-                            style={{ cursor: "pointer" }}
-                            className="rounded-full"
+                        <Group justify="center" gap="xs">
+                          <span>{project.project_id}</span>
+                          {/* <ActionIcon
+                            variant="light"
+                            size="sm"
                             onClick={() => AddTask(projectIndex)}
                           >
-                            <Button className="rounded-full">
-                              <IconPlus />
-                            </Button>
-                          </p>
-                        </div>
+                            <IconPlus size={14} />
+                          </ActionIcon> */}
+                        </Group>
                       </td>
                     )}
                     <td
@@ -361,11 +425,11 @@ const DateTableComponent = () => {
                         border: `1px solid ${organizationConfig.organization_theme.theme.button.textColor}`,
                       }}
                     >
-                      <div className=" w-full flex justify-center">
+                      <Group justify="center">
                         <TaskPopover task={task.task_id} />
-                      </div>
+                      </Group>
                     </td>
-                    {dateRange.map((date) => {
+                    {displayedDateRange.map((date) => {
                       const matchedDate = task.days.find(
                         (taskDate: any) =>
                           moment(taskDate.date, "DD-MM-YYYY").format(
@@ -376,6 +440,7 @@ const DateTableComponent = () => {
 
                       return (
                         <td
+                          key={date}
                           style={{
                             width: "80px",
                             minWidth: "80px",
@@ -442,13 +507,18 @@ const DateTableComponent = () => {
               )}
             </tbody>
           </Table>
-        </div>
+        </Box>
       )}
-      <div className="flex justify-end mt-6 ml-6">
-        <Button onClick={() => setIsEdit(!edit)}>
-          {edit ? "Save" : "Edit"}
+      <Group justify="right" mt="md">
+        <Button
+          onClick={() => setIsEdit(!edit)}
+          color={edit ? "green" : "blue"}
+          radius="md"
+          disabled={isLoading}
+        >
+          {edit ? "Save Timesheet" : "Edit Timesheet"}
         </Button>
-      </div>
+      </Group>
     </ColorDiv>
   );
 };

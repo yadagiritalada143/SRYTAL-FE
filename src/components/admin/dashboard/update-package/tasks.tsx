@@ -83,7 +83,8 @@ const PackageTasksTable = ({
                 <td className="px-4 py-2 border-r">{index + 1}</td>
                 <td className="px-4 py-2 border-r">{task.title}</td>
                 <td className="px-4 py-2 border-r">
-                  {task?.userId?.firstName || ""} {task?.userId?.lastName || ""}
+                  {task?.createdBy?.firstName || ""}{" "}
+                  {task?.createdBy?.lastName || ""}
                 </td>
                 <td className="px-4 py-2 border-r">
                   {moment(task.createdAt).format("MMMM Do YYYY, h:mm A")}

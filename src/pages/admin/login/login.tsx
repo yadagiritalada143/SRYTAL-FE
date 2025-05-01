@@ -2,10 +2,10 @@ import { Button, Loader, PasswordInput, TextInput, Modal } from "@mantine/core";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, LoginForm } from "../../../forms/login";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { login } from "../../../services/common-services";
 import axios from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { BgDiv } from "../../../components/common/style-components/bg-div";
 import { organizationThemeAtom } from "../../../atoms/organization-atom";
@@ -16,6 +16,7 @@ import ForgotPassword from "../../../components/common/forgetPassword/forgetPass
 
 const AdminLogin = () => {
   const navigate = useNavigate();
+  const { organization } = useParams<{ organization: string }>();
   const { showSuccessToast } = useCustomToast();
   const organizationConfig = useRecoilValue(organizationThemeAtom);
   const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
@@ -26,6 +27,15 @@ const AdminLogin = () => {
   } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
   });
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const userRole = localStorage.getItem("userRole");
+
+    if (token && userRole === "admin") {
+      navigate(`/${organization}/admin/dashboard`);
+    }
+  }, [navigate, organization]);
 
   const Submit = async (formData: LoginForm) => {
     try {
