@@ -30,6 +30,7 @@ import { useCustomToast } from "../../../../utils/common/toast";
 import PoolCompaniesCommentsTable from "./comments";
 import AddCommentPoolCompany from "./add-comment";
 import { deletePoolCompanyByAdmin } from "../../../../services/admin-services";
+import { BackButton } from "../../../common/style-components/buttons";
 
 const UpdateCompany = () => {
   const params = useParams();
@@ -115,10 +116,7 @@ const UpdateCompany = () => {
             <Title className="text-center" order={3}>
               Update Company Details
             </Title>
-            <Button bg={theme.colors.primary[5]} onClick={() => navigate(-1)}>
-              {" "}
-              Cancel
-            </Button>
+            <BackButton id={companyId} />
           </div>
           <div className="px-4 flex flex-wrap space-x-10 ">
             <TextInput

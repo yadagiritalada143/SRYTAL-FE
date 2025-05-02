@@ -4,7 +4,7 @@ import { TextInput, Button, Loader, Textarea } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import { useMantineTheme } from "@mantine/core";
 import { registerPackage } from "../../../../services/admin-services";
-import { useNavigate } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { BgDiv } from "../../../common/style-components/bg-div";
 import { useRecoilValue } from "recoil";
 import { organizationThemeAtom } from "../../../../atoms/organization-atom";
@@ -14,10 +14,13 @@ import {
   addPackageSchema,
 } from "../../../../forms/add-package";
 import { toast } from "react-toastify";
+import { BackButton } from "../../../common/style-components/buttons";
 
 const AddPackage = () => {
   const navigate = useNavigate();
   const theme = useMantineTheme();
+  const params = useParams();
+  const packageId = params.packageId as string;
   const organizationConfig = useRecoilValue(organizationThemeAtom);
   const {
     register,
@@ -59,10 +62,7 @@ const AddPackage = () => {
             <h1 className="text-3xl font-extrabold underline text-center">
               Add Package
             </h1>
-            <Button bg={theme.colors.primary[5]} onClick={() => navigate(-1)}>
-              {" "}
-              Cancel
-            </Button>
+            <BackButton id={packageId} />
           </div>
           <TextInput
             label="Title"
@@ -105,7 +105,8 @@ const AddPackage = () => {
           </div>
 
           <Textarea
-            label="Description" className="mt-4"
+            label="Description"
+            className="mt-4"
             placeholder="Enter Description"
             {...register("description")}
             maxRows={4}

@@ -488,6 +488,23 @@ export const addTasksByAdmin = async (packageId: string, title: string) => {
   }
 };
 
+export const updateTaskByAdmin = async (id: string, title: string) => {
+  const token = localStorage.getItem("token");
+  try {
+    const response = await apiClient.put(
+      `/admin/updateTaskByAdmin`,
+      { id, title },
+      {
+        headers: { auth_token: token },
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getAllEmployeeRoleByAdmin = async () => {
   const token = localStorage.getItem("token");
   try {

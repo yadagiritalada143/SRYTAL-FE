@@ -9,13 +9,16 @@ import { addCompanyByRecruiter } from "../../../../services/user-services";
 import { toast } from "react-toastify";
 import { IconCircleDashedCheck } from "@tabler/icons-react";
 import { useMantineTheme } from "@mantine/core";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useRecoilValue } from "recoil";
 import { organizationThemeAtom } from "../../../../atoms/organization-atom";
 import { BgDiv } from "../../../common/style-components/bg-div";
+import { BackButton } from "../../../common/style-components/buttons";
 
 const AddCompany = () => {
   const theme = useMantineTheme();
+  const params = useParams();
+  const companyId = params.companyId as string;
   const navigate = useNavigate();
   const {
     register,
@@ -63,10 +66,7 @@ const AddCompany = () => {
           <h1 className="text-3xl font-extrabold underline text-center">
             Add Company
           </h1>
-          <Button bg={theme.colors.primary[5]} onClick={() => navigate(-1)}>
-            {" "}
-            Cancel
-          </Button>
+          <BackButton id={companyId} />
         </div>
         <TextInput
           {...register("companyName")}

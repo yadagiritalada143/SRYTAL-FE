@@ -41,6 +41,7 @@ import AddComment from "./add-comment";
 import CommentsTable from "./comments-table";
 import { useDisclosure } from "@mantine/hooks";
 import { deletePoolCandidatesByAdmin } from "../../../../services/admin-services";
+import { BackButton } from "../../../common/style-components/buttons";
 
 const UpdatePoolCandidateForm = () => {
   const [skills, setSkills] = useState<string[]>([]);
@@ -155,10 +156,7 @@ const UpdatePoolCandidateForm = () => {
               <Title className="text-center" order={3}>
                 Candidate Details
               </Title>
-              <Button bg={theme.colors.primary[5]} onClick={() => navigate(-1)}>
-                {" "}
-                Cancel
-              </Button>
+              <BackButton id={candidateId} />
             </div>
             <Grid gutter="md">
               <Grid.Col span={12}>

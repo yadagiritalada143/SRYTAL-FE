@@ -19,13 +19,16 @@ import {
 import { BgDiv } from "../../../common/style-components/bg-div";
 import { toast } from "react-toastify";
 import { addPoolCandidateByRecruiter } from "../../../../services/user-services";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useCustomToast } from "../../../../utils/common/toast";
 import { DateTimePicker } from "@mantine/dates";
 import { useRecoilValue } from "recoil";
 import { organizationThemeAtom } from "../../../../atoms/organization-atom";
+import { BackButton } from "../../../common/style-components/buttons";
 
 const AddPoolCandidate = () => {
+  const params = useParams();
+  const candidateId = params.candidateId as string;
   const {
     control,
     formState: { errors, isLoading },
@@ -96,10 +99,7 @@ const AddPoolCandidate = () => {
             <h1 className="text-3xl font-extrabold underline text-center">
               Add Candidate
             </h1>
-            <Button bg={theme.colors.primary[5]} onClick={() => navigate(-1)}>
-              {" "}
-              Cancel
-            </Button>
+            <BackButton id={candidateId} />
           </div>
           <Grid gutter="md">
             <Grid.Col span={12}>
