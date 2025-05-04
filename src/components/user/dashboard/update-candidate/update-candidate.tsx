@@ -9,7 +9,6 @@ import {
   Input,
   Modal,
   Checkbox,
-  useMantineTheme,
   Title,
 } from "@mantine/core";
 import { useCustomToast } from "../../../../utils/common/toast";
@@ -53,7 +52,6 @@ const UpdatePoolCandidateForm = () => {
   const { showSuccessToast } = useCustomToast();
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
-  const theme = useMantineTheme();
 
   const {
     control,

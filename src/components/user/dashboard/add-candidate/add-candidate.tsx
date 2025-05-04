@@ -8,7 +8,6 @@ import {
   Chip,
   Input,
   Textarea,
-  useMantineTheme,
 } from "@mantine/core";
 import { Controller, useForm } from "react-hook-form";
 import { useState } from "react";
@@ -48,7 +47,6 @@ const AddPoolCandidate = () => {
   const navigate = useNavigate();
   const { showSuccessToast } = useCustomToast();
   const organizationConfig = useRecoilValue(organizationThemeAtom);
-  const theme = useMantineTheme();
 
   const [skills, setSkills] = useState<string[]>([]);
   const [skillInput, setSkillInput] = useState("");

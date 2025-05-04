@@ -38,12 +38,6 @@ const PackageTasksTable = ({
   const [selectedTaskObj, setSelectedTaskObj] = useState<any>(null);
   const [editModalOpened, { open: openEditModal, close: closeEditModal }] =
     useDisclosure(false);
-  const [
-    deleteModalOpened,
-    { open: openDeleteModal, close: closeDeleteModal },
-  ] = useDisclosure(false);
-  const [addModalOpened, { open: openAddModal, close: closeAddModal }] =
-    useDisclosure(false);
 
   useEffect(() => {
     setTaskList(tasks);

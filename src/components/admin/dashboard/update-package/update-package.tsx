@@ -4,7 +4,6 @@ import {
   Button,
   Textarea,
   Loader,
-  useMantineTheme,
   MultiSelect,
 } from "@mantine/core";
 import { useForm, Controller } from "react-hook-form";
@@ -16,7 +15,6 @@ import {
 
 import { toast } from "react-toastify";
 import { useEffect, useState } from "react";
-import { organizationAdminUrls } from "../../../../utils/common/constants";
 import { BgDiv } from "../../../common/style-components/bg-div";
 import { useRecoilValue } from "recoil";
 import { organizationThemeAtom } from "../../../../atoms/organization-atom";
@@ -38,7 +36,6 @@ import { BackButton } from "../../../common/style-components/buttons";
 const UpdatePackage = () => {
   const [opened, { open, close }] = useDisclosure(false);
   const navigate = useNavigate();
-  const theme = useMantineTheme();
   const params = useParams();
   const packageId = params.packageId as string;
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -84,7 +81,7 @@ const UpdatePackage = () => {
 
         reset({
           ...packageDetails,
-          approvers: packageDetails.approvers?.map((a: any) => a._id), //okasari check cheyyandi endhukusan
+          approvers: packageDetails.approvers?.map((a: any) => a._id),
           startDate: packageDetails.startDate
             ? new Date(packageDetails.startDate)
             : null,
@@ -153,7 +150,7 @@ const UpdatePackage = () => {
     try {
       setIsLoading(true);
       await updatePackageByAdmin(packageId, data);
-      toast.success("Package updated successfully!");
+      showSuccessToast("Package updated successfully!");
       const updatedPackageDetails = await getPackageDetailsByAdmin(packageId);
       if (updatedPackageDetails) {
         navigate(-1);
@@ -236,11 +233,7 @@ const UpdatePackage = () => {
                       data={approversOptions}
                       label="Approvers"
                       placeholder="Select approvers"
-                      value={
-                        field.value?.filter(
-                          (role) => role !== undefined
-                        ) as string[]
-                      }
+                      value={Array.isArray(field.value) ? field.value.map((a) => String(a).trim()) : []}
                       onChange={field.onChange}
                       onBlur={field.onBlur}
                       error={errors.approvers?.message}
