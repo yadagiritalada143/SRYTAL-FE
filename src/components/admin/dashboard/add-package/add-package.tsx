@@ -107,8 +107,6 @@ const AddPackage = () => {
           <Textarea
             label="Description"
             className="mt-4"
-            label="Description"
-            className="mt-4"
             placeholder="Enter Description"
             {...register("description")}
             maxRows={4}

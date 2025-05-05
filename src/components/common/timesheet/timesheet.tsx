@@ -1,14 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  Button,
-  TextInput,
-  Title,
-  Table,
-  Grid,
-  ActionIcon,
-  Box,
-  LoadingOverlay,
-} from "@mantine/core";
+import { Button, TextInput, Title, Table, Grid } from "@mantine/core";
 import moment from "moment";
 import "moment-timezone";
 import { toast } from "react-toastify";
@@ -24,21 +15,21 @@ import { useModals } from "@mantine/modals";
 import { ColorDiv } from "../style-components/c-div";
 import { useRecoilValue } from "recoil";
 import { organizationThemeAtom } from "../../../atoms/organization-atom";
-import { DatePickerInput } from "@mantine/dates";
-
 const DateTableComponent = () => {
   const modals = useModals();
-  const [dateRangeValue, setDateRangeValue] = useState<
-    [Date | null, Date | null]
-  >([new Date(), moment().add(6, "days").toDate()]);
-  const [displayedDateRange, setDisplayedDateRange] = useState<string[]>([]);
+  const [startDate, setStartDate] = useState<string>(
+    moment().tz("Asia/Kolkata").format("YYYY-MM-DD")
+  );
+  const [endDate, setEndDate] = useState<string>(
+    moment().tz("Asia/Kolkata").add(6, "days").format("YYYY-MM-DD")
+  );
+  const [dateRange, setDateRange] = useState<string[]>([]);
+  const [daysInRange, setDaysInRange] = useState<number>(0);
   const [workingHours, setWorkingHours] = useState(data);
   const [edit, setIsEdit] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const organizationConfig = useRecoilValue(organizationThemeAtom);
 
-  const getDateRange = (start: Date | null, end: Date | null): string[] => {
-    if (!start || !end) return [];
+  const getDateRange = (start: string, end: string): string[] => {
     const startDt = new Date(start);
     const endDt = new Date(end);
     const dates: string[] = [];
@@ -50,60 +41,62 @@ const DateTableComponent = () => {
   };
 
   useEffect(() => {
-    const initialRange = getDateRange(dateRangeValue[0], dateRangeValue[1]);
-    setDisplayedDateRange(initialRange);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    const initialRange = getDateRange(startDate, endDate);
+    setDateRange(initialRange);
+    setDaysInRange(initialRange.length);
+  }, [startDate, endDate]);
 
-  const handleSearch = async () => {
-    const [start, end] = dateRangeValue;
-    if (!start || !end) {
-      toast.error("Please select both start and end dates.");
-      return;
-    }
-    if (start > end) {
-      toast.error("Start date must be before end date.");
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      // Simulate API call (replace with your actual API call)
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      const range = getDateRange(start, end);
-      setDisplayedDateRange(range);
-      toast.success("Timesheet loaded successfully");
-    } catch (error) {
-      toast.error("Failed to load timesheet");
-      console.error("Search error:", error);
-    } finally {
-      setIsLoading(false);
+  const handleSearch = () => {
+    if (startDate && endDate) {
+      if (new Date(startDate) > new Date(endDate)) {
+        toast.error("Start date must be before end date.");
+        return;
+      }
+      const range = getDateRange(startDate, endDate);
+      setDateRange(range);
+      setDaysInRange(range.length);
     }
   };
 
   const extendRange = (direction: "forward" | "backward"): void => {
-    const [currentStart, currentEnd] = dateRangeValue;
-    if (!currentStart || !currentEnd) return;
+    if (!startDate || !endDate) return;
 
-    const rangeExtension = 7; // Always extend by 7 days
-    const newStart = new Date(currentStart);
-    const newEnd = new Date(currentEnd);
+    const startDt = new Date(startDate);
+    const endDt = new Date(endDate);
+    const rangeExtension = daysInRange;
 
     if (direction === "backward") {
-      newStart.setDate(newStart.getDate() - rangeExtension);
-      newEnd.setDate(newEnd.getDate() - rangeExtension);
-    } else {
-      newStart.setDate(newStart.getDate() + rangeExtension);
-      newEnd.setDate(newEnd.getDate() + rangeExtension);
-    }
+      const newStart = new Date(
+        startDt.setDate(startDt.getDate() - rangeExtension)
+      );
 
-    setDateRangeValue([newStart, newEnd]);
+      const newEnd = new Date(endDt.setDate(endDt.getDate() - rangeExtension));
+
+      setStartDate(newStart.toISOString().split("T")[0]);
+      setEndDate(newEnd.toISOString().split("T")[0]);
+      const newRange = getDateRange(
+        newStart.toISOString().split("T")[0],
+        newEnd.toISOString().split("T")[0]
+      );
+      setDateRange(newRange);
+    } else {
+      const newStart = new Date(
+        startDt.setDate(startDt.getDate() + rangeExtension)
+      );
+
+      const newEnd = new Date(endDt.setDate(endDt.getDate() + rangeExtension));
+      setStartDate(newStart.toISOString().split("T")[0]);
+      setEndDate(newEnd.toISOString().split("T")[0]);
+      const newRange = getDateRange(
+        newStart.toISOString().split("T")[0],
+        newEnd.toISOString().split("T")[0]
+      );
+      setDateRange(newRange);
+    }
   };
 
   const getProjectTotalHours = (projectIndex: number) => {
-    return displayedDateRange.reduce((total, date) => {
+    return dateRange.reduce((total, date) => {
       const hoursForDate = workingHours[projectIndex].activities.reduce(
         (taskTotal, task) => {
           const matchedDate = task.days.find(
@@ -117,7 +110,6 @@ const DateTableComponent = () => {
       return total + hoursForDate;
     }, 0);
   };
-
   const handleChange = (
     newHours: number,
     projectIndex: number,
@@ -170,6 +162,31 @@ const DateTableComponent = () => {
     }
   };
 
+  const AddTask = (projectIndex: number) => {
+    const id = modals.openModal({
+      title: "Add New Task",
+      children: (
+        <TextInput
+          placeholder="Enter task name"
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && e.currentTarget.value) {
+              const newTaskName = e.currentTarget.value;
+              setWorkingHours((prev) => {
+                const updatedHours = [...prev];
+                updatedHours[projectIndex].activities.push({
+                  task_id: newTaskName,
+                  days: [],
+                });
+                return updatedHours;
+              });
+              modals.closeModal(id);
+            }
+          }}
+        />
+      ),
+    });
+  };
+
   const ApplyForLeave = () => {
     const handleApply = (id: string) => {
       modals.closeModal(id);
@@ -198,8 +215,6 @@ const DateTableComponent = () => {
 
   return (
     <ColorDiv className="w-100 p-5">
-      <LoadingOverlay visible={isLoading} loaderProps={{ size: "lg" }} />
-
       <Title
         order={2}
         className="text-xl sm:text-2xl md:text-3xl font-extrabold underline text-center px-2 py-4"
@@ -228,12 +243,12 @@ const DateTableComponent = () => {
 
               <TextInput
                 type="date"
-                value={endDate}
-                min={startDate}
-                onChange={(e) => setEndDate(e.target.value)}
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
                 size="sm"
                 radius="md"
                 styles={{ input: { minWidth: 150 } }}
+                className="w-full sm:w-auto"
               />
             </div>
 
@@ -280,29 +295,22 @@ const DateTableComponent = () => {
           </Button>
           <Button
             onClick={ApplyForLeave}
+            color="green"
             radius="md"
             size="sm"
             className="px-5 w-full sm:w-auto"
-            leftSection={<IconPlus size={18} />}
-            variant="filled"
-            style={{
-              backgroundColor:
-                organizationConfig.organization_theme.theme.button.color,
-              color:
-                organizationConfig.organization_theme.theme.button.textColor,
-            }}
           >
             Apply For Leave
           </Button>
         </Grid.Col>
       </Grid>
 
-      {displayedDateRange.length > 0 && (
-        <div style={{ overflowX: "auto" }}>
+      {dateRange.length > 0 && (
+        <div style={{ overflowX: "auto", padding: "0 1rem" }}>
           <Table
             striped
             highlightOnHover
-            className="w-full text-center shadow-md border"
+            className="w-full text-center shadow-md border "
           >
             <thead
               className="text-xs"
@@ -313,9 +321,9 @@ const DateTableComponent = () => {
               }}
             >
               <tr>
-                <th className="p-2 border">Project Name</th>
-                <th className="p-2 border">Task Details</th>
-                {dateRange.map((date: any) => {
+                <th className="p-2 border ">Project Name</th>
+                <th className="p-2 border ">Task Details</th>
+                {dateRange.map((date) => {
                   return (
                     <th className="p-2 border " key={date}>
                       {moment(date).format("DD MMM")}
@@ -324,7 +332,8 @@ const DateTableComponent = () => {
                     </th>
                   );
                 })}
-                <th className="p-2 border">Total Hours</th>
+
+                <th className="p-2 border ">Total Hours</th>
               </tr>
             </thead>
             <tbody className="text-sm">
@@ -365,7 +374,7 @@ const DateTableComponent = () => {
                         <TaskPopover task={task.task_id} />
                       </div>
                     </td>
-                    {displayedDateRange.map((date) => {
+                    {dateRange.map((date) => {
                       const matchedDate = task.days.find(
                         (taskDate: any) =>
                           moment(taskDate.date, "DD-MM-YYYY").format(
@@ -376,7 +385,6 @@ const DateTableComponent = () => {
 
                       return (
                         <td
-                          key={date}
                           style={{
                             width: "80px",
                             minWidth: "80px",
