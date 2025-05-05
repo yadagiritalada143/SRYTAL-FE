@@ -49,7 +49,7 @@ const Navbar = ({
         />
 
         <div className="lg:hidden  z-50">
-          <button onClick={toggleDrawer} className="p-2 rounded-md">
+          <button onClick={toggleDrawer} className="p-1 rounded-md">
             {isDrawerOpen && (
               <IconX
                 size={24}

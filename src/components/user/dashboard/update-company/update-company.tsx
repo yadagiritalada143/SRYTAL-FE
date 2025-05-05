@@ -111,18 +111,20 @@ const UpdateCompany = () => {
           onSubmit={handleSubmit(onSubmit)}
           className="space-y-4 rounded-lg shadow-lg w-full max-w-3xl  mx-auto p-8"
         >
-          <div className="px-4 flex justify-between">
-            <div></div>
-            <Title className="text-center" order={3}>
+          <div className="px-3 flex items-center justify-between gap-4 flex-wrap">
+            <Title
+              className="text-base sm:text-xl md:text-2xl font-extrabold underline text-left flex-1"
+              order={3}
+            >
               Update Company Details
             </Title>
             <BackButton id={companyId} />
           </div>
-          <div className="px-4 flex flex-wrap space-x-10 ">
+          <div className="px-4 flex flex-col sm:flex-row sm:items-end sm:gap-4 gap-2">
             <TextInput
               {...register("companyName")}
               label="Company Name"
-              className="w-1/3"
+              className="w-full sm:w-1/2 md:w-full"
               disabled
               error={errors.companyName?.message}
             />
@@ -133,7 +135,7 @@ const UpdateCompany = () => {
                 <Select
                   label="Select Status"
                   placeholder="Pick value"
-                  className="w-1/3"
+                  className="w-full sm:w-1/2 md:w-full"
                   {...field}
                   data={[
                     { value: "Created", label: "Created" },
@@ -223,10 +225,10 @@ const UpdateCompany = () => {
               />
             </fieldset>
           </div>
-          <div className="text-right">
-            <div className="m-4 mb-8 flex justify-between">
+          <div className="px-4">
+            <div className="my-4 flex flex-col sm:flex-row justify-between gap-4 sm:items-center">
               <button
-                className="bg-red-500 text-white py-2 px-4 rounded"
+                className="bg-red-500 text-white py-2 px-4 rounded w-full sm:w-auto"
                 onClick={(e) => {
                   e.preventDefault();
                   open();
@@ -234,7 +236,11 @@ const UpdateCompany = () => {
               >
                 Delete Company
               </button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full sm:w-auto"
+              >
                 {isSubmitting ? "Loading..." : "Update Company"}
               </Button>
             </div>

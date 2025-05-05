@@ -12,77 +12,63 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
 
   return (
     <ColorDiv>
-      <div className="flex mx-4 my-4">
-        {" "}
-        {/* Reduced margin */}
+      <div className="flex flex-col sm:flex-row mx-4 my-4 gap-4">
         <ProfileImageUploader organizationConfig={organizationConfig} />
-        <div className="ml-4">
-          {" "}
-          {/* Reduced margin */}
-          <div className="grid grid-cols-2 gap-2">
-            {" "}
-            {/* Reduced gap */}
+        <div className="flex-1 p-2">
+          <div className=" sm:grid-cols-2 gap-x-4 gap-y-2 ">
             {details?.employeeId && (
-              <>
-                <div className="font-bold">Employee Id:</div>
+              <div className="flex items-center">
+                <div className="font-bold w-1/3">Employee Id:</div>
                 <div>{details.employeeId}</div>
-              </>
+              </div>
             )}
             {details?.firstName && (
-              <>
-                <div className="font-bold">First Name:</div>
+              <div className="flex items-center">
+                <div className="font-bold w-1/3">First Name:</div>
                 <div>{details.firstName}</div>
-              </>
+              </div>
             )}
             {details?.lastName && (
-              <>
-                <div className="font-bold">Last Name:</div>
+              <div className="flex items-center">
+                <div className="font-bold w-1/3">Last Name:</div>
                 <div>{details.lastName}</div>
-              </>
+              </div>
             )}
             {details?.dob && (
-              <>
-                <div className="font-bold">Date Of Birth:</div>
+              <div className="flex items-center">
+                <div className="font-bold w-1/3">Date Of Birth:</div>
                 <div>{details.dob}</div>
-              </>
+              </div>
             )}
             {details?.bloodGroup?.type && (
-              <>
-                <div className="font-bold">Blood Group:</div>
+              <div className="flex items-center">
+                <div className="font-bold w-1/3">Blood Group:</div>
                 <div>{details.bloodGroup.type}</div>
-              </>
+              </div>
             )}
             {details?.email && (
-              <>
-                <div className="font-bold">Email:</div>
+              <div className="flex items-center">
+                <div className="font-bold w-1/3">Email:</div>
                 <div>{details.email}</div>
-              </>
+              </div>
             )}
             {details?.mobileNumber && (
-              <>
-                <div className="font-bold">Mobile:</div>
+              <div className="flex items-center">
+                <div className="font-bold w-1/3">Mobile:</div>
                 <div>{details.mobileNumber}</div>
-              </>
+              </div>
             )}
-            {/* <div className="font-bold">Present Address:</div>
-            <div>{details?.presentAddress}</div>
-            <div className="font-bold">Permanent Address:</div>
-            <div>{details?.permanentAddress}</div> */}
           </div>
         </div>
       </div>
-      <div style={{ padding: "10px" }}>
-        {" "}
-        {/* Reduced padding */}
+      <div className="p-2">
         <Tabs
           mt="md"
           variant="pills"
           defaultValue="employment"
           color={theme.colors.primary[4]}
         >
-          <Tabs.List className="my-2" grow>
-            {" "}
-            {/* Reduced margin */}
+          <Tabs.List className="mb-4" grow>
             <Tabs.Tab className="font-bold" value="address">
               Address
             </Tabs.Tab>
@@ -94,55 +80,45 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
             </Tabs.Tab>
           </Tabs.List>
 
-          <Tabs.Panel style={{ padding: "5px 0" }} value="address">
-            {" "}
-            {/* Reduced padding */}
+          <Tabs.Panel className="py-2" value="address">
             <div className="flex justify-start">
-            <div className="grid grid-cols-2 gap-2 text-start">
-              {" "}
-              {/* Reduced gap */}
-              <div className="font-bold">Present Address:</div>
-              <div>{details?.presentAddress}</div>
-              <div className="font-bold">Permanent Address:</div>
-              <div>{details?.permanentAddress}</div>
-            </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-left ">
+                <div className="font-bold">Present Address:</div>
+                <div>{details?.presentAddress}</div>
+                <div className="font-bold">Permanent Address:</div>
+                <div>{details?.permanentAddress}</div>
+              </div>
             </div>
           </Tabs.Panel>
-            <Tabs.Panel style={{ padding: "5px 0" }} value="employment">
-              {/* Centering the panel while keeping content left-aligned */}
-              <div className="flex justify-center">
-                <div className="grid grid-cols-2 gap-2 text-left">
-                  <div className="font-bold">Employment Type:</div>
-                  <div>{details.employmentType?.employmentType || "N/A"}</div>
-                  
-                  <div className="font-bold">Employment Roles:</div>
-                  <div className="flex flex-col">
-                    {details.employeeRole.length > 0
-                      ? details.employeeRole.map((role) => (
-                          <Code key={role._id} className="mb-1">
-                            {role.designation}
-                          </Code>
-                        ))
-                      : "N/A"}
-                  </div>
+          <Tabs.Panel className="py-2" value="employment">
+            <div className="flex justify-center">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-left">
+                <div className="font-bold">Employment Type:</div>
+                <div>{details.employmentType?.employmentType || "N/A"}</div>
+                <div className="font-bold">Employment Roles:</div>
+                <div className="flex flex-col">
+                  {details.employeeRole.length > 0
+                    ? details.employeeRole.map((role) => (
+                        <Code key={role._id} className="mb-1">
+                          {role.designation}
+                        </Code>
+                      ))
+                    : "N/A"}
                 </div>
               </div>
-            </Tabs.Panel>
-
-          <Tabs.Panel style={{ padding: "5px 0" }} value="bankDetails">
-            {" "}
-            {/* Reduced padding */}
-            <div className="flex justify-end">
-            <div className="grid grid-cols-2 gap-2 text-left">
-              {" "}
-              {/* Reduced gap */}
-              <div className="font-bold">Account Number:</div>
-              <div>{details.bankDetailsInfo?.accountNumber || "N/A"}</div>
-              <div className="font-bold">Account Holder Name:</div>
-              <div>{details.bankDetailsInfo?.accountHolderName || "N/A"}</div>
-              <div className="font-bold">IFSC Code:</div>
-              <div>{details.bankDetailsInfo?.ifscCode || "N/A"}</div>
             </div>
+          </Tabs.Panel>
+
+          <Tabs.Panel className="py-2" value="bankDetails">
+            <div className="flex justify-center md:justify-end">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-left">
+                <div className="font-bold">Account Number:</div>
+                <div>{details.bankDetailsInfo?.accountNumber || "N/A"}</div>
+                <div className="font-bold">Account Holder Name:</div>
+                <div>{details.bankDetailsInfo?.accountHolderName || "N/A"}</div>
+                <div className="font-bold">IFSC Code:</div>
+                <div>{details.bankDetailsInfo?.ifscCode || "N/A"}</div>
+              </div>
             </div>
           </Tabs.Panel>
         </Tabs>

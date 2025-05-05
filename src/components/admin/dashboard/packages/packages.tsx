@@ -26,13 +26,13 @@ const Packages = () => {
   const { scrollRef, handleMouseDown, handleMouseMove, handleMouseUp } =
     useHorizontalScroll();
 
-  const handlePackageSelect=(packageId:string)=>{
+  const handlePackageSelect = (packageId: string) => {
     navigate(
       `${organizationAdminUrls(
         organizationConfig.organization_name
       )}/dashboard/updates/${packageId}`
     );
-  }
+  };
   useEffect(() => {
     getAllPackagesByAdmin()
       .then((packagesList) => {
@@ -72,7 +72,7 @@ const Packages = () => {
       }}
     >
       <div>
-        <h1 className="text-3xl font-extrabold underline text-center">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold underline text-center px-2 py-4">
           Manage Packages
         </h1>
         <div className="text-right">
@@ -162,10 +162,7 @@ const Packages = () => {
                         {moment(pkg.endDate).format("YYYY-MM-DD")}
                       </td>
                       <td className="px-4 py-2 border">
-                        <Button
-                          onClick={() => handlePackageSelect(pkg._id)
-                          }
-                        >
+                        <Button onClick={() => handlePackageSelect(pkg._id)}>
                           <IconEdit />
                         </Button>
                       </td>

@@ -61,9 +61,8 @@ const AddCompany = () => {
         onSubmit={handleSubmit(onSubmit)}
         className="space-y-4 rounded-lg shadow-lg w-full max-w-3xl  mx-auto p-8"
       >
-        <div className="px-4 flex justify-between">
-          <div></div>
-          <h1 className="text-3xl font-extrabold underline text-center">
+        <div className="px-4 flex items-center justify-between gap-4 flex-wrap">
+          <h1 className="text-base sm:text-xl md:text-3xl font-extrabold underline text-center">
             Add Company
           </h1>
           <BackButton id={companyId} />

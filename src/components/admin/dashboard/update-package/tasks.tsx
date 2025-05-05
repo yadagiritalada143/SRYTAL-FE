@@ -106,29 +106,32 @@ const PackageTasksTable = ({
                   {moment(task.createdAt).format("MMMM Do YYYY, h:mm A")}
                 </td>
                 <td className="px-4 py-2 text-center">
-                  <Button
-                    className="mr-2"
-                    variant="light"
-                    color="red"
-                    size="xs"
-                    onClick={() => {
-                      open();
-                      setSelectedTask(task._id);
-                    }}
-                  >
-                    <IconTrash size={18} />
-                  </Button>
-                  <Button
-                    variant="light"
-                    color="blue"
-                    size="xs"
-                    onClick={() => {
-                      setSelectedTaskObj(task);
-                      openEditModal();
-                    }}
-                  >
-                    <IconEdit size={18} />
-                  </Button>
+                  <div className="flex flex-wrap justify-center gap-2 sm:flex-nowrap">
+                    <Button
+                      variant="light"
+                      color="red"
+                      size="xs"
+                      onClick={() => {
+                        open();
+                        setSelectedTask(task._id);
+                      }}
+                      className="w-full sm:w-auto"
+                    >
+                      <IconTrash size={18} />
+                    </Button>
+                    <Button
+                      variant="light"
+                      color="blue"
+                      size="xs"
+                      onClick={() => {
+                        setSelectedTaskObj(task);
+                        openEditModal();
+                      }}
+                      className="w-full sm:w-auto"
+                    >
+                      <IconEdit size={18} />
+                    </Button>
+                  </div>
                 </td>
               </tr>
             ))

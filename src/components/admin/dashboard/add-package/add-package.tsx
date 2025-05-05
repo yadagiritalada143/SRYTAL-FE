@@ -57,13 +57,13 @@ const AddPackage = () => {
           }}
           className="rounded-lg shadow-lg w-full p-8"
         >
-          <div className="px-4 py-4 flex justify-between">
-            <div></div>
-            <h1 className="text-3xl font-extrabold underline text-center">
+          <div className="px-2 py-4 flex justify-between items-center flex-wrap">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold underline">
               Add Package
             </h1>
             <BackButton id={packageId} />
           </div>
+
           <TextInput
             label="Title"
             placeholder="Enter Title"
@@ -105,6 +105,8 @@ const AddPackage = () => {
           </div>
 
           <Textarea
+            label="Description"
+            className="mt-4"
             label="Description"
             className="mt-4"
             placeholder="Enter Description"

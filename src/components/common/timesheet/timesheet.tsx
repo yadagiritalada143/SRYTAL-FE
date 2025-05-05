@@ -5,7 +5,6 @@ import {
   Title,
   Table,
   Grid,
-  Group,
   ActionIcon,
   Box,
   LoadingOverlay,
@@ -171,31 +170,6 @@ const DateTableComponent = () => {
     }
   };
 
-  // const AddTask = (projectIndex: number) => {
-  //   const id = modals.openModal({
-  //     title: "Add New Task",
-  //     children: (
-  //       <TextInput
-  //         placeholder="Enter task name"
-  //         onKeyDown={(e) => {
-  //           if (e.key === "Enter" && e.currentTarget.value) {
-  //             const newTaskName = e.currentTarget.value;
-  //             setWorkingHours((prev) => {
-  //               const updatedHours = [...prev];
-  //               updatedHours[projectIndex].activities.push({
-  //                 task_id: newTaskName,
-  //                 days: [],
-  //               });
-  //               return updatedHours;
-  //             });
-  //             modals.closeModal(id);
-  //           }
-  //         }}
-  //       />
-  //     ),
-  //   });
-  // };
-
   const ApplyForLeave = () => {
     const handleApply = (id: string) => {
       modals.closeModal(id);
@@ -228,7 +202,7 @@ const DateTableComponent = () => {
 
       <Title
         order={2}
-        className="mb-4 text-center font-extrabold underline text-3xl"
+        className="text-xl sm:text-2xl md:text-3xl font-extrabold underline text-center px-2 py-4"
       >
         Timesheet
       </Title>
@@ -238,95 +212,77 @@ const DateTableComponent = () => {
         gutter="md"
         className="mb-6 p-4 hover:shadow-lg rounded-md shadow-sm"
       >
-        <Grid.Col span={{ base: 12, md: 8 }}>
-          <Group wrap="nowrap">
-            <DatePickerInput
-              type="range"
-              value={dateRangeValue}
-              onChange={(value) => {
-                if (value[0] && !value[1]) {
-                  const endDate = new Date(value[0]);
-                  endDate.setDate(endDate.getDate() + 10);
-                  setDateRangeValue([value[0], endDate]);
-                } else {
-                  setDateRangeValue(value);
-                }
-              }}
-              allowSingleDateInRange
-              mx="auto"
-              maw={400}
-              w="100%"
-              size="md"
-              placeholder="Select date range"
-              firstDayOfWeek={0}
-              styles={{
-                input: {
-                  borderColor:
-                    organizationConfig.organization_theme.theme.color,
-                  "&:hover": {
-                    borderColor:
-                      organizationConfig.organization_theme.theme.button.color,
-                  },
-                },
-                day: {
-                  "&[data-weekend]": {
-                    color: organizationConfig.organization_theme.theme.color,
-                  },
-                  "&[data-outside]": {
-                    color: `${organizationConfig.organization_theme.theme.color}80`,
-                  },
-                  "&[data-selected]": {
-                    backgroundColor:
-                      organizationConfig.organization_theme.theme
-                        .backgroundColor,
-                    color: organizationConfig.organization_theme.theme.color,
-                  },
-                },
-                calendarHeaderControl: {
-                  color: organizationConfig.organization_theme.theme.color,
-                  "&:hover": {
-                    backgroundColor: `${organizationConfig.organization_theme.theme.backgroundColor}20`,
-                  },
-                },
-                calendarHeaderLevel: {
-                  color: organizationConfig.organization_theme.theme.color,
-                  "&:hover": {
-                    color:
-                      organizationConfig.organization_theme.theme.button.color,
-                  },
-                },
-              }}
-            />
-            <ActionIcon
-              onClick={handleSearch}
-              variant="light"
-              color={
-                organizationConfig.organization_theme.theme.button.textColor
-              }
-              radius="md"
-              size="lg"
-              aria-label="Search dates"
-              loading={isLoading}
-              style={{
-                backgroundColor:
-                  organizationConfig.organization_theme.theme.button.color,
-                color:
-                  organizationConfig.organization_theme.theme.button.textColor,
-              }}
-            >
-              <IconSearch size={18} />
-            </ActionIcon>
-          </Group>
+        <Grid.Col span="auto">
+          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap justify-between sm:justify-start">
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <Button
+                variant="outline"
+                color="blue"
+                radius="xl"
+                size="sm"
+                onClick={() => extendRange("backward")}
+                className="px-2 py-1 w-12 sm:w-auto"
+              >
+                <IconChevronLeft size={18} />
+              </Button>
+
+              <TextInput
+                type="date"
+                value={endDate}
+                min={startDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                size="sm"
+                radius="md"
+                styles={{ input: { minWidth: 150 } }}
+              />
+            </div>
+
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <TextInput
+                type="date"
+                value={endDate}
+                min={startDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                size="sm"
+                radius="md"
+                styles={{ input: { minWidth: 150 } }}
+                className="w-full sm:w-auto"
+              />
+
+              <Button
+                variant="outline"
+                color="blue"
+                radius="xl"
+                size="sm"
+                onClick={() => extendRange("forward")}
+                className="px-2 py-1 w-12 sm:w-auto"
+              >
+                <IconChevronRight size={18} />
+              </Button>
+            </div>
+          </div>
         </Grid.Col>
 
+        {/* Actions (Search + Apply For Leave) */}
         <Grid.Col
-          span={{ base: 12, md: 4 }}
-          style={{ display: "flex", justifyContent: "flex-end" }}
+          span="content"
+          className="flex justify-between sm:justify-end gap-3 mt-4 sm:mt-0 w-full sm:w-auto"
         >
+          <Button
+            onClick={handleSearch}
+            variant="outline"
+            color="gray"
+            radius="md"
+            size="sm"
+            className="px-3 w-12 sm:w-auto"
+          >
+            <IconSearch size={16} />
+          </Button>
           <Button
             onClick={ApplyForLeave}
             radius="md"
-            size="md"
+            size="sm"
+            className="px-5 w-full sm:w-auto"
             leftSection={<IconPlus size={18} />}
             variant="filled"
             style={{
@@ -336,13 +292,13 @@ const DateTableComponent = () => {
                 organizationConfig.organization_theme.theme.button.textColor,
             }}
           >
-            Apply Leave
+            Apply For Leave
           </Button>
         </Grid.Col>
       </Grid>
 
       {displayedDateRange.length > 0 && (
-        <Box style={{ overflowX: "auto" }}>
+        <div style={{ overflowX: "auto" }}>
           <Table
             striped
             highlightOnHover
@@ -359,37 +315,15 @@ const DateTableComponent = () => {
               <tr>
                 <th className="p-2 border">Project Name</th>
                 <th className="p-2 border">Task Details</th>
-                {displayedDateRange.map((date) => (
-                  <th className="p-2 border" key={date}>
-                    <Group gap={2} justify="center">
-                      {date === displayedDateRange[0] && (
-                        <ActionIcon
-                          variant="transparent"
-                          color="gray"
-                          size="sm"
-                          onClick={() => extendRange("backward")}
-                        >
-                          <IconChevronLeft size={14} />
-                        </ActionIcon>
-                      )}
-                      <Box>
-                        <div>{moment(date).format("DD")}</div>
-                        <div>{moment(date).format("ddd")}</div>
-                      </Box>
-                      {date ===
-                        displayedDateRange[displayedDateRange.length - 1] && (
-                        <ActionIcon
-                          variant="transparent"
-                          color="gray"
-                          size="sm"
-                          onClick={() => extendRange("forward")}
-                        >
-                          <IconChevronRight size={14} />
-                        </ActionIcon>
-                      )}
-                    </Group>
-                  </th>
-                ))}
+                {dateRange.map((date: any) => {
+                  return (
+                    <th className="p-2 border " key={date}>
+                      {moment(date).format("DD MMM")}
+                      <br />
+                      {moment(date).format("ddd")}
+                    </th>
+                  );
+                })}
                 <th className="p-2 border">Total Hours</th>
               </tr>
             </thead>
@@ -407,16 +341,18 @@ const DateTableComponent = () => {
                         className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis"
                         rowSpan={project.activities.length}
                       >
-                        <Group justify="center" gap="xs">
-                          <span>{project.project_id}</span>
-                          {/* <ActionIcon
-                            variant="light"
-                            size="sm"
+                        <div className="flex flex-col items-center justify-center gap-2 min-h-[60px]">
+                          <p>{project.project_id}</p>
+                          <p
+                            style={{ cursor: "pointer" }}
+                            className="rounded-full"
                             onClick={() => AddTask(projectIndex)}
                           >
-                            <IconPlus size={14} />
-                          </ActionIcon> */}
-                        </Group>
+                            <Button className="rounded-full">
+                              <IconPlus />
+                            </Button>
+                          </p>
+                        </div>
                       </td>
                     )}
                     <td
@@ -425,9 +361,9 @@ const DateTableComponent = () => {
                         border: `1px solid ${organizationConfig.organization_theme.theme.button.textColor}`,
                       }}
                     >
-                      <Group justify="center">
+                      <div className=" w-full flex justify-center">
                         <TaskPopover task={task.task_id} />
-                      </Group>
+                      </div>
                     </td>
                     {displayedDateRange.map((date) => {
                       const matchedDate = task.days.find(
@@ -507,18 +443,13 @@ const DateTableComponent = () => {
               )}
             </tbody>
           </Table>
-        </Box>
+        </div>
       )}
-      <Group justify="right" mt="md">
-        <Button
-          onClick={() => setIsEdit(!edit)}
-          color={edit ? "green" : "blue"}
-          radius="md"
-          disabled={isLoading}
-        >
-          {edit ? "Save Timesheet" : "Edit Timesheet"}
+      <div className="flex justify-end mt-6 ml-6">
+        <Button onClick={() => setIsEdit(!edit)}>
+          {edit ? "Save" : "Edit"}
         </Button>
-      </Group>
+      </div>
     </ColorDiv>
   );
 };

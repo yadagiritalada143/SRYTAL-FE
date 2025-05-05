@@ -92,9 +92,8 @@ const AddPoolCandidate = () => {
           }}
           className="rounded-lg shadow-lg w-full p-8"
         >
-          <div className="px-4 flex justify-between">
-            <div></div>
-            <h1 className="text-3xl font-extrabold underline text-center">
+          <div className="px-4 flex items-center justify-between gap-4 flex-wrap mb-5">
+            <h1 className="text-base sm:text-xl md:text-3xl font-extrabold underline text-left flex-1">
               Add Candidate
             </h1>
             <BackButton id={candidateId} />

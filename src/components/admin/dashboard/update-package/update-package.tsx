@@ -205,8 +205,8 @@ const UpdatePackage = () => {
                   organizationConfig.organization_theme.theme.backgroundColor,
               }}
             >
-              <div className="flex items-center justify-between flex-wrap mb-6">
-                <h2 className="text-2xl font-bold underline text-center flex-grow">
+              <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+                <h2 className="text-lg lg:text-2xl font-bold underline text-center">
                   Update Package
                 </h2>
                 <BackButton id={packageId} />
@@ -233,7 +233,11 @@ const UpdatePackage = () => {
                       data={approversOptions}
                       label="Approvers"
                       placeholder="Select approvers"
-                      value={Array.isArray(field.value) ? field.value.map((a) => String(a).trim()) : []}
+                      value={
+                        Array.isArray(field.value)
+                          ? field.value.map((a) => String(a).trim())
+                          : []
+                      }
                       onChange={field.onChange}
                       onBlur={field.onBlur}
                       error={errors.approvers?.message}
@@ -273,10 +277,12 @@ const UpdatePackage = () => {
                 />
               </div>
 
-              <div className="flex flex-wrap justify-between mt-8">
-                <Button type="submit">Update Package</Button>
+              <div className="flex flex-col sm:flex-row justify-between gap-3 mt-8">
+                <Button type="submit" className="w-full sm:w-auto">
+                  Update Package
+                </Button>
                 <button
-                  className="bg-red-500 text-white py-2 px-4 rounded"
+                  className="bg-red-500 text-white py-2 px-4 rounded w-full sm:w-auto"
                   type="button"
                   onClick={(e) => {
                     e.preventDefault();
@@ -304,7 +310,6 @@ const UpdatePackage = () => {
           />
         </>
       )}
-
       <DeletePackageModel
         agreeTerms={agreeTerms}
         close={close}
