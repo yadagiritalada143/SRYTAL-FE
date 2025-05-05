@@ -190,7 +190,6 @@ const PackageTasksTable = ({
 
                   fetchPackageDetails();
                   closeEditModal();
-                  navigate("/packages");
                 } catch (err) {
                   console.error(err);
                   toast.error("Failed to update task");
