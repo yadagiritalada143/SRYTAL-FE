@@ -162,7 +162,7 @@ const EmploymentRoles = () => {
       className="h-auto"
     >
       <div>
-        <h1 className="text-3xl font-extrabold underline text-center">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold underline text-center px-2 py-4">
           Manage Employment Roles
         </h1>
         <div className="text-right">
@@ -296,11 +296,15 @@ const EmploymentRoles = () => {
             required
             mb="md"
           />
-          <Group justify="flex-end">
+          <Group
+            justify="flex-end"
+            className="flex flex-row flex-wrap gap-2 sm:gap-4 mt-4"
+          >
             <Button
               bg={organizationConfig.organization_theme.theme.backgroundColor}
               c={organizationConfig.organization_theme.theme.color}
               variant="outline"
+              className="text-sm px-3 py-2"
               onClick={closeEditModal}
             >
               Cancel
@@ -309,11 +313,16 @@ const EmploymentRoles = () => {
               bg={organizationConfig.organization_theme.theme.backgroundColor}
               c={organizationConfig.organization_theme.theme.color}
               variant="outline"
+              className="text-sm px-3 py-2"
               onClick={confirmEdit}
             >
               Save Changes
             </Button>
-            <Button bg="red" onClick={() => handleDelete(selectedRole.id)}>
+            <Button
+              bg="red"
+              className="text-sm px-3 py-2"
+              onClick={() => handleDelete(selectedRole.id)}
+            >
               Delete
             </Button>
           </Group>

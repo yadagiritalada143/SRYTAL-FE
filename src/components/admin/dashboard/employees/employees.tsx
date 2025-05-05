@@ -8,13 +8,18 @@ import { toast } from "react-toastify";
 import { organizationAdminUrls } from "../../../../utils/common/constants";
 import { SearchBarFullWidht } from "../../../common/search-bar/search-bar";
 import { useRecoilState, useRecoilValue } from "recoil";
-import { organizationEmployeeAtom, organizationThemeAtom } from "../../../../atoms/organization-atom";
+import {
+  organizationEmployeeAtom,
+  organizationThemeAtom,
+} from "../../../../atoms/organization-atom";
 import useHorizontalScroll from "../../../../hooks/horizontal-scroll";
 
 const Employees = () => {
   const theme = useMantineTheme();
   const [employees, setEmployees] = useRecoilState(organizationEmployeeAtom);
-  const [filteredEmployees,setFilteredEmployees]= useRecoilState(organizationEmployeeAtom);
+  const [filteredEmployees, setFilteredEmployees] = useRecoilState(
+    organizationEmployeeAtom
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
@@ -22,24 +27,23 @@ const Employees = () => {
 
   const { scrollRef, handleMouseDown, handleMouseMove, handleMouseUp } =
     useHorizontalScroll();
-    useEffect(() => {
-      if (employees.length > 0) {
-        setFilteredEmployees(employees);
+  useEffect(() => {
+    if (employees.length > 0) {
+      setFilteredEmployees(employees);
+      setIsLoading(false);
+      return;
+    }
+    getAllEmployeeDetailsByAdmin()
+      .then((employeesList) => {
+        setEmployees(employeesList);
+        setFilteredEmployees(employeesList);
         setIsLoading(false);
-        return;
-      }
-      getAllEmployeeDetailsByAdmin()
-        .then((employeesList) => {
-          setEmployees(employeesList);
-          setFilteredEmployees(employeesList);
-          setIsLoading(false);
-        })
-        .catch((error) => {
-          toast(error?.response?.data?.message || "Something went wrong");
-          setIsLoading(false);
-        });
-    }, []);
-    
+      })
+      .catch((error) => {
+        toast(error?.response?.data?.message || "Something went wrong");
+        setIsLoading(false);
+      });
+  }, []);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
@@ -98,7 +102,7 @@ const Employees = () => {
       }}
     >
       <div>
-        <h1 className="text-3xl font-extrabold underline text-center">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold underline text-center px-2 py-4">
           Manage Employee
         </h1>
 

@@ -1,4 +1,4 @@
-import {useMantineTheme} from "@mantine/core";
+import { useMantineTheme } from "@mantine/core";
 import { useRecoilValue } from "recoil";
 import { organizationThemeAtom } from "../../../../atoms/organization-atom";
 
@@ -15,7 +15,7 @@ const Reports = () => {
       className="h-auto"
     >
       <div>
-        <h1 className="text-3xl font-extrabold underline text-center">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold underline text-center px-2 py-4">
           Reports
         </h1>
       </div>

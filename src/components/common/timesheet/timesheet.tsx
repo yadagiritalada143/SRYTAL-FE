@@ -217,7 +217,7 @@ const DateTableComponent = () => {
     <ColorDiv className="w-100 p-5">
       <Title
         order={2}
-        className="mb-4 text-center font-extrabold underline text-3xl"
+        className="text-xl sm:text-2xl md:text-3xl font-extrabold underline text-center px-2 py-4"
       >
         Timesheet
       </Title>
@@ -228,59 +228,68 @@ const DateTableComponent = () => {
         className="mb-6 p-4 hover:shadow-lg rounded-md shadow-sm"
       >
         <Grid.Col span="auto">
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              color="blue"
-              radius="xl"
-              size="sm"
-              onClick={() => extendRange("backward")}
-              className="px-2 py-1"
-            >
-              <IconChevronLeft size={18} />
-            </Button>
+          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap justify-between sm:justify-start">
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <Button
+                variant="outline"
+                color="blue"
+                radius="xl"
+                size="sm"
+                onClick={() => extendRange("backward")}
+                className="px-2 py-1 w-12 sm:w-auto"
+              >
+                <IconChevronLeft size={18} />
+              </Button>
 
-            <TextInput
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              size="sm"
-              radius="md"
-              styles={{ input: { minWidth: 150 } }}
-            />
+              <TextInput
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                size="sm"
+                radius="md"
+                styles={{ input: { minWidth: 150 } }}
+                className="w-full sm:w-auto"
+              />
+            </div>
 
-            <TextInput
-              type="date"
-              value={endDate}
-              min={startDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              size="sm"
-              radius="md"
-              styles={{ input: { minWidth: 150 } }}
-            />
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <TextInput
+                type="date"
+                value={endDate}
+                min={startDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                size="sm"
+                radius="md"
+                styles={{ input: { minWidth: 150 } }}
+                className="w-full sm:w-auto"
+              />
 
-            <Button
-              variant="outline"
-              color="blue"
-              radius="xl"
-              size="sm"
-              onClick={() => extendRange("forward")}
-              className="px-2 py-1"
-            >
-              <IconChevronRight size={18} />
-            </Button>
+              <Button
+                variant="outline"
+                color="blue"
+                radius="xl"
+                size="sm"
+                onClick={() => extendRange("forward")}
+                className="px-2 py-1 w-12 sm:w-auto"
+              >
+                <IconChevronRight size={18} />
+              </Button>
+            </div>
           </div>
         </Grid.Col>
 
         {/* Actions (Search + Apply For Leave) */}
-        <Grid.Col span="content" className="flex justify-end gap-3">
+        <Grid.Col
+          span="content"
+          className="flex justify-between sm:justify-end gap-3 mt-4 sm:mt-0 w-full sm:w-auto"
+        >
           <Button
             onClick={handleSearch}
             variant="outline"
             color="gray"
             radius="md"
             size="sm"
-            className="px-3"
+            className="px-3 w-12 sm:w-auto"
           >
             <IconSearch size={16} />
           </Button>
@@ -289,7 +298,7 @@ const DateTableComponent = () => {
             color="green"
             radius="md"
             size="sm"
-            className="px-5"
+            className="px-5 w-full sm:w-auto"
           >
             Apply For Leave
           </Button>

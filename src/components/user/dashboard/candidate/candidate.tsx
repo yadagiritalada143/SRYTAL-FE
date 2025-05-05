@@ -104,7 +104,7 @@ const PoolCandidateList = () => {
       }}
       className="p-6"
     >
-      <h1 className="text-3xl font-extrabold underline text-center">
+      <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold underline text-center px-2 py-4">
         Manage Candidates
       </h1>
 

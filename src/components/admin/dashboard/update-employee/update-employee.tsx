@@ -64,10 +64,15 @@ const UpdateEmployee = () => {
   const [agreeTerms, setAgreeTerms] = useState(false);
   const { showSuccessToast } = useCustomToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [bloodGroupOptions, setBloodGroupOptions] = useRecoilState(bloodGroupOptionsAtom);
-  const [employmentRolesOptions, setEmploymentRolesOptions] = useRecoilState(employeeRolesAtom);
-  const [employmentTypeOptions, setEmploymentTypes] = useRecoilState(employmentTypesAtom);
-  const [employeeDetails, setEmployeeDetails] = useRecoilState(employeeDetailsAtom);
+  const [bloodGroupOptions, setBloodGroupOptions] = useRecoilState(
+    bloodGroupOptionsAtom
+  );
+  const [employmentRolesOptions, setEmploymentRolesOptions] =
+    useRecoilState(employeeRolesAtom);
+  const [employmentTypeOptions, setEmploymentTypes] =
+    useRecoilState(employmentTypesAtom);
+  const [employeeDetails, setEmployeeDetails] =
+    useRecoilState(employeeDetailsAtom);
 
   useEffect(() => {
     if (employmentTypeOptions.length === 0) {
@@ -84,8 +89,6 @@ const UpdateEmployee = () => {
         });
     }
   }, [employmentTypeOptions, setEmploymentTypes]);
-  
-  
 
   useEffect(() => {
     if (employmentRolesOptions.length === 0) {
@@ -102,8 +105,6 @@ const UpdateEmployee = () => {
         });
     }
   }, [employmentRolesOptions, setEmploymentRolesOptions]);
-  
-  
 
   useEffect(() => {
     if (bloodGroupOptions.length === 0) {
@@ -120,8 +121,6 @@ const UpdateEmployee = () => {
         });
     }
   }, [bloodGroupOptions, setBloodGroupOptions]);
-  
-  
 
   const onSubmit = (data: EmployeeUpdateForm) => {
     const updatedData = {
@@ -152,30 +151,28 @@ const UpdateEmployee = () => {
   };
 
   useEffect(() => {
-      setIsLoading(true);
-      getEmployeeDetailsByAdmin(employeeId)
-        .then((emp) => {
-          const formatted = {
-            ...emp,
-            bloodGroup: emp.bloodGroup?.id,
-            employmentType: emp.employmentType?.id,
-            employeeRole: emp.employeeRole.map((role: any) => role.id),
-            dateOfBirth: emp.dateOfBirth
-              ? new Date(emp.dateOfBirth).toISOString().split("T")[0]
-              : "",
-          };
-          setEmployeeDetails(formatted);
-          reset(formatted);
-        })
-        .catch((error) => {
-          toast.error(error.response?.data?.message || "Something went wrong");
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
-    }, [employeeId, reset, setEmployeeDetails]);
-  
-  
+    setIsLoading(true);
+    getEmployeeDetailsByAdmin(employeeId)
+      .then((emp) => {
+        const formatted = {
+          ...emp,
+          bloodGroup: emp.bloodGroup?.id,
+          employmentType: emp.employmentType?.id,
+          employeeRole: emp.employeeRole.map((role: any) => role.id),
+          dateOfBirth: emp.dateOfBirth
+            ? new Date(emp.dateOfBirth).toISOString().split("T")[0]
+            : "",
+        };
+        setEmployeeDetails(formatted);
+        reset(formatted);
+      })
+      .catch((error) => {
+        toast.error(error.response?.data?.message || "Something went wrong");
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, [employeeId, reset, setEmployeeDetails]);
 
   const handleDeleteEmployee = () => {
     const payload = {
@@ -209,15 +206,15 @@ const UpdateEmployee = () => {
 
   return (
     <div className="flex justify-center items-center py-12">
-        {isLoading ? (
-          <div className="flex justify-center items-center h-48">
-            <Loader
-              size="xl"
-              color={organizationConfig.organization_theme.theme.button.color}
-              />
-          </div>
-        ) : (
-          <BgDiv>
+      {isLoading ? (
+        <div className="flex justify-center items-center h-48">
+          <Loader
+            size="xl"
+            color={organizationConfig.organization_theme.theme.button.color}
+          />
+        </div>
+      ) : (
+        <BgDiv>
           <form
             onSubmit={handleSubmit(onSubmit)}
             style={{
@@ -226,11 +223,14 @@ const UpdateEmployee = () => {
             }}
             className="rounded-lg shadow-lg w-full max-w-4xl p-8"
           >
-            <div className="flex items-center justify-between flex-wrap mb-6">
-              <h2 className="text-2xl font-bold underline text-center flex-grow">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold underline text-center sm:text-left w-full sm:w-auto">
                 Update Employee Profile
               </h2>
-              <BackButton id={employeeId} />
+
+              <div className="w-full sm:w-auto flex justify-center sm:justify-end">
+                <BackButton id={employeeId} />
+              </div>
             </div>
 
             <div className="mb-5">
@@ -387,15 +387,16 @@ const UpdateEmployee = () => {
             </div>
 
             {/* Buttons Section */}
-            <div className="flex flex-wrap justify-between mt-8">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-4 justify-between mt-8">
               <Button
                 bg={theme.colors.primary[5]}
+                className="w-full sm:w-auto"
                 onClick={handlePasswordReset}
               >
                 Reset Password
               </Button>
               <button
-                className="bg-red-500 text-white py-2 px-4 rounded"
+                className="bg-red-500 text-white py-2 px-4 rounded w-full sm:w-auto"
                 onClick={(e) => {
                   e.preventDefault();
                   open();
@@ -403,11 +404,13 @@ const UpdateEmployee = () => {
               >
                 Delete Employee
               </button>
-              <Button type="submit">Update Employee</Button>
+              <Button type="submit" className="w-full sm:w-auto">
+                Update Employee
+              </Button>
             </div>
           </form>
-      </BgDiv>
-        )}
+        </BgDiv>
+      )}
 
       <DeleteEmployeeModel
         agreeTerms={agreeTerms}

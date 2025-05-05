@@ -25,7 +25,8 @@ import { SearchBarFullWidht } from "../../../common/search-bar/search-bar";
 import { employeeTypeAtom } from "../../../../atoms/employeetypes-atom";
 
 const EmploymentTypes = () => {
-  const [employmentTypes, setEmploymentTypes] =useRecoilState(employeeTypeAtom)
+  const [employmentTypes, setEmploymentTypes] =
+    useRecoilState(employeeTypeAtom);
   const [filteredEmployementType, setFilteredEmployementType] = useState<any[]>(
     []
   );
@@ -46,15 +47,15 @@ const EmploymentTypes = () => {
   const [addModalOpened, { open: openAddModal, close: closeAddModal }] =
     useDisclosure(false);
 
-    useEffect(() => {
-      if (employmentTypes.length === 0) {
-        fetchEmployementTypes();
-      } else {
-        setFilteredEmployementType(employmentTypes);
-        setIsLoading(false);
-      }
-    }, []);
-    
+  useEffect(() => {
+    if (employmentTypes.length === 0) {
+      fetchEmployementTypes();
+    } else {
+      setFilteredEmployementType(employmentTypes);
+      setIsLoading(false);
+    }
+  }, []);
+
   const fetchEmployementTypes = async () => {
     setIsLoading(true);
     try {
@@ -169,7 +170,7 @@ const EmploymentTypes = () => {
       className="h-auto"
     >
       <div>
-        <h1 className="text-3xl font-extrabold underline text-center">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold underline text-center px-2 py-4">
           Manage Employment Types
         </h1>
         <div className="text-right">
@@ -303,11 +304,15 @@ const EmploymentTypes = () => {
             required
             mb="md"
           />
-          <Group justify="flex-end">
+          <Group
+            justify="flex-end"
+            className="flex flex-row flex-wrap gap-2 sm:gap-4 mt-4"
+          >
             <Button
               bg={organizationConfig.organization_theme.theme.backgroundColor}
               c={organizationConfig.organization_theme.theme.color}
               variant="outline"
+              className="text-sm px-3 py-2"
               onClick={closeEditModal}
             >
               Cancel
@@ -316,11 +321,16 @@ const EmploymentTypes = () => {
               bg={organizationConfig.organization_theme.theme.backgroundColor}
               c={organizationConfig.organization_theme.theme.color}
               variant="outline"
+              className="text-sm px-3 py-2"
               onClick={confirmEdit}
             >
               Save Changes
             </Button>
-            <Button bg="red" onClick={() => handleDelete(selectedType.id)}>
+            <Button
+              bg="red"
+              className="text-sm px-3 py-2"
+              onClick={() => handleDelete(selectedType.id)}
+            >
               Delete
             </Button>
           </Group>

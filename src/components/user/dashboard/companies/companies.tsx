@@ -74,7 +74,7 @@ const Companies = () => {
       }}
       className="p-6"
     >
-      <h1 className="text-3xl font-extrabold underline text-center">
+      <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold underline text-center px-2 py-4 whitespace-nowrap">
         Manage Pool Companies
       </h1>
       <div className="text-right">
@@ -96,7 +96,7 @@ const Companies = () => {
         placeHolder="Search by company name"
       />
       <div
-        className="overflow-hidden max-w-full shadow-lg rounded-lg"
+        className="w-full overflow-x-auto shadow-lg rounded-lg"
         ref={scrollRef}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
