@@ -9,7 +9,6 @@ import {
   Input,
   Modal,
   Checkbox,
-  useMantineTheme,
   Title,
 } from "@mantine/core";
 import { useCustomToast } from "../../../../utils/common/toast";
@@ -41,6 +40,7 @@ import AddComment from "./add-comment";
 import CommentsTable from "./comments-table";
 import { useDisclosure } from "@mantine/hooks";
 import { deletePoolCandidatesByAdmin } from "../../../../services/admin-services";
+import { BackButton } from "../../../common/style-components/buttons";
 
 const UpdatePoolCandidateForm = () => {
   const [skills, setSkills] = useState<string[]>([]);
@@ -52,7 +52,6 @@ const UpdatePoolCandidateForm = () => {
   const { showSuccessToast } = useCustomToast();
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
-  const theme = useMantineTheme();
 
   const {
     control,
@@ -154,13 +153,7 @@ const UpdatePoolCandidateForm = () => {
             >
               Candidate Details
             </Title>
-            <Button
-              bg={theme.colors.primary[5]}
-              onClick={() => navigate(-1)}
-              className="text-sm sm:text-base self-center sm:self-auto"
-            >
-              Cancel
-            </Button>
+            <BackButton id={candidateId} />
           </div>
           <div className="px-4 space-y-4">
             <Controller

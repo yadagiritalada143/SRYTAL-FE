@@ -1,9 +1,21 @@
 import { useState, useEffect } from "react";
-import { Button, Table } from "@mantine/core";
+import { useNavigate } from "react-router-dom";
+import {
+  Box,
+  Button,
+  Group,
+  Modal,
+  Table,
+  TextInput,
+  Text,
+} from "@mantine/core";
 import { OrganizationConfig } from "../../../../interfaces/organization";
 import moment from "moment";
-import { IconTrash } from "@tabler/icons-react";
-import { deleteTaskByAdmin } from "../../../../services/admin-services";
+import { IconEdit, IconTrash } from "@tabler/icons-react";
+import {
+  deleteTaskByAdmin,
+  updateTaskByAdmin,
+} from "../../../../services/admin-services";
 import { toast } from "react-toastify";
 import { DeleteTaskModel } from "./delete-task";
 import { useDisclosure } from "@mantine/hooks";
@@ -18,10 +30,14 @@ const PackageTasksTable = ({
   fetchPackageDetails: () => void;
 }) => {
   const [opened, { open, close }] = useDisclosure(false);
+  const navigate = useNavigate();
   const [taskList, setTaskList] = useState([...tasks]);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [selectedTask, setSelectedTask] = useState("");
+  const [selectedTaskObj, setSelectedTaskObj] = useState<any>(null);
+  const [editModalOpened, { open: openEditModal, close: closeEditModal }] =
+    useDisclosure(false);
 
   useEffect(() => {
     setTaskList(tasks);
@@ -83,23 +99,39 @@ const PackageTasksTable = ({
                 <td className="px-4 py-2 border-r">{index + 1}</td>
                 <td className="px-4 py-2 border-r">{task.title}</td>
                 <td className="px-4 py-2 border-r">
-                  {task?.userId?.firstName || ""} {task?.userId?.lastName || ""}
+                  {task?.createdBy?.firstName || ""}{" "}
+                  {task?.createdBy?.lastName || ""}
                 </td>
                 <td className="px-4 py-2 border-r">
                   {moment(task.createdAt).format("MMMM Do YYYY, h:mm A")}
                 </td>
                 <td className="px-4 py-2 text-center">
-                  <Button
-                    variant="light"
-                    color="red"
-                    size="xs"
-                    onClick={() => {
-                      open();
-                      setSelectedTask(task._id);
-                    }}
-                  >
-                    <IconTrash size={18} />
-                  </Button>
+                  <div className="flex flex-wrap justify-center gap-2 sm:flex-nowrap">
+                    <Button
+                      variant="light"
+                      color="red"
+                      size="xs"
+                      onClick={() => {
+                        open();
+                        setSelectedTask(task._id);
+                      }}
+                      className="w-full sm:w-auto"
+                    >
+                      <IconTrash size={18} />
+                    </Button>
+                    <Button
+                      variant="light"
+                      color="blue"
+                      size="xs"
+                      onClick={() => {
+                        setSelectedTaskObj(task);
+                        openEditModal();
+                      }}
+                      className="w-full sm:w-auto"
+                    >
+                      <IconEdit size={18} />
+                    </Button>
+                  </div>
                 </td>
               </tr>
             ))
@@ -112,6 +144,67 @@ const PackageTasksTable = ({
           )}
         </tbody>
       </Table>
+      <Modal
+        opened={editModalOpened}
+        onClose={closeEditModal}
+        title={<Text className="text-center font-bold text-xl">Edit Task</Text>}
+        centered
+      >
+        <Box>
+          <TextInput
+            label="Task Name"
+            value={selectedTaskObj?.title || ""}
+            onChange={(e) =>
+              setSelectedTaskObj({ ...selectedTaskObj, title: e.target.value })
+            }
+            required
+            mb="md"
+          />
+          <Group justify="flex-end">
+            <Button
+              bg={organizationConfig.organization_theme.theme.backgroundColor}
+              c={organizationConfig.organization_theme.theme.color}
+              variant="outline"
+              onClick={closeEditModal}
+            >
+              Cancel
+            </Button>
+            <Button
+              bg={organizationConfig.organization_theme.theme.backgroundColor}
+              c={organizationConfig.organization_theme.theme.color}
+              variant="outline"
+              onClick={async () => {
+                if (!selectedTaskObj?._id) return;
+
+                try {
+                  await updateTaskByAdmin(
+                    selectedTaskObj._id,
+                    selectedTaskObj.title
+                  );
+                  toast.success("Task updated successfully");
+
+                  setTaskList((prev) =>
+                    prev.map((task) =>
+                      task._id === selectedTaskObj._id
+                        ? { ...task, title: selectedTaskObj.title }
+                        : task
+                    )
+                  );
+
+                  fetchPackageDetails();
+                  closeEditModal();
+                } catch (err) {
+                  console.error(err);
+                  toast.error("Failed to update task");
+                }
+              }}
+            >
+              Save Changes
+            </Button>
+          </Group>
+        </Box>
+      </Modal>
+
       <DeleteTaskModel
         agreeTerms={agreeTerms}
         close={close}

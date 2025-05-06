@@ -9,8 +9,6 @@ import { useState } from "react";
 
 const AddTasksPackage = ({
   organizationConfig,
-  setTasks,
-  user,
   packageId,
   required = false,
   fetchPackageDetails,
@@ -28,7 +26,7 @@ const AddTasksPackage = ({
   const [error, setError] = useState<string>("");
 
   const handleAddTasks = () => {
-    if (required && !newTasks.trim()) {
+    if (required && !newTasks) {
       setError("This field is required");
       return;
     }
@@ -36,15 +34,6 @@ const AddTasksPackage = ({
     addTasksByAdmin(packageId, newTasks)
       .then(() => {
         showSuccessToast("Your tasks has been added !");
-        const tasks = {
-          userId: {
-            firstName: user.firstName,
-            lastName: user.lastName,
-          },
-          updateAt: new Date().toLocaleDateString(),
-          title: newTasks,
-        };
-        setTasks((prev: any) => [tasks, ...prev]);
         setNewTasks("");
         fetchPackageDetails();
       })

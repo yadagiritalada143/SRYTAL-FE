@@ -8,7 +8,6 @@ import {
   Chip,
   Input,
   Textarea,
-  useMantineTheme,
 } from "@mantine/core";
 import { Controller, useForm } from "react-hook-form";
 import { useState } from "react";
@@ -19,13 +18,16 @@ import {
 import { BgDiv } from "../../../common/style-components/bg-div";
 import { toast } from "react-toastify";
 import { addPoolCandidateByRecruiter } from "../../../../services/user-services";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useCustomToast } from "../../../../utils/common/toast";
 import { DateTimePicker } from "@mantine/dates";
 import { useRecoilValue } from "recoil";
 import { organizationThemeAtom } from "../../../../atoms/organization-atom";
+import { BackButton } from "../../../common/style-components/buttons";
 
 const AddPoolCandidate = () => {
+  const params = useParams();
+  const candidateId = params.candidateId as string;
   const {
     control,
     formState: { errors, isLoading },
@@ -45,7 +47,6 @@ const AddPoolCandidate = () => {
   const navigate = useNavigate();
   const { showSuccessToast } = useCustomToast();
   const organizationConfig = useRecoilValue(organizationThemeAtom);
-  const theme = useMantineTheme();
 
   const [skills, setSkills] = useState<string[]>([]);
   const [skillInput, setSkillInput] = useState("");
@@ -95,13 +96,7 @@ const AddPoolCandidate = () => {
             <h1 className="text-base sm:text-xl md:text-3xl font-extrabold underline text-left flex-1">
               Add Candidate
             </h1>
-            <Button
-              bg={theme.colors.primary[5]}
-              onClick={() => navigate(-1)}
-              className="text-sm sm:text-base"
-            >
-              Cancel
-            </Button>
+            <BackButton id={candidateId} />
           </div>
           <Grid gutter="md">
             <Grid.Col span={12}>
