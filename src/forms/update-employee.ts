@@ -1,8 +1,7 @@
 import { z } from "zod";
 
 export const employeeSchema = z.object({
-  employeeId: z
-    .string(),
+  employeeId: z.string(),
   firstName: z.string().min(1, "First Name is required"),
   lastName: z.string().min(1, "Last Name is required"),
   email: z.string().email("Invalid email address"),
@@ -20,9 +19,9 @@ export const employeeSchema = z.object({
     })
     .optional(),
   presentAddress: z.string().min(1, "Present Address is required"),
-  permanentAddress: z.string().min(1, "Permanent Address is required"),   
+  permanentAddress: z.string().min(1, "Permanent Address is required"),
   employmentType: z.string().optional(),
-  employeeRole: z.array(z.string().optional()), 
+  employeeRole: z.array(z.string().optional()),
   bankDetailsInfo: z
     .object({
       accountNumber: z.union([
@@ -42,6 +41,7 @@ export const employeeSchema = z.object({
       ]),
     })
     .optional(),
+  packagesInfo: z.array(z.string().optional()),
 });
 
 export type EmployeeUpdateForm = z.infer<typeof employeeSchema>;

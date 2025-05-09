@@ -20,3 +20,8 @@ export const employeeRolesAtom = atom({
   key: "employeeRolesAtom",
   default: [],
 });
+
+export const employeePackagesAtom = atom({
+  key: "employeePackagesAtom",
+  default: [],
+});

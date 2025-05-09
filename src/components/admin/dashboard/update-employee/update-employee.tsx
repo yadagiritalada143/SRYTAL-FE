@@ -41,6 +41,7 @@ import {
   employeeRolesAtom,
 } from "../../../../atoms/employee-atom";
 import { useRecoilState } from "recoil";
+import PackagesFormComponent from "./add-package";
 
 const UpdateEmployee = () => {
   const navigate = useNavigate();
@@ -126,6 +127,7 @@ const UpdateEmployee = () => {
     const updatedData = {
       ...data,
       employeeRole: data.employeeRole?.filter((role) => role),
+      packagesInfo: data.packagesInfo?.filter((pkg) => pkg),
     };
 
     if (
@@ -205,7 +207,7 @@ const UpdateEmployee = () => {
   };
 
   return (
-    <div className="flex justify-center items-center py-12">
+    <div className="flex flex-col items-center py-12 space-y-8">
       {isLoading ? (
         <div className="flex justify-center items-center h-48">
           <Loader
@@ -214,6 +216,7 @@ const UpdateEmployee = () => {
           />
         </div>
       ) : (
+      <>
         <BgDiv>
           <form
             onSubmit={handleSubmit(onSubmit)}
@@ -350,6 +353,7 @@ const UpdateEmployee = () => {
                   label="Employee Role"
                   placeholder="Select employee roles"
                   value={
+                    
                     field.value?.filter(
                       (role) => role !== undefined
                     ) as string[]
@@ -409,7 +413,15 @@ const UpdateEmployee = () => {
               </Button>
             </div>
           </form>
+          <div className="w-full mt-5">
+            <PackagesFormComponent
+              organizationConfig={organizationConfig}
+              control={control}
+              errors={errors}
+            />
+          </div>
         </BgDiv>
+      </>
       )}
 
       <DeleteEmployeeModel
