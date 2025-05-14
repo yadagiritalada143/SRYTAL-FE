@@ -41,10 +41,8 @@ const DateTableComponent = () => {
   };
 
   useEffect(() => {
-    const initialRange = getDateRange(startDate, endDate);
-    setDateRange(initialRange);
-    setDaysInRange(initialRange.length);
-  }, [startDate, endDate]);
+    handleSearch();
+  }, []);
 
   const handleSearch = () => {
     if (startDate && endDate) {
@@ -244,7 +242,9 @@ const DateTableComponent = () => {
               <TextInput
                 type="date"
                 value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
+                onChange={(e) => {
+                  setStartDate(e.target.value);
+                }}
                 size="sm"
                 radius="md"
                 styles={{ input: { minWidth: 150 } }}
@@ -257,7 +257,9 @@ const DateTableComponent = () => {
                 type="date"
                 value={endDate}
                 min={startDate}
-                onChange={(e) => setEndDate(e.target.value)}
+                onChange={(e) => {
+                  setEndDate(e.target.value);
+                }}
                 size="sm"
                 radius="md"
                 styles={{ input: { minWidth: 150 } }}
