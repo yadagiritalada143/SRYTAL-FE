@@ -41,7 +41,6 @@ import {
   employeeRolesAtom,
 } from '../../../../atoms/employee-atom';
 import { useRecoilState } from 'recoil';
-import PackagesFormComponent from './add-package';
 
 const UpdateEmployee = () => {
   const navigate = useNavigate();
@@ -406,12 +405,6 @@ const UpdateEmployee = () => {
                 </Button>
               </div>
             </form>
-            <div className="w-full mt-5">
-              <PackagesFormComponent
-                employeeId={employeeId}
-                organizationConfig={organizationConfig}
-              />
-            </div>
           </BgDiv>
         </>
       )}

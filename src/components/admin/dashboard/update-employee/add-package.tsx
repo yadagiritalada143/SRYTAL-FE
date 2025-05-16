@@ -5,11 +5,11 @@ import { OrganizationConfig } from '../../../../interfaces/organization';
 import { useCustomToast } from '../../../../utils/common/toast';
 import { useRecoilState } from 'recoil';
 import { employeePackagesAtom } from '../../../../atoms/employee-atom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import {
+  addPackagetoEmployeeByAdmin,
   getAllPackagesByAdmin,
-  updateEmployeePackageByAdmin,
 } from '../../../../services/admin-services';
 import {
   EmployeePackageForm,
@@ -35,6 +35,24 @@ const PackagesFormComponent = ({
   } = useForm<EmployeePackageForm>({
     resolver: zodResolver(employeePackageSchema),
   });
+  const [selectedTasks, setSelectedTasks] = useState<{
+    [packageId: string]: Set<string>;
+  }>({});
+
+  const handleTaskToggle = (packageId: string, taskId: string) => {
+    setSelectedTasks(prev => {
+      const currentSet = new Set(prev[packageId] || []);
+      if (currentSet.has(taskId)) {
+        currentSet.delete(taskId);
+      } else {
+        currentSet.add(taskId);
+      }
+      return {
+        ...prev,
+        [packageId]: currentSet,
+      };
+    });
+  };
 
   useEffect(() => {
     if (employmentPackagesOptions.length === 0) {
@@ -48,7 +66,7 @@ const PackagesFormComponent = ({
     }
   }, [employmentPackagesOptions, setEmploymentPackagesOptions]);
 
-  const onSubmit = (data: EmployeePackageForm) => {
+  const onSubmit = async (data: EmployeePackageForm) => {
     const formattedData: {
       employeeId: string;
       packages: {
@@ -66,25 +84,28 @@ const PackagesFormComponent = ({
       );
 
       if (packageFromAllPackages) {
-        const tasks = (packageFromAllPackages.tasks || []).map(task => ({
-          taskId: task._id,
-          startDate: new Date().toISOString(),
-        }));
+        const selectedTaskIds = selectedTasks[selectedPackageId] || new Set();
+
+        const tasks = (packageFromAllPackages.tasks || [])
+          .filter(task => selectedTaskIds.has(task._id)) // only selected
+          .map(task => ({
+            taskId: task._id,
+            startDate: new Date().toISOString(),
+          }));
 
         formattedData.packages.push({
           packageId: packageFromAllPackages._id,
-          tasks: tasks,
+          tasks,
         });
       }
     });
 
-    updateEmployeePackageByAdmin(formattedData)
-      .then(() => {
-        showSuccessToast('Successfully updated !');
-      })
-      .catch(error =>
-        toast.error(error.response?.data?.message || 'Something went wrong')
-      );
+    try {
+      await addPackagetoEmployeeByAdmin(formattedData);
+      showSuccessToast('Successfully updated!');
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'Something went wrong');
+    }
   };
 
   return (
@@ -94,28 +115,71 @@ const PackagesFormComponent = ({
           backgroundColor:
             organizationConfig.organization_theme.theme.backgroundColor,
         }}
-        className="rounded-lg shadow-lg w-full p-8"
+        className="shadow-lg w-full p-5"
         onSubmit={handleSubmit(onSubmit)}
       >
         <Controller
           name="packagesInfo"
           control={control}
           render={({ field }) => (
-            <MultiSelect
-              className="mb-2"
-              data={employmentPackagesOptions.map((res: any) => ({
-                value: res._id,
-                label: res.title,
-              }))}
-              label="Packages"
-              placeholder="Select Packages"
-              value={(field.value ?? []).filter(
-                (pkg: any): pkg is string => typeof pkg === 'string'
-              )}
-              onChange={field.onChange}
-              onBlur={field.onBlur}
-              error={errors.packagesInfo?.message as any}
-            />
+            <>
+              <MultiSelect
+                className="mb-2"
+                data={employmentPackagesOptions.map((res: any) => ({
+                  value: res._id,
+                  label: res.title,
+                }))}
+                label="Packages"
+                placeholder="Select Packages"
+                value={(field.value ?? []).filter(
+                  (pkg: any): pkg is string => typeof pkg === 'string'
+                )}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+                error={errors.packagesInfo?.message as any}
+              />
+              {(field.value ?? []).map((selectedPackageId: string) => {
+                const selectedPackage = employmentPackagesOptions.find(
+                  pkg => pkg._id === selectedPackageId
+                );
+                if (!selectedPackage) return null;
+
+                return (
+                  <div
+                    key={selectedPackage._id}
+                    className="mb-6 p-4 border rounded bg-white shadow-sm"
+                  >
+                    <h3 className="text-sm font-semibold mb-2 underline text-black">
+                      Tasks In {selectedPackage.title}
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {selectedPackage.tasks.map(task => {
+                        const isChecked =
+                          selectedTasks[selectedPackage._id]?.has(task._id) ??
+                          false;
+
+                        return (
+                          <label
+                            key={task._id}
+                            className="flex items-center gap-2 text-sm text-black cursor-pointer"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={() =>
+                                handleTaskToggle(selectedPackage._id, task._id)
+                              }
+                              className="form-checkbox"
+                            />
+                            <span>{task.title}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </>
           )}
         />
 

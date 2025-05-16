@@ -404,6 +404,24 @@ export const addEmployeeRoleByAdmin = async (data: { designation: string }) => {
   }
 };
 
+export const addPackagetoEmployeeByAdmin = async (data: any) => {
+  const token = localStorage.getItem('token');
+  if (!token) throw new Error('Not authorized');
+
+  try {
+    const response = await apiClient.post(
+      '/admin/addPackagetoEmployeeByAdmin',
+      data,
+      {
+        headers: { auth_token: `Bearer ${token}` },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const updateBloodGroupByAdmin = async (id: string, type: string) => {
   const token = localStorage.getItem('token');
   try {
