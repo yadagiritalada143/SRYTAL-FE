@@ -1,37 +1,37 @@
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   TextInput,
   Button,
   Textarea,
   Loader,
   MultiSelect,
-} from "@mantine/core";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+} from '@mantine/core';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import {
   packageSchema,
   PackageUpdateForm,
-} from "../../../../forms/update-package";
+} from '../../../../forms/update-package';
 
-import { toast } from "react-toastify";
-import { useEffect, useState } from "react";
-import { BgDiv } from "../../../common/style-components/bg-div";
-import { useRecoilValue } from "recoil";
-import { organizationThemeAtom } from "../../../../atoms/organization-atom";
-import { DateInput } from "@mantine/dates";
+import { toast } from 'react-toastify';
+import { useEffect, useState } from 'react';
+import { BgDiv } from '../../../common/style-components/bg-div';
+import { useRecoilValue } from 'recoil';
+import { organizationThemeAtom } from '../../../../atoms/organization-atom';
+import { DateInput } from '@mantine/dates';
 import {
   deletePackageByAdmin,
   getAllEmployeeDetailsByAdmin,
   getPackageDetailsByAdmin,
   updatePackageByAdmin,
-} from "../../../../services/admin-services";
-import { useDisclosure } from "@mantine/hooks";
-import { useCustomToast } from "../../../../utils/common/toast";
-import { DeletePackageModel } from "./delete-models";
-import AddTasksPackage from "./add-tasks";
-import PackageTasksTable from "./tasks";
-import { userDetailsAtom } from "../../../../atoms/user";
-import { BackButton } from "../../../common/style-components/buttons";
+} from '../../../../services/admin-services';
+import { useDisclosure } from '@mantine/hooks';
+import { useCustomToast } from '../../../../utils/common/toast';
+import { DeletePackageModel } from './delete-models';
+import AddTasksPackage from './add-tasks';
+import PackageTasksTable from './tasks';
+import { userDetailsAtom } from '../../../../atoms/user';
+import { BackButton } from '../../../common/style-components/buttons';
 
 const UpdatePackage = () => {
   const [opened, { open, close }] = useDisclosure(false);
@@ -73,11 +73,12 @@ const UpdatePackage = () => {
     getPackageDetailsByAdmin(packageId)
       .then((packageDetails: any) => {
         if (!packageDetails) {
-          toast.error("Package not found.");
+          toast.error('Package not found.');
           return;
         }
 
         setTasks(packageDetails.tasks);
+        console.log(packageDetails.approvers, 'in use effect');
 
         reset({
           ...packageDetails,
@@ -90,9 +91,9 @@ const UpdatePackage = () => {
             : null,
         });
       })
-      .catch((error) => {
+      .catch(error => {
         toast.error(
-          error?.response?.data?.message || "Failed to fetch package details."
+          error?.response?.data?.message || 'Failed to fetch package details.'
         );
       })
       .finally(() => {
@@ -102,16 +103,16 @@ const UpdatePackage = () => {
 
   const handleDeletePackage = (hardDelete: boolean) => {
     if (!packageId) {
-      toast.error("Invalid package ID.");
+      toast.error('Invalid package ID.');
       return;
     }
     deletePackageByAdmin(packageId, hardDelete)
       .then(() => {
-        showSuccessToast("Package deleted successfully!");
+        showSuccessToast('Package deleted successfully!');
         navigate(-1);
       })
-      .catch((error) => {
-        toast.error(error?.response?.data?.message || "Something went wrong");
+      .catch(error => {
+        toast.error(error?.response?.data?.message || 'Something went wrong');
       });
   };
   const fetchPackageDetails = async () => {
@@ -121,13 +122,15 @@ const UpdatePackage = () => {
     try {
       const packageDetails = await getPackageDetailsByAdmin(packageId);
       if (!packageDetails) {
-        toast.error("Package not found.");
+        toast.error('Package not found.');
         return;
       }
 
       setTasks(packageDetails.tasks);
+
       reset({
         ...packageDetails,
+        approvers: packageDetails.approvers?.map((a: any) => a._id),
         startDate: packageDetails.startDate
           ? new Date(packageDetails.startDate)
           : null,
@@ -137,7 +140,7 @@ const UpdatePackage = () => {
       });
     } catch (error: any) {
       toast.error(
-        error?.response?.data?.message || "Failed to fetch package details."
+        error?.response?.data?.message || 'Failed to fetch package details.'
       );
     } finally {
       setIsLoading(false);
@@ -150,15 +153,15 @@ const UpdatePackage = () => {
     try {
       setIsLoading(true);
       await updatePackageByAdmin(packageId, data);
-      showSuccessToast("Package updated successfully!");
+      showSuccessToast('Package updated successfully!');
       const updatedPackageDetails = await getPackageDetailsByAdmin(packageId);
       if (updatedPackageDetails) {
         navigate(-1);
       } else {
-        toast.error("Failed to fetch updated package details.");
+        toast.error('Failed to fetch updated package details.');
       }
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Something went wrong");
+      toast.error(error?.response?.data?.message || 'Something went wrong');
     } finally {
       setIsLoading(false);
     }
@@ -175,11 +178,10 @@ const UpdatePackage = () => {
           })
         );
 
-        console.log("Approvers options: ", filterApprovers);
         setApproversOptions(filterApprovers);
       } catch (error: any) {
         console.log(error);
-        toast.error("Failed to fetch approvers.");
+        toast.error('Failed to fetch approvers.');
       }
     };
     fetchApprovers();
@@ -214,13 +216,13 @@ const UpdatePackage = () => {
               <div className="grid grid-cols-1 gap-4 mb-4">
                 <TextInput
                   label="Title"
-                  {...register("title")}
+                  {...register('title')}
                   error={errors.title?.message}
                   className="w-full"
                 />
                 <Textarea
                   label="Description"
-                  {...register("description")}
+                  {...register('description')}
                   error={errors.description?.message}
                   className="w-full"
                 />
@@ -235,7 +237,7 @@ const UpdatePackage = () => {
                       placeholder="Select approvers"
                       value={
                         Array.isArray(field.value)
-                          ? field.value.map((a) => String(a).trim())
+                          ? field.value.map(a => String(a).trim())
                           : []
                       }
                       onChange={field.onChange}
@@ -284,7 +286,7 @@ const UpdatePackage = () => {
                 <button
                   className="bg-red-500 text-white py-2 px-4 rounded w-full sm:w-auto"
                   type="button"
-                  onClick={(e) => {
+                  onClick={e => {
                     e.preventDefault();
                     open();
                   }}
@@ -296,8 +298,6 @@ const UpdatePackage = () => {
           </BgDiv>
           <AddTasksPackage
             organizationConfig={organizationConfig}
-            tasks={tasks}
-            setTasks={setTasks}
             user={user}
             packageId={packageId}
             required={true}

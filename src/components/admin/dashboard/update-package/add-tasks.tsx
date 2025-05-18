@@ -1,11 +1,11 @@
-import { BgDiv } from "../../../common/style-components/bg-div";
-import { Button, Grid, Group, Textarea } from "@mantine/core";
-import { OrganizationConfig } from "../../../../interfaces/organization";
+import { BgDiv } from '../../../common/style-components/bg-div';
+import { Button, Grid, Group, Textarea } from '@mantine/core';
+import { OrganizationConfig } from '../../../../interfaces/organization';
 
-import { addTasksByAdmin } from "../../../../services/admin-services";
-import { useCustomToast } from "../../../../utils/common/toast";
-import { toast } from "react-toastify";
-import { useState } from "react";
+import { addTasksByAdmin } from '../../../../services/admin-services';
+import { useCustomToast } from '../../../../utils/common/toast';
+import { toast } from 'react-toastify';
+import { useState } from 'react';
 
 const AddTasksPackage = ({
   organizationConfig,
@@ -16,29 +16,27 @@ const AddTasksPackage = ({
   organizationConfig: OrganizationConfig;
   user: any;
   packageId: string;
-  setTasks: any;
-  tasks: any;
   required: boolean;
   fetchPackageDetails: () => void;
 }) => {
   const { showSuccessToast } = useCustomToast();
-  const [newTasks, setNewTasks] = useState<string>("");
-  const [error, setError] = useState<string>("");
+  const [newTasks, setNewTasks] = useState<string>('');
+  const [error, setError] = useState<string>('');
 
   const handleAddTasks = () => {
     if (required && !newTasks) {
-      setError("This field is required");
+      setError('This field is required');
       return;
     }
-    setError("");
+    setError('');
     addTasksByAdmin(packageId, newTasks)
       .then(() => {
-        showSuccessToast("Your tasks has been added !");
-        setNewTasks("");
+        showSuccessToast('Your tasks has been added !');
+        setNewTasks('');
         fetchPackageDetails();
       })
-      .catch((error) => {
-        toast.error(error.response.data.message || "Something went wrong");
+      .catch(error => {
+        toast.error(error.response.data.message || 'Something went wrong');
       });
   };
   return (
@@ -58,7 +56,7 @@ const AddTasksPackage = ({
                 autosize
                 rows={4}
                 value={newTasks}
-                onChange={(e) => setNewTasks(e.target.value)}
+                onChange={e => setNewTasks(e.target.value)}
               />
               {error && <p className="text-red-500 mt-1">{error}</p>}
             </Grid.Col>

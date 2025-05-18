@@ -1,22 +1,28 @@
-import { atom } from "recoil";
-import { EmployeeUpdateForm } from "../forms/update-employee";
+import { atom } from 'recoil';
+import { EmployeeUpdateForm } from '../forms/update-employee';
+import { PackagesList } from '../interfaces/package';
 
 export const employeeDetailsAtom = atom<EmployeeUpdateForm | null>({
-  key: "employeeDetailsAtom",
+  key: 'employeeDetailsAtom',
   default: null,
 });
 
 export const bloodGroupOptionsAtom = atom({
-  key: "bloodGroupOptionsAtom",
+  key: 'bloodGroupOptionsAtom',
   default: [],
 });
 
 export const employmentTypesAtom = atom({
-  key: "employmentTypesAtom",
+  key: 'employmentTypesAtom',
   default: [],
 });
 
 export const employeeRolesAtom = atom({
-  key: "employeeRolesAtom",
+  key: 'employeeRolesAtom',
+  default: [],
+});
+
+export const employeePackagesAtom = atom<PackagesList>({
+  key: 'employeePackagesAtom',
   default: [],
 });

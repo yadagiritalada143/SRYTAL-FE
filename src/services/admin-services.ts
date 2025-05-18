@@ -1,41 +1,41 @@
-import axios from "axios";
-import { AddEmployeeForm } from "../forms/add-employee";
-import { EmployeeUpdateForm } from "../forms/update-employee";
-import { AddPackageForm } from "../forms/add-package";
-import { PackageUpdateForm } from "../forms/update-package";
+import axios from 'axios';
+import { AddEmployeeForm } from '../forms/add-employee';
+import { EmployeeUpdateForm } from '../forms/update-employee';
+import { AddPackageForm } from '../forms/add-package';
+import { PackageUpdateForm } from '../forms/update-package';
 
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 const apiClient = axios.create({
   baseURL: BASE_URL,
-  headers: { "Content-Type": "application/json" },
+  headers: { 'Content-Type': 'application/json' },
 });
 
 const refreshAccessToken = async () => {
   try {
-    const refreshToken = localStorage.getItem("refreshToken");
+    const refreshToken = localStorage.getItem('refreshToken');
     if (!refreshToken) {
-      throw new Error("No refresh token found.");
+      throw new Error('No refresh token found.');
     }
 
-    const response = await apiClient.get("/admin/refreshToken", {
+    const response = await apiClient.get('/admin/refreshToken', {
       headers: { refresh_token: refreshToken },
     });
 
     const { token: newAccessToken } = response.data;
 
-    localStorage.setItem("token", newAccessToken);
+    localStorage.setItem('token', newAccessToken);
 
     return newAccessToken;
   } catch (error) {
-    console.error("Refresh Token Expired. Redirecting to Login...");
+    console.error('Refresh Token Expired. Redirecting to Login...');
     logoutUser();
     throw error;
   }
 };
 
 const logoutUser = () => {
-  const pathnameParts = window.location.pathname.split("/");
+  const pathnameParts = window.location.pathname.split('/');
   const subdomain = pathnameParts[1];
   const userRole = pathnameParts[2];
 
@@ -49,33 +49,33 @@ const logoutUser = () => {
 };
 
 apiClient.interceptors.request.use(
-  async (config) => {
-    let token = localStorage.getItem("token");
+  async config => {
+    let token = localStorage.getItem('token');
 
     if (!token) {
       try {
         token = await refreshAccessToken();
       } catch (error) {
-        console.error("Failed to refresh token. Redirecting to login...");
+        console.error('Failed to refresh token. Redirecting to login...');
         logoutUser();
         return Promise.reject(error);
       }
     }
 
-    config.headers["auth_token"] = token;
+    config.headers['auth_token'] = token;
     return config;
   },
-  (error) => Promise.reject(error)
+  error => Promise.reject(error)
 );
 
 apiClient.interceptors.response.use(
-  (response) => response,
-  async (error) => {
+  response => response,
+  async error => {
     const originalRequest = error.config;
 
     // ✅ Check if the refresh token request itself failed (Prevents infinite loop)
-    if (originalRequest.url.includes("/admin/refreshToken")) {
-      console.error("Refresh Token Expired. Redirecting to login...");
+    if (originalRequest.url.includes('/admin/refreshToken')) {
+      console.error('Refresh Token Expired. Redirecting to login...');
       logoutUser();
       return Promise.reject(error);
     }
@@ -85,10 +85,10 @@ apiClient.interceptors.response.use(
 
       try {
         const newAccessToken = await refreshAccessToken();
-        originalRequest.headers["auth_token"] = newAccessToken;
+        originalRequest.headers['auth_token'] = newAccessToken;
         return apiClient(originalRequest);
       } catch (refreshError) {
-        console.error("Session expired. Please log in again.");
+        console.error('Session expired. Please log in again.');
         logoutUser();
         return Promise.reject(refreshError);
       }
@@ -99,14 +99,14 @@ apiClient.interceptors.response.use(
 );
 
 export const registerEmployee = async (employeeDetails: AddEmployeeForm) => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem('token');
 
   try {
     if (!token) {
-      throw "Not authorized to access";
+      throw 'Not authorized to access';
     }
     const response = await apiClient.post(
-      "/admin/registerEmployeeByAdmin",
+      '/admin/registerEmployeeByAdmin',
       employeeDetails,
       { headers: { auth_token: token } }
     );
@@ -117,13 +117,13 @@ export const registerEmployee = async (employeeDetails: AddEmployeeForm) => {
 };
 
 export const registerPackage = async (packageDetails: AddPackageForm) => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem('token');
   try {
     if (!token) {
-      throw "Not authorized to access";
+      throw 'Not authorized to access';
     }
     const response = await apiClient.post(
-      "/admin/addPackageByAdmin",
+      '/admin/addPackageByAdmin',
       packageDetails,
       { headers: { Auth_token: `Bearer ${token}` } }
     );
@@ -137,10 +137,10 @@ export const registerPackage = async (packageDetails: AddPackageForm) => {
 export const updateEmployeeDetailsByAdmin = async (
   employeeDetails: EmployeeUpdateForm
 ) => {
-  const adminToken = localStorage.getItem("adminToken");
+  const adminToken = localStorage.getItem('adminToken');
   try {
     const response = await apiClient.put(
-      "/admin/updateEmployeeDetailsByAdmin",
+      '/admin/updateEmployeeDetailsByAdmin',
       employeeDetails,
       { headers: { auth_token: adminToken } }
     );
@@ -154,10 +154,10 @@ export const updatePackageByAdmin = async (
   packageId: string,
   packageDetails: PackageUpdateForm
 ) => {
-  const adminToken = localStorage.getItem("adminToken");
+  const adminToken = localStorage.getItem('adminToken');
   try {
     const response = await apiClient.put(
-      "/admin/updatePackageByAdmin",
+      '/admin/updatePackageByAdmin',
       { id: packageId, detailsToUpdate: packageDetails },
       { headers: { auth_token: `Bearer ${adminToken}` } }
     );
@@ -169,10 +169,10 @@ export const updatePackageByAdmin = async (
 };
 
 export const handlePasswordResetByAdmin = async (id: string) => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem('token');
   try {
     const response = await apiClient.post(
-      "/admin/employeePasswordResetByAdmin",
+      '/admin/employeePasswordResetByAdmin',
       { employeeId: id },
       {
         headers: { auth_token: token },
@@ -189,10 +189,10 @@ export const deleteEmployeeByAdmin = async (data: {
   id: string;
   confirmDelete: boolean;
 }) => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem('token');
   try {
     const response = await apiClient.post(
-      "/admin/deleteEmployeeByAdmin",
+      '/admin/deleteEmployeeByAdmin',
       data,
       {
         headers: { auth_token: token },
@@ -205,7 +205,7 @@ export const deleteEmployeeByAdmin = async (data: {
 };
 
 export const deletePackageByAdmin = async (id: string, hardDelete: boolean) => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem('token');
   try {
     const response = await apiClient.delete(
       `/admin/deletePackageByAdmin/${id}`,
@@ -224,7 +224,7 @@ export const deleteTaskByAdmin = async (
   taskId: string,
   hardDelete: boolean
 ) => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem('token');
   try {
     const response = await apiClient.delete(
       `/admin/deleteTaskByAdmin/${taskId}`,
@@ -243,7 +243,7 @@ export const deletePoolCandidatesByAdmin = async (data: {
   candidateId: string;
   confirmDelete: boolean;
 }) => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem('token');
   try {
     const response = await apiClient.delete(
       `/admin/deletePoolCandidatesByAdmin/${data.candidateId}`,
@@ -262,7 +262,7 @@ export const deletePoolCompanyByAdmin = async (data: {
   companyId: string;
   confirmDelete: boolean;
 }) => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem('token');
   try {
     const response = await apiClient.delete(
       `/admin/deletePoolCompanyByAdmin/${data.companyId}`,
@@ -278,7 +278,7 @@ export const deletePoolCompanyByAdmin = async (data: {
 };
 
 export const getEmployeeDetailsByAdmin = async (id: string) => {
-  const adminToken = localStorage.getItem("adminToken");
+  const adminToken = localStorage.getItem('adminToken');
   try {
     const response = await apiClient.get(
       `/admin/getEmployeeDetailsByAdmin/${id}`,
@@ -293,12 +293,12 @@ export const getEmployeeDetailsByAdmin = async (id: string) => {
 };
 
 export const getAllEmployeeDetailsByAdmin = async () => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem('token');
   try {
     if (!token) {
-      throw "Not authorized to access";
+      throw 'Not authorized to access';
     }
-    const response = await apiClient("/admin/getAllEmployeeDetailsByAdmin", {
+    const response = await apiClient('/admin/getAllEmployeeDetailsByAdmin', {
       headers: { auth_token: token },
     });
     return response.data.usersList;
@@ -308,12 +308,12 @@ export const getAllEmployeeDetailsByAdmin = async () => {
 };
 
 export const getAllPackagesByAdmin = async () => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem('token');
   try {
     if (!token) {
-      throw "Not authorized to access";
+      throw 'Not authorized to access';
     }
-    const response = await apiClient("/admin/getAllPackagesByAdmin", {
+    const response = await apiClient('/admin/getAllPackagesByAdmin', {
       headers: { auth_token: `Bearer ${token}` },
     });
     return response.data.packagesList;
@@ -323,10 +323,10 @@ export const getAllPackagesByAdmin = async () => {
 };
 
 export const getPackageDetailsByAdmin = async (packageId: string) => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem('token');
   try {
     if (!token) {
-      throw "Not authorized to access";
+      throw 'Not authorized to access';
     }
     const response = await apiClient.get(
       `/admin/getPackageDetailsByAdmin/${packageId}`,
@@ -341,12 +341,12 @@ export const getPackageDetailsByAdmin = async (packageId: string) => {
 };
 
 export const getAllBloodGroupByAdmin = async () => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem('token');
   try {
     if (!token) {
-      throw "Not authorized to access";
+      throw 'Not authorized to access';
     }
-    const response = await apiClient("/admin/getAllBloodGroupsByAdmin", {
+    const response = await apiClient('/admin/getAllBloodGroupsByAdmin', {
       headers: { auth_token: token },
     });
     return response.data.bloodGroupList;
@@ -356,9 +356,9 @@ export const getAllBloodGroupByAdmin = async () => {
 };
 
 export const addBloodGroupByAdmin = async (data: { type: string }) => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem('token');
   try {
-    const response = await apiClient.post("/admin/addBloodGroupByAdmin", data, {
+    const response = await apiClient.post('/admin/addBloodGroupByAdmin', data, {
       headers: { auth_token: token },
     });
 
@@ -371,10 +371,10 @@ export const addBloodGroupByAdmin = async (data: { type: string }) => {
 export const addEmploymentTypeByAdmin = async (data: {
   employmentType: string;
 }) => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem('token');
   try {
     const response = await apiClient.post(
-      "/admin/addEmploymentTypeByAdmin",
+      '/admin/addEmploymentTypeByAdmin',
       data,
       {
         headers: { auth_token: token },
@@ -388,10 +388,10 @@ export const addEmploymentTypeByAdmin = async (data: {
 };
 
 export const addEmployeeRoleByAdmin = async (data: { designation: string }) => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem('token');
   try {
     const response = await apiClient.post(
-      "/admin/addEmployeeRoleByAdmin",
+      '/admin/addEmployeeRoleByAdmin',
       data,
       {
         headers: { auth_token: token },
@@ -404,8 +404,26 @@ export const addEmployeeRoleByAdmin = async (data: { designation: string }) => {
   }
 };
 
+export const addPackagetoEmployeeByAdmin = async (data: any) => {
+  const token = localStorage.getItem('token');
+  if (!token) throw new Error('Not authorized');
+
+  try {
+    const response = await apiClient.post(
+      '/admin/addPackagetoEmployeeByAdmin',
+      data,
+      {
+        headers: { auth_token: `Bearer ${token}` },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const updateBloodGroupByAdmin = async (id: string, type: string) => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem('token');
   try {
     const response = await apiClient.put(
       `/admin/updateBloodGroupByAdmin`,
@@ -425,7 +443,7 @@ export const updateEmployeeRoleByAdmin = async (
   id: string,
   designation: string
 ) => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem('token');
   try {
     const response = await apiClient.put(
       `/admin/updateEmployeeRoleByAdmin`,
@@ -445,7 +463,7 @@ export const updateEmploymentTypeByAdmin = async (
   id: string,
   employmentType: string
 ) => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem('token');
   try {
     const response = await apiClient.put(
       `/admin/updateEmploymentTypeByAdmin`,
@@ -462,13 +480,12 @@ export const updateEmploymentTypeByAdmin = async (
 };
 
 export const getAllEmploymentTypes = async () => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem('token');
   try {
     const response = await apiClient.get(
-      "/admin/getAllEmploymentTypesByAdmin",
+      '/admin/getAllEmploymentTypesByAdmin',
       { headers: { auth_token: token } }
     );
-    console.log(response);
     return response.data.employmentTypesList;
   } catch (error) {
     throw error;
@@ -477,19 +494,18 @@ export const getAllEmploymentTypes = async () => {
 
 export const addTasksByAdmin = async (packageId: string, title: string) => {
   try {
-    const response = await apiClient.post("/admin/addTaskByAdmin", {
+    const response = await apiClient.post('/admin/addTaskByAdmin', {
       packageId,
       title,
     });
     return response.data;
   } catch (error) {
-    console.log(error);
     throw error;
   }
 };
 
 export const updateTaskByAdmin = async (id: string, title: string) => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem('token');
   try {
     const response = await apiClient.put(
       `/admin/updateTaskByAdmin`,
@@ -506,9 +522,9 @@ export const updateTaskByAdmin = async (id: string, title: string) => {
 };
 
 export const getAllEmployeeRoleByAdmin = async () => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem('token');
   try {
-    const response = await apiClient.get("/admin/getAllEmployeeRoleByAdmin", {
+    const response = await apiClient.get('/admin/getAllEmployeeRoleByAdmin', {
       headers: { auth_token: token },
     });
     return response.data.employeeRoles;
@@ -518,13 +534,13 @@ export const getAllEmployeeRoleByAdmin = async () => {
 };
 
 export const getAllApproversByAdmin = async () => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem('token');
   try {
     if (!token) {
-      throw "Not authorized to access";
+      throw 'Not authorized to access';
     }
     const response = await apiClient.get(
-      "/admin/getAllEmployeeDetailsByAdmin",
+      '/admin/getAllEmployeeDetailsByAdmin',
       {
         headers: { auth_token: token },
       }
@@ -536,7 +552,7 @@ export const getAllApproversByAdmin = async () => {
 };
 
 export const deleteEmployeeRoleByAdmin = async (id: string) => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem('token');
   try {
     const response = await apiClient.delete(
       `/admin/deleteEmployeeRoleByAdmin/${id}`,
@@ -552,7 +568,7 @@ export const deleteEmployeeRoleByAdmin = async (id: string) => {
 };
 
 export const deleteBloodGroupByAdmin = async (id: string) => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem('token');
   try {
     const response = await apiClient.delete(
       `/admin/deleteBloodGroupByAdmin/${id}`,
@@ -568,10 +584,36 @@ export const deleteBloodGroupByAdmin = async (id: string) => {
 };
 
 export const deleteEmploymentTypeByAdmin = async (id: string) => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem('token');
   try {
     const response = await apiClient.delete(
       `/admin/deleteEmploymentTypeByAdmin/${id}`,
+      {
+        headers: { auth_token: token },
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const updateEmployeePackageByAdmin = async ({
+  employeeId,
+  packages,
+}: {
+  employeeId: string;
+  packages: {
+    packageId: string;
+    tasks: { taskId: string; startDate: string }[];
+  }[];
+}) => {
+  const token = localStorage.getItem('token');
+  try {
+    const response = await apiClient.post(
+      `/admin/addPackageToEmployeeByAdmin`,
+      { employeeId, packages },
       {
         headers: { auth_token: token },
       }

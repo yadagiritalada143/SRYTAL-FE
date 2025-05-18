@@ -1,37 +1,38 @@
-import { Routes, Route, useNavigate, useParams } from "react-router-dom";
-import AddEmployee from "../components/admin/dashboard/add-employee/add-employee";
-import { OrganizationConfig } from "../interfaces/organization";
-import AdminDashboard from "../pages/admin/dashboard/dashboard";
-import AdminLogin from "../pages/admin/login/login";
-import AddCompany from "../components/user/dashboard/add-company/add-company";
-import Employees from "../components/admin/dashboard/employees/employees";
-import UpdateEmployee from "../components/admin/dashboard/update-employee/update-employee";
-import { Outlet } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { toast } from "react-toastify";
-import { MantineProvider } from "@mantine/core";
-import "@mantine/core/styles.css";
-import { getOrganizationConfig } from "../services/common-services";
-import { LoadingOverlay } from "@mantine/core";
-import Loader from "../components/common/loader/loader";
-import AdminProfile from "../components/admin/dashboard/profile/profile";
-import { useSetRecoilState, useRecoilValue } from "recoil";
-import { organizationThemeAtom } from "../atoms/organization-atom";
-import { organizationAdminUrls } from "../utils/common/constants";
-import BloodGroupTable from "../components/admin/dashboard/blood-group/all-blood";
-import PoolCandidateList from "../components/user/dashboard/candidate/candidate";
-import UpdatePoolCandidateForm from "../components/user/dashboard/update-candidate/update-candidate";
-import UserProvider from "../hooks/user-context";
-import EmploymentTypes from "../components/admin/dashboard/employement-type/employement-type";
-import Companies from "../components/user/dashboard/companies/companies";
-import AddPoolCandidate from "../components/user/dashboard/add-candidate/add-candidate";
-import UpdateCompany from "../components/user/dashboard/update-company/update-company";
-import EmploymentRoles from "../components/admin/dashboard/employment-roles/employment-roles";
-import Reports from "../components/admin/dashboard/reports/reports";
-import Packages from "../components/admin/dashboard/packages/packages";
-import AddPackage from "../components/admin/dashboard/add-package/add-package";
-import UpdatePackage from "../components/admin/dashboard/update-package/update-package";
-import DateTableComponent from "../components/common/timesheet/timesheet";
+import { Routes, Route, useNavigate, useParams } from 'react-router-dom';
+import AddEmployee from '../components/admin/dashboard/add-employee/add-employee';
+import { OrganizationConfig } from '../interfaces/organization';
+import AdminDashboard from '../pages/admin/dashboard/dashboard';
+import AdminLogin from '../pages/admin/login/login';
+import AddCompany from '../components/user/dashboard/add-company/add-company';
+import Employees from '../components/admin/dashboard/employees/employees';
+import UpdateEmployee from '../components/admin/dashboard/update-employee/update-employee';
+import { Outlet } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
+import { MantineProvider } from '@mantine/core';
+import '@mantine/core/styles.css';
+import { getOrganizationConfig } from '../services/common-services';
+import { LoadingOverlay } from '@mantine/core';
+import Loader from '../components/common/loader/loader';
+import AdminProfile from '../components/admin/dashboard/profile/profile';
+import { useSetRecoilState, useRecoilValue } from 'recoil';
+import { organizationThemeAtom } from '../atoms/organization-atom';
+import { organizationAdminUrls } from '../utils/common/constants';
+import BloodGroupTable from '../components/admin/dashboard/blood-group/all-blood';
+import PoolCandidateList from '../components/user/dashboard/candidate/candidate';
+import UpdatePoolCandidateForm from '../components/user/dashboard/update-candidate/update-candidate';
+import UserProvider from '../hooks/user-context';
+import EmploymentTypes from '../components/admin/dashboard/employement-type/employement-type';
+import Companies from '../components/user/dashboard/companies/companies';
+import AddPoolCandidate from '../components/user/dashboard/add-candidate/add-candidate';
+import UpdateCompany from '../components/user/dashboard/update-company/update-company';
+import EmploymentRoles from '../components/admin/dashboard/employment-roles/employment-roles';
+import Reports from '../components/admin/dashboard/reports/reports';
+import Packages from '../components/admin/dashboard/packages/packages';
+import AddPackage from '../components/admin/dashboard/add-package/add-package';
+import UpdatePackage from '../components/admin/dashboard/update-package/update-package';
+import DateTableComponent from '../components/common/timesheet/timesheet';
+import PackagePageWrapper from '../components/admin/dashboard/update-employee/package-wrapper';
 
 const AdminRoutes = () => {
   const { organization } = useParams<{ organization: string }>();
@@ -139,6 +140,10 @@ const AdminRoutes = () => {
               element={<UpdatePoolCandidateForm />}
             />
             <Route path="update/:employeeId" element={<UpdateEmployee />} />
+            <Route
+              path="package/:employeeId"
+              element={<PackagePageWrapper />}
+            />
             <Route path="pool-candidates" element={<PoolCandidateList />} />
             <Route
               path="update-pool-company/:companyId"
@@ -164,15 +169,15 @@ const AdminRoutes = () => {
 };
 
 const AdminProtectedRoutes = () => {
-  const token = localStorage.getItem("token");
-  const userRole = localStorage.getItem("userRole");
+  const token = localStorage.getItem('token');
+  const userRole = localStorage.getItem('userRole');
   const organizationConfig = useRecoilValue(organizationThemeAtom);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!userRole || !token || userRole !== "admin") {
+    if (!userRole || !token || userRole !== 'admin') {
       setTimeout(() => {
-        toast.error("Not authorized to access");
+        toast.error('Not authorized to access');
         navigate(
           `${organizationAdminUrls(organizationConfig.organization_name)}/login`
         );
@@ -180,7 +185,7 @@ const AdminProtectedRoutes = () => {
     }
   }, [navigate, userRole, token, organizationConfig.organization_name]);
 
-  if (!userRole || !token || userRole !== "admin") {
+  if (!userRole || !token || userRole !== 'admin') {
     return null;
   }
 
