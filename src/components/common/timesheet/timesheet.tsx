@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Button, TextInput, Title, Table, Grid } from '@mantine/core';
 import moment from 'moment';
 import 'moment-timezone';
@@ -40,13 +40,7 @@ const DateTableComponent = () => {
     return dates;
   };
 
-  useEffect(() => {
-    const initialRange = getDateRange(startDate, endDate);
-    setDateRange(initialRange);
-    setDaysInRange(initialRange.length);
-  }, [startDate, endDate]);
-
-  const handleSearch = () => {
+  const handleSearch = useCallback(() => {
     if (startDate && endDate) {
       if (new Date(startDate) > new Date(endDate)) {
         toast.error('Start date must be before end date.');
@@ -56,7 +50,11 @@ const DateTableComponent = () => {
       setDateRange(range);
       setDaysInRange(range.length);
     }
-  };
+  }, [endDate, startDate]);
+
+  useEffect(() => {
+    handleSearch();
+  }, [handleSearch]);
 
   const extendRange = (direction: 'forward' | 'backward'): void => {
     if (!startDate || !endDate) return;
@@ -241,7 +239,9 @@ const DateTableComponent = () => {
               <TextInput
                 type="date"
                 value={startDate}
-                onChange={e => setStartDate(e.target.value)}
+                onChange={e => {
+                  setStartDate(e.target.value);
+                }}
                 size="sm"
                 radius="md"
                 styles={{ input: { minWidth: 150 } }}
@@ -254,7 +254,9 @@ const DateTableComponent = () => {
                 type="date"
                 value={endDate}
                 min={startDate}
-                onChange={e => setEndDate(e.target.value)}
+                onChange={e => {
+                  setEndDate(e.target.value);
+                }}
                 size="sm"
                 radius="md"
                 styles={{ input: { minWidth: 150 } }}
