@@ -1,24 +1,22 @@
-import { Controller, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { TextInput, Button, Loader, Textarea } from "@mantine/core";
-import { DateInput } from "@mantine/dates";
-import { useMantineTheme } from "@mantine/core";
-import { registerPackage } from "../../../../services/admin-services";
-import { useNavigate, useParams } from "react-router";
-import { BgDiv } from "../../../common/style-components/bg-div";
-import { useRecoilValue } from "recoil";
-import { organizationThemeAtom } from "../../../../atoms/organization-atom";
-import { useCustomToast } from "../../../../utils/common/toast";
+import { Controller, useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { TextInput, Button, Loader, Textarea } from '@mantine/core';
+import { DateInput } from '@mantine/dates';
+import { registerPackage } from '../../../../services/admin-services';
+import { useNavigate, useParams } from 'react-router';
+import { BgDiv } from '../../../common/style-components/bg-div';
+import { useRecoilValue } from 'recoil';
+import { organizationThemeAtom } from '../../../../atoms/organization-atom';
+import { useCustomToast } from '../../../../utils/common/toast';
 import {
   AddPackageForm,
   addPackageSchema,
-} from "../../../../forms/add-package";
-import { toast } from "react-toastify";
-import { BackButton } from "../../../common/style-components/buttons";
+} from '../../../../forms/add-package';
+import { toast } from 'react-toastify';
+import { BackButton } from '../../../common/style-components/buttons';
 
 const AddPackage = () => {
   const navigate = useNavigate();
-  const theme = useMantineTheme();
   const params = useParams();
   const packageId = params.packageId as string;
   const organizationConfig = useRecoilValue(organizationThemeAtom);
@@ -67,7 +65,7 @@ const AddPackage = () => {
           <TextInput
             label="Title"
             placeholder="Enter Title"
-            {...register("title")}
+            {...register('title')}
             error={errors.title?.message}
           />
           <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 mt-4">
@@ -108,7 +106,7 @@ const AddPackage = () => {
             label="Description"
             className="mt-4"
             placeholder="Enter Description"
-            {...register("description")}
+            {...register('description')}
             maxRows={4}
             error={errors.description?.message}
           />
@@ -130,7 +128,7 @@ const AddPackage = () => {
               }
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Creating..." : "Create Package"}
+              {isSubmitting ? 'Creating...' : 'Create Package'}
             </Button>
           </div>
         </form>
