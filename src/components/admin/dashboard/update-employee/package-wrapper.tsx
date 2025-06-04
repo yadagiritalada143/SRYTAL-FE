@@ -19,7 +19,7 @@ const PackagePageWrapper = () => {
             backgroundColor:
               organizationConfig.organization_theme.theme.backgroundColor,
           }}
-          className="rounded-lg shadow-lg w-full max-w-4xl p-8"
+          className="rounded-lg shadow-lg w-full max-w-4xl p-9"
         >
           <div className="flex flex-col sm:flex-row items-center justify-between gap-12 mb-8">
             <h2 className="text-lg sm:text-2xl md:text-3xl font-bold underline text-center sm:text-left w-full sm:w-auto">

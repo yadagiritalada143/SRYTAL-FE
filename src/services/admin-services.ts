@@ -239,6 +239,28 @@ export const deleteTaskByAdmin = async (
   }
 };
 
+export const deleteEmployeePackagesByAdmin = async (
+  employeeId: string,
+  packageId: string
+) => {
+  const token = localStorage.getItem('token');
+  try {
+    const response = await apiClient.delete(
+      `/admin/deleteEmployeePackagesByAdmin`,
+      {
+        headers: { auth_token: `Bearer ${token}` },
+        data: {
+          employeeId,
+          packageId,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const deletePoolCandidatesByAdmin = async (data: {
   candidateId: string;
   confirmDelete: boolean;
@@ -330,6 +352,24 @@ export const getPackageDetailsByAdmin = async (packageId: string) => {
     }
     const response = await apiClient.get(
       `/admin/getPackageDetailsByAdmin/${packageId}`,
+      {
+        headers: { auth_token: token },
+      }
+    );
+    return response.data.packageDetails;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getEmployeePackagesByAdmin = async (employeeId: string) => {
+  const token = localStorage.getItem('token');
+  try {
+    if (!token) {
+      throw 'Not authorized to access';
+    }
+    const response = await apiClient.get(
+      `/admin/getEmployeePackagesByAdmin/${employeeId}`,
       {
         headers: { auth_token: token },
       }
