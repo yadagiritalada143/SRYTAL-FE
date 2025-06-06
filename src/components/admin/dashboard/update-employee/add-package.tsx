@@ -249,19 +249,21 @@ const PackagesFormComponent = ({
         >
           <Stack gap="md">
             <SimpleGrid cols={2} spacing="xl">
-              <div>
+              <div className="break-words max-w-full overflow-hidden">
                 <Text size="sm">First Name</Text>
                 <Text fw={500}>{employeeDetailsById?.firstName || '-'}</Text>
               </div>
-              <div>
+              <div className="break-words max-w-full overflow-hidden">
                 <Text size="sm">Last Name</Text>
                 <Text fw={500}>{employeeDetailsById?.lastName || '-'}</Text>
               </div>
-              <div>
+              <div className="break-words max-w-full overflow-hidden">
                 <Text size="sm">Email</Text>
-                <Text fw={500}>{employeeDetailsById?.email || '-'}</Text>
+                <Text fw={500} className="text-sm sm:text-base break-all">
+                  {employeeDetailsById?.email || '-'}
+                </Text>
               </div>
-              <div>
+              <div className="break-words max-w-full overflow-hidden">
                 <Text size="sm">Employee ID</Text>
                 <Text fw={500}>{employeeDetailsById?.employeeId || '-'}</Text>
               </div>

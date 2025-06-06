@@ -446,8 +446,9 @@ export const addEmployeeRoleByAdmin = async (data: { designation: string }) => {
 
 export const addPackagetoEmployeeByAdmin = async (data: any) => {
   const token = localStorage.getItem('token');
-  if (!token) throw new Error('Not authorized');
-
+  if (!token) {
+    throw new Error('Not authorized');
+  }
   try {
     const response = await apiClient.post(
       '/admin/addPackagetoEmployeeByAdmin',
