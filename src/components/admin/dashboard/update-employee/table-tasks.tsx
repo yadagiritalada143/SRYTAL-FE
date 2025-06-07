@@ -60,30 +60,40 @@ const PackagesTaskTable = ({
   }, [selectedPackagesData, tasks]);
 
   const handleDeletePackage = async (packageId: string) => {
+    const originalPackages = packagesList;
     try {
-      await deleteEmployeePackagesByAdmin(employeeId, packageId);
       setPackagesList(prev => prev.filter(pkg => pkg.packageId !== packageId));
+      await deleteEmployeePackagesByAdmin(employeeId, packageId);
       toast.success('Package deleted successfully');
-      await refreshEmployeePackages();
+
       fetchPackageDetails();
     } catch (error) {
       console.error('Error deleting package:', error);
       toast.error('Failed to delete package');
+      setPackagesList(originalPackages);
     }
   };
-
-  const handleDeleteTask = async (packageId: string, taskId: any) => {
+  const handleDeleteTask = async (packageId: string, taskId: string) => {
     try {
-      await deleteTaskByAdmin(packageId, taskId);
+      await deleteTaskByAdmin(taskId, true);
+      setPackagesList(prev => {
+        const updatedPackages = prev.map(pkg => {
+          if (pkg.packageId === packageId) {
+            return {
+              ...pkg,
+              tasks: pkg.tasks.filter((task: any) => task.taskId !== taskId),
+            };
+          }
+          return pkg;
+        });
+        return updatedPackages;
+      });
       toast.success('Task deleted successfully');
-      await refreshEmployeePackages();
-      fetchPackageDetails();
     } catch (error) {
-      console.error('Failed to delete task:', error);
-      toast.error('Could not delete task');
+      console.error('Error deleting task:', error);
+      toast.error('Failed to delete task');
     }
   };
-
   return (
     <div
       style={{
