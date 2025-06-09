@@ -7,7 +7,14 @@ export default defineConfig({
   publicDir: 'public',
   server: {
     watch: {
-      ignored: ['**/node_modules/**', '**/.git/**', 'dist', 'build'],
+      ignored: [
+        '**/node_modules/**',
+        '**/.git/**',
+        'dist',
+        'build',
+        '**/.husky/**',
+        '**/.vscode/**',
+      ],
     },
     hmr: {
       overlay: false,

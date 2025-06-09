@@ -374,7 +374,12 @@ export const getEmployeePackagesByAdmin = async (employeeId: string) => {
         headers: { auth_token: token },
       }
     );
-    return response.data.packageDetails;
+
+    if (!response.data.employeePackageDetails.length) {
+      return [];
+    }
+
+    return response.data.employeePackageDetails[0].packages;
   } catch (error) {
     throw error;
   }

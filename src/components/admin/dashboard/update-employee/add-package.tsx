@@ -1,4 +1,8 @@
+import { useState, useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useDisclosure } from '@mantine/hooks';
+import { toast } from 'react-toastify';
 import {
   MultiSelect,
   Button,
@@ -12,86 +16,58 @@ import {
   ScrollArea,
   SimpleGrid,
 } from '@mantine/core';
-import { BgDiv } from '../../../common/style-components/bg-div';
-import { OrganizationConfig } from '../../../../interfaces/organization';
 import { useCustomToast } from '../../../../utils/common/toast';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import {
   employeeDetailsAtom,
   employeePackagesAtom,
 } from '../../../../atoms/employee-atom';
-import { useEffect, useState } from 'react';
-import { toast } from 'react-toastify';
+import { userDetailsAtom } from '../../../../atoms/user';
+
 import {
   addPackagetoEmployeeByAdmin,
   getAllPackagesByAdmin,
-  getEmployeeDetailsByAdmin,
   getEmployeePackagesByAdmin,
-  getPackageDetailsByAdmin,
 } from '../../../../services/admin-services';
+
+import { employeePackageSchema } from '../../../../forms/update-employee';
+import AddTasksPackage from '../update-package/add-tasks';
+import PackagesTaskTable from './table-tasks';
+
 import {
   EmployeePackageForm,
-  employeePackageSchema,
-} from '../../../../forms/update-employee';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useDisclosure } from '@mantine/hooks';
-import AddTasksPackage from '../update-package/add-tasks';
-import { userDetailsAtom } from '../../../../atoms/user';
-import PackagesTaskTable from './table-tasks';
+  FormattedPackageData,
+  PackagesFormProps,
+  SelectedTasks,
+} from './interfaces/add-package';
+import {
+  fetchInitialData,
+  loadEmployeePackages,
+  formatSubmitData,
+  getEmployeeInfoItems,
+} from './helper-functions/add-package';
+import { Task } from '../../../../interfaces/package';
+import { BgDiv } from '../../../common/style-components/bg-div';
 
 const PackagesFormComponent = ({
   organizationConfig,
   employeeId,
-}: {
-  organizationConfig: OrganizationConfig;
-  employeeId: string;
-}) => {
+}: PackagesFormProps) => {
   const [employmentPackagesOptions, setEmploymentPackagesOptions] =
     useRecoilState(employeePackagesAtom);
-  const [employeeDetailsById, setEmployeeDetails] =
+  const [employeeDetails, setEmployeeDetails] =
     useRecoilState(employeeDetailsAtom);
   const [isLoading, setIsLoading] = useState(true);
   const { showSuccessToast } = useCustomToast();
   const [opened, { open, close }] = useDisclosure(false);
   const user = useRecoilValue(userDetailsAtom);
-  const [openedAddTask, { close: closeTask }] = useDisclosure(false);
-  const [selectedPackage] = useState('');
-  const [tasks, setTasks] = useState<
-    {
-      packageId: string;
-      tasks: string;
-    }[]
-  >([]);
-  const [selectedPackagesData, setSelectedPackagesData] = useState<{
-    employeeId: string;
-    packages: {
-      packageId: string;
-      tasks: { taskId: string }[];
-    }[];
-  }>();
-
-  const fetchPackageDetails = async (packageId: string) => {
-    if (!packageId) return;
-    setIsLoading(true);
-    try {
-      const packageDetails = await getPackageDetailsByAdmin(packageId);
-      if (!packageDetails) {
-        toast.error('Package not found.');
-        return;
-      }
-      setTasks(packageDetails.tasks);
-      reset({
-        ...packageDetails,
-        approvers: packageDetails.approvers?.map((a: any) => a._id),
-      });
-    } catch (error: any) {
-      toast.error(
-        error?.response?.data?.message || 'Failed to fetch package details.'
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const [openedAddTask, { close: closeTask, open: openTask }] =
+    useDisclosure(false);
+  const [selectedPackage, setSelectedPackage] = useState('');
+  const [tasks] = useState<Task[]>([]);
+  const [selectedPackagesData, setSelectedPackagesData] =
+    useState<FormattedPackageData>();
+  const [selectedTasks, setSelectedTasks] = useState<SelectedTasks>({});
 
   const {
     control,
@@ -105,32 +81,20 @@ const PackagesFormComponent = ({
     },
   });
 
-  const [sltdPackageId, setSltdPackageId] = useState<string>('');
   const selectedPackages = watch('packagesInfo') || [];
-  const [selectedTasks, setSelectedTasks] = useState<
-    Record<string, Set<string>>
-  >({});
-  const [, setCurrentStep] = useState<'select-packages' | 'select-tasks'>(
-    'select-packages'
-  );
 
   useEffect(() => {
     const loadData = async () => {
+      setIsLoading(true);
       try {
-        setIsLoading(true);
-        const [employeeDetails, packages] = await Promise.all([
-          getEmployeeDetailsByAdmin(employeeId),
-          employmentPackagesOptions.length === 0
-            ? getAllPackagesByAdmin()
-            : Promise.resolve(employmentPackagesOptions),
-        ]);
-
-        setEmployeeDetails(employeeDetails);
-        if (employmentPackagesOptions.length === 0) {
-          setEmploymentPackagesOptions(packages);
-        }
+        await fetchInitialData(
+          employeeId,
+          setEmployeeDetails,
+          setEmploymentPackagesOptions,
+          employmentPackagesOptions
+        );
       } catch (error: any) {
-        toast.error(error?.response?.data?.message || 'Failed to load data');
+        toast.error(error.message);
       } finally {
         setIsLoading(false);
       }
@@ -139,34 +103,37 @@ const PackagesFormComponent = ({
     loadData();
   }, [
     employeeId,
-    setEmployeeDetails,
     employmentPackagesOptions,
+    setEmployeeDetails,
     setEmploymentPackagesOptions,
   ]);
 
   useEffect(() => {
     const loadInitialEmployeePackages = async () => {
       try {
-        const data = await getEmployeePackagesByAdmin(employeeId);
-        setSelectedPackagesData(data);
-      } catch (error) {
-        console.error('Failed to fetch employee packages:', error);
-        toast.error('Failed to fetch employee packages');
+        await loadEmployeePackages(
+          employeeId,
+          reset,
+          setSelectedPackagesData,
+          setSelectedTasks
+        );
+      } catch (error: any) {
+        toast.error(error.message);
       }
     };
     loadInitialEmployeePackages();
-  }, [employeeId]);
+  }, [employeeId, reset]);
 
-  const handleTaskToggle = (pkg: any, task: any) => {
+  const handleTaskToggle = (pkgId: string, taskId: string) => {
     setSelectedTasks(prev => {
       const newSelectedTasks = { ...prev };
-      const currentSet = new Set(prev[pkg._id] || []);
-      if (currentSet.has(task._id)) {
-        currentSet.delete(task._id);
+      const currentSet = new Set(prev[pkgId] || []);
+      if (currentSet.has(taskId)) {
+        currentSet.delete(taskId);
       } else {
-        currentSet.add(task._id);
+        currentSet.add(taskId);
       }
-      newSelectedTasks[pkg._id] = currentSet;
+      newSelectedTasks[pkgId] = currentSet;
       return newSelectedTasks;
     });
   };
@@ -176,42 +143,28 @@ const PackagesFormComponent = ({
       toast.warning('Please select at least one package');
       return;
     }
-    setCurrentStep('select-tasks');
+
     open();
   };
 
   const onSubmit = async () => {
     try {
-      const formattedData = {
-        employeeId: employeeId,
-        packages: selectedPackages
-          .map(selectedPackageId => {
-            const packageData = employmentPackagesOptions.find(
-              pkg => pkg._id === selectedPackageId
-            );
-            const selectedTaskIds =
-              selectedTasks[selectedPackageId] || new Set();
-            setSltdPackageId(selectedPackageId);
-            return {
-              packageId: selectedPackageId,
-              title: packageData?.title,
-              tasks: (packageData?.tasks || [])
-                .filter(task => selectedTaskIds.has(task._id))
-                .map(task => ({
-                  taskId: task._id,
-                  title: task.title,
-                })),
-            };
-          })
-          .filter(pkg => pkg.tasks.length > 0),
-      };
+      const formattedData = formatSubmitData(
+        selectedPackages,
+        employmentPackagesOptions,
+        selectedTasks,
+        employeeId
+      );
+
       if (formattedData.packages.length === 0) {
         toast.warning('Please select at least one task');
         return;
       }
+
       setSelectedPackagesData(formattedData);
       await addPackagetoEmployeeByAdmin(formattedData);
       showSuccessToast('Packages and tasks updated successfully!');
+
       const updatedData = await getEmployeePackagesByAdmin(employeeId);
       setSelectedPackagesData(updatedData);
       close();
@@ -232,194 +185,195 @@ const PackagesFormComponent = ({
     );
   }
 
+  const employeeInfoItems = getEmployeeInfoItems(employeeDetails);
+  console.log(selectedPackage);
   return (
-    <div>
-      <BgDiv>
-        <Card
-          shadow="sm"
-          padding="lg"
-          radius="md"
-          style={{
-            backgroundColor:
-              organizationConfig.organization_theme.theme.backgroundColor,
-            color: organizationConfig.organization_theme.theme.color,
-            maxWidth: '100%',
-            width: '100%',
-          }}
-        >
-          <Stack gap="md">
-            <SimpleGrid cols={2} spacing="xl">
-              <div className="break-words max-w-full overflow-hidden">
-                <Text size="sm">First Name</Text>
-                <Text fw={500}>{employeeDetailsById?.firstName || '-'}</Text>
-              </div>
-              <div className="break-words max-w-full overflow-hidden">
-                <Text size="sm">Last Name</Text>
-                <Text fw={500}>{employeeDetailsById?.lastName || '-'}</Text>
-              </div>
-              <div className="break-words max-w-full overflow-hidden">
-                <Text size="sm">Email</Text>
-                <Text fw={500} className="text-sm sm:text-base break-all">
-                  {employeeDetailsById?.email || '-'}
-                </Text>
-              </div>
-              <div className="break-words max-w-full overflow-hidden">
-                <Text size="sm">Employee ID</Text>
-                <Text fw={500}>{employeeDetailsById?.employeeId || '-'}</Text>
-              </div>
-            </SimpleGrid>
-            <>
-              <Controller
-                name="packagesInfo"
-                control={control}
-                render={({ field }) => (
-                  <MultiSelect
-                    data={employmentPackagesOptions.map(pkg => ({
-                      value: pkg._id,
-                      label: pkg.title,
-                    }))}
-                    label="Select Packages"
-                    placeholder={`${!selectedPackages.length ? 'Choose packages to assign' : ''}`}
-                    value={field.value}
-                    onChange={field.onChange}
-                    onBlur={field.onBlur}
-                    error={errors.packagesInfo?.message}
-                    clearable
-                    searchable
-                  />
-                )}
+    <BgDiv>
+      <Card
+        shadow="sm"
+        padding="lg"
+        radius="md"
+        style={{
+          backgroundColor:
+            organizationConfig.organization_theme.theme.backgroundColor,
+          color: organizationConfig.organization_theme.theme.color,
+          maxWidth: '100%',
+          width: '100%',
+        }}
+      >
+        <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="lg">
+          {employeeInfoItems.map((item, index) => (
+            <div key={index} className="w-full break-words">
+              <Text size="sm">{item.label}</Text>
+              <Text fw={500} className="text-base break-words">
+                {item.value || '-'}
+              </Text>
+            </div>
+          ))}
+        </SimpleGrid>
+
+        <div className="mt-6">
+          <Controller
+            name="packagesInfo"
+            control={control}
+            render={({ field }) => (
+              <MultiSelect
+                data={employmentPackagesOptions.map(pkg => ({
+                  value: pkg._id,
+                  label: pkg.title,
+                }))}
+                label="Select Packages"
+                placeholder={
+                  !selectedPackages.length ? 'Choose packages to assign' : ''
+                }
+                value={
+                  Array.isArray(field.value)
+                    ? field.value.map(a => String(a).trim())
+                    : []
+                }
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+                error={errors.packagesInfo?.message}
+                clearable
+                searchable
+                className="w-full"
               />
+            )}
+          />
 
-              <Group justify="flex-end" mt="md" className="mb-">
-                <Button
-                  onClick={proceedToTaskSelection}
-                  disabled={selectedPackages.length === 0}
-                >
-                  Next: Select Tasks
-                </Button>
-              </Group>
-            </>
-          </Stack>
-        </Card>
-        <Modal
-          opened={opened}
-          onClose={() => {
-            close();
-            setCurrentStep('select-packages');
-          }}
-          size="xl"
-          title={<Text fw={600}>Select Tasks for Packages</Text>}
-          centered
-        >
-          <ScrollArea.Autosize mah={500}>
-            <Stack gap="md">
-              {selectedPackages.map((packageId: string) => {
-                const pkg = employmentPackagesOptions.find(
-                  p => p._id === packageId
-                );
-                if (!pkg) return null;
-
-                const taskCount = pkg.tasks?.length || 0;
-                const selectedCount = selectedTasks[packageId]?.size || 0;
-
-                return (
-                  <Card
-                    key={packageId}
-                    shadow="xs"
-                    padding="sm"
-                    radius="md"
-                    withBorder
-                  >
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <Text fw={500}>{pkg.title}</Text>
-                        <Text size="sm" c="dimmed">
-                          {selectedCount} of {taskCount} tasks selected
-                        </Text>
-                      </div>
-                    </div>
-
-                    <div className="mt-3 space-y-2">
-                      {pkg.tasks?.length ? (
-                        <Stack gap="xs">
-                          {pkg.tasks.map(task => (
-                            <Checkbox
-                              key={task._id}
-                              label={task.title}
-                              checked={
-                                selectedTasks[packageId]?.has(task._id) || false
-                              }
-                              onChange={() => handleTaskToggle(pkg, task)}
-                            />
-                          ))}
-                        </Stack>
-                      ) : (
-                        <Text size="sm" c="dimmed" mt="sm">
-                          No tasks available in this package
-                        </Text>
-                      )}
-                    </div>
-                  </Card>
-                );
-              })}
-            </Stack>
-          </ScrollArea.Autosize>
-
-          <Group justify="flex-end" mt="md">
+          <Group justify="flex-end" mt="md" className="mb-4">
             <Button
-              variant="default"
-              onClick={() => {
-                close();
-                setCurrentStep('select-packages');
-              }}
-              bg={organizationConfig.organization_theme.theme.backgroundColor}
-              c={organizationConfig.organization_theme.theme.color}
+              onClick={proceedToTaskSelection}
+              disabled={selectedPackages.length === 0}
+              variant="filled"
             >
-              Back
-            </Button>
-            <Button
-              onClick={onSubmit}
-              loading={isSubmitting}
-              disabled={isSubmitting}
-              bg={organizationConfig.organization_theme.theme.backgroundColor}
-              c={organizationConfig.organization_theme.theme.color}
-            >
-              Save Changes
+              Next: Select Tasks
             </Button>
           </Group>
-        </Modal>
+        </div>
+      </Card>
 
-        <Modal
-          opened={openedAddTask}
-          onClose={closeTask}
-          title={<Text fw={600}>Add Task for Package</Text>}
-        >
-          <AddTasksPackage
-            organizationConfig={organizationConfig}
-            user={user}
-            packageId={selectedPackage}
-            required={true}
-            fetchPackageDetails={() => {
-              getAllPackagesByAdmin().then(packages => {
-                setEmploymentPackagesOptions(packages);
-              });
-              closeTask();
-            }}
-          />
-        </Modal>
-        <Group>
-          <PackagesTaskTable
-            organizationConfig={organizationConfig}
-            selectedPackagesData={selectedPackagesData}
-            tasks={tasks}
-            fetchPackageDetails={() => {
-              fetchPackageDetails(sltdPackageId);
-            }}
-            employeeId={selectedPackagesData?.employeeId || ''}
-          />
+      {/* Task Selection Modal */}
+      <Modal
+        opened={opened}
+        onClose={() => {
+          close();
+        }}
+        size="xl"
+        title={<Text fw={600}>Select Tasks for Packages</Text>}
+        centered
+      >
+        <ScrollArea.Autosize mah={500}>
+          <Stack gap="md">
+            {selectedPackages.map((packageId: string) => {
+              const pkg = employmentPackagesOptions.find(
+                p => p._id === packageId
+              );
+              if (!pkg) return null;
+
+              const taskCount = pkg.tasks?.length || 0;
+              const selectedCount = selectedTasks[packageId]?.size || 0;
+
+              return (
+                <Card
+                  key={packageId}
+                  shadow="xs"
+                  padding="sm"
+                  radius="md"
+                  withBorder
+                >
+                  <div className="flex justify-between items-center w-full ">
+                    <Text fw={500}>{pkg.title}</Text>
+                    <Button
+                      bg={
+                        organizationConfig.organization_theme.theme
+                          .backgroundColor
+                      }
+                      c={organizationConfig.organization_theme.theme.color}
+                      onClick={() => {
+                        openTask();
+                        setSelectedPackage(packageId);
+                      }}
+                    >
+                      Add Task
+                    </Button>
+                  </div>
+                  <Text size="sm" c="dimmed">
+                    {selectedCount} of {taskCount} tasks selected
+                  </Text>
+
+                  <div className="mt-3 space-y-2">
+                    {pkg.tasks?.length ? (
+                      <Stack gap="xs">
+                        {pkg.tasks.map(task => (
+                          <Checkbox
+                            key={task._id}
+                            label={task.title}
+                            checked={
+                              selectedTasks[packageId]?.has(task._id) || false
+                            }
+                            onChange={() =>
+                              handleTaskToggle(packageId, task._id)
+                            }
+                            className=" p-1 rounded"
+                          />
+                        ))}
+                      </Stack>
+                    ) : (
+                      <Text size="sm" mt="sm">
+                        No tasks available in this package
+                      </Text>
+                    )}
+                  </div>
+                </Card>
+              );
+            })}
+          </Stack>
+        </ScrollArea.Autosize>
+
+        <Group justify="flex-end" mt="md">
+          <Button
+            onClick={onSubmit}
+            loading={isSubmitting}
+            disabled={isSubmitting}
+            bg={organizationConfig.organization_theme.theme.backgroundColor}
+            c={organizationConfig.organization_theme.theme.color}
+          >
+            Save Changes
+          </Button>
         </Group>
-      </BgDiv>
-    </div>
+      </Modal>
+
+      {/* Add Task Modal */}
+      <Modal
+        opened={openedAddTask}
+        onClose={closeTask}
+        title={<Text fw={600}>Add Task for Package</Text>}
+      >
+        <AddTasksPackage
+          organizationConfig={organizationConfig}
+          user={user}
+          packageId={selectedPackage}
+          required={true}
+          fetchPackageDetails={() => {
+            getAllPackagesByAdmin().then(packages => {
+              setEmploymentPackagesOptions(packages);
+            });
+            closeTask();
+          }}
+        />
+      </Modal>
+
+      {/* Packages Task Table */}
+      <div className="mt-6">
+        <PackagesTaskTable
+          organizationConfig={organizationConfig}
+          selectedPackagesData={selectedPackagesData}
+          tasks={tasks}
+          employeeId={selectedPackagesData?.employeeId || ''}
+        />
+      </div>
+    </BgDiv>
   );
 };
 

@@ -23,19 +23,17 @@ const PackagesTaskTable = ({
   selectedPackagesData = {},
   tasks = [],
   organizationConfig,
-  fetchPackageDetails,
   employeeId,
 }: {
   selectedPackagesData: any;
   tasks: any[];
   organizationConfig: OrganizationConfig;
-  fetchPackageDetails: () => void;
   employeeId: string;
 }) => {
   const [packagesList, setPackagesList] = useState<any[]>(
     selectedPackagesData.packages || []
   );
-  // const [taskList, setTaskList] = useState([...tasks]);
+
   const [selectedTaskObj, setSelectedTaskObj] = useState<any>(null);
   const [editModalOpened, { close: closeEditModal }] = useDisclosure(false);
 
@@ -54,9 +52,6 @@ const PackagesTaskTable = ({
     if (selectedPackagesData && selectedPackagesData.packages?.length > 0) {
       setPackagesList(selectedPackagesData.packages);
     }
-    // if (tasks && tasks.length > 0) {
-    //   setTaskList(tasks);
-    // }
   }, [selectedPackagesData, tasks]);
 
   const handleDeletePackage = async (packageId: string) => {
@@ -65,8 +60,6 @@ const PackagesTaskTable = ({
       setPackagesList(prev => prev.filter(pkg => pkg.packageId !== packageId));
       await deleteEmployeePackagesByAdmin(employeeId, packageId);
       toast.success('Package deleted successfully');
-
-      fetchPackageDetails();
     } catch (error) {
       console.error('Error deleting package:', error);
       toast.error('Failed to delete package');
@@ -96,13 +89,13 @@ const PackagesTaskTable = ({
   };
   return (
     <div
+      className="w-full overflow-x-auto my-0 shadow-lg rounded-lg border"
       style={{
         color: organizationConfig.organization_theme.theme.button.textColor,
         fontFamily: organizationConfig.organization_theme.theme.fontFamily,
       }}
-      className="w-full overflow-x-auto my-0 shadow-lg rounded-lg border"
     >
-      <Table className="w-full text-left border border-gray-700">
+      <Table className="w-full text-left border rounded-md">
         <colgroup>
           <col className="w-[5%] min-w-[50px]" />
           <col className="w-[40%] min-w-[200px]" />
@@ -133,9 +126,7 @@ const PackagesTaskTable = ({
                 </td>
 
                 <td className="px-2 py-0 border-r align-middle">
-                  <div className="h-full flex items-center">
-                    {pkg.title || 'No packages'}
-                  </div>
+                  <div className="h-full flex items-center">{pkg.title}</div>
                 </td>
 
                 <td className="px-2 py-0 border-r">
@@ -146,7 +137,7 @@ const PackagesTaskTable = ({
                           key={task.taskId}
                           className="flex items-center justify-between border-b last:border-b-0 py-1 pr-2"
                         >
-                          <span>{task?.title || 'Untitled task'}</span>
+                          <span>{task?.title}</span>
                           <Button
                             variant="light"
                             color="red"

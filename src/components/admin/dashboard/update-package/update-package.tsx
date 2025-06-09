@@ -78,7 +78,6 @@ const UpdatePackage = () => {
         }
 
         setTasks(packageDetails.tasks);
-        console.log(packageDetails.approvers, 'in use effect');
 
         reset({
           ...packageDetails,
