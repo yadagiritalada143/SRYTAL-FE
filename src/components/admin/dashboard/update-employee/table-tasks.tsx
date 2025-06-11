@@ -4,12 +4,13 @@ import {
   Button,
   Group,
   Modal,
-  Table,
   TextInput,
   Text,
+  Pagination,
+  Loader,
 } from '@mantine/core';
 import { OrganizationConfig } from '../../../../interfaces/organization';
-import { IconTrash } from '@tabler/icons-react';
+import { IconTrash, IconEdit } from '@tabler/icons-react';
 import {
   deleteEmployeePackagesByAdmin,
   deleteTaskByAdmin,
@@ -33,39 +34,74 @@ const PackagesTaskTable = ({
   const [packagesList, setPackagesList] = useState<any[]>(
     selectedPackagesData.packages || []
   );
-
+  const [filteredPackages, setFilteredPackages] = useState<any[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [activePage, setActivePage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
   const [selectedTaskObj, setSelectedTaskObj] = useState<any>(null);
-  const [editModalOpened, { close: closeEditModal }] = useDisclosure(false);
+  const [editModalOpened, { open: openEditModal, close: closeEditModal }] =
+    useDisclosure(false);
+
+  // Pagination
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(filteredPackages.length / itemsPerPage);
+  const paginatedData = filteredPackages.slice(
+    (activePage - 1) * itemsPerPage,
+    activePage * itemsPerPage
+  );
 
   const refreshEmployeePackages = async () => {
+    setIsLoading(true);
     try {
       const updatedPackages = await getEmployeePackagesByAdmin(employeeId);
-      setPackagesList(updatedPackages || []);
-      console.log('updatedPackages for final output :', updatedPackages);
+      setPackagesList(updatedPackages?.packages || []);
+      setFilteredPackages(updatedPackages?.packages || []);
     } catch (error) {
       console.error('Failed to fetch updated employee packages:', error);
       toast.error('Could not refresh package data');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
     if (selectedPackagesData && selectedPackagesData.packages?.length > 0) {
       setPackagesList(selectedPackagesData.packages);
+      setFilteredPackages(selectedPackagesData.packages);
     }
   }, [selectedPackagesData, tasks]);
 
+  useEffect(() => {
+    const filtered = packagesList.filter(pkg => {
+      const packageMatches = pkg.title
+        ?.toLowerCase()
+        .includes(searchTerm.toLowerCase());
+      const taskMatches = pkg.tasks?.some((task: any) =>
+        task.title?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      return packageMatches || taskMatches;
+    });
+    setFilteredPackages(filtered);
+    setActivePage(1); // Reset to first page when search changes
+  }, [searchTerm, packagesList]);
+
   const handleDeletePackage = async (packageId: string) => {
-    const originalPackages = packagesList;
+    const originalPackages = [...packagesList];
     try {
       setPackagesList(prev => prev.filter(pkg => pkg.packageId !== packageId));
+      setFilteredPackages(prev =>
+        prev.filter(pkg => pkg.packageId !== packageId)
+      );
       await deleteEmployeePackagesByAdmin(employeeId, packageId);
       toast.success('Package deleted successfully');
     } catch (error) {
       console.error('Error deleting package:', error);
       toast.error('Failed to delete package');
       setPackagesList(originalPackages);
+      setFilteredPackages(originalPackages);
     }
   };
+
   const handleDeleteTask = async (packageId: string, taskId: string) => {
     try {
       await deleteTaskByAdmin(taskId, true);
@@ -82,104 +118,153 @@ const PackagesTaskTable = ({
         return updatedPackages;
       });
       toast.success('Task deleted successfully');
+      refreshEmployeePackages();
     } catch (error) {
       console.error('Error deleting task:', error);
       toast.error('Failed to delete task');
     }
   };
+
+  const handleEditTask = (task: any) => {
+    setSelectedTaskObj(task);
+    openEditModal();
+  };
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  };
+
   return (
     <div
-      className="w-full overflow-x-auto my-0 shadow-lg rounded-lg border"
+      className="w-full"
       style={{
         color: organizationConfig.organization_theme.theme.button.textColor,
         fontFamily: organizationConfig.organization_theme.theme.fontFamily,
       }}
     >
-      <Table className="w-full text-left border rounded-md">
-        <colgroup>
-          <col className="w-[5%] min-w-[50px]" />
-          <col className="w-[40%] min-w-[200px]" />
-          <col className="w-[40%] min-w-[200px]" />
-          <col className="w-[20%] min-w-[130px]" />
-        </colgroup>
-        <thead
-          style={{
-            backgroundColor:
-              organizationConfig.organization_theme.theme.backgroundColor,
-            color: organizationConfig.organization_theme.theme.color,
-          }}
-        >
-          <tr className="border-b">
-            <th className="px-4 py-2 border-r text-left">S.no</th>
-            <th className="px-4 py-2 border-r text-left">Packages</th>
-            <th className="px-4 py-2 border-r text-left">Tasks</th>
-            <th className="px-4 py-2 text-center">Action</th>
-          </tr>
-        </thead>
+      <div className="mb-4">
+        <TextInput
+          placeholder="Search packages or tasks..."
+          value={searchTerm}
+          onChange={handleSearch}
+          className="w-full md:w-1/2"
+        />
+      </div>
 
-        <tbody>
-          {packagesList && packagesList.length > 0 ? (
-            packagesList.map((pkg: any, index: number) => (
-              <tr key={pkg.packageId} className="border-b align-top text-left">
-                <td className="px-2 py-0 border-r align-middle">
-                  <div className="h-full flex items-center">{index + 1}</div>
-                </td>
-
-                <td className="px-2 py-0 border-r align-middle">
-                  <div className="h-full flex items-center">{pkg.title}</div>
-                </td>
-
-                <td className="px-2 py-0 border-r">
-                  {pkg.tasks && pkg.tasks.length > 0 ? (
-                    <div className="flex flex-col gap-1">
-                      {pkg.tasks.map((task: any) => (
-                        <div
-                          key={task.taskId}
-                          className="flex items-center justify-between border-b last:border-b-0 py-1 pr-2"
-                        >
-                          <span>{task?.title}</span>
-                          <Button
-                            variant="light"
-                            color="red"
-                            size="xs"
-                            onClick={() =>
-                              handleDeleteTask(pkg.packageId, task.taskId)
-                            }
-                          >
-                            <IconTrash size={14} />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    'No Tasks'
-                  )}
-                </td>
-
-                <td className="px-2 py-0 text-center align-middle">
-                  <div className="h-full flex justify-center items-center">
-                    <Button
-                      variant="light"
-                      color="red"
-                      size="xs"
-                      onClick={() => handleDeletePackage(pkg.packageId)}
-                      className="w-full sm:w-auto"
-                    >
-                      <IconTrash size={18} />
-                    </Button>
-                  </div>
-                </td>
+      {isLoading ? (
+        <div className="flex justify-center items-center h-48">
+          <Loader
+            size="xl"
+            color={organizationConfig.organization_theme.theme.button.color}
+          />
+        </div>
+      ) : (
+        <div className="overflow-auto max-w-full shadow-lg rounded-lg">
+          <table className="w-full text-center shadow-md border table-auto">
+            <colgroup>
+              <col className="w-[5%]" />
+              <col className="w-[25%]" />
+              <col className="w-[55%]" />
+              <col className="w-[15%]" />
+            </colgroup>
+            <thead
+              className="text-xs"
+              style={{
+                backgroundColor:
+                  organizationConfig.organization_theme.theme.backgroundColor,
+                color: organizationConfig.organization_theme.theme.color,
+              }}
+            >
+              <tr>
+                <th className="p-2 border">S.No</th>
+                <th className="p-2 border">Package</th>
+                <th className="p-2 border">Tasks</th>
+                <th className="p-2 border">Actions</th>
               </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan={4} className="text-center py-4">
-                No packages available
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </Table>
+            </thead>
+
+            <tbody className="text-sm">
+              {paginatedData.length > 0 ? (
+                paginatedData.map((pkg, index) => (
+                  <tr key={pkg.packageId} className="border-b align-top">
+                    <td className="px-4 py-2 border">
+                      {(activePage - 1) * itemsPerPage + index + 1}
+                    </td>
+                    <td className="px-4 py-2 border text-left">{pkg.title}</td>
+                    <td className="px-4 py-2 border text-left">
+                      {pkg.tasks?.length > 0 ? (
+                        <div className="space-y-1">
+                          {pkg.tasks.map((task: any) => (
+                            <div
+                              key={task.taskId}
+                              className="flex items-center justify-between py-1 pr-2"
+                            >
+                              <span>{task.title}</span>
+                              <div className="flex space-x-1">
+                                <Button
+                                  variant="subtle"
+                                  size="xs"
+                                  onClick={() => handleEditTask(task)}
+                                >
+                                  <IconEdit size={14} />
+                                </Button>
+                                <Button
+                                  variant="subtle"
+                                  color="red"
+                                  size="xs"
+                                  onClick={() =>
+                                    handleDeleteTask(pkg.packageId, task.taskId)
+                                  }
+                                >
+                                  <IconTrash size={14} />
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <Text c="dimmed">No tasks</Text>
+                      )}
+                    </td>
+                    <td className="px-4 py-2 border">
+                      <Button
+                        variant="subtle"
+                        color="red"
+                        onClick={() => handleDeletePackage(pkg.packageId)}
+                      >
+                        Delete
+                      </Button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={4} className="py-4">
+                    {searchTerm ? (
+                      <Text>No matching packages or tasks found</Text>
+                    ) : (
+                      <Text>No packages assigned yet</Text>
+                    )}
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {totalPages > 1 && (
+        <div className="mt-4 flex justify-center">
+          <Pagination
+            total={totalPages}
+            value={activePage}
+            onChange={setActivePage}
+            color={organizationConfig.organization_theme.theme.button.color}
+          />
+        </div>
+      )}
+
+      {/* Edit Task Modal */}
       <Modal
         opened={editModalOpened}
         onClose={closeEditModal}
@@ -198,17 +283,22 @@ const PackagesTaskTable = ({
           />
           <Group justify="flex-end">
             <Button
-              bg={organizationConfig.organization_theme.theme.backgroundColor}
-              c={organizationConfig.organization_theme.theme.color}
               variant="outline"
               onClick={closeEditModal}
+              style={{
+                backgroundColor:
+                  organizationConfig.organization_theme.theme.backgroundColor,
+                color: organizationConfig.organization_theme.theme.color,
+              }}
             >
               Cancel
             </Button>
             <Button
-              bg={organizationConfig.organization_theme.theme.backgroundColor}
-              c={organizationConfig.organization_theme.theme.color}
-              variant="outline"
+              style={{
+                backgroundColor:
+                  organizationConfig.organization_theme.theme.backgroundColor,
+                color: organizationConfig.organization_theme.theme.color,
+              }}
               onClick={async () => {
                 if (!selectedTaskObj?._id) return;
 

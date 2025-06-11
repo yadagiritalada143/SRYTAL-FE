@@ -143,7 +143,6 @@ const PackagesFormComponent = ({
       toast.warning('Please select at least one package');
       return;
     }
-
     open();
   };
 
@@ -186,9 +185,10 @@ const PackagesFormComponent = ({
   }
 
   const employeeInfoItems = getEmployeeInfoItems(employeeDetails);
-  console.log(selectedPackage);
+
   return (
-    <BgDiv>
+    <BgDiv className="space-y-6">
+      {/* Employee Information Section */}
       <Card
         shadow="sm"
         padding="lg"
@@ -197,73 +197,92 @@ const PackagesFormComponent = ({
           backgroundColor:
             organizationConfig.organization_theme.theme.backgroundColor,
           color: organizationConfig.organization_theme.theme.color,
-          maxWidth: '100%',
-          width: '100%',
         }}
+        className="w-full"
       >
+        <Text size="lg" fw={600} className="mb-4">
+          Employee Information
+        </Text>
+
         <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="lg">
           {employeeInfoItems.map((item, index) => (
-            <div key={index} className="w-full break-words">
-              <Text size="sm">{item.label}</Text>
+            <div key={index} className="w-full break-words space-y-1">
+              <Text size="sm" c="dimmed">
+                {item.label}
+              </Text>
               <Text fw={500} className="text-base break-words">
                 {item.value || '-'}
               </Text>
             </div>
           ))}
         </SimpleGrid>
+      </Card>
 
-        <div className="mt-6">
-          <Controller
-            name="packagesInfo"
-            control={control}
-            render={({ field }) => (
-              <MultiSelect
-                data={employmentPackagesOptions.map(pkg => ({
-                  value: pkg._id,
-                  label: pkg.title,
-                }))}
-                label="Select Packages"
-                placeholder={
-                  !selectedPackages.length ? 'Choose packages to assign' : ''
-                }
-                value={
-                  Array.isArray(field.value)
-                    ? field.value.map(a => String(a).trim())
-                    : []
-                }
-                onChange={field.onChange}
-                onBlur={field.onBlur}
-                error={errors.packagesInfo?.message}
-                clearable
-                searchable
-                className="w-full"
-              />
-            )}
-          />
+      {/* Package Assignment Section */}
+      <Card
+        shadow="sm"
+        padding="lg"
+        radius="md"
+        style={{
+          backgroundColor:
+            organizationConfig.organization_theme.theme.backgroundColor,
+          color: organizationConfig.organization_theme.theme.color,
+        }}
+        className="w-full"
+      >
+        <Text size="lg" fw={600} className="mb-4">
+          Assign Packages
+        </Text>
 
-          <Group justify="flex-end" mt="md" className="mb-4">
-            <Button
-              onClick={proceedToTaskSelection}
-              disabled={selectedPackages.length === 0}
-              variant="filled"
-            >
-              Next: Select Tasks
-            </Button>
-          </Group>
-        </div>
+        <Controller
+          name="packagesInfo"
+          control={control}
+          render={({ field }) => (
+            <MultiSelect
+              data={employmentPackagesOptions.map(pkg => ({
+                value: pkg._id,
+                label: pkg.title,
+              }))}
+              label="Select Packages"
+              placeholder={
+                !selectedPackages.length ? 'Choose packages to assign' : ''
+              }
+              value={
+                Array.isArray(field.value)
+                  ? field.value.map(a => String(a).trim())
+                  : []
+              }
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              error={errors.packagesInfo?.message}
+              clearable
+              searchable
+              className="w-full"
+            />
+          )}
+        />
+
+        <Group justify="flex-end" mt="md">
+          <Button
+            onClick={proceedToTaskSelection}
+            disabled={selectedPackages.length === 0}
+            variant="filled"
+            size="md"
+          >
+            Next: Select Tasks
+          </Button>
+        </Group>
       </Card>
 
       {/* Task Selection Modal */}
       <Modal
         opened={opened}
-        onClose={() => {
-          close();
-        }}
+        onClose={close}
         size="xl"
         title={<Text fw={600}>Select Tasks for Packages</Text>}
         centered
       >
-        <ScrollArea.Autosize mah={500}>
+        <ScrollArea.Autosize mah={500} className="pr-4">
           <Stack gap="md">
             {selectedPackages.map((packageId: string) => {
               const pkg = employmentPackagesOptions.find(
@@ -282,8 +301,13 @@ const PackagesFormComponent = ({
                   radius="md"
                   withBorder
                 >
-                  <div className="flex justify-between items-center w-full ">
-                    <Text fw={500}>{pkg.title}</Text>
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 w-full">
+                    <div>
+                      <Text fw={500}>{pkg.title}</Text>
+                      <Text size="sm" c="dimmed">
+                        {selectedCount} of {taskCount} tasks selected
+                      </Text>
+                    </div>
                     <Button
                       bg={
                         organizationConfig.organization_theme.theme
@@ -294,13 +318,11 @@ const PackagesFormComponent = ({
                         openTask();
                         setSelectedPackage(packageId);
                       }}
+                      size="sm"
                     >
                       Add Task
                     </Button>
                   </div>
-                  <Text size="sm" c="dimmed">
-                    {selectedCount} of {taskCount} tasks selected
-                  </Text>
 
                   <div className="mt-3 space-y-2">
                     {pkg.tasks?.length ? (
@@ -315,12 +337,12 @@ const PackagesFormComponent = ({
                             onChange={() =>
                               handleTaskToggle(packageId, task._id)
                             }
-                            className=" p-1 rounded"
+                            className="p-1 rounded hover:bg-gray-50"
                           />
                         ))}
                       </Stack>
                     ) : (
-                      <Text size="sm" mt="sm">
+                      <Text size="sm" mt="sm" c="dimmed">
                         No tasks available in this package
                       </Text>
                     )}
@@ -349,6 +371,7 @@ const PackagesFormComponent = ({
         opened={openedAddTask}
         onClose={closeTask}
         title={<Text fw={600}>Add Task for Package</Text>}
+        size="lg"
       >
         <AddTasksPackage
           organizationConfig={organizationConfig}
@@ -364,15 +387,25 @@ const PackagesFormComponent = ({
         />
       </Modal>
 
-      {/* Packages Task Table */}
-      <div className="mt-6">
-        <PackagesTaskTable
-          organizationConfig={organizationConfig}
-          selectedPackagesData={selectedPackagesData}
-          tasks={tasks}
-          employeeId={selectedPackagesData?.employeeId || ''}
-        />
-      </div>
+      {/* Assigned Packages Table */}
+      {selectedPackagesData && (
+        <div className="w-full p-4 shadow-sm rounded-md">
+          <Text
+            c={organizationConfig.organization_theme.theme.backgroundColor}
+            size="lg"
+            fw={600}
+            className="mb-4"
+          >
+            Assigned Packages & Tasks
+          </Text>
+          <PackagesTaskTable
+            organizationConfig={organizationConfig}
+            selectedPackagesData={selectedPackagesData}
+            tasks={tasks}
+            employeeId={selectedPackagesData?.employeeId || ''}
+          />
+        </div>
+      )}
     </BgDiv>
   );
 };
