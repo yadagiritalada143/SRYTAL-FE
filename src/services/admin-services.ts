@@ -239,6 +239,28 @@ export const deleteTaskByAdmin = async (
   }
 };
 
+export const deleteEmployeePackagesByAdmin = async (
+  employeeId: string,
+  packageId: string
+) => {
+  const token = localStorage.getItem('token');
+  try {
+    const response = await apiClient.delete(
+      `/admin/deleteEmployeePackagesByAdmin`,
+      {
+        headers: { auth_token: `Bearer ${token}` },
+        data: {
+          employeeId,
+          packageId,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const deletePoolCandidatesByAdmin = async (data: {
   candidateId: string;
   confirmDelete: boolean;
@@ -340,6 +362,29 @@ export const getPackageDetailsByAdmin = async (packageId: string) => {
   }
 };
 
+export const getEmployeePackagesByAdmin = async (employeeId: string) => {
+  const token = localStorage.getItem('token');
+  try {
+    if (!token) {
+      throw 'Not authorized to access';
+    }
+    const response = await apiClient.get(
+      `/admin/getEmployeePackagesByAdmin/${employeeId}`,
+      {
+        headers: { auth_token: token },
+      }
+    );
+
+    if (!response.data.employeePackageDetails.length) {
+      return [];
+    }
+
+    return response.data.employeePackageDetails[0].packages;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getAllBloodGroupByAdmin = async () => {
   const token = localStorage.getItem('token');
   try {
@@ -406,8 +451,9 @@ export const addEmployeeRoleByAdmin = async (data: { designation: string }) => {
 
 export const addPackagetoEmployeeByAdmin = async (data: any) => {
   const token = localStorage.getItem('token');
-  if (!token) throw new Error('Not authorized');
-
+  if (!token) {
+    throw new Error('Not authorized');
+  }
   try {
     const response = await apiClient.post(
       '/admin/addPackagetoEmployeeByAdmin',

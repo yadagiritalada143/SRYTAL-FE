@@ -53,185 +53,231 @@
 // ];
 
 export const data = [
+  // Project 1 - Web Development
   {
-    project_id: "Srytal",
-    activities: [
-      {
-        task_id: "Some task tadsafweoifjawoeifj",
-        days: [
-          {
-            date: "01-11-2024",
-            hours: 10,
-          },
-          {
-            date: "05-11-2024",
-            hours: 10,
-          },
-          {
-            date: "03-11-2024",
-            hours: 10,
-          },
-          {
-            date: "08-13-2024",
-            hours: 10,
-          },
-        ],
-      },
-      {
-        task_id: "Some task 2",
-        days: [
-          {
-            date: "10-10-2024",
-            hours: 10,
-          },
-          {
-            date: "10-11-2024",
-            hours: 10,
-          },
-          {
-            date: "10-12-2024",
-            hours: 10,
-          },
-          {
-            date: "10-13-2024",
-            hours: 10,
-          },
-          {
-            date: "10-14-2024",
-            hours: 10,
-          },
-        ],
-      },
-      {
-        task_id: "Some task 8",
-        days: [
-          {
-            date: "10-10-2024",
-            hours: 10,
-          },
-          {
-            date: "10-11-2024",
-            hours: 10,
-          },
-          {
-            date: "10-12-2024",
-            hours: 10,
-          },
-          {
-            date: "10-13-2024",
-            hours: 10,
-          },
-          {
-            date: "10-14-2024",
-            hours: 10,
-          },
-        ],
-      },
-      {
-        task_id: "Some task 1",
-        days: [
-          {
-            date: "10-10-2024",
-            hours: 10,
-          },
-          {
-            date: "10-11-2024",
-            hours: 10,
-          },
-          {
-            date: "10-12-2024",
-            hours: 10,
-          },
-          {
-            date: "10-13-2024",
-            hours: 10,
-          },
-          {
-            date: "10-14-2024",
-            hours: 10,
-          },
-        ],
-      },
-    ],
+    date: '01-06-2025',
+    isLeave: false,
+    isHoliday: false,
+    isWeekOff: false,
+    project_id: 'P1001',
+    task_id: 'T1001',
+    project_name: 'Website Redesign',
+    task_name: 'Frontend Development',
+    hours: 4,
   },
   {
-    project_id: "Data",
-    activities: [
-      {
-        task_id: "Some task",
-        days: [
-          {
-            date: "10-10-2024",
-            hours: 10,
-          },
-          {
-            date: "10-11-2024",
-            hours: 10,
-          },
-          {
-            date: "10-12-2024",
-            hours: 10,
-          },
-          {
-            date: "10-13-2024",
-            hours: 10,
-          },
-          {
-            date: "10-14-2024",
-            hours: 10,
-          },
-        ],
-      },
-      {
-        task_id: "Some task 2",
-        days: [
-          {
-            date: "10-10-2024",
-            hours: 10,
-          },
-          {
-            date: "10-11-2024",
-            hours: 10,
-          },
-          {
-            date: "10-12-2024",
-            hours: 10,
-          },
-          {
-            date: "10-13-2024",
-            hours: 10,
-          },
-          {
-            date: "10-14-2024",
-            hours: 10,
-          },
-        ],
-      },
-      {
-        task_id: "Some task 1",
-        days: [
-          {
-            date: "10-10-2024",
-            hours: 10,
-          },
-          {
-            date: "10-11-2024",
-            hours: 10,
-          },
-          {
-            date: "10-12-2024",
-            hours: 10,
-          },
-          {
-            date: "10-13-2024",
-            hours: 10,
-          },
-          {
-            date: "10-14-2024",
-            hours: 10,
-          },
-        ],
-      },
-    ],
+    date: '01-06-2025',
+    isLeave: false,
+    isHoliday: false,
+    isWeekOff: false,
+    project_id: 'P1001',
+    task_id: 'T1002',
+    project_name: 'Website Redesign',
+    task_name: 'Backend API',
+    hours: 3,
+  },
+  {
+    date: '01-06-2025',
+    isLeave: false,
+    isHoliday: false,
+    isWeekOff: false,
+    project_id: 'P1001',
+    task_id: 'T1003',
+    project_name: 'Website Redesign',
+    task_name: 'Database Design',
+    hours: 1,
+  },
+  {
+    date: '02-06-2025',
+    isLeave: false,
+    isHoliday: false,
+    isWeekOff: false,
+    project_id: 'P1001',
+    task_id: 'T1001',
+    project_name: 'Website Redesign',
+    task_name: 'Frontend Development',
+    hours: 6,
+  },
+  {
+    date: '02-06-2025',
+    isLeave: false,
+    isHoliday: false,
+    isWeekOff: false,
+    project_id: 'P1001',
+    task_id: 'T1002',
+    project_name: 'Website Redesign',
+    task_name: 'Backend API',
+    hours: 2,
+  },
+  {
+    date: '03-06-2025',
+    isLeave: false,
+    isHoliday: false,
+    isWeekOff: true,
+    project_id: 'P1001',
+    task_id: 'T1001',
+    project_name: 'Website Redesign',
+    task_name: 'Frontend Development',
+    hours: 0,
+  },
+
+  // Project 2 - Mobile App
+  {
+    date: '01-06-2025',
+    isLeave: false,
+    isHoliday: false,
+    isWeekOff: false,
+    project_id: 'P1002',
+    task_id: 'T2001',
+    project_name: 'Mobile App',
+    task_name: 'UI Design',
+    hours: 2,
+  },
+  {
+    date: '02-06-2025',
+    isLeave: false,
+    isHoliday: false,
+    isWeekOff: false,
+    project_id: 'P1002',
+    task_id: 'T2001',
+    project_name: 'Mobile App',
+    task_name: 'UI Design',
+    hours: 3,
+  },
+  {
+    date: '02-06-2025',
+    isLeave: false,
+    isHoliday: false,
+    isWeekOff: false,
+    project_id: 'P1002',
+    task_id: 'T2002',
+    project_name: 'Mobile App',
+    task_name: 'API Integration',
+    hours: 5,
+  },
+  {
+    date: '03-06-2025',
+    isLeave: false,
+    isHoliday: false,
+    isWeekOff: true,
+    project_id: 'P1002',
+    task_id: 'T2003',
+    project_name: 'Mobile App',
+    task_name: 'Testing',
+    hours: 0,
+  },
+  {
+    date: '04-06-2025',
+    isLeave: false,
+    isHoliday: false,
+    isWeekOff: false,
+    project_id: 'P1002',
+    task_id: 'T2003',
+    project_name: 'Mobile App',
+    task_name: 'Testing',
+    hours: 7,
+  },
+
+  // Project 3 - Marketing
+  {
+    date: '01-06-2025',
+    isLeave: true,
+    isHoliday: false,
+    isWeekOff: false,
+    project_id: 'P1003',
+    task_id: 'T3001',
+    project_name: 'Marketing Campaign',
+    task_name: 'Content Creation',
+    hours: 0,
+  },
+  {
+    date: '02-06-2025',
+    isLeave: false,
+    isHoliday: false,
+    isWeekOff: false,
+    project_id: 'P1003',
+    task_id: 'T3001',
+    project_name: 'Marketing Campaign',
+    task_name: 'Content Creation',
+    hours: 4,
+  },
+  {
+    date: '02-06-2025',
+    isLeave: false,
+    isHoliday: false,
+    isWeekOff: false,
+    project_id: 'P1003',
+    task_id: 'T3002',
+    project_name: 'Marketing Campaign',
+    task_name: 'Social Media',
+    hours: 3,
+  },
+  {
+    date: '03-06-2025',
+    isLeave: false,
+    isHoliday: false,
+    isWeekOff: true,
+    project_id: 'P1003',
+    task_id: 'T3002',
+    project_name: 'Marketing Campaign',
+    task_name: 'Social Media',
+    hours: 0,
+  },
+  {
+    date: '04-06-2025',
+    isLeave: false,
+    isHoliday: false,
+    isWeekOff: false,
+    project_id: 'P1003',
+    task_id: 'T3003',
+    project_name: 'Marketing Campaign',
+    task_name: 'Email Campaign',
+    hours: 6,
+  },
+
+  // Project 4 - Internal
+  {
+    date: '01-06-2025',
+    isLeave: false,
+    isHoliday: false,
+    isWeekOff: false,
+    project_id: 'P1004',
+    task_id: 'T4001',
+    project_name: 'Internal Training',
+    task_name: 'React Workshop',
+    hours: 8,
+  },
+  {
+    date: '02-06-2025',
+    isLeave: false,
+    isHoliday: false,
+    isWeekOff: false,
+    project_id: 'P1004',
+    task_id: 'T4002',
+    project_name: 'Internal Training',
+    task_name: 'Database Optimization',
+    hours: 3,
+  },
+  {
+    date: '03-06-2025',
+    isLeave: false,
+    isHoliday: false,
+    isWeekOff: false,
+    project_id: 'P1004',
+    task_id: 'T4002',
+    project_name: 'Internal Training',
+    task_name: 'Database Optimization',
+    hours: 0,
+  },
+  {
+    date: '06-06-2025',
+    isLeave: true,
+    isHoliday: false,
+    isWeekOff: false,
+    project_id: '',
+    task_id: '',
+    project_name: '',
+    task_name: '',
+    hours: 5,
   },
 ];
