@@ -227,7 +227,7 @@ export const deleteTaskByAdmin = async (
   const token = localStorage.getItem('token');
   try {
     const response = await apiClient.delete(
-      `/admin/deleteTaskByAdmin/${taskId}`,
+      `/admin/deleteEmployeeTaskByAdmin/${taskId}`,
       {
         headers: { auth_token: `Bearer ${token}` },
         data: { confirmDelete: hardDelete },
@@ -252,6 +252,30 @@ export const deleteEmployeePackagesByAdmin = async (
         data: {
           employeeId,
           packageId,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const deleteEmployeeTasksByAdmin = async (
+  employeeId: string,
+  packageId: string,
+  taskId: string
+) => {
+  const token = localStorage.getItem('token');
+  try {
+    const response = await apiClient.delete(
+      `/admin/deleteEmployeeTaskByAdmin`,
+      {
+        headers: { auth_token: `Bearer ${token}` },
+        data: {
+          employeeId,
+          packageId,
+          taskId,
         },
       }
     );

@@ -239,10 +239,12 @@ const PackagesFormComponent = ({
           control={control}
           render={({ field }) => (
             <MultiSelect
-              data={employmentPackagesOptions.map(pkg => ({
-                value: pkg._id,
-                label: pkg.title,
-              }))}
+              data={
+                employmentPackagesOptions?.map(pkg => ({
+                  value: pkg._id,
+                  label: pkg.title,
+                })) || []
+              }
               label="Select Packages"
               placeholder={
                 !selectedPackages.length ? 'Choose packages to assign' : ''
@@ -285,7 +287,7 @@ const PackagesFormComponent = ({
         <ScrollArea.Autosize mah={500} className="pr-4">
           <Stack gap="md">
             {selectedPackages.map((packageId: string) => {
-              const pkg = employmentPackagesOptions.find(
+              const pkg = employmentPackagesOptions?.find(
                 p => p._id === packageId
               );
               if (!pkg) return null;
@@ -402,7 +404,7 @@ const PackagesFormComponent = ({
             organizationConfig={organizationConfig}
             selectedPackagesData={selectedPackagesData}
             tasks={tasks}
-            employeeId={selectedPackagesData?.employeeId || ''}
+            employeeId={employeeId}
           />
         </div>
       )}
