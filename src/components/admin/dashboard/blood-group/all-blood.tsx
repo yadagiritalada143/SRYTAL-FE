@@ -1,28 +1,30 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from 'react';
 import {
   Button,
   Group,
   Text,
   Loader,
   Pagination,
-  Modal,
   Box,
   TextInput,
-} from "@mantine/core";
-import { toast } from "react-toastify";
-import { useDisclosure } from "@mantine/hooks";
-import { IconEdit } from "@tabler/icons-react";
+  Title,
+} from '@mantine/core';
+import { toast } from 'react-toastify';
+import { useDisclosure } from '@mantine/hooks';
+import { IconEdit } from '@tabler/icons-react';
 import {
   getAllBloodGroupByAdmin,
   addBloodGroupByAdmin,
   updateBloodGroupByAdmin,
   deleteBloodGroupByAdmin,
-} from "../../../../services/admin-services";
-import { useRecoilState, useRecoilValue } from "recoil";
-import { organizationThemeAtom } from "../../../../atoms/organization-atom";
-import { useMantineTheme } from "@mantine/core";
-import { SearchBarFullWidht } from "../../../common/search-bar/search-bar";
-import { bloodGroupAtom } from "../../../../atoms/bloodgroup-atom";
+} from '../../../../services/admin-services';
+import { useRecoilState, useRecoilValue } from 'recoil';
+import { organizationThemeAtom } from '../../../../atoms/organization-atom';
+import { useMantineTheme } from '@mantine/core';
+import { SearchBarFullWidht } from '../../../common/search-bar/search-bar';
+import { bloodGroupAtom } from '../../../../atoms/bloodgroup-atom';
+import { StandardModal } from '../../../UI/Models/base-model';
+import { useCustomToast } from '../../../../utils/common/toast';
 
 const BloodGroupTable = () => {
   const [bloodGroups, setBloodGroups] = useRecoilState(bloodGroupAtom);
@@ -30,10 +32,11 @@ const BloodGroupTable = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [activePage, setActivePage] = useState(1);
   const [selectedGroup, setSelectedGroup] = useState<any | null>(null);
-  const [newGroupName, setNewGroupName] = useState("");
+  const [newGroupName, setNewGroupName] = useState('');
   const organizationConfig = useRecoilValue(organizationThemeAtom);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const theme = useMantineTheme();
+  const { showSuccessToast } = useCustomToast();
 
   const [editModalOpened, { open: openEditModal, close: closeEditModal }] =
     useDisclosure(false);
@@ -44,7 +47,19 @@ const BloodGroupTable = () => {
   const [addModalOpened, { open: openAddModal, close: closeAddModal }] =
     useDisclosure(false);
 
-  // Fetch blood groups on mount
+  const fetchBloodGroups = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const data = await getAllBloodGroupByAdmin();
+      setBloodGroups(data);
+      setFilteredBloodGroups(data);
+    } catch {
+      toast.error('Failed to fetch blood groups');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [setBloodGroups]);
+
   useEffect(() => {
     if (bloodGroups.length === 0) {
       fetchBloodGroups();
@@ -52,21 +67,7 @@ const BloodGroupTable = () => {
       setFilteredBloodGroups(bloodGroups);
       setIsLoading(false);
     }
-  }, []);
-
-  const fetchBloodGroups = async () => {
-    setIsLoading(true);
-    try {
-      const data = await getAllBloodGroupByAdmin();
-      setBloodGroups(data);
-      setFilteredBloodGroups(data);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
-      toast.error("Failed to fetch blood groups");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [bloodGroups, fetchBloodGroups]);
 
   const handleEdit = (group: any) => {
     setSelectedGroup(group);
@@ -82,12 +83,11 @@ const BloodGroupTable = () => {
     setIsLoading(true);
     try {
       await updateBloodGroupByAdmin(selectedGroup.id, selectedGroup.type);
-      toast.success("Blood group updated successfully");
+      showSuccessToast('Blood group updated successfully');
       fetchBloodGroups();
       closeEditModal();
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
-      toast.error("Failed to update blood group");
+    } catch {
+      toast.error('Failed to update blood group');
     } finally {
       setIsLoading(false);
     }
@@ -98,13 +98,12 @@ const BloodGroupTable = () => {
     setIsLoading(true);
     try {
       await deleteBloodGroupByAdmin(selectedGroup.id);
-      toast.success("Blood group deleted successfully");
+      showSuccessToast('Blood group deleted successfully');
       fetchBloodGroups();
       closeDeleteModal();
       closeEditModal();
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
-      toast.error("Failed to delete blood group");
+    } catch {
+      toast.error('Failed to delete blood group');
     } finally {
       setIsLoading(false);
     }
@@ -115,13 +114,12 @@ const BloodGroupTable = () => {
     setIsLoading(true);
     try {
       await addBloodGroupByAdmin({ type: newGroupName });
-      toast.success("Blood group added successfully");
+      showSuccessToast('Blood group added successfully');
       fetchBloodGroups();
       closeAddModal();
-      setNewGroupName("");
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
-      toast.error("Failed to add blood group");
+      setNewGroupName('');
+    } catch {
+      toast.error('Failed to add blood group');
     } finally {
       setIsLoading(false);
     }
@@ -139,7 +137,7 @@ const BloodGroupTable = () => {
     const query = e.target.value;
     setSearch(query);
 
-    const filtered = bloodGroups.filter((blood) => {
+    const filtered = bloodGroups.filter(blood => {
       blood.type.toString().toLowerCase();
       blood.type.toString().trim();
       return (
@@ -231,21 +229,17 @@ const BloodGroupTable = () => {
         )}
       </div>
 
-      <Modal
+      <StandardModal
         opened={addModalOpened}
         onClose={closeAddModal}
-        title={
-          <Text className="text-center font-bold text-xl">
-            Add New Blood Group
-          </Text>
-        }
-        centered
+        forceAction={false}
+        title={<Title order={3}>Add New Blood Group</Title>}
       >
         <Box>
           <TextInput
             label="Blood Group Name"
             value={newGroupName}
-            onChange={(e) => setNewGroupName(e.target.value)}
+            onChange={e => setNewGroupName(e.target.value)}
             placeholder="Enter blood group name"
             required
             mb="md"
@@ -269,8 +263,8 @@ const BloodGroupTable = () => {
             </Button>
           </Group>
         </Box>
-      </Modal>
-      <Modal
+      </StandardModal>
+      <StandardModal
         opened={editModalOpened}
         onClose={closeEditModal}
         title={
@@ -283,8 +277,8 @@ const BloodGroupTable = () => {
         <Box>
           <TextInput
             label="Blood Group Name"
-            value={selectedGroup?.type || ""}
-            onChange={(e) =>
+            value={selectedGroup?.type || ''}
+            onChange={e =>
               setSelectedGroup({ ...selectedGroup, type: e.target.value })
             }
             required
@@ -312,14 +306,14 @@ const BloodGroupTable = () => {
             </Button>
           </Group>
         </Box>
-      </Modal>
-      <Modal
+      </StandardModal>
+      <StandardModal
         opened={deleteModalOpened}
         onClose={closeDeleteModal}
         title={
-          <Text className="text-center font-bold text-xl">
-            Delete Blood Group
-          </Text>
+          <Title order={3} c="red">
+            Delete Action
+          </Title>
         }
         centered
       >
@@ -337,7 +331,7 @@ const BloodGroupTable = () => {
             Delete
           </Button>
         </Group>
-      </Modal>
+      </StandardModal>
     </div>
   );
 };

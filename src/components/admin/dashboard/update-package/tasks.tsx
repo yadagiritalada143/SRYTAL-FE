@@ -1,5 +1,4 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -8,17 +7,18 @@ import {
   Table,
   TextInput,
   Text,
-} from "@mantine/core";
-import { OrganizationConfig } from "../../../../interfaces/organization";
-import moment from "moment";
-import { IconEdit, IconTrash } from "@tabler/icons-react";
+} from '@mantine/core';
+import { OrganizationConfig } from '../../../../interfaces/organization';
+import moment from 'moment';
+import { IconEdit, IconTrash } from '@tabler/icons-react';
 import {
   deleteTaskByAdmin,
   updateTaskByAdmin,
-} from "../../../../services/admin-services";
-import { toast } from "react-toastify";
-import { DeleteTaskModel } from "./delete-task";
-import { useDisclosure } from "@mantine/hooks";
+} from '../../../../services/admin-services';
+import { toast } from 'react-toastify';
+import { DeleteTaskModel } from './delete-task';
+import { useDisclosure } from '@mantine/hooks';
+import { useCustomToast } from '../../../../utils/common/toast';
 
 const PackageTasksTable = ({
   tasks = [],
@@ -30,14 +30,14 @@ const PackageTasksTable = ({
   fetchPackageDetails: () => void;
 }) => {
   const [opened, { open, close }] = useDisclosure(false);
-  const navigate = useNavigate();
   const [taskList, setTaskList] = useState([...tasks]);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
-  const [selectedTask, setSelectedTask] = useState("");
+  const [selectedTask, setSelectedTask] = useState('');
   const [selectedTaskObj, setSelectedTaskObj] = useState<any>(null);
   const [editModalOpened, { open: openEditModal, close: closeEditModal }] =
     useDisclosure(false);
+  const { showSuccessToast } = useCustomToast();
 
   useEffect(() => {
     setTaskList(tasks);
@@ -46,17 +46,15 @@ const PackageTasksTable = ({
   const handleDeleteTask = async (taskId: string, hardDelete: boolean) => {
     try {
       await deleteTaskByAdmin(taskId, hardDelete);
-      setTaskList((prevTasks) =>
-        prevTasks.filter((task) => task._id !== taskId)
-      );
+      setTaskList(prevTasks => prevTasks.filter(task => task._id !== taskId));
       setConfirmDelete(false);
       setAgreeTerms(false);
       close();
-      toast.success("Task deleted successfully");
+      showSuccessToast('Task deleted successfully');
       fetchPackageDetails();
     } catch (error) {
-      console.error("Error deleting task:", error);
-      toast.error("Failed to delete task");
+      console.error('Error deleting task:', error);
+      toast.error('Failed to delete task');
     }
   };
 
@@ -99,11 +97,11 @@ const PackageTasksTable = ({
                 <td className="px-4 py-2 border-r">{index + 1}</td>
                 <td className="px-4 py-2 border-r">{task.title}</td>
                 <td className="px-4 py-2 border-r">
-                  {task?.createdBy?.firstName || ""}{" "}
-                  {task?.createdBy?.lastName || ""}
+                  {task?.createdBy?.firstName || ''}{' '}
+                  {task?.createdBy?.lastName || ''}
                 </td>
                 <td className="px-4 py-2 border-r">
-                  {moment(task.createdAt).format("MMMM Do YYYY, h:mm A")}
+                  {moment(task.createdAt).format('MMMM Do YYYY, h:mm A')}
                 </td>
                 <td className="px-4 py-2 text-center">
                   <div className="flex flex-wrap justify-center gap-2 sm:flex-nowrap">
@@ -153,8 +151,8 @@ const PackageTasksTable = ({
         <Box>
           <TextInput
             label="Task Name"
-            value={selectedTaskObj?.title || ""}
-            onChange={(e) =>
+            value={selectedTaskObj?.title || ''}
+            onChange={e =>
               setSelectedTaskObj({ ...selectedTaskObj, title: e.target.value })
             }
             required
@@ -181,10 +179,10 @@ const PackageTasksTable = ({
                     selectedTaskObj._id,
                     selectedTaskObj.title
                   );
-                  toast.success("Task updated successfully");
+                  showSuccessToast('Task updated successfully');
 
-                  setTaskList((prev) =>
-                    prev.map((task) =>
+                  setTaskList(prev =>
+                    prev.map(task =>
                       task._id === selectedTaskObj._id
                         ? { ...task, title: selectedTaskObj.title }
                         : task
@@ -195,7 +193,7 @@ const PackageTasksTable = ({
                   closeEditModal();
                 } catch (err) {
                   console.error(err);
-                  toast.error("Failed to update task");
+                  toast.error('Failed to update task');
                 }
               }}
             >

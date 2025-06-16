@@ -1,50 +1,42 @@
 import {
-  Container,
   Group,
   Button,
   TextInput,
-  Grid,
   NumberInput,
   Chip,
   Input,
-  Modal,
   Checkbox,
   Title,
-} from "@mantine/core";
-import { useCustomToast } from "../../../../utils/common/toast";
-import { useEffect, useState } from "react";
+} from '@mantine/core';
+import { useCustomToast } from '../../../../utils/common/toast';
+import { useEffect, useState } from 'react';
 import {
   UpdateCandidateSchema,
   updateCandidateSchema,
-} from "../../../../forms/add-candidate";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Controller, useForm } from "react-hook-form";
+} from '../../../../forms/add-candidate';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Controller, useForm } from 'react-hook-form';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
-  useNavigate,
-  //  useNavigate,
-  useParams,
-} from "react-router-dom";
-import {
-  // addPoolCandidateByRecruiter,
   getPoolCandidateByRecruiter,
   updatePoolCandidateByRecruiter,
-} from "../../../../services/user-services";
-import { toast } from "react-toastify";
-// import { organizationEmployeeUrls } from "../../../../utils/common/constants";
-import { organizationThemeAtom } from "../../../../atoms/organization-atom";
-import { useRecoilValue } from "recoil";
-import { PoolCandidatesComments } from "../../../../interfaces/candidate";
-import { BgDiv } from "../../../common/style-components/bg-div";
-import { organizationAdminUrls } from "../../../../utils/common/constants";
-import AddComment from "./add-comment";
-import CommentsTable from "./comments-table";
-import { useDisclosure } from "@mantine/hooks";
-import { deletePoolCandidatesByAdmin } from "../../../../services/admin-services";
-import { BackButton } from "../../../common/style-components/buttons";
+} from '../../../../services/user-services';
+import { toast } from 'react-toastify';
+import { organizationThemeAtom } from '../../../../atoms/organization-atom';
+import { useRecoilValue } from 'recoil';
+import { PoolCandidatesComments } from '../../../../interfaces/candidate';
+import { BgDiv } from '../../../common/style-components/bg-div';
+import { organizationAdminUrls } from '../../../../utils/common/constants';
+import AddComment from './add-comment';
+import CommentsTable from './comments-table';
+import { useDisclosure } from '@mantine/hooks';
+import { deletePoolCandidatesByAdmin } from '../../../../services/admin-services';
+import { BackButton } from '../../../common/style-components/buttons';
+import { StandardModal } from '../../../UI/Models/base-model';
 
 const UpdatePoolCandidateForm = () => {
   const [skills, setSkills] = useState<string[]>([]);
-  const [skillInput, setSkillInput] = useState("");
+  const [skillInput, setSkillInput] = useState('');
   const [loading, setLoading] = useState(true);
   const [comments, setComments] = useState<PoolCandidatesComments[]>([]);
   const organizationConfig = useRecoilValue(organizationThemeAtom);
@@ -70,13 +62,13 @@ const UpdatePoolCandidateForm = () => {
   useEffect(() => {
     if (candidateId) {
       getPoolCandidateByRecruiter(candidateId)
-        .then((data) => {
+        .then(data => {
           setComments(data.comments);
-          setSkills(data.evaluatedSkills.split(","));
+          setSkills(data.evaluatedSkills.split(','));
           reset(data);
         })
         .catch(() => {
-          toast.error("Failed to fetch candidate details.");
+          toast.error('Failed to fetch candidate details.');
         })
         .finally(() => setLoading(false));
     }
@@ -89,7 +81,7 @@ const UpdatePoolCandidateForm = () => {
     };
     deletePoolCandidatesByAdmin(payload)
       .then(() => {
-        showSuccessToast("Candidate deleted successfully!");
+        showSuccessToast('Candidate deleted successfully!');
         navigate(
           `${organizationAdminUrls(
             organizationConfig.organization_name
@@ -97,34 +89,34 @@ const UpdatePoolCandidateForm = () => {
         );
       })
       .catch((error: { response?: { data?: { message?: string } } }) => {
-        toast.error(error.response?.data?.message || "Something went wrong");
+        toast.error(error.response?.data?.message || 'Something went wrong');
       });
   };
 
   const handleSkillAdd = () => {
     if (skillInput.trim() && !skills.includes(skillInput.trim())) {
       setSkills([...skills, skillInput.trim()]);
-      setSkillInput("");
+      setSkillInput('');
     }
   };
 
   const handleSkillRemove = (skillToRemove: string) => {
-    setSkills(skills.filter((skill) => skill !== skillToRemove));
+    setSkills(skills.filter(skill => skill !== skillToRemove));
   };
 
   const handleUpdateCandidate = (data: UpdateCandidateSchema) => {
     if (skills.length) {
-      data.evaluatedSkills = skills.join(",");
+      data.evaluatedSkills = skills.join(',');
     }
     data.id = candidateId;
     updatePoolCandidateByRecruiter(data)
       .then(() => {
-        toast.success("Candidate updated successfully!");
+        toast.success('Candidate updated successfully!');
 
         navigate(-1);
       })
       .catch(() => {
-        toast.error("Failed to update candidate.");
+        toast.error('Failed to update candidate.');
       });
   };
 
@@ -137,8 +129,8 @@ const UpdatePoolCandidateForm = () => {
       <BgDiv>
         <form
           onSubmit={handleSubmit(handleUpdateCandidate)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") e.preventDefault();
+          onKeyDown={e => {
+            if (e.key === 'Enter') e.preventDefault();
           }}
           style={{
             backgroundColor:
@@ -217,8 +209,8 @@ const UpdatePoolCandidateForm = () => {
                     min={0}
                     className="w-full sm:w-1/2 md:w-full"
                     error={
-                      field.value > getValues("totalYearsOfExperience")
-                        ? "Relevant experience cannot be more than total experience"
+                      field.value > getValues('totalYearsOfExperience')
+                        ? 'Relevant experience cannot be more than total experience'
                         : errors.relaventYearsOfExperience?.message
                     }
                   />
@@ -230,15 +222,15 @@ const UpdatePoolCandidateForm = () => {
                 <Group>
                   <TextInput
                     value={skillInput}
-                    onChange={(e) => setSkillInput(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleSkillAdd()}
+                    onChange={e => setSkillInput(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && handleSkillAdd()}
                     className="flex-1"
                   />
                   <Button onClick={handleSkillAdd}>Add Skill</Button>
                 </Group>
               </Input.Wrapper>
               <Group mt="md">
-                {skills.map((skill) => (
+                {skills.map(skill => (
                   <Chip key={skill} onClick={() => handleSkillRemove(skill)}>
                     {skill} ✖
                   </Chip>
@@ -251,7 +243,7 @@ const UpdatePoolCandidateForm = () => {
             <div className="my-4 flex flex-col sm:flex-row justify-between gap-4 sm:items-center">
               <button
                 className="bg-red-500 text-white py-2 px-4 rounded w-full sm:w-auto"
-                onClick={(e) => {
+                onClick={e => {
                   e.preventDefault();
                   open();
                 }}
@@ -263,16 +255,25 @@ const UpdatePoolCandidateForm = () => {
                 disabled={isSubmitting}
                 className="w-full sm:w-auto"
               >
-                {isSubmitting ? "Updating..." : "Update Candidate"}
+                {isSubmitting ? 'Updating...' : 'Update Candidate'}
               </Button>
             </div>
           </div>
         </form>
       </BgDiv>
-      <Modal size="md" opened={opened} onClose={close}>
+      <StandardModal
+        title={
+          <Title order={3} c="red">
+            Delete Action
+          </Title>
+        }
+        size="md"
+        opened={opened}
+        onClose={close}
+      >
         <div>
           <h2 className="font-bold text-lg">
-            Sure want to delete this Candidate?{" "}
+            Sure want to delete this Candidate?{' '}
           </h2>
           <p className="mt-4 font-bold">
             Please be aware of doing this action! Deleting candidate is an
@@ -282,13 +283,13 @@ const UpdatePoolCandidateForm = () => {
             <Checkbox
               label="I understand what are the consequences of doing this action!"
               checked={confirmDelete}
-              onChange={(e) => setConfirmDelete(e.currentTarget.checked)}
+              onChange={e => setConfirmDelete(e.currentTarget.checked)}
               required
             />
             <Checkbox
               label="I understand that this employee details are not a part of our application forever. I agreed to the Terms and Conditions to perform this action"
               checked={agreeTerms}
-              onChange={(e) => setAgreeTerms(e.currentTarget.checked)}
+              onChange={e => setAgreeTerms(e.currentTarget.checked)}
             />
           </div>
           <div className=" flex flex-wrap justify-between mt-8">
@@ -302,7 +303,7 @@ const UpdatePoolCandidateForm = () => {
             <Button onClick={close}>Cancel</Button>
           </div>
         </div>
-      </Modal>
+      </StandardModal>
 
       <AddComment
         organizationConfig={organizationConfig}

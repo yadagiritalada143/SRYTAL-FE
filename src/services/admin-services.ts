@@ -227,7 +227,7 @@ export const deleteTaskByAdmin = async (
   const token = localStorage.getItem('token');
   try {
     const response = await apiClient.delete(
-      `/admin/deleteEmployeeTaskByAdmin/${taskId}`,
+      `/admin/deleteTaskByAdmin/${taskId}`,
       {
         headers: { auth_token: `Bearer ${token}` },
         data: { confirmDelete: hardDelete },

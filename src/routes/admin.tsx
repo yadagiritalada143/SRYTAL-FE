@@ -73,6 +73,40 @@ const AdminRoutes = () => {
           },
         }),
       },
+      Modal: {
+        styles: () => ({
+          title: {
+            fontWeight: 600,
+            fontSize: '1.25rem',
+            color: organizationConfig.organization_theme.theme.color,
+          },
+          header: {
+            backgroundColor:
+              organizationConfig.organization_theme.theme.headerBackgroundColor,
+            borderBottom: `1px solid ${organizationConfig.organization_theme.theme.borderColor}`,
+          },
+          content: {
+            backgroundColor:
+              organizationConfig.organization_theme.theme.backgroundColor,
+            color: organizationConfig.organization_theme.theme.color,
+          },
+          close: {
+            color: organizationConfig.organization_theme.theme.color,
+            '&:hover': {
+              backgroundColor: 'transparent',
+              color: organizationConfig.organization_theme.theme.linkColor,
+            },
+          },
+        }),
+        defaultProps: {
+          radius: 'md',
+          shadow: 'xl',
+          padding: 'xl',
+          size: '600px',
+          overlayBlur: 3,
+          overlayOpacity: 0.7,
+        },
+      },
       Menu: {
         styles: () => ({
           dropdown: {
