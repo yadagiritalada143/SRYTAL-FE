@@ -9,20 +9,20 @@ export const employeeDetailsAtom = atom<EmployeeUpdateForm | null>({
 
 export const bloodGroupOptionsAtom = atom({
   key: 'bloodGroupOptionsAtom',
-  default: [],
+  default: null,
 });
 
 export const employmentTypesAtom = atom({
   key: 'employmentTypesAtom',
-  default: [],
+  default: null,
 });
 
 export const employeeRolesAtom = atom({
   key: 'employeeRolesAtom',
-  default: [],
+  default: null,
 });
 
-export const employeePackagesAtom = atom<PackagesList>({
+export const employeePackagesAtom = atom<PackagesList | null>({
   key: 'employeePackagesAtom',
-  default: [],
+  default: null,
 });

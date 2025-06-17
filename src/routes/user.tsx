@@ -4,30 +4,30 @@ import {
   Outlet,
   useNavigate,
   useParams,
-} from "react-router-dom";
-import { OrganizationConfig } from "../interfaces/organization";
-import EmployeeLogin from "../pages/user/login/login";
-import EmployeeDashboard from "../pages/user/dashboard/dashboard";
-import Companies from "../components/user/dashboard/companies/companies";
-import AddCompany from "../components/user/dashboard/add-company/add-company";
-import UpdateCompany from "../components/user/dashboard/update-company/update-company";
-import { toast } from "react-toastify";
-import { useEffect, useState } from "react";
-import { getOrganizationConfig } from "../services/common-services";
-import { MantineProvider } from "@mantine/core";
-import "@mantine/core/styles.css";
-import { LoadingOverlay } from "@mantine/core";
-import Loader from "../components/common/loader/loader";
-import EmployeeProfile from "../components/user/dashboard/profile/profile";
-import Timesheet from "../components/common/timesheet/timesheet";
-import { ModalsProvider } from "@mantine/modals";
-import { useRecoilValue, useSetRecoilState } from "recoil";
-import { organizationThemeAtom } from "../atoms/organization-atom";
-import { organizationEmployeeUrls } from "../utils/common/constants";
-import PoolCandidateList from "../components/user/dashboard/candidate/candidate";
-import AddPoolCandidate from "../components/user/dashboard/add-candidate/add-candidate";
-import UpdatePoolCandidateForm from "../components/user/dashboard/update-candidate/update-candidate";
-import UserProvider from "../hooks/user-context";
+} from 'react-router-dom';
+import { OrganizationConfig } from '../interfaces/organization';
+import EmployeeLogin from '../pages/user/login/login';
+import EmployeeDashboard from '../pages/user/dashboard/dashboard';
+import Companies from '../components/user/dashboard/companies/companies';
+import AddCompany from '../components/user/dashboard/add-company/add-company';
+import UpdateCompany from '../components/user/dashboard/update-company/update-company';
+import { toast } from 'react-toastify';
+import { useEffect, useState } from 'react';
+import { getOrganizationConfig } from '../services/common-services';
+import { MantineProvider } from '@mantine/core';
+import '@mantine/core/styles.css';
+import { LoadingOverlay } from '@mantine/core';
+import Loader from '../components/common/loader/loader';
+import EmployeeProfile from '../components/user/dashboard/profile/profile';
+import Timesheet from '../components/common/timesheet/timesheet';
+import { ModalsProvider } from '@mantine/modals';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
+import { organizationThemeAtom } from '../atoms/organization-atom';
+import { organizationEmployeeUrls } from '../utils/common/constants';
+import PoolCandidateList from '../components/user/dashboard/candidate/candidate';
+import AddPoolCandidate from '../components/user/dashboard/add-candidate/add-candidate';
+import UpdatePoolCandidateForm from '../components/user/dashboard/update-candidate/update-candidate';
+import UserProvider from '../hooks/user-context';
 
 const EmployeeRoutes = () => {
   const { organization } = useParams<{ organization: string }>();
@@ -68,6 +68,41 @@ const EmployeeRoutes = () => {
           },
         }),
       },
+      Modal: {
+        styles: () => ({
+          title: {
+            fontWeight: 600,
+            fontSize: '1.25rem',
+            color: organizationConfig.organization_theme.theme.color,
+          },
+          header: {
+            backgroundColor:
+              organizationConfig.organization_theme.theme.headerBackgroundColor,
+            borderBottom: `1px solid ${organizationConfig.organization_theme.theme.borderColor}`,
+          },
+          content: {
+            backgroundColor:
+              organizationConfig.organization_theme.theme.backgroundColor,
+            color: organizationConfig.organization_theme.theme.color,
+          },
+          close: {
+            color: organizationConfig.organization_theme.theme.color,
+            '&:hover': {
+              backgroundColor: 'transparent',
+              color: organizationConfig.organization_theme.theme.linkColor,
+            },
+          },
+        }),
+        defaultProps: {
+          radius: 'md',
+          shadow: 'xl',
+          padding: 'xl',
+          size: '600px',
+          overlayBlur: 3,
+          overlayOpacity: 0.7,
+        },
+      },
+
       Menu: {
         styles: () => ({
           dropdown: {
@@ -156,14 +191,14 @@ const EmployeeRoutes = () => {
 };
 
 const RecruiterProtectedRoutes = () => {
-  const token = localStorage.getItem("token");
-  const userRole = localStorage.getItem("userRole");
+  const token = localStorage.getItem('token');
+  const userRole = localStorage.getItem('userRole');
   const organizationConfig = useRecoilValue(organizationThemeAtom);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!userRole || !token || userRole !== "recruiter") {
-      toast.error("Not authorized to access");
+    if (!userRole || !token || userRole !== 'recruiter') {
+      toast.error('Not authorized to access');
       setTimeout(() => {
         navigate(
           `${organizationEmployeeUrls(
@@ -174,7 +209,7 @@ const RecruiterProtectedRoutes = () => {
     }
   }, [navigate, userRole, token, organizationConfig.organization_name]);
 
-  if (!userRole || !token || userRole !== "recruiter") {
+  if (!userRole || !token || userRole !== 'recruiter') {
     return null;
   }
 
@@ -182,15 +217,15 @@ const RecruiterProtectedRoutes = () => {
 };
 
 const EmployeeProtectedRoutes = () => {
-  const token = localStorage.getItem("token");
-  const userRole = localStorage.getItem("userRole");
+  const token = localStorage.getItem('token');
+  const userRole = localStorage.getItem('userRole');
   const organizationConfig = useRecoilValue(organizationThemeAtom);
   const navigate = useNavigate();
 
   useEffect(() => {
     if (!userRole || !token) {
       setTimeout(() => {
-        toast.error("Not authorized to access");
+        toast.error('Not authorized to access');
         navigate(
           `${organizationEmployeeUrls(
             organizationConfig.organization_name

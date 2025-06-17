@@ -12,7 +12,6 @@ import {
   Text,
   Loader,
   Stack,
-  Modal,
   ScrollArea,
   SimpleGrid,
 } from '@mantine/core';
@@ -48,6 +47,7 @@ import {
 } from './helper-functions/add-package';
 import { Task } from '../../../../interfaces/package';
 import { BgDiv } from '../../../common/style-components/bg-div';
+import { StandardModal } from '../../../UI/Models/base-model';
 
 const PackagesFormComponent = ({
   organizationConfig,
@@ -239,10 +239,12 @@ const PackagesFormComponent = ({
           control={control}
           render={({ field }) => (
             <MultiSelect
-              data={employmentPackagesOptions.map(pkg => ({
-                value: pkg._id,
-                label: pkg.title,
-              }))}
+              data={
+                employmentPackagesOptions?.map(pkg => ({
+                  value: pkg._id,
+                  label: pkg.title,
+                })) || []
+              }
               label="Select Packages"
               placeholder={
                 !selectedPackages.length ? 'Choose packages to assign' : ''
@@ -275,7 +277,7 @@ const PackagesFormComponent = ({
       </Card>
 
       {/* Task Selection Modal */}
-      <Modal
+      <StandardModal
         opened={opened}
         onClose={close}
         size="xl"
@@ -285,7 +287,7 @@ const PackagesFormComponent = ({
         <ScrollArea.Autosize mah={500} className="pr-4">
           <Stack gap="md">
             {selectedPackages.map((packageId: string) => {
-              const pkg = employmentPackagesOptions.find(
+              const pkg = employmentPackagesOptions?.find(
                 p => p._id === packageId
               );
               if (!pkg) return null;
@@ -294,13 +296,7 @@ const PackagesFormComponent = ({
               const selectedCount = selectedTasks[packageId]?.size || 0;
 
               return (
-                <Card
-                  key={packageId}
-                  shadow="xs"
-                  padding="sm"
-                  radius="md"
-                  withBorder
-                >
+                <div key={packageId} className="p-2 rounded-md border">
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 w-full">
                     <div>
                       <Text fw={500}>{pkg.title}</Text>
@@ -309,11 +305,6 @@ const PackagesFormComponent = ({
                       </Text>
                     </div>
                     <Button
-                      bg={
-                        organizationConfig.organization_theme.theme
-                          .backgroundColor
-                      }
-                      c={organizationConfig.organization_theme.theme.color}
                       onClick={() => {
                         openTask();
                         setSelectedPackage(packageId);
@@ -337,7 +328,7 @@ const PackagesFormComponent = ({
                             onChange={() =>
                               handleTaskToggle(packageId, task._id)
                             }
-                            className="p-1 rounded hover:bg-gray-50"
+                            className="p-1 rounded"
                           />
                         ))}
                       </Stack>
@@ -347,7 +338,7 @@ const PackagesFormComponent = ({
                       </Text>
                     )}
                   </div>
-                </Card>
+                </div>
               );
             })}
           </Stack>
@@ -364,10 +355,10 @@ const PackagesFormComponent = ({
             Save Changes
           </Button>
         </Group>
-      </Modal>
+      </StandardModal>
 
       {/* Add Task Modal */}
-      <Modal
+      <StandardModal
         opened={openedAddTask}
         onClose={closeTask}
         title={<Text fw={600}>Add Task for Package</Text>}
@@ -385,7 +376,7 @@ const PackagesFormComponent = ({
             closeTask();
           }}
         />
-      </Modal>
+      </StandardModal>
 
       {/* Assigned Packages Table */}
       {selectedPackagesData && (
@@ -402,7 +393,7 @@ const PackagesFormComponent = ({
             organizationConfig={organizationConfig}
             selectedPackagesData={selectedPackagesData}
             tasks={tasks}
-            employeeId={selectedPackagesData?.employeeId || ''}
+            employeeId={employeeId}
           />
         </div>
       )}

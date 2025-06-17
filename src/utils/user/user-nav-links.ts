@@ -1,27 +1,32 @@
 import {
-  // IconTimeline,
-  // IconBook,
-  // IconTimeline,
+  IconBuildings,
   IconUserEdit,
-} from "@tabler/icons-react";
+  IconUsersGroup,
+} from '@tabler/icons-react';
 
 export const NavLinks = [
   {
-    role: "employee" as string,
-    url: "dashboard/profile",
+    role: 'employee',
+    url: 'employee/dashboard/profile',
     icon: IconUserEdit,
-    name: "Profile",
+    name: 'Profile',
   },
-  // {
-  //   role: "employee" as string,
-  //   url: "dashboard/timesheet",
-  //   icon: IconTimeline,
-  //   name: "Timesheet",
-  // },
-  // {
-  //   role: "employee",
-  //   url: "dashboard/courses" as string,
-  //   icon: IconBook,
-  //   name: "Courses",
-  // },
-];
+  {
+    role: 'recruiter',
+    url: 'employee/dashboard/profile',
+    icon: IconUserEdit,
+    name: 'Profile',
+  },
+  {
+    role: 'recruiter',
+    url: 'employee/dashboard/pool-candidates',
+    icon: IconUsersGroup,
+    name: 'Pool Candidates',
+  },
+  {
+    role: 'recruiter',
+    url: 'employee/dashboard/pool-companies',
+    icon: IconBuildings,
+    name: 'Pool Companies',
+  },
+].sort((a, b) => a.name.length - b.name.length);

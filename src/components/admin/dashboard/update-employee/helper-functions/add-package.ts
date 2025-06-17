@@ -11,18 +11,18 @@ export const fetchInitialData = async (
   employeeId: string,
   setEmployeeDetails: (data: any) => void,
   setEmploymentPackagesOptions: (data: PackagesList) => void,
-  employmentPackagesOptions: PackagesList
+  employmentPackagesOptions: PackagesList | null
 ) => {
   try {
     const [employeeDetails, packages] = await Promise.all([
       getEmployeeDetailsByAdmin(employeeId),
-      employmentPackagesOptions.length === 0
+      !employmentPackagesOptions
         ? getAllPackagesByAdmin()
         : Promise.resolve(employmentPackagesOptions),
     ]);
 
     setEmployeeDetails(employeeDetails);
-    if (employmentPackagesOptions.length === 0) {
+    if (!employmentPackagesOptions) {
       setEmploymentPackagesOptions(packages);
     }
   } catch (error: any) {
@@ -86,7 +86,7 @@ export const loadEmployeePackages = async (
 
 export const formatSubmitData = (
   selectedPackages: string[],
-  employmentPackagesOptions: PackagesList,
+  employmentPackagesOptions: PackagesList | null,
   selectedTasks: SelectedTasks,
   employeeId: string
 ): FormattedPackageData => {
@@ -94,9 +94,9 @@ export const formatSubmitData = (
     employeeId: employeeId,
     packages: selectedPackages
       .map(selectedPackageId => {
-        const packageData = employmentPackagesOptions.find(
-          pkg => pkg._id === selectedPackageId
-        );
+        const packageData =
+          employmentPackagesOptions &&
+          employmentPackagesOptions.find(pkg => pkg._id === selectedPackageId);
         const selectedTaskIds = selectedTasks[selectedPackageId] || new Set();
 
         return {

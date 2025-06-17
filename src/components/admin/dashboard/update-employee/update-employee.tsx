@@ -74,7 +74,7 @@ const UpdateEmployee = () => {
   const setEmployeeDetails = useSetRecoilState(employeeDetailsAtom);
 
   useEffect(() => {
-    if (employmentTypeOptions.length === 0) {
+    if (!employmentTypeOptions) {
       getAllEmploymentTypes()
         .then(response => {
           const types = response.map((res: any) => ({
@@ -90,7 +90,7 @@ const UpdateEmployee = () => {
   }, [employmentTypeOptions, setEmploymentTypes]);
 
   useEffect(() => {
-    if (employmentRolesOptions.length === 0) {
+    if (!employmentRolesOptions) {
       getAllEmployeeRoleByAdmin()
         .then(response => {
           const roles = response.map((res: any) => ({
@@ -106,7 +106,7 @@ const UpdateEmployee = () => {
   }, [employmentRolesOptions, setEmploymentRolesOptions]);
 
   useEffect(() => {
-    if (bloodGroupOptions.length === 0) {
+    if (!bloodGroupOptions) {
       getAllBloodGroupByAdmin()
         .then(response => {
           const options = response.map((res: any) => ({
@@ -270,7 +270,7 @@ const UpdateEmployee = () => {
                   control={control}
                   render={({ field }) => (
                     <Select
-                      data={bloodGroupOptions}
+                      data={bloodGroupOptions || []}
                       label="Blood Group"
                       placeholder="Enter blood group"
                       {...field}
@@ -330,7 +330,7 @@ const UpdateEmployee = () => {
                     className="mb-2"
                     label="Employment Type"
                     placeholder="Enter employment type"
-                    data={employmentTypeOptions}
+                    data={employmentTypeOptions || []}
                     {...field}
                     error={errors.employmentType?.message}
                   />
@@ -342,7 +342,7 @@ const UpdateEmployee = () => {
                 render={({ field }) => (
                   <MultiSelect
                     className="mb-2"
-                    data={employmentRolesOptions}
+                    data={employmentRolesOptions || []}
                     label="Employee Role"
                     placeholder="Select employee roles"
                     value={

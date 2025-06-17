@@ -1,4 +1,5 @@
-import { Button, Checkbox, Modal } from "@mantine/core";
+import { Button, Checkbox, Title } from '@mantine/core';
+import { StandardModal } from '../../../UI/Models/base-model';
 
 interface DeletePackageModalProps {
   opened: boolean;
@@ -20,7 +21,16 @@ export const DeletePackageModel: React.FC<DeletePackageModalProps> = ({
   handleDeletePackage,
 }) => {
   return (
-    <Modal size="md" opened={opened} onClose={close}>
+    <StandardModal
+      title={
+        <Title order={3} c="red">
+          Delete Action
+        </Title>
+      }
+      size="md"
+      opened={opened}
+      onClose={close}
+    >
       <div>
         <h2 className="font-bold text-lg">
           Are you sure you want to delete this Package?
@@ -33,13 +43,13 @@ export const DeletePackageModel: React.FC<DeletePackageModalProps> = ({
           <Checkbox
             label="I understand the consequences of this action."
             checked={confirmDelete}
-            onChange={(e) => setConfirmDelete(e.currentTarget.checked)}
+            onChange={e => setConfirmDelete(e.currentTarget.checked)}
             required
           />
           <Checkbox
             label="I agree that this package's details will be permanently deleted."
             checked={agreeTerms}
-            onChange={(e) => setAgreeTerms(e.currentTarget.checked)}
+            onChange={e => setAgreeTerms(e.currentTarget.checked)}
           />
         </div>
         <div className="flex justify-between mt-8">
@@ -53,6 +63,6 @@ export const DeletePackageModel: React.FC<DeletePackageModalProps> = ({
           <Button onClick={close}>Cancel</Button>
         </div>
       </div>
-    </Modal>
+    </StandardModal>
   );
 };

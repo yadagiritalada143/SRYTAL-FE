@@ -13,9 +13,9 @@ import { OrganizationConfig } from '../../../../interfaces/organization';
 import { IconTrash, IconEdit } from '@tabler/icons-react';
 import {
   deleteEmployeePackagesByAdmin,
-  deleteTaskByAdmin,
   updateTaskByAdmin,
   getEmployeePackagesByAdmin,
+  deleteEmployeeTasksByAdmin,
 } from '../../../../services/admin-services';
 import { toast } from 'react-toastify';
 import { useDisclosure } from '@mantine/hooks';
@@ -104,7 +104,7 @@ const PackagesTaskTable = ({
 
   const handleDeleteTask = async (packageId: string, taskId: string) => {
     try {
-      await deleteTaskByAdmin(taskId, true);
+      await deleteEmployeeTasksByAdmin(employeeId, packageId, taskId);
       setPackagesList(prev => {
         const updatedPackages = prev.map(pkg => {
           if (pkg.packageId === packageId) {
@@ -118,7 +118,6 @@ const PackagesTaskTable = ({
         return updatedPackages;
       });
       toast.success('Task deleted successfully');
-      refreshEmployeePackages();
     } catch (error) {
       console.error('Error deleting task:', error);
       toast.error('Failed to delete task');
