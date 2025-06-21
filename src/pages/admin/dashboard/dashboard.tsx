@@ -3,7 +3,6 @@ import { Outlet } from 'react-router-dom';
 import { IconMenu2, IconX } from '@tabler/icons-react';
 import AdminNavbar from '../../../components/UI/navbar/navbar';
 import { adminNavLinks } from '../../../utils/admin/nav-links/admin-nav-links';
-import Header from '../../../components/common/header/header';
 import { BgDiv } from '../../../components/common/style-components/bg-div';
 import { organizationThemeAtom } from '../../../atoms/organization-atom';
 import { useRecoilValue } from 'recoil';
@@ -69,12 +68,6 @@ const AdminDashboard = () => {
       <div
         className={`flex-grow p-6 transition-all duration-300 ${isDrawerOpen ? 'ml-[15%]' : 'lg:ml-[4%]'} overflow-hidden`}
       >
-        <div className="my-2">
-          <Header
-            color={organizationConfig.organization_theme.theme.button.textColor}
-            organization={organizationConfig.organization_name}
-          />
-        </div>
         <div>
           <Outlet />
         </div>

@@ -60,9 +60,7 @@ const Header = ({
   return (
     <>
       <div style={{ color }} className="flex justify-between space-x-8 mx-4">
-        <div>
-          {/* <h1 className="text-2xl uppercase underline">{organization}</h1> */}
-        </div>
+        <div></div>
         <div className="flex ">
           <p className=" flex justify-center items-center px-4 font-bold">
             {user.firstName} {user.lastName}{' '}
