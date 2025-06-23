@@ -1,5 +1,6 @@
 import {
   IconBuildings,
+  IconTimeline,
   IconUserEdit,
   IconUsersGroup,
 } from '@tabler/icons-react';
@@ -22,6 +23,18 @@ export const NavLinks = [
     url: 'employee/dashboard/pool-candidates',
     icon: IconUsersGroup,
     name: 'Pool Candidates',
+  },
+  {
+    role: 'employee',
+    url: 'employee/dashboard/timesheet',
+    icon: IconTimeline,
+    name: 'Timesheet',
+  },
+  {
+    role: 'recruiter',
+    url: 'employee/dashboard/timesheet',
+    icon: IconTimeline,
+    name: 'Timesheet',
   },
   {
     role: 'recruiter',
