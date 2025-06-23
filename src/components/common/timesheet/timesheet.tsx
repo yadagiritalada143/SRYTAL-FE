@@ -149,11 +149,61 @@ const DateTableComponent = () => {
     );
   };
 
+  const filteredProjects = Array.from(
+    new Map(
+      timeEntries
+        .filter(
+          entry =>
+            entry.project_name
+              .toLowerCase()
+              .includes(searchQuery.toLowerCase()) ||
+            entry.task_name.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+        .map(entry => [
+          entry.project_id,
+          {
+            id: entry.project_id,
+            title: entry.project_name,
+            taskId: entry.task_id,
+            task_name: entry.task_name,
+          },
+        ])
+    ).values()
+  );
+
+  const filteredTasks = Array.from(
+    new Map(
+      timeEntries
+        .filter(
+          entry =>
+            entry.project_name
+              .toLowerCase()
+              .includes(searchQuery.toLowerCase()) ||
+            entry.task_name.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+        .map(entry => [
+          entry.task_id,
+          {
+            id: entry.project_id,
+            title: entry.project_name,
+            taskId: entry.task_id,
+            task_name: entry.task_name,
+          },
+        ])
+    ).values()
+  );
+
+  const filteredTasksIds = new Set(filteredTasks.map(p => p.taskId));
+
   // Calculate project total hours
   const getProjectTotalHours = (projectId: string) => {
     const dateStrings = getDateRangeArray(...dateRange);
+
     return timeEntries
-      .filter(entry => entry.project_id === projectId)
+      .filter(
+        entry =>
+          entry.project_id === projectId && filteredTasksIds.has(entry.task_id)
+      )
       .reduce((total, entry) => {
         if (dateStrings.includes(moment(entry.date).format('YYYY-MM-DD'))) {
           return total + (entry.hours || 0);
@@ -238,22 +288,6 @@ const DateTableComponent = () => {
   };
 
   // Filter projects and tasks based on search query
-  const filteredProjects = Array.from(
-    new Map(
-      timeEntries
-        .filter(
-          entry =>
-            entry.project_name
-              .toLowerCase()
-              .includes(searchQuery.toLowerCase()) ||
-            entry.task_name.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-        .map(entry => [
-          entry.project_id,
-          { id: entry.project_id, title: entry.project_name },
-        ])
-    ).values()
-  );
 
   // Get tasks by project with search filtering
   const getTasksByProject = (projectId: string) => {
@@ -276,9 +310,18 @@ const DateTableComponent = () => {
   };
 
   const handleDateChange = (value: [Date | null, Date | null]) => {
-    if (value[0] && value[1]) {
+    const [start, end] = value;
+
+    if (start && end) {
+      const diffInDays = moment(end).diff(moment(start), 'days');
+
+      if (diffInDays > 14) {
+        alert('Please select a date range of 14 days or less.');
+        return;
+      }
+
       setDateRange(value);
-    } else if (value[0] === null && value[1] === null) {
+    } else if (start === null && end === null) {
       setDateRange([null, null]);
     }
   };
@@ -442,9 +485,8 @@ const DateTableComponent = () => {
               leftSection={<IconCalendar size={16} />}
               size="sm"
               maxDate={moment().add(1, 'month').toDate()}
-              placeholder="Pick date range"
+              placeholder="Pick date range (max 14 days)"
               allowSingleDateInRange={false}
-              clearable
             />
 
             <ActionIcon
