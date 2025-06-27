@@ -187,3 +187,11 @@ export const getTimesheetData = async (
     throw error;
   }
 };
+
+export const submitTimeSheet = async (data: any) => {
+  try {
+    await apiClient.put('updateEmployeeTimesheet', { packages: data });
+  } catch (error) {
+    throw error;
+  }
+};
