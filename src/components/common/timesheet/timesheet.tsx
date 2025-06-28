@@ -13,10 +13,9 @@ import {
   Box,
   Tooltip,
   Collapse,
-  Textarea,
   Center,
 } from '@mantine/core';
-import { DatePickerInput, DatesRangeValue, DateValue } from '@mantine/dates';
+import { DatePickerInput, DatesRangeValue } from '@mantine/dates';
 import {
   IconCalendar,
   IconChevronLeft,
@@ -35,17 +34,24 @@ import { TaskPopover } from './task-popover';
 import { ColorDiv } from '../style-components/c-div';
 import { useRecoilValue } from 'recoil';
 import { organizationThemeAtom } from '../../../atoms/organization-atom';
+import { EmployeeTimesheet } from '../../../interfaces/timesheet';
+import { getTimesheetData } from '../../../services/common-services';
 import {
-  EmployeeTimesheet,
-  Package,
-  Task,
-} from '../../../interfaces/timesheet';
+  formatData,
+  formatDisplayDate,
+  getDateRangeArray,
+  getDateStatus,
+  getProjectTotalHours,
+  getTasksByProject,
+  navigateDateRange,
+  openEditModal,
+  trackChanges,
+} from './helper';
 import {
-  getTimesheetData,
-  submitTimeSheet,
-} from '../../../services/common-services';
-import { StandardModal } from '../../UI/Models/base-model';
-import { useCustomToast } from '../../../utils/common/toast';
+  ApplyLeaveTimesheetModal,
+  ConfirmTimesheetSubmitModal,
+  EditTimeEntryModal,
+} from './modals';
 
 const DateTableComponent = () => {
   const [openedLeaveModal, { open: openLeaveModal, close: closeLeaveModal }] =
@@ -65,41 +71,19 @@ const DateTableComponent = () => {
   const [timeEntries, setTimeEntries] = useState<EmployeeTimesheet[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentEntry, setCurrentEntry] = useState<EmployeeTimesheet>();
-  const [leaveReason, setLeaveReason] = useState('');
-  const [leaveDates, setLeaveDates] = useState<DatesRangeValue>([null, null]);
   const [originalEntries, setOriginalEntries] = useState<EmployeeTimesheet[]>(
     []
   );
   const [changesMade, setChangesMade] = useState<EmployeeTimesheet[]>([]);
   const organizationConfig = useRecoilValue(organizationThemeAtom);
-  const { showSuccessToast } = useCustomToast();
-  // Get date range as string array
-  const getDateRangeArray = (start: DateValue, end: DateValue): string[] => {
-    if (start && end) {
-      const dates: string[] = [];
-      const current = new Date(start);
 
-      while (current <= end) {
-        dates.push(moment(current).format('YYYY-MM-DD'));
-        current.setDate(current.getDate() + 1);
-      }
-      return dates;
-    }
-    return [];
-  };
-
-  // Format date for display
-  const formatDisplayDate = (date: string) => {
-    return moment(date).format('DD MMM ddd');
-  };
-
-  // Fetch timesheet data
   const fetchTimesheetData = useCallback(async () => {
     setIsLoading(true);
     try {
       const [start, end] = dateRange;
       const responseData = await getTimesheetData(start, end);
       const formattedTimesheet = formatData(responseData);
+      console.log(formattedTimesheet);
       setTimeEntries(formattedTimesheet);
       setOriginalEntries(formattedTimesheet);
       setChangesMade([]);
@@ -116,94 +100,6 @@ const DateTableComponent = () => {
       fetchTimesheetData();
     }
   }, [fetchTimesheetData, dateRange]);
-
-  // Navigate date range
-  const navigateDateRange = (direction: 'previous' | 'next') => {
-    const [start, end] = dateRange;
-    const daysDiff = moment(end).diff(start, 'days') + 1;
-
-    if (direction === 'previous') {
-      const newStart = moment(start).subtract(daysDiff, 'days').toDate();
-      const newEnd = moment(end).subtract(daysDiff, 'days').toDate();
-      setDateRange([newStart, newEnd]);
-    } else {
-      const newStart = moment(start).add(daysDiff, 'days').toDate();
-      const newEnd = moment(end).add(daysDiff, 'days').toDate();
-      setDateRange([newStart, newEnd]);
-    }
-  };
-
-  const trackChanges = (newEntry: EmployeeTimesheet) => {
-    const originalEntry = originalEntries.find(
-      e =>
-        e.project_id === newEntry.project_id &&
-        e.task_id === newEntry.task_id &&
-        e.date === newEntry.date
-    );
-
-    // If entry is new or changed
-    if (
-      !originalEntry ||
-      originalEntry.hours !== newEntry.hours ||
-      originalEntry.comments !== newEntry.comments
-    ) {
-      // Check if this change is already tracked
-      const existingChangeIndex = changesMade.findIndex(
-        c =>
-          c.project_id === newEntry.project_id &&
-          c.task_id === newEntry.task_id &&
-          c.date === newEntry.date
-      );
-
-      if (existingChangeIndex >= 0) {
-        // Update existing change
-        setChangesMade(prev =>
-          prev.map((change, idx) =>
-            idx === existingChangeIndex ? newEntry : change
-          )
-        );
-      } else {
-        // Add new change
-        setChangesMade(prev => [...prev, newEntry]);
-      }
-    } else {
-      // If change is reverted, remove from changes
-      setChangesMade(prev =>
-        prev.filter(
-          c =>
-            !(
-              c.project_id === newEntry.project_id &&
-              c.task_id === newEntry.task_id &&
-              c.date === newEntry.date
-            )
-        )
-      );
-    }
-  };
-
-  // Format raw data
-  const formatData = (data: { packageId: Package; tasks: Task[] }[]) => {
-    return data.flatMap(pkg =>
-      pkg.tasks.flatMap(task =>
-        task.timesheet.map(timesheet => {
-          return {
-            date: moment.utc(timesheet.date).format('YYYY-MM-DD'),
-            isLeave: timesheet.isLeave ?? false,
-            isHoliday: timesheet.isHoliday ?? false,
-            isWeekOff: timesheet.isWeekOff ?? false,
-            project_id: pkg.packageId._id,
-            task_id: task.taskId._id,
-            project_name: pkg.packageId.title,
-            task_name: task.taskId.title,
-            hours: timesheet.hours ?? 0,
-            comments: timesheet.comments ?? '',
-            id: timesheet.id,
-            leaveReason: timesheet.leaveReason,
-          };
-        })
-      )
-    );
-  };
 
   const filteredProjects = Array.from(
     new Map(
@@ -251,24 +147,6 @@ const DateTableComponent = () => {
 
   const filteredTasksIds = new Set(filteredTasks.map(p => p.taskId));
 
-  // Calculate project total hours
-  const getProjectTotalHours = (projectId: string) => {
-    const dateStrings = getDateRangeArray(...dateRange);
-
-    return timeEntries
-      .filter(
-        entry =>
-          entry.project_id === projectId && filteredTasksIds.has(entry.task_id)
-      )
-      .reduce((total, entry) => {
-        if (dateStrings.includes(moment(entry.date).format('YYYY-MM-DD'))) {
-          return total + (entry.hours || 0);
-        }
-        return total;
-      }, 0);
-  };
-
-  // Handle hours and comments change
   const handleEntrySubmit = () => {
     if (!currentEntry) return;
 
@@ -277,9 +155,11 @@ const DateTableComponent = () => {
       return;
     }
 
+    const formattedDate = moment(currentEntry.date).format('YYYY-MM-DD');
+
     const newEntry = {
-      date: moment(currentEntry.date).format('YYYY-MM-DD'),
-      isLeave: false,
+      date: formattedDate,
+      isVacation: false,
       isHoliday: false,
       isWeekOff: false,
       project_id: currentEntry.project_id,
@@ -288,11 +168,12 @@ const DateTableComponent = () => {
       project_name: currentEntry.project_name,
       task_name: currentEntry.task_name,
       comments: currentEntry.comments,
-      leaveReason: '',
+      leaveReason: currentEntry.leaveReason,
+      id: currentEntry.id,
+      status: 'pending',
     };
 
     setTimeEntries(prev => {
-      const formattedDate = moment(currentEntry.date).format('YYYY-MM-DD');
       const existingIndex = prev.findIndex(
         e =>
           e.project_id === currentEntry.project_id &&
@@ -301,67 +182,19 @@ const DateTableComponent = () => {
       );
 
       if (existingIndex >= 0) {
-        return prev.map((entry, idx) =>
-          idx === existingIndex ? newEntry : entry
-        );
+        const updated = [...prev];
+        updated[existingIndex] = newEntry;
+        return updated;
       }
 
-      return [...prev, newEntry];
+      toast.warning('No existing entry found to update');
+      return prev;
     });
 
-    // Track the change
-    trackChanges(newEntry);
-
+    trackChanges(newEntry, originalEntries, changesMade, setChangesMade);
     closeEntryModal();
   };
 
-  // Check if date is special (leave/holiday/week-off)
-  const getDateStatus = (date: string, taskId: string, projectId: string) => {
-    const formattedDate = moment(date).format('YYYY-MM-DD');
-    const entry = timeEntries.find(
-      e =>
-        e.date === formattedDate &&
-        e.task_id === taskId &&
-        e.project_id === projectId
-    );
-
-    if (!entry) return null;
-
-    if (entry.isWeekOff) return { label: 'weekoff', comment: entry.comments };
-    if (entry.isLeave) return { label: 'leave', comment: entry.leaveReason };
-    if (entry.isHoliday) return { label: 'holiday', comment: entry.comments };
-
-    return null;
-  };
-
-  // Check if date is in the past
-  const isPastDate = (date: string) => {
-    return moment(date).isBefore(moment(), 'day');
-  };
-
-  // Filter projects and tasks based on search query
-
-  // Get tasks by project with search filtering
-  const getTasksByProject = (projectId: string) => {
-    const seen = new Set();
-    return timeEntries
-      .filter(
-        entry =>
-          entry.project_id === projectId &&
-          (entry.project_name
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase()) ||
-            entry.task_name.toLowerCase().includes(searchQuery.toLowerCase()))
-      )
-      .map(entry => ({ id: entry.task_id, title: entry.task_name }))
-      .filter(task => {
-        if (seen.has(task.id)) return false;
-        seen.add(task.id);
-        return true;
-      });
-  };
-
-  // Render status badge
   const renderStatusBadge = ({
     label,
     comment,
@@ -400,278 +233,42 @@ const DateTableComponent = () => {
         style={{ textTransform: 'none' }}
       >
         <Text className="text-xs">
-          <TaskPopover full={config.comment} short={config.label} />
+          <TaskPopover
+            full={config.comment}
+            short={config.label}
+            bgColor={[
+              organizationConfig.organization_theme.theme.backgroundColor,
+              organizationConfig.organization_theme.theme.color,
+            ]}
+          />
         </Text>
       </Badge>
     );
   };
 
-  const prepareSubmitData = () => {
-    // Create a map to store all packages data (both changed and unchanged)
-    const packagesMap = new Map<string, any>();
-
-    // First, add all original entries to the map
-    originalEntries.forEach(entry => {
-      if (!packagesMap.has(entry.project_id)) {
-        packagesMap.set(entry.project_id, {
-          packageId: entry.project_id,
-          tasks: [],
-        });
-      }
-
-      const pkg = packagesMap.get(entry.project_id)!;
-      let task = pkg.tasks.find((t: any) => t.taskId === entry.task_id);
-
-      if (!task) {
-        task = {
-          taskId: entry.task_id,
-          timesheet: [],
-        };
-        pkg.tasks.push(task);
-      }
-
-      task.timesheet.push({
-        date: moment(entry.date).toDate(),
-        hours: entry.hours,
-        comments: entry.comments,
-        isLeave: entry.isLeave,
-        isHoliday: entry.isHoliday,
-        isWeekOff: entry.isWeekOff,
-        leaveReason: entry.leaveReason,
-      });
-    });
-
-    // Then, apply the changes on top of the original data
-    changesMade.forEach(entry => {
-      const pkg = packagesMap.get(entry.project_id);
-      if (!pkg) return;
-
-      let task = pkg.tasks.find((t: any) => t.taskId === entry.task_id);
-      if (!task) {
-        task = {
-          taskId: entry.task_id,
-          timesheet: [],
-        };
-        pkg.tasks.push(task);
-      }
-
-      // Find existing timesheet entry for this date
-      const existingEntryIndex = task.timesheet.findIndex(
-        (ts: any) => moment(ts.date).format('YYYY-MM-DD') === entry.date
-      );
-
-      if (existingEntryIndex >= 0) {
-        // Update existing entry
-        task.timesheet[existingEntryIndex] = {
-          ...task.timesheet[existingEntryIndex],
-          hours: entry.hours,
-          comments: entry.comments,
-        };
-      } else {
-        // Add new entry
-        task.timesheet.push({
-          date: moment(entry.date).toDate(),
-          hours: entry.hours,
-          comments: entry.comments,
-          isLeave: entry.isLeave,
-          isHoliday: entry.isHoliday,
-          isWeekOff: entry.isWeekOff,
-          leaveReason: entry.leaveReason,
-        });
-      }
-    });
-
-    // Convert the map to array and format the packageId and taskId as objects
-    return Array.from(packagesMap.values()).map(pkg => ({
-      packageId: pkg.packageId,
-      tasks: pkg.tasks.map((task: any) => ({
-        taskId: task.taskId,
-        timesheet: task.timesheet,
-      })),
-    }));
-  };
-
-  const handleSubmit = async () => {
-    try {
-      const submitData = prepareSubmitData();
-      submitTimeSheet(submitData);
-      showSuccessToast('Timesheet submitted successfully');
-      setChangesMade([]);
-      closeSubmitModal();
-    } catch {
-      toast.error('Failed to submit timesheet');
-    }
-  };
-
-  const handleLeaveSubmit = async () => {
-    if (!leaveReason.trim()) {
-      toast.error('Please enter a leave reason');
-      return;
-    }
-
-    if (!leaveDates[0] || !leaveDates[1]) {
-      toast.error('Please select leave dates');
-      return;
-    }
-
-    const dateRangeArray = getDateRangeArray(leaveDates[0], leaveDates[1]);
-    if (dateRangeArray.length === 0) {
-      toast.error('Invalid date range');
-      return;
-    }
-
-    // Create a map to organize all timesheet data
-    const packagesMap = new Map<
-      string,
-      {
-        packageId: string;
-        packageName: string;
-        tasks: Map<
-          string,
-          {
-            taskId: string;
-            taskName: string;
-            timesheet: Map<string, any>; // Key: date string (YYYY-MM-DD)
-          }
-        >;
-      }
-    >();
-
-    // First process all existing entries
-    timeEntries.forEach(entry => {
-      if (!packagesMap.has(entry.project_id)) {
-        packagesMap.set(entry.project_id, {
-          packageId: entry.project_id,
-          packageName: entry.project_name,
-          tasks: new Map(),
-        });
-      }
-
-      const project = packagesMap.get(entry.project_id)!;
-      if (!project.tasks.has(entry.task_id)) {
-        project.tasks.set(entry.task_id, {
-          taskId: entry.task_id,
-          taskName: entry.task_name,
-          timesheet: new Map(),
-        });
-      }
-
-      const task = project.tasks.get(entry.task_id)!;
-      const dateKey = moment(entry.date).format('YYYY-MM-DD');
-      task.timesheet.set(dateKey, {
-        date: moment(entry.date).toDate(),
-        hours: entry.hours,
-        comments: entry.comments,
-        isLeave: entry.isLeave,
-        isHoliday: entry.isHoliday,
-        isWeekOff: entry.isWeekOff,
-        leaveReason: entry.leaveReason,
-      });
-    });
-
-    // Then add leave entries where they don't exist
-    packagesMap.forEach(project => {
-      project.tasks.forEach(task => {
-        dateRangeArray.forEach(date => {
-          const dateKey = moment(date).format('YYYY-MM-DD');
-          if (!task.timesheet.has(dateKey)) {
-            task.timesheet.set(dateKey, {
-              date: moment(date).toDate(),
-              isLeave: true,
-              isVacation: true,
-              leaveReason,
-              hours: 0,
-              comments: 'Leave',
-              isHoliday: false,
-              isWeekOff: false,
-            });
-          }
-        });
-      });
-    });
-
-    // Convert to the required API format
-    const submissionData = Array.from(packagesMap.values()).map(project => ({
-      packageId: {
-        _id: project.packageId,
-        title: project.packageName,
-      },
-      tasks: Array.from(project.tasks.values()).map(task => ({
-        taskId: {
-          _id: task.taskId,
-          title: task.taskName,
-        },
-        timesheet: Array.from(task.timesheet.values()),
-      })),
-    }));
-
-    try {
-      setIsLoading(true);
-      await submitTimeSheet(submissionData);
-      showSuccessToast('Leave applied successfully');
-      closeLeaveModal();
-      fetchTimesheetData();
-      setLeaveReason('');
-      setLeaveDates([null, null]);
-    } catch (error) {
-      toast.error('Failed to apply leave');
-      console.error('Leave submission error:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Open edit modal for a specific entry
-  const openEditModal = (
-    projectId: string,
-    taskId: string,
-    date: string,
-    hours: number,
-    comments: string,
-    projectName: string,
-    taskName: string
-  ) => {
-    if (isPastDate(date)) {
-      toast.error("You can't edit for past dates");
-      return;
-    }
-
-    setCurrentEntry({
-      project_id: projectId,
-      project_name: projectName,
-      isHoliday: false,
-      isLeave: false,
-      isWeekOff: false,
-      leaveReason: '',
-      task_id: taskId,
-      task_name: taskName,
+  const renderHoursCell = (timesheet: EmployeeTimesheet, edit: boolean) => {
+    const {
       date,
+      task_id,
+      project_id,
       hours,
       comments,
-    });
-    openEntryModal();
-  };
-
-  // Render hours cell
-  const renderHoursCell = (
-    projectId: string,
-    taskId: string,
-    date: string,
-    hours: number,
-    comments: string,
-    projectName: string,
-    taskName: string
-  ) => {
-    const status = getDateStatus(date, taskId, projectId);
+      status: timesheetStatus,
+    } = timesheet;
+    const status = getDateStatus(date, task_id, project_id, timeEntries);
 
     if (status) {
       return (
         <Box
+          onDoubleClick={() =>
+            edit && openEditModal(timesheet, setCurrentEntry, openEntryModal)
+          }
           style={{
             height: '100%',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            cursor: 'pointer',
           }}
         >
           {renderStatusBadge(status)}
@@ -683,15 +280,7 @@ const DateTableComponent = () => {
       <Tooltip label="Double click to edit hours" withArrow>
         <Box
           onDoubleClick={() =>
-            openEditModal(
-              projectId,
-              taskId,
-              date,
-              hours,
-              comments,
-              projectName,
-              taskName
-            )
+            edit && openEditModal(timesheet, setCurrentEntry, openEntryModal)
           }
           style={{
             height: '28px',
@@ -701,7 +290,15 @@ const DateTableComponent = () => {
             cursor: 'pointer',
           }}
         >
-          <TaskPopover short={hours.toString() || '0'} full={comments} />
+          <TaskPopover
+            short={hours.toString() || '0'}
+            full={edit ? comments : "Can't Edit"}
+            status={edit ? timesheetStatus : 'Not started'}
+            bgColor={[
+              organizationConfig.organization_theme.theme.backgroundColor,
+              organizationConfig.organization_theme.theme.color,
+            ]}
+          />
         </Box>
       </Tooltip>
     );
@@ -724,7 +321,9 @@ const DateTableComponent = () => {
               radius="xl"
               color={organizationConfig.organization_theme.theme.color}
               size="lg"
-              onClick={() => navigateDateRange('previous')}
+              onClick={() =>
+                navigateDateRange('previous', dateRange, setDateRange)
+              }
             >
               <IconChevronLeft size={18} />
             </ActionIcon>
@@ -756,7 +355,7 @@ const DateTableComponent = () => {
               color={organizationConfig.organization_theme.theme.color}
               radius="xl"
               size="lg"
-              onClick={() => navigateDateRange('next')}
+              onClick={() => navigateDateRange('next', dateRange, setDateRange)}
             >
               <IconChevronRight size={18} />
             </ActionIcon>
@@ -874,7 +473,11 @@ const DateTableComponent = () => {
             </thead>
             <tbody>
               {filteredProjects.map(project => {
-                const tasks = getTasksByProject(project.id);
+                const tasks = getTasksByProject(
+                  project.id,
+                  timeEntries,
+                  searchQuery
+                );
                 if (tasks.length === 0) return null;
 
                 return tasks.map((task, taskIndex) => (
@@ -894,7 +497,15 @@ const DateTableComponent = () => {
                     )}
                     <td className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis">
                       <Center>
-                        <TaskPopover short={task.title} full={task.title} />
+                        <TaskPopover
+                          short={task.title}
+                          full={task.title}
+                          bgColor={[
+                            organizationConfig.organization_theme.theme
+                              .backgroundColor,
+                            organizationConfig.organization_theme.theme.color,
+                          ]}
+                        />
                       </Center>
                     </td>
                     {getDateRangeArray(...dateRange).map(date => {
@@ -909,15 +520,26 @@ const DateTableComponent = () => {
                           className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis"
                           key={`${project.id}-${task.id}-${date}`}
                         >
-                          {renderHoursCell(
-                            project.id,
-                            task.id,
-                            date,
-                            entry?.hours ?? 0,
-                            entry?.comments ?? '',
-                            project.title,
-                            task.title
-                          )}
+                          {entry
+                            ? renderHoursCell(entry, true)
+                            : renderHoursCell(
+                                {
+                                  date: moment(date).format('YYYY-MM-DD'),
+                                  isVacation: false,
+                                  isHoliday: false,
+                                  isWeekOff: false,
+                                  project_id: project.id,
+                                  task_id: task.id,
+                                  hours: 0,
+                                  project_name: project.title,
+                                  task_name: task.title,
+                                  comments: '',
+                                  leaveReason: '',
+                                  id: '',
+                                  status: 'pending',
+                                },
+                                false
+                              )}
                         </td>
                       );
                     })}
@@ -927,7 +549,12 @@ const DateTableComponent = () => {
                         rowSpan={tasks.length}
                         style={{ textAlign: 'center', verticalAlign: 'middle' }}
                       >
-                        {getProjectTotalHours(project.id)}
+                        {getProjectTotalHours(
+                          project.id,
+                          timeEntries,
+                          dateRange,
+                          filteredTasksIds
+                        )}
                       </td>
                     )}
                   </tr>
@@ -938,255 +565,26 @@ const DateTableComponent = () => {
         </Box>
       )}
       {currentEntry && (
-        <StandardModal
-          opened={openedEntryModal}
-          onClose={closeEntryModal}
-          title="Edit Time Entry"
-          size="sm"
-        >
-          <Box p="sm">
-            <Text fw={500} mb="xs">
-              Project: {currentEntry.project_name}
-            </Text>
-            <Text fw={500} mb="xs">
-              Task: {currentEntry.task_name}
-            </Text>
-            <Text fw={500} mb="xs">
-              Date:{' '}
-              {currentEntry && moment(currentEntry.date).format('DD MMM YYYY')}
-            </Text>
-
-            <TextInput
-              label="Hours"
-              type="number"
-              min={0}
-              max={24}
-              value={currentEntry.hours.toString()}
-              onChange={e => {
-                const rawValue = e.currentTarget.value;
-                if (rawValue === '') {
-                  setCurrentEntry(prev => ({
-                    ...prev,
-                    ...currentEntry,
-                    hours: 0,
-                  }));
-                  return;
-                }
-
-                const numericValue = parseFloat(rawValue);
-                if (!isNaN(numericValue)) {
-                  const clampedValue = Math.min(24, Math.max(0, numericValue));
-                  setCurrentEntry(prev => ({
-                    ...prev,
-                    ...currentEntry,
-                    hours: clampedValue,
-                  }));
-                }
-              }}
-              mb="sm"
-            />
-
-            <Textarea
-              label="Comments"
-              placeholder="Enter comments (required)"
-              value={currentEntry.comments}
-              onChange={e => {
-                setCurrentEntry(prev => ({
-                  ...prev,
-                  ...currentEntry,
-                  comments: e.target.value,
-                }));
-              }}
-              autosize
-              minRows={3}
-              mb="sm"
-              required
-            />
-
-            <Group justify="flex-end">
-              <Button variant="outline" onClick={closeEntryModal}>
-                Cancel
-              </Button>
-              <Button color="blue" onClick={handleEntrySubmit}>
-                Save
-              </Button>
-            </Group>
-          </Box>
-        </StandardModal>
+        <EditTimeEntryModal
+          openedEntryModal={openedEntryModal}
+          closeEntryModal={closeEntryModal}
+          currentEntry={currentEntry}
+          setCurrentEntry={setCurrentEntry}
+          handleEntrySubmit={handleEntrySubmit}
+        />
       )}
-      <StandardModal
-        opened={openedLeaveModal}
-        onClose={closeLeaveModal}
-        title="Apply for Leave"
-        size="md"
-      >
-        <Box p="sm">
-          <Textarea
-            label="Reason"
-            placeholder="Enter leave reason"
-            value={leaveReason}
-            onChange={e => setLeaveReason(e.currentTarget.value)}
-            mb="sm"
-            required
-            autosize
-            minRows={3}
-          />
-
-          <DatePickerInput
-            type="range"
-            label="Leave Dates"
-            placeholder="Select leave period"
-            value={leaveDates}
-            onChange={setLeaveDates}
-            mb="sm"
-            minDate={new Date()}
-            maxDate={moment().add(3, 'months').toDate()}
-            allowSingleDateInRange
-            clearable
-            required
-          />
-
-          <Group justify="flex-end" mt="md">
-            <Button variant="outline" onClick={closeLeaveModal}>
-              Cancel
-            </Button>
-            <Button
-              color="green"
-              onClick={handleLeaveSubmit}
-              loading={isLoading}
-            >
-              Submit Leave
-            </Button>
-          </Group>
-        </Box>
-      </StandardModal>
-      <StandardModal
-        opened={openedSubmitModal}
-        onClose={closeSubmitModal}
-        title={
-          <Text fw={600} size="lg">
-            Confirm Timesheet Submission
-          </Text>
-        }
-        size="xl"
-        radius="md"
-        padding="lg"
-      >
-        <Box p="sm">
-          <Text mb="lg" c="dimmed">
-            Please review your changes before submission. You're about to update{' '}
-            {changesMade.length} time entries.
-          </Text>
-
-          <Box>
-            <Table
-              striped
-              highlightOnHover
-              verticalSpacing="sm"
-              horizontalSpacing="md"
-              withColumnBorders
-            >
-              <thead
-                style={{
-                  position: 'sticky',
-                }}
-              >
-                <tr>
-                  <th
-                    className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis"
-                    style={{ minWidth: '120px' }}
-                  >
-                    Date
-                  </th>
-                  <th
-                    className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis"
-                    style={{ minWidth: '180px' }}
-                  >
-                    Project
-                  </th>
-                  <th
-                    className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis"
-                    style={{ minWidth: '180px' }}
-                  >
-                    Task
-                  </th>
-                  <th
-                    className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis"
-                    style={{ width: '80px', textAlign: 'center' }}
-                  >
-                    Hours
-                  </th>
-                  <th
-                    className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis"
-                    style={{ minWidth: '200px' }}
-                  >
-                    Comments
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {changesMade.map((change, index) => {
-                  return (
-                    <tr key={index} className="m-2 p-2">
-                      <td className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis">
-                        <Badge variant="light" color="blue" fullWidth>
-                          {moment(change.date).format('ddd, DD MMM')}
-                        </Badge>
-                      </td>
-                      <td className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis">
-                        <Text fw={500} lineClamp={2}>
-                          {change.project_name}
-                        </Text>
-                      </td>
-                      <td className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis">
-                        <Text lineClamp={2}>{change.task_name}</Text>
-                      </td>
-                      <td
-                        className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis"
-                        style={{ textAlign: 'center' }}
-                      >
-                        <Text fw={600}>{change.hours}</Text>
-                      </td>
-                      <td className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis">
-                        <Text lineClamp={2} style={{ flex: 1 }}>
-                          {change.comments}
-                        </Text>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </Table>
-          </Box>
-
-          <Group justify="space-between" mt="xl">
-            <Text size="sm" c="dimmed">
-              Total changes:{' '}
-              <Badge color="blue" variant="light">
-                {changesMade.length}
-              </Badge>
-            </Text>
-            <Group>
-              <Button
-                variant="outline"
-                onClick={closeSubmitModal}
-                radius="md"
-                leftSection={<IconX size={16} />}
-              >
-                Cancel
-              </Button>
-              <Button
-                color="green"
-                onClick={handleSubmit}
-                radius="md"
-                leftSection={<IconCheck size={16} />}
-              >
-                Confirm Submission
-              </Button>
-            </Group>
-          </Group>
-        </Box>
-      </StandardModal>
+      <ApplyLeaveTimesheetModal
+        openedLeaveModal={openedLeaveModal}
+        closeLeaveModal={closeLeaveModal}
+        timeEntries={timeEntries}
+        fetchTimesheetData={fetchTimesheetData}
+      />
+      <ConfirmTimesheetSubmitModal
+        openedSubmitModal={openedSubmitModal}
+        closeSubmitModal={closeSubmitModal}
+        changesMade={changesMade}
+        setChangesMade={setChangesMade}
+      />
     </ColorDiv>
   );
 };
