@@ -1,7 +1,6 @@
 export interface Timesheet {
   date: Date;
   isHoliday: boolean;
-  isLeave: boolean;
   isVacation: boolean;
   isWeekOff: boolean;
   hours: number;
@@ -9,7 +8,6 @@ export interface Timesheet {
   leaveReason: string;
   status: string;
   _id: string;
-  id: string;
 }
 
 export interface Task {
@@ -32,7 +30,7 @@ export interface Package {
 
 export interface EmployeeTimesheet {
   date: string;
-  isLeave: boolean;
+  isVacation: boolean;
   isHoliday: boolean;
   isWeekOff: boolean;
   project_id: string;
@@ -42,4 +40,6 @@ export interface EmployeeTimesheet {
   hours: number;
   comments: string;
   leaveReason: string;
+  id: string;
+  status: string;
 }
