@@ -1,21 +1,21 @@
-import { Avatar, Menu, rem } from "@mantine/core";
+import { Avatar, Menu, rem } from '@mantine/core';
 import {
   IconLogout,
   IconSettings,
   IconUser,
   IconPasswordUser,
-} from "@tabler/icons-react";
-import { useNavigate } from "react-router-dom";
-import { commonUrls } from "../../../utils/common/constants";
-import { useRecoilState, useRecoilValue } from "recoil";
-import { userDetailsAtom } from "../../../atoms/user";
-import { useDisclosure } from "@mantine/hooks";
+} from '@tabler/icons-react';
+import { useNavigate } from 'react-router-dom';
+import { commonUrls } from '../../../utils/common/constants';
+import { useRecoilState, useRecoilValue } from 'recoil';
+import { userDetailsAtom } from '../../../atoms/user';
+import { useDisclosure } from '@mantine/hooks';
 
-import ChangePasswordPopup from "../updatePassword/updatePassword";
-import { useEffect, useState } from "react";
-import { getProfileImage, logoutUser } from "../../../services/user-services";
-import { profileImageAtom } from "../../../atoms/profile-image";
-import { useCustomToast } from "../../../utils/common/toast";
+import { ChangePasswordPopup } from '../../UI/Models/updatePassword';
+import { useEffect, useState } from 'react';
+import { getProfileImage, logoutUser } from '../../../services/user-services';
+import { profileImageAtom } from '../../../atoms/profile-image';
+import { useCustomToast } from '../../../utils/common/toast';
 const Header = ({
   color,
   organization,
@@ -32,16 +32,16 @@ const Header = ({
 
   const handleLogout = () => {
     logoutUser();
-    showSuccessToast("Successfully logged out");
+    showSuccessToast('Successfully logged out');
   };
 
   useEffect(() => {
     setIsLoading(true);
 
     getProfileImage()
-      .then(async (response) => {
+      .then(async response => {
         if (!response || !(response instanceof Blob)) {
-          throw new Error("Invalid image data");
+          throw new Error('Invalid image data');
         }
 
         const reader = new FileReader();
@@ -52,7 +52,7 @@ const Header = ({
         reader.readAsDataURL(response);
       })
       .catch(() => {
-        setImageUrl("");
+        setImageUrl('');
       })
       .finally(() => setIsLoading(false));
   }, [setImageUrl]);
@@ -60,12 +60,10 @@ const Header = ({
   return (
     <>
       <div style={{ color }} className="flex justify-between space-x-8 mx-4">
-        <div>
-          {/* <h1 className="text-2xl uppercase underline">{organization}</h1> */}
-        </div>
+        <div></div>
         <div className="flex ">
           <p className=" flex justify-center items-center px-4 font-bold">
-            {user.firstName} {user.lastName}{" "}
+            {user.firstName} {user.lastName}{' '}
           </p>
           <div>
             <Menu shadow="md" width={200} position="bottom-end">

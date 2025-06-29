@@ -1,39 +1,29 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useDisclosure } from "@mantine/hooks";
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useDisclosure } from '@mantine/hooks';
 import {
   AddCompanyForm,
   addCompanySchema,
-} from "../../../../forms/add-company";
-import { useForm, Controller } from "react-hook-form";
-import {
-  Button,
-  Checkbox,
-  Modal,
-  Select,
-  TextInput,
-  Title,
-  useMantineTheme,
-} from "@mantine/core";
+} from '../../../../forms/add-company';
+import { useForm, Controller } from 'react-hook-form';
+import { Button, Checkbox, Select, TextInput, Title } from '@mantine/core';
 import {
   getCompanyDetailsByIdByRecruiter,
   updateCompanyByRecruiter,
-} from "../../../../services/user-services";
-import { toast } from "react-toastify";
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
-import {
-  commonUrls,
-  organizationAdminUrls,
-} from "../../../../utils/common/constants";
-import { useRecoilValue } from "recoil";
-import { organizationThemeAtom } from "../../../../atoms/organization-atom";
-import { userDetailsAtom } from "../../../../atoms/user";
-import { BgDiv } from "../../../common/style-components/bg-div";
-import { useCustomToast } from "../../../../utils/common/toast";
-import PoolCompaniesCommentsTable from "./comments";
-import AddCommentPoolCompany from "./add-comment";
-import { deletePoolCompanyByAdmin } from "../../../../services/admin-services";
+} from '../../../../services/user-services';
+import { toast } from 'react-toastify';
+import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useRecoilValue } from 'recoil';
+import { organizationThemeAtom } from '../../../../atoms/organization-atom';
+import { userDetailsAtom } from '../../../../atoms/user';
+import { BgDiv } from '../../../common/style-components/bg-div';
+import { useCustomToast } from '../../../../utils/common/toast';
+import PoolCompaniesCommentsTable from './comments';
+import AddCommentPoolCompany from './add-comment';
+import { deletePoolCompanyByAdmin } from '../../../../services/admin-services';
+import { BackButton } from '../../../common/style-components/buttons';
+import { StandardModal } from '../../../UI/Models/base-model';
 
 const UpdateCompany = () => {
   const params = useParams();
@@ -44,7 +34,6 @@ const UpdateCompany = () => {
   const [opened, { open, close }] = useDisclosure(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
-  const theme = useMantineTheme();
 
   const [comments, setComments] = useState<
     {
@@ -67,7 +56,7 @@ const UpdateCompany = () => {
 
   useEffect(() => {
     getCompanyDetailsByIdByRecruiter(companyId)
-      .then((response) => {
+      .then(response => {
         reset(response);
         if (response.comments) {
           setComments(response.comments);
@@ -75,20 +64,16 @@ const UpdateCompany = () => {
           setComments([]);
         }
       })
-      .catch((error) => toast.error(error.response.data.message));
+      .catch(error => toast.error(error.response.data.message));
   }, [companyId, reset]);
 
   const onSubmit = async (data: AddCompanyForm) => {
     try {
       await updateCompanyByRecruiter(data, companyId);
-      showSuccessToast("Company details updated successfully !");
-      navigate(
-        `${commonUrls(
-          organizationConfig.organization_name
-        )}/dashboard/pool-companies`
-      );
+      showSuccessToast('Company details updated successfully !');
+      navigate(-1);
     } catch (error: any) {
-      toast.error(error.response.data.message || "Something went wrong");
+      toast.error(error.response.data.message || 'Something went wrong');
     }
   };
 
@@ -99,15 +84,11 @@ const UpdateCompany = () => {
     };
     deletePoolCompanyByAdmin(payload)
       .then(() => {
-        showSuccessToast("Company deleted successfully!");
-        navigate(
-          `${organizationAdminUrls(
-            organizationConfig.organization_name
-          )}/dashboard/pool-companies`
-        );
+        showSuccessToast('Company deleted successfully!');
+        navigate(-1);
       })
       .catch((error: { response?: { data?: { message?: string } } }) => {
-        toast.error(error.response?.data?.message || "Something went wrong");
+        toast.error(error.response?.data?.message || 'Something went wrong');
       });
   };
 
@@ -122,30 +103,20 @@ const UpdateCompany = () => {
           onSubmit={handleSubmit(onSubmit)}
           className="space-y-4 rounded-lg shadow-lg w-full max-w-3xl  mx-auto p-8"
         >
-          <div className="px-4 flex justify-between">
-            <div></div>
-            <Title className="text-center" order={3}>
+          <div className="px-3 flex items-center justify-between gap-4 flex-wrap">
+            <Title
+              className="text-base sm:text-xl md:text-2xl font-extrabold underline text-left flex-1"
+              order={3}
+            >
               Update Company Details
             </Title>
-            <Button
-              bg={theme.colors.primary[5]}
-              onClick={() =>
-                navigate(
-                  `${organizationAdminUrls(
-                    organizationConfig.organization_name
-                  )}/dashboard/pool-companies`
-                )
-              }
-            >
-              {" "}
-              Cancel
-            </Button>
+            <BackButton id={companyId} />
           </div>
-          <div className="px-4 flex flex-wrap space-x-10 ">
+          <div className="px-4 flex flex-col sm:flex-row sm:items-end sm:gap-4 gap-2">
             <TextInput
-              {...register("companyName")}
+              {...register('companyName')}
               label="Company Name"
-              className="w-1/3"
+              className="w-full sm:w-1/2 md:w-full"
               disabled
               error={errors.companyName?.message}
             />
@@ -156,18 +127,18 @@ const UpdateCompany = () => {
                 <Select
                   label="Select Status"
                   placeholder="Pick value"
-                  className="w-1/3"
+                  className="w-full sm:w-1/2 md:w-full"
                   {...field}
                   data={[
-                    { value: "Created", label: "Created" },
-                    { value: "Followed Up", label: "Followed Up" },
+                    { value: 'Created', label: 'Created' },
+                    { value: 'Followed Up', label: 'Followed Up' },
                     {
-                      value: "Waiting For Response",
-                      label: "Waiting For Response",
+                      value: 'Waiting For Response',
+                      label: 'Waiting For Response',
                     },
-                    { value: "Not Interested", label: "Not Interested" },
-                    { value: "On Boarded", label: "On Boarded" },
-                    { value: "Closed", label: "Closed" },
+                    { value: 'Not Interested', label: 'Not Interested' },
+                    { value: 'On Boarded', label: 'On Boarded' },
+                    { value: 'Closed', label: 'Closed' },
                   ]}
                   value={field.value}
                 />
@@ -178,19 +149,19 @@ const UpdateCompany = () => {
           <fieldset className="mx-4  p-4 border">
             <legend className="text-lg font-semibold">Primary Contact</legend>
             <TextInput
-              {...register("primaryContact.name")}
+              {...register('primaryContact.name')}
               label="Name"
               className="mb-2"
               error={errors.primaryContact?.name?.message}
             />
             <TextInput
-              {...register("primaryContact.email")}
+              {...register('primaryContact.email')}
               label="Email"
               className="mb-2"
               error={errors.primaryContact?.email?.message}
             />
             <TextInput
-              {...register("primaryContact.phone")}
+              {...register('primaryContact.phone')}
               label="Phone"
               className="mb-2"
               error={errors.primaryContact?.phone?.message}
@@ -203,19 +174,19 @@ const UpdateCompany = () => {
                 Secondary Contact 1
               </legend>
               <TextInput
-                {...register("secondaryContact_1.name")}
+                {...register('secondaryContact_1.name')}
                 label="Name"
                 className="mb-2"
                 error={errors.secondaryContact_1?.name?.message}
               />
               <TextInput
-                {...register("secondaryContact_1.email")}
+                {...register('secondaryContact_1.email')}
                 label="Email"
                 className="mb-2"
                 error={errors.secondaryContact_1?.email?.message}
               />
               <TextInput
-                {...register("secondaryContact_1.phone")}
+                {...register('secondaryContact_1.phone')}
                 label="Phone"
                 className="mb-2"
                 error={errors.secondaryContact_1?.phone?.message}
@@ -227,47 +198,60 @@ const UpdateCompany = () => {
                 Secondary Contact 2
               </legend>
               <TextInput
-                {...register("secondaryContact_2.name")}
+                {...register('secondaryContact_2.name')}
                 label="Name"
                 className="mb-2"
                 error={errors.secondaryContact_2?.name?.message}
               />
               <TextInput
-                {...register("secondaryContact_2.email")}
+                {...register('secondaryContact_2.email')}
                 label="Email"
                 className="mb-2"
                 error={errors.secondaryContact_2?.email?.message}
               />
               <TextInput
-                {...register("secondaryContact_2.phone")}
+                {...register('secondaryContact_2.phone')}
                 label="Phone"
                 className="mb-2"
                 error={errors.secondaryContact_2?.phone?.message}
               />
             </fieldset>
           </div>
-          <div className="text-right">
-            <div className="m-4 mb-8 flex justify-between">
+          <div className="px-4">
+            <div className="my-4 flex flex-col sm:flex-row justify-between gap-4 sm:items-center">
               <button
-                className="bg-red-500 text-white py-2 px-4 rounded"
-                onClick={(e) => {
+                className="bg-red-500 text-white py-2 px-4 rounded w-full sm:w-auto"
+                onClick={e => {
                   e.preventDefault();
                   open();
                 }}
               >
                 Delete Company
               </button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Loading..." : "Update Company"}
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full sm:w-auto"
+              >
+                {isSubmitting ? 'Loading...' : 'Update Company'}
               </Button>
             </div>
           </div>
         </form>
       </BgDiv>
-      <Modal size="md" opened={opened} onClose={close}>
+      <StandardModal
+        title={
+          <Title order={3} c="red">
+            Delete Action
+          </Title>
+        }
+        size="md"
+        opened={opened}
+        onClose={close}
+      >
         <div>
           <h2 className="font-bold text-lg">
-            Sure want to delete this Company?{" "}
+            Sure want to delete this Company?{' '}
           </h2>
           <p className="mt-4 font-bold">
             Please be aware of doing this action! Deleting company is an
@@ -277,13 +261,13 @@ const UpdateCompany = () => {
             <Checkbox
               label="I understand what are the consequences of doing this action!"
               checked={confirmDelete}
-              onChange={(e) => setConfirmDelete(e.currentTarget.checked)}
+              onChange={e => setConfirmDelete(e.currentTarget.checked)}
               required
             />
             <Checkbox
               label="I understand that this employee details are not a part of our application forever. I agreed to the Terms and Conditions to perform this action"
               checked={agreeTerms}
-              onChange={(e) => setAgreeTerms(e.currentTarget.checked)}
+              onChange={e => setAgreeTerms(e.currentTarget.checked)}
             />
           </div>
           <div className=" flex flex-wrap justify-between mt-8">
@@ -297,7 +281,7 @@ const UpdateCompany = () => {
             <Button onClick={close}>Cancel</Button>
           </div>
         </div>
-      </Modal>
+      </StandardModal>
 
       <AddCommentPoolCompany
         organizationConfig={organizationConfig}

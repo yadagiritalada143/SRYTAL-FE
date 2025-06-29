@@ -9,17 +9,16 @@ import { addCompanyByRecruiter } from "../../../../services/user-services";
 import { toast } from "react-toastify";
 import { IconCircleDashedCheck } from "@tabler/icons-react";
 import { useMantineTheme } from "@mantine/core";
-import { useNavigate } from "react-router-dom";
-import {
-  commonUrls,
-  organizationAdminUrls,
-} from "../../../../utils/common/constants";
+import { useNavigate, useParams } from "react-router-dom";
 import { useRecoilValue } from "recoil";
 import { organizationThemeAtom } from "../../../../atoms/organization-atom";
 import { BgDiv } from "../../../common/style-components/bg-div";
+import { BackButton } from "../../../common/style-components/buttons";
 
 const AddCompany = () => {
   const theme = useMantineTheme();
+  const params = useParams();
+  const companyId = params.companyId as string;
   const navigate = useNavigate();
   const {
     register,
@@ -46,11 +45,7 @@ const AddCompany = () => {
         },
         icon: <IconCircleDashedCheck width={32} height={32} />,
       });
-      navigate(
-        `${commonUrls(
-          organizationConfig.organization_name
-        )}/dashboard/pool-companies`
-      );
+      navigate(-1);
     } catch (error: any) {
       toast.error(error.response.data.message || "Something went wrong");
     }
@@ -66,24 +61,11 @@ const AddCompany = () => {
         onSubmit={handleSubmit(onSubmit)}
         className="space-y-4 rounded-lg shadow-lg w-full max-w-3xl  mx-auto p-8"
       >
-        <div className="px-4 flex justify-between">
-          <div></div>
-          <h1 className="text-3xl font-extrabold underline text-center">
+        <div className="px-4 flex items-center justify-between gap-4 flex-wrap">
+          <h1 className="text-base sm:text-xl md:text-3xl font-extrabold underline text-center">
             Add Company
           </h1>
-          <Button
-            bg={theme.colors.primary[5]}
-            onClick={() =>
-              navigate(
-                `${organizationAdminUrls(
-                  organizationConfig.organization_name
-                )}/dashboard/pool-companies`
-              )
-            }
-          >
-            {" "}
-            Cancel
-          </Button>
+          <BackButton id={companyId} />
         </div>
         <TextInput
           {...register("companyName")}

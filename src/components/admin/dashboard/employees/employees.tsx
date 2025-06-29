@@ -1,47 +1,54 @@
-import { Button, useMantineTheme, Loader } from "@mantine/core";
-import { IconEdit, IconUser } from "@tabler/icons-react";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { EmployeeInterface } from "../../../../interfaces/employee";
-import { getAllEmployeeDetailsByAdmin } from "../../../../services/admin-services";
-import { toast } from "react-toastify";
-import { organizationAdminUrls } from "../../../../utils/common/constants";
-import { SearchBarFullWidht } from "../../../common/search-bar/search-bar";
-import { useRecoilValue } from "recoil";
-import { organizationThemeAtom } from "../../../../atoms/organization-atom";
-import useHorizontalScroll from "../../../../hooks/horizontal-scroll";
+import { Button, useMantineTheme, Loader } from '@mantine/core';
+import { IconEdit, IconPackage, IconUser } from '@tabler/icons-react';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { getAllEmployeeDetailsByAdmin } from '../../../../services/admin-services';
+import { toast } from 'react-toastify';
+import { organizationAdminUrls } from '../../../../utils/common/constants';
+import { SearchBarFullWidht } from '../../../common/search-bar/search-bar';
+import { useRecoilState, useRecoilValue } from 'recoil';
+import {
+  organizationEmployeeAtom,
+  organizationThemeAtom,
+} from '../../../../atoms/organization-atom';
+import useHorizontalScroll from '../../../../hooks/horizontal-scroll';
 
 const Employees = () => {
   const theme = useMantineTheme();
-  const [employees, setEmployees] = useState<EmployeeInterface[]>([]);
-  const [filteredEmployees, setFilteredEmployees] = useState<
-    EmployeeInterface[]
-  >([]);
+  const [employees, setEmployees] = useRecoilState(organizationEmployeeAtom);
+  const [filteredEmployees, setFilteredEmployees] = useRecoilState(
+    organizationEmployeeAtom
+  );
   const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
   const organizationConfig = useRecoilValue(organizationThemeAtom);
 
   const { scrollRef, handleMouseDown, handleMouseMove, handleMouseUp } =
     useHorizontalScroll();
   useEffect(() => {
+    if (employees.length > 0) {
+      setFilteredEmployees(employees);
+      setIsLoading(false);
+      return;
+    }
     getAllEmployeeDetailsByAdmin()
-      .then((employeesList) => {
+      .then(employeesList => {
         setEmployees(employeesList);
         setFilteredEmployees(employeesList);
         setIsLoading(false);
       })
-      .catch((error) => {
-        toast(error?.response?.data?.message || "Something went wrong");
+      .catch(error => {
+        toast(error?.response?.data?.message || 'Something went wrong');
         setIsLoading(false);
       });
-  }, []);
+  }, [employees, setEmployees, setFilteredEmployees]);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
     setSearchQuery(query);
 
-    const filtered = employees.filter((employee) => {
+    const filtered = employees.filter(employee => {
       return (
         employee.firstName.toLowerCase().includes(query.toLowerCase()) ||
         employee.lastName.toLowerCase().includes(query.toLowerCase()) ||
@@ -61,24 +68,32 @@ const Employees = () => {
     );
   };
 
+  const handlePackageSelect = (employeeId: string) => {
+    navigate(
+      `${organizationAdminUrls(
+        organizationConfig.organization_name
+      )}/dashboard/package/${employeeId}`
+    );
+  };
+
   useEffect(() => {
-    const selectedEmployee = localStorage.getItem("id");
+    const selectedEmployee = localStorage.getItem('id');
     if (selectedEmployee && filteredEmployees.length > 0) {
       const rowElement = document.getElementById(
         `employee-${selectedEmployee}`
       );
       if (rowElement) {
-        rowElement.scrollIntoView({ behavior: "smooth", block: "center" });
+        rowElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
         rowElement.style.backgroundColor =
           organizationConfig.organization_theme.theme.backgroundColor;
         rowElement.style.color =
           organizationConfig.organization_theme.theme.color;
         setTimeout(() => {
-          rowElement.style.backgroundColor = "";
-          rowElement.style.color = "";
+          rowElement.style.backgroundColor = '';
+          rowElement.style.color = '';
         }, 2000);
       }
-      localStorage.removeItem("id");
+      localStorage.removeItem('id');
     }
   }, [
     filteredEmployees,
@@ -94,7 +109,7 @@ const Employees = () => {
       }}
     >
       <div>
-        <h1 className="text-3xl font-extrabold underline text-center">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold underline text-center px-2 py-4">
           Manage Employee
         </h1>
 
@@ -132,12 +147,13 @@ const Employees = () => {
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
-            style={{ userSelect: "none" }}
+            style={{ userSelect: 'none' }}
           >
             <table className="w-full text-center shadow-md border ">
               <colgroup>
                 <col className="w-32" />
                 <col className="w-56" />
+                <col className="w-32" />
                 <col className="w-32" />
                 <col className="w-32" />
                 <col className="w-32" />
@@ -166,6 +182,7 @@ const Employees = () => {
                   <th className="p-2 border">Blood Group</th>
                   <th className="p-2 border">Employee Role</th>
                   <th className="p-2 border">Update Details</th>
+                  <th className="p-2 border">Update Package</th>
                 </tr>
               </thead>
               {isLoading ? (
@@ -225,7 +242,18 @@ const Employees = () => {
                           <Button
                             onClick={() => handleEmployeeSelect(employee._id)}
                           >
-                            <IconUser /> {"  "}
+                            <IconUser /> {'  '}
+                            <IconEdit />
+                          </Button>
+                        </td>
+                        <td
+                          id={`employee-${employee._id}`}
+                          className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis"
+                        >
+                          <Button
+                            onClick={() => handlePackageSelect(employee._id)}
+                          >
+                            <IconPackage /> {'  '}
                             <IconEdit />
                           </Button>
                         </td>

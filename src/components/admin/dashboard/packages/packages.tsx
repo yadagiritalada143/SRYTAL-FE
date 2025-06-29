@@ -1,16 +1,16 @@
-import { Button, useMantineTheme, Loader, Tooltip } from "@mantine/core";
-import { IconEdit } from "@tabler/icons-react";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { PackageInterface } from "../../../../interfaces/package";
-import { getAllPackagesByAdmin } from "../../../../services/admin-services";
-import { toast } from "react-toastify";
-import { organizationAdminUrls } from "../../../../utils/common/constants";
-import { SearchBarFullWidht } from "../../../common/search-bar/search-bar";
-import { useRecoilValue } from "recoil";
-import { organizationThemeAtom } from "../../../../atoms/organization-atom";
-import useHorizontalScroll from "../../../../hooks/horizontal-scroll";
-import moment from "moment";
+import { Button, useMantineTheme, Loader, Tooltip } from '@mantine/core';
+import { IconEdit } from '@tabler/icons-react';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { PackageInterface } from '../../../../interfaces/package';
+import { getAllPackagesByAdmin } from '../../../../services/admin-services';
+import { toast } from 'react-toastify';
+import { organizationAdminUrls } from '../../../../utils/common/constants';
+import { SearchBarFullWidht } from '../../../common/search-bar/search-bar';
+import { useRecoilValue } from 'recoil';
+import { organizationThemeAtom } from '../../../../atoms/organization-atom';
+import useHorizontalScroll from '../../../../hooks/horizontal-scroll';
+import moment from 'moment';
 
 const Packages = () => {
   const theme = useMantineTheme();
@@ -19,34 +19,30 @@ const Packages = () => {
     []
   );
   const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
   const organizationConfig = useRecoilValue(organizationThemeAtom);
 
   const { scrollRef, handleMouseDown, handleMouseMove, handleMouseUp } =
     useHorizontalScroll();
 
-  const handlePackageSelect=(packageId:string)=>{
+  const handlePackageSelect = (packageId: string) => {
     navigate(
       `${organizationAdminUrls(
         organizationConfig.organization_name
       )}/dashboard/updates/${packageId}`
     );
-  }
+  };
   useEffect(() => {
     getAllPackagesByAdmin()
-      .then((packagesList) => {
-        if (packagesList.length > 0) {
-          setPackages(packagesList);
-          setFilteredPackages(packagesList);
-        } else {
-          toast.info("No packages available.");
-        }
+      .then(packagesList => {
+        setPackages(packagesList);
+        setFilteredPackages(packagesList);
         setIsLoading(false);
       })
-      .catch((error) => {
+      .catch(error => {
         toast.error(
-          error?.response?.data?.message || "Failed to fetch packages."
+          error?.response?.data?.message || 'Failed to fetch packages.'
         );
         setIsLoading(false);
       });
@@ -57,7 +53,7 @@ const Packages = () => {
     setSearchQuery(query);
 
     const filtered = packages.filter(
-      (pkg) =>
+      pkg =>
         pkg.title.toLowerCase().includes(query) ||
         pkg.description.toLowerCase().includes(query)
     );
@@ -72,7 +68,7 @@ const Packages = () => {
       }}
     >
       <div>
-        <h1 className="text-3xl font-extrabold underline text-center">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold underline text-center px-2 py-4">
           Manage Packages
         </h1>
         <div className="text-right">
@@ -110,7 +106,7 @@ const Packages = () => {
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
-            style={{ userSelect: "none" }}
+            style={{ userSelect: 'none' }}
           >
             <table className="w-full text-center shadow-md border">
               <colgroup>
@@ -131,7 +127,6 @@ const Packages = () => {
               >
                 <tr>
                   <th className="p-2 border">ID</th>
-                  <th className="p-2 border">Package ID</th>
                   <th className="p-2 border">Title</th>
                   <th className="p-2 border">Description</th>
                   <th className="p-2 border">Start Date</th>
@@ -144,28 +139,24 @@ const Packages = () => {
                   filteredPackages.map((pkg: PackageInterface, index) => (
                     <tr key={pkg._id}>
                       <td className="px-4 py-2 border">{index + 1}</td>
-                      <td className="px-4 py-2 border">{pkg.packageId}</td>
                       <td className="px-4 py-2 border">{pkg.title}</td>
                       <td className="px-4 py-2 border">
                         <Tooltip label={pkg.description} withArrow>
                           <span>
                             {pkg.description.length > 20
-                              ? pkg.description.substring(0, 20) + "..."
+                              ? pkg.description.substring(0, 20) + '...'
                               : pkg.description}
                           </span>
                         </Tooltip>
                       </td>
                       <td className="px-4 py-2 border">
-                        {moment(pkg.startDate).format("YYYY-MM-DD")}
+                        {moment(pkg.startDate).format('YYYY-MM-DD')}
                       </td>
                       <td className="px-4 py-2 border">
-                        {moment(pkg.endDate).format("YYYY-MM-DD")}
+                        {moment(pkg.endDate).format('YYYY-MM-DD')}
                       </td>
                       <td className="px-4 py-2 border">
-                        <Button
-                          onClick={() => handlePackageSelect(pkg._id)
-                          }
-                        >
+                        <Button onClick={() => handlePackageSelect(pkg._id)}>
                           <IconEdit />
                         </Button>
                       </td>

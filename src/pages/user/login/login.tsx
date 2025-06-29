@@ -2,8 +2,8 @@ import { Button, Loader, PasswordInput, TextInput, Modal } from "@mantine/core";
 import { useForm } from "react-hook-form";
 import { LoginForm, loginSchema } from "../../../forms/login";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { login } from "../../../services/common-services";
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -17,6 +17,7 @@ import ForgotPassword from "../../../components/common/forgetPassword/forgetPass
 
 const EmployeeLogin = () => {
   const { showSuccessToast } = useCustomToast();
+  const { organization } = useParams<{ organization: string }>();
   const organizationConfig = useRecoilValue(organizationThemeAtom);
   const setUser = useSetRecoilState(userDetailsAtom);
   const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
@@ -26,6 +27,19 @@ const EmployeeLogin = () => {
     handleSubmit,
   } = useForm<LoginForm>({ resolver: zodResolver(loginSchema) });
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const userRole = localStorage.getItem("userRole");
+
+    if (token) {
+      if (userRole === "recruiter") {
+        navigate(`/${organization}/employee/dashboard/pool-companies`);
+      } else if (userRole === "employee") {
+        navigate(`/${organization}/employee/dashboard/profile`);
+      }
+    }
+  }, [navigate, organization]);
 
   const Submit = async (formData: LoginForm) => {
     try {

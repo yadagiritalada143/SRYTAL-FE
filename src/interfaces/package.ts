@@ -12,3 +12,29 @@ export interface PackageInterface {
     email: string;
   };
 }
+
+export interface Approver {
+  _id: string;
+  firstName: string;
+  lastName: string;
+}
+
+export interface Task {
+  _id: string;
+  title: string;
+  description: string;
+}
+
+export interface PackageItem {
+  _id: string;
+  title: string;
+  description: string;
+  startDate: string;
+  endDate: string;
+  isDeleted: boolean;
+  approvers: Approver[];
+  tasks: Task[];
+  __v: number;
+}
+
+export type PackagesList = PackageItem[];

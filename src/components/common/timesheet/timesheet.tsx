@@ -1,389 +1,590 @@
-import { useState } from "react";
-import { Button, TextInput, Title, Table, Grid } from "@mantine/core";
-import moment from "moment";
-import "moment-timezone";
-import { toast } from "react-toastify";
-import { useMantineTheme } from "@mantine/core";
-import { data } from "./resources";
-import { TaskPopover } from "./task-popover";
-import { IconPlus, IconX } from "@tabler/icons-react";
-import { useModals } from "@mantine/modals";
-import { ColorDiv } from "../style-components/c-div";
-import { useRecoilValue } from "recoil";
-import { organizationThemeAtom } from "../../../atoms/organization-atom";
+import { useCallback, useEffect, useState } from 'react';
+import {
+  Button,
+  Title,
+  Table,
+  Grid,
+  Loader,
+  TextInput,
+  ActionIcon,
+  Group,
+  Badge,
+  Text,
+  Box,
+  Tooltip,
+  Collapse,
+  Center,
+} from '@mantine/core';
+import { DatePickerInput, DatesRangeValue } from '@mantine/dates';
+import {
+  IconCalendar,
+  IconChevronLeft,
+  IconChevronRight,
+  IconSearch,
+  IconSunOff,
+  IconBeach,
+  IconCalendarOff,
+  IconX,
+  IconCheck,
+} from '@tabler/icons-react';
+import { useDisclosure } from '@mantine/hooks';
+import moment from 'moment-timezone';
+import { toast } from 'react-toastify';
+import { TaskPopover } from './task-popover';
+import { ColorDiv } from '../style-components/c-div';
+import { useRecoilValue } from 'recoil';
+import { organizationThemeAtom } from '../../../atoms/organization-atom';
+import { EmployeeTimesheet } from '../../../interfaces/timesheet';
+import { getTimesheetData } from '../../../services/common-services';
+import {
+  formatData,
+  formatDisplayDate,
+  getDateRangeArray,
+  getDateStatus,
+  getProjectTotalHours,
+  getTasksByProject,
+  navigateDateRange,
+  openEditModal,
+  trackChanges,
+} from './helper';
+import {
+  ApplyLeaveTimesheetModal,
+  ConfirmTimesheetSubmitModal,
+  EditTimeEntryModal,
+} from './modals';
+
 const DateTableComponent = () => {
-  const theme = useMantineTheme();
-  const modals = useModals();
-  const [startDate, setStartDate] = useState<string>(
-    moment().tz("Asia/Kolkata").format("YYYY-MM-DD")
+  const [openedLeaveModal, { open: openLeaveModal, close: closeLeaveModal }] =
+    useDisclosure(false);
+  const [openedEntryModal, { open: openEntryModal, close: closeEntryModal }] =
+    useDisclosure(false);
+  const [
+    openedSubmitModal,
+    { open: openSubmitModal, close: closeSubmitModal },
+  ] = useDisclosure(false);
+  const [openedSearch, { toggle: toggleSearch }] = useDisclosure(false);
+  const [dateRange, setDateRange] = useState<DatesRangeValue>([
+    moment().tz('Asia/Kolkata').toDate(),
+    moment().tz('Asia/Kolkata').add(6, 'days').toDate(),
+  ]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [timeEntries, setTimeEntries] = useState<EmployeeTimesheet[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentEntry, setCurrentEntry] = useState<EmployeeTimesheet>();
+  const [originalEntries, setOriginalEntries] = useState<EmployeeTimesheet[]>(
+    []
   );
-  const [endDate, setEndDate] = useState<string>(
-    moment().tz("Asia/Kolkata").add(7, "days").format("YYYY-MM-DD")
-  );
-  const [dateRange, setDateRange] = useState<string[]>([]);
-  const [daysInRange, setDaysInRange] = useState<number>(0);
-  const [workingHours, setWorkingHours] = useState(data);
+  const [changesMade, setChangesMade] = useState<EmployeeTimesheet[]>([]);
   const organizationConfig = useRecoilValue(organizationThemeAtom);
 
-  const getDateRange = (start: string, end: string): string[] => {
-    const startDt = new Date(start);
-    const endDt = new Date(end);
-    const dates: string[] = [];
-    while (startDt <= endDt) {
-      dates.push(new Date(startDt).toISOString().split("T")[0]);
-      startDt.setDate(startDt.getDate() + 1);
+  const fetchTimesheetData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const [start, end] = dateRange;
+      const responseData = await getTimesheetData(start, end);
+      const formattedTimesheet = formatData(responseData);
+      console.log(formattedTimesheet);
+      setTimeEntries(formattedTimesheet);
+      setOriginalEntries(formattedTimesheet);
+      setChangesMade([]);
+    } catch {
+      toast.error('Failed to fetch timesheet data');
+    } finally {
+      setIsLoading(false);
     }
-    return dates;
-  };
+  }, [dateRange]);
 
-  const handleSearch = () => {
-    if (startDate && endDate) {
-      if (new Date(startDate) > new Date(endDate)) {
-        toast.error("Start date must be before end date.");
-        return;
-      }
-      const range = getDateRange(startDate, endDate);
-      setDateRange(range);
-      setDaysInRange(range.length);
+  useEffect(() => {
+    const [start, end] = dateRange;
+    if (start && end) {
+      fetchTimesheetData();
     }
-  };
+  }, [fetchTimesheetData, dateRange]);
 
-  const extendRange = (direction: "forward" | "backward"): void => {
-    if (!startDate || !endDate) return;
+  const filteredProjects = Array.from(
+    new Map(
+      timeEntries
+        .filter(
+          entry =>
+            entry.project_name
+              .toLowerCase()
+              .includes(searchQuery.toLowerCase()) ||
+            entry.task_name.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+        .map(entry => [
+          entry.project_id,
+          {
+            id: entry.project_id,
+            title: entry.project_name,
+            taskId: entry.task_id,
+            task_name: entry.task_name,
+          },
+        ])
+    ).values()
+  );
 
-    const startDt = new Date(startDate);
-    const endDt = new Date(endDate);
-    const rangeExtension = daysInRange;
+  const filteredTasks = Array.from(
+    new Map(
+      timeEntries
+        .filter(
+          entry =>
+            entry.project_name
+              .toLowerCase()
+              .includes(searchQuery.toLowerCase()) ||
+            entry.task_name.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+        .map(entry => [
+          entry.task_id,
+          {
+            id: entry.project_id,
+            title: entry.project_name,
+            taskId: entry.task_id,
+            task_name: entry.task_name,
+          },
+        ])
+    ).values()
+  );
 
-    if (direction === "backward") {
-      const newStart = new Date(
-        startDt.setDate(startDt.getDate() - rangeExtension)
-      );
+  const filteredTasksIds = new Set(filteredTasks.map(p => p.taskId));
 
-      const newEnd = new Date(endDt.setDate(endDt.getDate() - rangeExtension));
+  const handleEntrySubmit = () => {
+    if (!currentEntry) return;
 
-      setStartDate(newStart.toISOString().split("T")[0]);
-      setEndDate(newEnd.toISOString().split("T")[0]);
-      const newRange = getDateRange(
-        newStart.toISOString().split("T")[0],
-        newEnd.toISOString().split("T")[0]
-      );
-      setDateRange(newRange);
-    } else {
-      const newStart = new Date(
-        startDt.setDate(startDt.getDate() + rangeExtension)
-      );
-
-      const newEnd = new Date(endDt.setDate(endDt.getDate() + rangeExtension));
-      setStartDate(newStart.toISOString().split("T")[0]);
-      setEndDate(newEnd.toISOString().split("T")[0]);
-      const newRange = getDateRange(
-        newStart.toISOString().split("T")[0],
-        newEnd.toISOString().split("T")[0]
-      );
-      setDateRange(newRange);
+    if (!currentEntry.comments.trim()) {
+      toast.error('Comments are required');
+      return;
     }
-  };
 
-  const getProjectTotalHours = (projectIndex: number) => {
-    return dateRange.reduce((total, date) => {
-      const hoursForDate = workingHours[projectIndex].activities.reduce(
-        (taskTotal, task) => {
-          const matchedDate = task.days.find(
-            (taskDate) =>
-              taskDate.date === moment(date, "YYYY-MM-DD").format("DD-MM-YYYY")
-          );
-          return taskTotal + (matchedDate ? matchedDate.hours : 0);
-        },
-        0
-      );
-      return total + hoursForDate;
-    }, 0);
-  };
-  const handleChange = (
-    newHours: number,
-    projectIndex: number,
-    taskIndex: number,
-    date: string
-  ) => {
-    if (newHours) {
-      setWorkingHours((prev) => {
-        const updatedWorkingHours = prev.map((project, pIndex) => {
-          if (pIndex === projectIndex) {
-            return {
-              ...project,
-              activities: project.activities.map((task, tIndex) => {
-                if (tIndex === taskIndex) {
-                  const dateExists = task.days.some(
-                    (day) =>
-                      day.date ===
-                      moment(date, "YYYY-MM-DD").format("DD-MM-YYYY")
-                  );
+    const formattedDate = moment(currentEntry.date).format('YYYY-MM-DD');
 
-                  const updatedDays = dateExists
-                    ? task.days.map((day) =>
-                        day.date ===
-                        moment(date, "YYYY-MM-DD").format("DD-MM-YYYY")
-                          ? { ...day, hours: newHours }
-                          : day
-                      )
-                    : [
-                        ...task.days,
-                        {
-                          date: moment(date, "YYYY-MM-DD").format("DD-MM-YYYY"),
-                          hours: newHours,
-                        },
-                      ];
-
-                  return {
-                    ...task,
-                    days: updatedDays,
-                  };
-                }
-                return task;
-              }),
-            };
-          }
-          return project;
-        });
-
-        return updatedWorkingHours;
-      });
-    }
-  };
-
-  const AddTask = (projectIndex: number) => {
-    const id = modals.openModal({
-      title: "Add New Task",
-      children: (
-        <TextInput
-          placeholder="Enter task name"
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && e.currentTarget.value) {
-              const newTaskName = e.currentTarget.value;
-              setWorkingHours((prev) => {
-                const updatedHours = [...prev];
-                updatedHours[projectIndex].activities.push({
-                  task_id: newTaskName,
-                  days: [],
-                });
-                return updatedHours;
-              });
-              modals.closeModal(id);
-            }
-          }}
-        />
-      ),
-    });
-  };
-
-  const ApplyForLeave = () => {
-    const handleApply = (id: string) => {
-      modals.closeModal(id);
+    const newEntry = {
+      date: formattedDate,
+      isVacation: false,
+      isHoliday: false,
+      isWeekOff: false,
+      project_id: currentEntry.project_id,
+      task_id: currentEntry.task_id,
+      hours: currentEntry.hours,
+      project_name: currentEntry.project_name,
+      task_name: currentEntry.task_name,
+      comments: currentEntry.comments,
+      leaveReason: currentEntry.leaveReason,
+      id: currentEntry.id,
+      status: 'pending',
     };
-    const id = modals.openModal({
-      title: "Apply for leave",
-      children: (
-        <div className="flex flex-col gap-5">
-          <TextInput placeholder="Reason" />
-          <TextInput type="date" placeholder="Date" />
-          <Button onClick={() => handleApply(id)}>Apply</Button>
-        </div>
-      ),
+
+    setTimeEntries(prev => {
+      const existingIndex = prev.findIndex(
+        e =>
+          e.project_id === currentEntry.project_id &&
+          e.task_id === currentEntry.task_id &&
+          e.date === formattedDate
+      );
+
+      if (existingIndex >= 0) {
+        const updated = [...prev];
+        updated[existingIndex] = newEntry;
+        return updated;
+      }
+
+      toast.warning('No existing entry found to update');
+      return prev;
     });
+
+    trackChanges(newEntry, originalEntries, changesMade, setChangesMade);
+    closeEntryModal();
+  };
+
+  const renderStatusBadge = ({
+    label,
+    comment,
+  }: {
+    label: string;
+    comment: string;
+  }) => {
+    const statusConfig = {
+      weekoff: {
+        color: 'blue',
+        icon: <IconSunOff size={14} />,
+        label: 'Week Off',
+        comment,
+      },
+      holiday: {
+        color: 'orange',
+        icon: <IconBeach size={14} />,
+        label: 'Holiday',
+        comment,
+      },
+      leave: {
+        color: 'red',
+        icon: <IconCalendarOff size={14} />,
+        label: 'Leave',
+        comment,
+      },
+    };
+
+    const config = statusConfig[label as keyof typeof statusConfig];
+
+    return (
+      <Badge
+        color={config.color}
+        variant="light"
+        leftSection={config.icon}
+        style={{ textTransform: 'none' }}
+      >
+        <Text className="text-xs">
+          <TaskPopover
+            full={config.comment}
+            short={config.label}
+            bgColor={[
+              organizationConfig.organization_theme.theme.backgroundColor,
+              organizationConfig.organization_theme.theme.color,
+            ]}
+          />
+        </Text>
+      </Badge>
+    );
+  };
+
+  const renderHoursCell = (timesheet: EmployeeTimesheet, edit: boolean) => {
+    const {
+      date,
+      task_id,
+      project_id,
+      hours,
+      comments,
+      status: timesheetStatus,
+    } = timesheet;
+    const status = getDateStatus(date, task_id, project_id, timeEntries);
+
+    if (status) {
+      return (
+        <Box
+          onDoubleClick={() =>
+            edit && openEditModal(timesheet, setCurrentEntry, openEntryModal)
+          }
+          style={{
+            height: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+          }}
+        >
+          {renderStatusBadge(status)}
+        </Box>
+      );
+    }
+
+    return (
+      <Tooltip label="Double click to edit hours" withArrow>
+        <Box
+          onDoubleClick={() =>
+            edit && openEditModal(timesheet, setCurrentEntry, openEntryModal)
+          }
+          style={{
+            height: '28px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+          }}
+        >
+          <TaskPopover
+            short={hours.toString() || '0'}
+            full={edit ? comments : "Can't Edit"}
+            status={edit ? timesheetStatus : 'Not started'}
+            bgColor={[
+              organizationConfig.organization_theme.theme.backgroundColor,
+              organizationConfig.organization_theme.theme.color,
+            ]}
+          />
+        </Box>
+      </Tooltip>
+    );
   };
 
   return (
-    <ColorDiv className="w-full p-4">
-      <Title order={2} className="mb-4 text-center">
+    <ColorDiv className="w-100 p-5">
+      <Title
+        order={2}
+        className="text-xl sm:text-2xl md:text-3xl font-extrabold underline text-center px-2 py-4"
+      >
         Timesheet
       </Title>
 
-      <Grid align="flex-end" className="mb-4">
-        <Grid.Col span={3}>
-          <TextInput
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            label="Start Date"
-            className="mb-2"
-          />
+      <Grid align="center" gutter="md" className="mb-6 p-4 rounded-md">
+        <Grid.Col span={{ xs: 12, md: 8 }}>
+          <Group>
+            <ActionIcon
+              variant="outline"
+              radius="xl"
+              color={organizationConfig.organization_theme.theme.color}
+              size="lg"
+              onClick={() =>
+                navigateDateRange('previous', dateRange, setDateRange)
+              }
+            >
+              <IconChevronLeft size={18} />
+            </ActionIcon>
+
+            <DatePickerInput
+              type="range"
+              onChange={value => {
+                if (value[0] && value[1]) {
+                  const daysDiff =
+                    moment(value[1]).diff(moment(value[0]), 'days') + 1;
+                  if (daysDiff > 14) {
+                    toast.error('Maximum date range is 14 days');
+                    return;
+                  }
+                }
+                setDateRange(value);
+              }}
+              leftSection={<IconCalendar size={16} />}
+              size="sm"
+              minDate={moment().subtract(1, 'month').toDate()}
+              maxDate={moment().add(2, 'weeks').toDate()}
+              value={dateRange}
+              placeholder="Pick date range (max 14 days)"
+              allowSingleDateInRange={false}
+            />
+
+            <ActionIcon
+              variant="outline"
+              color={organizationConfig.organization_theme.theme.color}
+              radius="xl"
+              size="lg"
+              onClick={() => navigateDateRange('next', dateRange, setDateRange)}
+            >
+              <IconChevronRight size={18} />
+            </ActionIcon>
+          </Group>
         </Grid.Col>
-        <Grid.Col span={3}>
-          <TextInput
-            type="date"
-            value={endDate}
-            min={startDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            label="End Date"
-            className="mb-2"
-          />
+
+        <Grid.Col span={{ xs: 12, md: 4 }}>
+          <Group justify="flex-end" gap="sm">
+            <Button
+              onClick={toggleSearch}
+              variant="outline"
+              color="gray"
+              radius="md"
+              size="sm"
+              leftSection={
+                openedSearch ? <IconX size={16} /> : <IconSearch size={16} />
+              }
+            >
+              {openedSearch ? 'Close' : 'Search'}
+            </Button>
+
+            <Button
+              onClick={openLeaveModal}
+              color="green"
+              radius="md"
+              size="sm"
+              leftSection={<IconCalendarOff size={16} />}
+            >
+              Apply Leave
+            </Button>
+          </Group>
         </Grid.Col>
-        <div className="flex justify-center mb-4">
-          <Button onClick={handleSearch} className="mx-2">
-            Search
-          </Button>
-          <Button onClick={() => extendRange("backward")} className="mx-2">
-            {"<"}
-          </Button>
-          <Button onClick={() => extendRange("forward")} className="mx-2">
-            {">"}
-          </Button>
-          <Button onClick={ApplyForLeave} className="mx-4">
-            Apply For Leave
-          </Button>
-        </div>
       </Grid>
 
-      {dateRange.length > 0 && (
-        <div style={{ overflowX: "auto", padding: "0 1rem" }}>
-          <Table
-            striped
-            highlightOnHover
-            className="mt-4 shadow-lg"
-            style={{
-              border: "1px solid #ddd",
-              borderSpacing: "0 10px",
-              width: "100%",
-            }}
+      <Collapse in={openedSearch} mb="md">
+        <TextInput
+          placeholder="Search projects or tasks..."
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.currentTarget.value)}
+          rightSection={
+            searchQuery && (
+              <ActionIcon onClick={() => setSearchQuery('')}>
+                <IconX size={16} />
+              </ActionIcon>
+            )
+          }
+        />
+      </Collapse>
+      {changesMade.length > 0 && (
+        <Box mt="md" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <Button
+            leftSection={<IconCheck size={16} />}
+            color="green"
+            onClick={openSubmitModal}
           >
-            <thead>
-              <tr style={{ backgroundColor: theme.colors.primary[0] }}>
+            Submit Changes
+          </Button>
+        </Box>
+      )}
+
+      {isLoading ? (
+        <Box
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '200px',
+          }}
+        >
+          <Loader
+            size="xl"
+            color={organizationConfig.organization_theme.theme.button.color}
+          />
+        </Box>
+      ) : (
+        <Box style={{ overflowX: 'auto' }}>
+          <Table striped highlightOnHover>
+            <thead
+              className="text-xs"
+              style={{
+                backgroundColor:
+                  organizationConfig.organization_theme.theme.backgroundColor,
+                color: organizationConfig.organization_theme.theme.color,
+              }}
+            >
+              <tr
+                style={{
+                  backgroundColor:
+                    organizationConfig.organization_theme.theme.backgroundColor,
+                  color: organizationConfig.organization_theme.theme.color,
+                }}
+              >
                 <th
-                  style={{ padding: "1rem", width: "150px", minWidth: "120px" }}
+                  className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis"
+                  style={{ minWidth: '150px' }}
                 >
-                  Project Name
+                  Project
                 </th>
                 <th
-                  style={{
-                    border: `1px solid ${organizationConfig.organization_theme.theme.button.textColor}`,
-                    padding: "1rem",
-                    width: "190px",
-                    minWidth: "180px",
-                  }}
+                  className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis"
+                  style={{ minWidth: '150px' }}
                 >
-                  Task Details
+                  Task
                 </th>
-                {dateRange.map((date) => (
+                {getDateRangeArray(...dateRange).map(date => (
                   <th
                     key={date}
-                    style={{
-                      padding: "1rem",
-                      width: "120px",
-                      minWidth: "100px",
-                    }}
+                    style={{ minWidth: '80px', textAlign: 'center' }}
                   >
-                    {moment(date).format("DD MMM")}
+                    {formatDisplayDate(date)}
                   </th>
                 ))}
-                <th
-                  style={{
-                    padding: "1rem",
-                    width: "120px",
-                    textAlign: "center",
-                  }}
-                >
-                  Total Hours
-                </th>
+                <th style={{ minWidth: '80px' }}>Total</th>
               </tr>
             </thead>
             <tbody>
-              {workingHours.map((project: any, projectIndex: number) =>
-                project.activities.map((task: any, taskIndex: number) => (
-                  <tr
-                    key={`${project.project_id}-${task.task_id}-${taskIndex}`}
-                  >
+              {filteredProjects.map(project => {
+                const tasks = getTasksByProject(
+                  project.id,
+                  timeEntries,
+                  searchQuery
+                );
+                if (tasks.length === 0) return null;
+
+                return tasks.map((task, taskIndex) => (
+                  <tr key={`${project.id}-${task.id}`}>
                     {taskIndex === 0 && (
                       <td
-                        rowSpan={project.activities.length}
-                        style={{
-                          padding: "1rem",
-                          border: `1px solid ${organizationConfig.organization_theme.theme.button.textColor}`,
-                        }}
+                        className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis "
+                        rowSpan={tasks.length}
+                        style={{ verticalAlign: 'middle' }}
                       >
-                        <div className="flex flex-col text-center gap-10">
-                          <p>{project.project_id}</p>
-                          <p
-                            style={{ cursor: "pointer" }}
-                            className="rounded-full"
-                            onClick={() => AddTask(projectIndex)}
-                          >
-                            <Button className="rounded-full">
-                              <IconPlus />
-                            </Button>
-                          </p>
-                        </div>
+                        <Center>
+                          <Text fw={500} lineClamp={2}>
+                            {project.title}
+                          </Text>
+                        </Center>
                       </td>
                     )}
-                    <td
-                      style={{
-                        padding: "1rem",
-                        border: `1px solid ${organizationConfig.organization_theme.theme.button.textColor}`,
-                      }}
-                    >
-                      <div className=" w-full flex justify-between">
-                        <TaskPopover task={task.task_id} />
-                        <p>
-                          <Button className="rounded-full">
-                            <IconX />
-                          </Button>
-                        </p>
-                      </div>
+                    <td className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis">
+                      <Center>
+                        <TaskPopover
+                          short={task.title}
+                          full={task.title}
+                          bgColor={[
+                            organizationConfig.organization_theme.theme
+                              .backgroundColor,
+                            organizationConfig.organization_theme.theme.color,
+                          ]}
+                        />
+                      </Center>
                     </td>
-                    {dateRange.map((date) => {
-                      const matchedDate = task.days.find(
-                        (taskDate: any) =>
-                          moment(taskDate.date, "DD-MM-YYYY").format(
-                            "YYYY-MM-DD"
-                          ) === date
+                    {getDateRangeArray(...dateRange).map(date => {
+                      const entry = timeEntries.find(
+                        e =>
+                          e.project_id === project.id &&
+                          e.task_id === task.id &&
+                          e.date === moment(date).format('YYYY-MM-DD')
                       );
-                      const hours = matchedDate ? matchedDate.hours : "";
-
                       return (
                         <td
-                          key={`${date}-${task.task_id}`}
-                          style={{
-                            padding: "1rem",
-                            textAlign: "center",
-                            width: "120px",
-                            border: `1px solid ${organizationConfig.organization_theme.theme.button.textColor}`,
-                          }}
+                          className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis"
+                          key={`${project.id}-${task.id}-${date}`}
                         >
-                          <TextInput
-                            placeholder="0"
-                            value={hours}
-                            onChange={(e) =>
-                              handleChange(
-                                parseFloat(e.target.value) || 0,
-                                projectIndex,
-                                taskIndex,
-                                date
-                              )
-                            }
-                            style={{ textAlign: "center" }}
-                          />
+                          {entry
+                            ? renderHoursCell(entry, true)
+                            : renderHoursCell(
+                                {
+                                  date: moment(date).format('YYYY-MM-DD'),
+                                  isVacation: false,
+                                  isHoliday: false,
+                                  isWeekOff: false,
+                                  project_id: project.id,
+                                  task_id: task.id,
+                                  hours: 0,
+                                  project_name: project.title,
+                                  task_name: task.title,
+                                  comments: '',
+                                  leaveReason: '',
+                                  id: '',
+                                  status: 'pending',
+                                },
+                                false
+                              )}
                         </td>
                       );
                     })}
                     {taskIndex === 0 && (
                       <td
-                        rowSpan={project.activities.length}
-                        style={{
-                          padding: "1rem",
-                          textAlign: "center",
-                          border: `1px solid ${organizationConfig.organization_theme.theme.button.textColor}`,
-                        }}
+                        className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis"
+                        rowSpan={tasks.length}
+                        style={{ textAlign: 'center', verticalAlign: 'middle' }}
                       >
-                        {getProjectTotalHours(projectIndex)}
+                        {getProjectTotalHours(
+                          project.id,
+                          timeEntries,
+                          dateRange,
+                          filteredTasksIds
+                        )}
                       </td>
                     )}
                   </tr>
-                ))
-              )}
+                ));
+              })}
             </tbody>
           </Table>
-        </div>
+        </Box>
       )}
+      {currentEntry && (
+        <EditTimeEntryModal
+          openedEntryModal={openedEntryModal}
+          closeEntryModal={closeEntryModal}
+          currentEntry={currentEntry}
+          setCurrentEntry={setCurrentEntry}
+          handleEntrySubmit={handleEntrySubmit}
+        />
+      )}
+      <ApplyLeaveTimesheetModal
+        openedLeaveModal={openedLeaveModal}
+        closeLeaveModal={closeLeaveModal}
+        timeEntries={timeEntries}
+        fetchTimesheetData={fetchTimesheetData}
+      />
+      <ConfirmTimesheetSubmitModal
+        openedSubmitModal={openedSubmitModal}
+        closeSubmitModal={closeSubmitModal}
+        changesMade={changesMade}
+        setChangesMade={setChangesMade}
+      />
     </ColorDiv>
   );
 };

@@ -1,22 +1,24 @@
-import { Controller, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { TextInput, Button, Loader, Textarea } from "@mantine/core";
-import { DateInput } from "@mantine/dates";
-import { useMantineTheme } from "@mantine/core";
-import { registerPackage } from "../../../../services/admin-services";
-import { useNavigate } from "react-router";
-import { BgDiv } from "../../../common/style-components/bg-div";
-import { useRecoilValue } from "recoil";
-import { organizationThemeAtom } from "../../../../atoms/organization-atom";
-import { useCustomToast } from "../../../../utils/common/toast";
+import { Controller, useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { TextInput, Button, Loader, Textarea } from '@mantine/core';
+import { DateInput } from '@mantine/dates';
+import { registerPackage } from '../../../../services/admin-services';
+import { useNavigate, useParams } from 'react-router';
+import { BgDiv } from '../../../common/style-components/bg-div';
+import { useRecoilValue } from 'recoil';
+import { organizationThemeAtom } from '../../../../atoms/organization-atom';
+import { useCustomToast } from '../../../../utils/common/toast';
 import {
   AddPackageForm,
   addPackageSchema,
-} from "../../../../forms/add-package";
+} from '../../../../forms/add-package';
+import { toast } from 'react-toastify';
+import { BackButton } from '../../../common/style-components/buttons';
 
 const AddPackage = () => {
   const navigate = useNavigate();
-  const theme = useMantineTheme();
+  const params = useParams();
+  const packageId = params.packageId as string;
   const organizationConfig = useRecoilValue(organizationThemeAtom);
   const {
     register,
@@ -37,8 +39,8 @@ const AddPackage = () => {
       reset();
 
       navigate(-1);
-    } catch (error) {
-      throw error;
+    } catch (error: any) {
+      toast.error(error.message);
     }
   };
 
@@ -53,22 +55,19 @@ const AddPackage = () => {
           }}
           className="rounded-lg shadow-lg w-full p-8"
         >
-          <div className="px-4 py-4 flex justify-between">
-            <div></div>
-            <h1 className="text-3xl font-extrabold underline text-center">
+          <div className="px-2 py-4 flex justify-between items-center flex-wrap">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold underline">
               Add Package
             </h1>
-            <Button bg={theme.colors.primary[5]} onClick={() => navigate(-1)}>
-              {" "}
-              Cancel
-            </Button>
+            <BackButton id={packageId} />
           </div>
-            <TextInput
-              label="Title"
-              placeholder="Enter Title"
-              {...register("title")}
-              error={errors.title?.message}
-            />
+
+          <TextInput
+            label="Title"
+            placeholder="Enter Title"
+            {...register('title')}
+            error={errors.title?.message}
+          />
           <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 mt-4">
             <Controller
               control={control}
@@ -104,9 +103,10 @@ const AddPackage = () => {
           </div>
 
           <Textarea
-            label="Description" className="mt-4"
+            label="Description"
+            className="mt-4"
             placeholder="Enter Description"
-            {...register("description")}
+            {...register('description')}
             maxRows={4}
             error={errors.description?.message}
           />
@@ -128,7 +128,7 @@ const AddPackage = () => {
               }
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Creating..." : "Create Package"}
+              {isSubmitting ? 'Creating...' : 'Create Package'}
             </Button>
           </div>
         </form>
