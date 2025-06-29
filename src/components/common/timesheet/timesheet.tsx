@@ -83,7 +83,6 @@ const DateTableComponent = () => {
       const [start, end] = dateRange;
       const responseData = await getTimesheetData(start, end);
       const formattedTimesheet = formatData(responseData);
-      console.log(formattedTimesheet);
       setTimeEntries(formattedTimesheet);
       setOriginalEntries(formattedTimesheet);
       setChangesMade([]);
@@ -198,9 +197,11 @@ const DateTableComponent = () => {
   const renderStatusBadge = ({
     label,
     comment,
+    status,
   }: {
     label: string;
     comment: string;
+    status: string;
   }) => {
     const statusConfig = {
       weekoff: {
@@ -236,6 +237,7 @@ const DateTableComponent = () => {
           <TaskPopover
             full={config.comment}
             short={config.label}
+            status={status}
             bgColor={[
               organizationConfig.organization_theme.theme.backgroundColor,
               organizationConfig.organization_theme.theme.color,
@@ -271,7 +273,7 @@ const DateTableComponent = () => {
             cursor: 'pointer',
           }}
         >
-          {renderStatusBadge(status)}
+          {renderStatusBadge({ ...status, status: timesheetStatus })}
         </Box>
       );
     }
@@ -405,7 +407,11 @@ const DateTableComponent = () => {
         />
       </Collapse>
       {changesMade.length > 0 && (
-        <Box mt="md" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <Box
+          mt="md"
+          mb="md"
+          style={{ display: 'flex', justifyContent: 'flex-end' }}
+        >
           <Button
             leftSection={<IconCheck size={16} />}
             color="green"

@@ -3,6 +3,7 @@ import { AddEmployeeForm } from '../forms/add-employee';
 import { EmployeeUpdateForm } from '../forms/update-employee';
 import { AddPackageForm } from '../forms/add-package';
 import { PackageUpdateForm } from '../forms/update-package';
+import moment from 'moment';
 
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -124,7 +125,11 @@ export const registerPackage = async (packageDetails: AddPackageForm) => {
     }
     const response = await apiClient.post(
       '/admin/addPackageByAdmin',
-      packageDetails,
+      {
+        ...packageDetails,
+        startDate: moment(packageDetails.startDate).format('YYYY-MM-DD'),
+        endDate: moment(packageDetails.endDate).format('YYYY-MM-DD'),
+      },
       { headers: { Auth_token: `Bearer ${token}` } }
     );
 
@@ -158,7 +163,14 @@ export const updatePackageByAdmin = async (
   try {
     const response = await apiClient.put(
       '/admin/updatePackageByAdmin',
-      { id: packageId, detailsToUpdate: packageDetails },
+      {
+        id: packageId,
+        detailsToUpdate: {
+          ...packageDetails,
+          startDate: moment(packageDetails.startDate).format('YYYY-MM-DD'),
+          endDate: moment(packageDetails.endDate).format('YYYY-MM-DD'),
+        },
+      },
       { headers: { auth_token: `Bearer ${adminToken}` } }
     );
 

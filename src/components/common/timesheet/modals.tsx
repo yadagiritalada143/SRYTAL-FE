@@ -12,9 +12,9 @@ import { StandardModal } from '../../UI/Models/base-model';
 import moment from 'moment';
 import { EmployeeTimesheet } from '../../../interfaces/timesheet';
 import { useState } from 'react';
-import { DatePickerInput, DatesRangeValue } from '@mantine/dates';
+import { DatePickerInput, DateValue } from '@mantine/dates';
 import { toast } from 'react-toastify';
-import { getDateRangeArray, prepareSubmitData } from './helper';
+import { prepareSubmitData } from './helper';
 import { submitTimeSheet } from '../../../services/common-services';
 import { useCustomToast } from '../../../utils/common/toast';
 import { IconCheck, IconX } from '@tabler/icons-react';
@@ -126,7 +126,7 @@ export const ApplyLeaveTimesheetModal = ({
 }) => {
   const [leaveReason, setLeaveReason] = useState('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [leaveDates, setLeaveDates] = useState<DatesRangeValue>([null, null]);
+  const [leaveDate, setLeaveDate] = useState<DateValue>();
   const { showSuccessToast } = useCustomToast();
 
   const handleLeaveSubmit = async () => {
@@ -135,16 +135,12 @@ export const ApplyLeaveTimesheetModal = ({
       return;
     }
 
-    if (!leaveDates[0] || !leaveDates[1]) {
-      toast.error('Please select leave dates');
+    if (!leaveDate) {
+      toast.error('Please select leave date');
       return;
     }
 
-    const dateRangeArray = getDateRangeArray(leaveDates[0], leaveDates[1]);
-    if (dateRangeArray.length === 0) {
-      toast.error('Invalid date range');
-      return;
-    }
+    const dateRangeArray = [leaveDate];
 
     const projectsMap = new Map<
       string,
@@ -206,7 +202,7 @@ export const ApplyLeaveTimesheetModal = ({
             }
             return {
               id: timesheetMap.get(formattedDate),
-              date: moment(date).add(1, 'day').toDate(),
+              date: moment(date).format('YYYY-MM-DD'),
               isVacation: true,
               leaveReason,
               hours: 0,
@@ -231,7 +227,7 @@ export const ApplyLeaveTimesheetModal = ({
       fetchTimesheetData();
       closeLeaveModal();
       setLeaveReason('');
-      setLeaveDates([null, null]);
+      setLeaveDate(null);
     } catch (error) {
       console.error('Leave submission error:', error);
       toast.error('Failed to submit leave');
@@ -260,15 +256,13 @@ export const ApplyLeaveTimesheetModal = ({
         />
 
         <DatePickerInput
-          type="range"
-          label="Leave Dates"
+          label="Leave Date"
           placeholder="Select leave period"
-          value={leaveDates}
-          onChange={setLeaveDates}
+          value={leaveDate}
+          onChange={date => setLeaveDate(date)}
           mb="sm"
           minDate={new Date()}
           maxDate={moment().add(3, 'months').toDate()}
-          allowSingleDateInRange
           clearable
           required
         />

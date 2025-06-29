@@ -56,7 +56,7 @@ export const formatData = (data: { packageId: Package; tasks: Task[] }[]) => {
     pkg.tasks.flatMap(task =>
       task.timesheet.map(timesheet => {
         return {
-          date: moment.utc(timesheet.date).format('YYYY-MM-DD'),
+          date: moment(timesheet.date).format('YYYY-MM-DD'),
           isVacation: timesheet.isVacation ?? false,
           isHoliday: timesheet.isHoliday ?? false,
           isWeekOff: timesheet.isWeekOff ?? false,
@@ -234,7 +234,7 @@ export const prepareSubmitData = (changesMade: EmployeeTimesheet[]) => {
     }
 
     task.timesheet.push({
-      date: moment(entry.date).add(1, 'day').toDate(),
+      date: moment(entry.date).format('YYYY-MM-DD'),
       hours: entry.hours,
       comments: entry.comments,
       isVacation: false,
