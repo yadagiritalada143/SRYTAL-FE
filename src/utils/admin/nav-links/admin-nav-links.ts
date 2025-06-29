@@ -1,7 +1,6 @@
 import {
   IconBuildings,
   IconDroplet,
-  IconFileSpreadsheet,
   IconNetwork,
   IconNotebook,
   IconPackage,
@@ -23,12 +22,6 @@ export const adminNavLinks = [
     url: 'admin/dashboard/profile',
     icon: IconUserEdit,
     name: 'Profile',
-  },
-  {
-    role: 'admin',
-    url: 'admin/dashboard/timesheet',
-    icon: IconFileSpreadsheet,
-    name: 'Timesheet',
   },
   {
     role: 'admin',

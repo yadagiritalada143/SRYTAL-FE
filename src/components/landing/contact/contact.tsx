@@ -1,9 +1,9 @@
-import { useForm } from "react-hook-form";
-import { TextInput, Textarea, Button, Group } from "@mantine/core";
-import { ContactForm, contactForm } from "../../../forms/contact";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { sendContactUsMail } from "../../../services/common-services";
-import { useState } from "react";
+import { useForm } from 'react-hook-form';
+import { TextInput, Textarea, Button } from '@mantine/core';
+import { ContactForm, contactForm } from '../../../forms/contact';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { sendContactUsMail } from '../../../services/common-services';
+import { useState } from 'react';
 
 const ContactComponent = () => {
   const {
@@ -11,27 +11,27 @@ const ContactComponent = () => {
     handleSubmit,
     formState: { errors },
   } = useForm<ContactForm>({ resolver: zodResolver(contactForm) });
-  const [submit, setSubmit] = useState({ message: "", status: false });
+  const [submit, setSubmit] = useState({ message: '', status: false });
 
   const onSubmit = (data: ContactForm) => {
     sendContactUsMail(data)
       .then(() => {
         setSubmit({
           message:
-            "Thank you for reaching out! Your message has been successfully sent. We will get back to you as soon as possible",
+            'Thank you for reaching out! Your message has been successfully sent. We will get back to you as soon as possible',
           status: true,
         });
         setTimeout(() => {
-          setSubmit({ message: "", status: false });
+          setSubmit({ message: '', status: false });
         }, 5000);
       })
       .catch(() => {
         setTimeout(() => {
-          setSubmit({ message: "", status: false });
+          setSubmit({ message: '', status: false });
         }, 5000);
         setSubmit({
           message:
-            "Oops! Something went wrong while sending your message. Please try again later or contact us directly.",
+            'Oops! Something went wrong while sending your message. Please try again later or contact us directly.',
           status: true,
         });
       });
@@ -50,18 +50,18 @@ const ContactComponent = () => {
         <TextInput
           label="Company Name"
           placeholder="Your company name"
-          {...register("companyName", { required: "Company name is required" })}
+          {...register('companyName', { required: 'Company name is required' })}
           error={errors.companyName?.message}
         />
 
         <TextInput
           label="Email"
           placeholder="Your email"
-          {...register("customerEmail", {
-            required: "Email is required",
+          {...register('customerEmail', {
+            required: 'Email is required',
             pattern: {
               value: /^\S+@\S+$/i,
-              message: "Please enter valid email !",
+              message: 'Please enter valid email !',
             },
           })}
           error={errors.customerEmail?.message}
@@ -71,7 +71,7 @@ const ContactComponent = () => {
         <TextInput
           label="Subject"
           placeholder="Message subject"
-          {...register("subject", { required: "Please enter the Subject !" })}
+          {...register('subject', { required: 'Please enter the Subject !' })}
           error={errors.subject?.message}
           mt="md"
         />
@@ -82,7 +82,7 @@ const ContactComponent = () => {
           autosize
           maxRows={5}
           minRows={3}
-          {...register("message", { required: "Please enter the Message !" })}
+          {...register('message', { required: 'Please enter the Message !' })}
           error={errors.message?.message}
           mt="md"
         />

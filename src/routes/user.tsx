@@ -28,6 +28,11 @@ import PoolCandidateList from '../components/user/dashboard/candidate/candidate'
 import AddPoolCandidate from '../components/user/dashboard/add-candidate/add-candidate';
 import UpdatePoolCandidateForm from '../components/user/dashboard/update-candidate/update-candidate';
 import UserProvider from '../hooks/user-context';
+import Dashboard from '../components/common/dashboard/dashboard';
+import PayslipList from '../components/common/payslip/payslip';
+import Support from '../components/common/support/support';
+import MyTasks from '../components/common/mytasks/mytasks';
+import Announcements from '../components/common/announcements/announcements';
 
 const EmployeeRoutes = () => {
   const { organization } = useParams<{ organization: string }>();
@@ -180,6 +185,46 @@ const EmployeeRoutes = () => {
                   <ModalsProvider>
                     <Timesheet />
                   </ModalsProvider>
+                }
+              />
+              <Route
+                path="dashboard"
+                element={
+                  <div>
+                    <Dashboard />
+                  </div>
+                }
+              />
+              <Route
+                path="payslip"
+                element={
+                  <div>
+                    <PayslipList />
+                  </div>
+                }
+              />
+              <Route
+                path="support"
+                element={
+                  <div>
+                    <Support />
+                  </div>
+                }
+              />
+              <Route
+                path="mytasks"
+                element={
+                  <div>
+                    <MyTasks />
+                  </div>
+                }
+              />
+              <Route
+                path="announcements"
+                element={
+                  <div>
+                    <Announcements />
+                  </div>
                 }
               />
             </Route>
