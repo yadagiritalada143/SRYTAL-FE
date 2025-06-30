@@ -21,11 +21,13 @@ export const TaskPopover = ({
         return 'green';
       case 'rejected':
         return 'red';
-      default:
+      case 'pending':
         return 'yellow';
+      default:
+        return 'grey';
     }
   };
-
+  console.log(status);
   return (
     <Popover
       opened={opened}

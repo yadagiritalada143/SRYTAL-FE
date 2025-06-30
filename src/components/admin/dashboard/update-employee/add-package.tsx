@@ -16,12 +16,8 @@ import {
   SimpleGrid,
 } from '@mantine/core';
 import { useCustomToast } from '../../../../utils/common/toast';
-import { useRecoilState, useRecoilValue } from 'recoil';
-import {
-  employeeDetailsAtom,
-  employeePackagesAtom,
-} from '../../../../atoms/employee-atom';
-import { userDetailsAtom } from '../../../../atoms/user';
+import { useRecoilState } from 'recoil';
+import { employeeDetailsAtom } from '../../../../atoms/employee-atom';
 
 import {
   addPackagetoEmployeeByAdmin,
@@ -30,7 +26,6 @@ import {
 } from '../../../../services/admin-services';
 
 import { employeePackageSchema } from '../../../../forms/update-employee';
-import AddTasksPackage from '../update-package/add-tasks';
 import PackagesTaskTable from './table-tasks';
 
 import {
@@ -45,7 +40,7 @@ import {
   formatSubmitData,
   getEmployeeInfoItems,
 } from './helper-functions/add-package';
-import { Task } from '../../../../interfaces/package';
+import { PackagesList, Task } from '../../../../interfaces/package';
 import { BgDiv } from '../../../common/style-components/bg-div';
 import { StandardModal } from '../../../UI/Models/base-model';
 
@@ -54,16 +49,12 @@ const PackagesFormComponent = ({
   employeeId,
 }: PackagesFormProps) => {
   const [employmentPackagesOptions, setEmploymentPackagesOptions] =
-    useRecoilState(employeePackagesAtom);
+    useState<PackagesList>([]);
   const [employeeDetails, setEmployeeDetails] =
     useRecoilState(employeeDetailsAtom);
   const [isLoading, setIsLoading] = useState(true);
   const { showSuccessToast } = useCustomToast();
   const [opened, { open, close }] = useDisclosure(false);
-  const user = useRecoilValue(userDetailsAtom);
-  const [openedAddTask, { close: closeTask, open: openTask }] =
-    useDisclosure(false);
-  const [selectedPackage, setSelectedPackage] = useState('');
   const [tasks] = useState<Task[]>([]);
   const [selectedPackagesData, setSelectedPackagesData] =
     useState<FormattedPackageData>();
@@ -87,12 +78,7 @@ const PackagesFormComponent = ({
     const loadData = async () => {
       setIsLoading(true);
       try {
-        await fetchInitialData(
-          employeeId,
-          setEmployeeDetails,
-          setEmploymentPackagesOptions,
-          employmentPackagesOptions
-        );
+        await fetchInitialData(employeeId, setEmployeeDetails);
       } catch (error: any) {
         toast.error(error.message);
       } finally {
@@ -101,12 +87,7 @@ const PackagesFormComponent = ({
     };
 
     loadData();
-  }, [
-    employeeId,
-    employmentPackagesOptions,
-    setEmployeeDetails,
-    setEmploymentPackagesOptions,
-  ]);
+  }, [employeeId, setEmployeeDetails]);
 
   useEffect(() => {
     const loadInitialEmployeePackages = async () => {
@@ -121,8 +102,22 @@ const PackagesFormComponent = ({
         toast.error(error.message);
       }
     };
-    loadInitialEmployeePackages();
+
+    if (employeeId) loadInitialEmployeePackages();
   }, [employeeId, reset]);
+
+  useEffect(() => {
+    const loadAllPackages = async () => {
+      try {
+        const packages = await getAllPackagesByAdmin();
+        setEmploymentPackagesOptions(packages);
+      } catch (error: any) {
+        toast.error(error.message);
+      }
+    };
+
+    loadAllPackages();
+  }, []);
 
   const handleTaskToggle = (pkgId: string, taskId: string) => {
     setSelectedTasks(prev => {
@@ -296,7 +291,7 @@ const PackagesFormComponent = ({
               const selectedCount = selectedTasks[packageId]?.size || 0;
 
               return (
-                <div key={packageId} className="p-2 rounded-md border">
+                <div key={packageId} className="p-2 rounded-md border m-4">
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 w-full">
                     <div>
                       <Text fw={500}>{pkg.title}</Text>
@@ -304,15 +299,6 @@ const PackagesFormComponent = ({
                         {selectedCount} of {taskCount} tasks selected
                       </Text>
                     </div>
-                    <Button
-                      onClick={() => {
-                        openTask();
-                        setSelectedPackage(packageId);
-                      }}
-                      size="sm"
-                    >
-                      Add Task
-                    </Button>
                   </div>
 
                   <div className="mt-3 space-y-2">
@@ -355,27 +341,6 @@ const PackagesFormComponent = ({
             Save Changes
           </Button>
         </Group>
-      </StandardModal>
-
-      {/* Add Task Modal */}
-      <StandardModal
-        opened={openedAddTask}
-        onClose={closeTask}
-        title={<Text fw={600}>Add Task for Package</Text>}
-        size="lg"
-      >
-        <AddTasksPackage
-          organizationConfig={organizationConfig}
-          user={user}
-          packageId={selectedPackage}
-          required={true}
-          fetchPackageDetails={() => {
-            getAllPackagesByAdmin().then(packages => {
-              setEmploymentPackagesOptions(packages);
-            });
-            closeTask();
-          }}
-        />
       </StandardModal>
 
       {/* Assigned Packages Table */}

@@ -1,6 +1,5 @@
 import { PackagesList } from '../../../../../interfaces/package';
 import {
-  getAllPackagesByAdmin,
   getEmployeeDetailsByAdmin,
   getEmployeePackagesByAdmin,
 } from '../../../../../services/admin-services';
@@ -9,22 +8,12 @@ import { FormattedPackageData, SelectedTasks } from '../interfaces/add-package';
 
 export const fetchInitialData = async (
   employeeId: string,
-  setEmployeeDetails: (data: any) => void,
-  setEmploymentPackagesOptions: (data: PackagesList) => void,
-  employmentPackagesOptions: PackagesList | null
+  setEmployeeDetails: (data: any) => void
 ) => {
   try {
-    const [employeeDetails, packages] = await Promise.all([
-      getEmployeeDetailsByAdmin(employeeId),
-      !employmentPackagesOptions
-        ? getAllPackagesByAdmin()
-        : Promise.resolve(employmentPackagesOptions),
-    ]);
+    const employeeDetails = await getEmployeeDetailsByAdmin(employeeId);
 
     setEmployeeDetails(employeeDetails);
-    if (!employmentPackagesOptions) {
-      setEmploymentPackagesOptions(packages);
-    }
   } catch (error: any) {
     throw new Error(error?.response?.data?.message || 'Failed to load data');
   }
