@@ -146,7 +146,7 @@ const PackagesTaskTable = ({
           placeholder="Search packages or tasks..."
           value={searchTerm}
           onChange={handleSearch}
-          className="w-full md:w-1/2"
+          className="w-full"
         />
       </div>
 
@@ -186,11 +186,13 @@ const PackagesTaskTable = ({
               {paginatedData.length > 0 ? (
                 paginatedData.map((pkg, index) => (
                   <tr key={pkg.packageId} className="border-b align-top">
-                    <td className="px-4 py-2 border">
+                    <td className="px-4 py-2 border align-middle">
                       {(activePage - 1) * itemsPerPage + index + 1}
                     </td>
-                    <td className="px-4 py-2 border text-left">{pkg.title}</td>
-                    <td className="px-4 py-2 border text-left">
+                    <td className="px-4 py-2 border text-center align-middle">
+                      {pkg.title}
+                    </td>
+                    <td className="px-4 py-2 border text-center align-middle">
                       {pkg.tasks?.length > 0 ? (
                         <div className="space-y-1">
                           {pkg.tasks.map((task: any) => (
@@ -225,7 +227,7 @@ const PackagesTaskTable = ({
                         <Text c="dimmed">No tasks</Text>
                       )}
                     </td>
-                    <td className="px-4 py-2 border">
+                    <td className="px-4 py-2 border align-middle">
                       <Button
                         variant="subtle"
                         color="red"

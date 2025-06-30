@@ -31,22 +31,19 @@ const PayslipList = () => {
 
   const payslipData = [
     {
-      employeeName: 'Test Employee',
-      amount: '₹ 32000.00',
+      employeeName: 'Ramya',
       year: '2025',
       month: 'May',
       status: 'PAID',
     },
     {
-      employeeName: 'Another Employee',
-      amount: '₹ 45000.00',
+      employeeName: 'farhan ',
       year: '2025',
       month: 'July',
       status: 'PAID',
     },
     {
-      employeeName: 'Another Employee',
-      amount: '₹ 45000.00',
+      employeeName: 'Saibabu chimma',
       year: '2025',
       month: 'June',
       status: 'UNPAID',
