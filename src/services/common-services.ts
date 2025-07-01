@@ -3,6 +3,7 @@ import { ContactForm } from '../forms/contact';
 import { DateValue } from '@mantine/dates';
 
 import axios from 'axios';
+import moment from 'moment';
 
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -176,8 +177,8 @@ export const getTimesheetData = async (
 ) => {
   try {
     const { data } = await apiClient.post('/fetchEmployeePackageDetailsById', {
-      startDate,
-      endDate,
+      startDate: moment(startDate).format('YYYY-MM-DD'),
+      endDate: moment(endDate).format('YYYY-MM-DD'),
     });
     return data.employeePackageDetails?.length > 0 &&
       data.employeePackageDetails[0]?.packages
