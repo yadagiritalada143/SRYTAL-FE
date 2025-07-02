@@ -244,17 +244,6 @@ export const ApplyLeaveTimesheetModal = ({
       size="md"
     >
       <Box p="sm">
-        <Textarea
-          label="Reason"
-          placeholder="Enter leave reason"
-          value={leaveReason}
-          onChange={e => setLeaveReason(e.currentTarget.value)}
-          mb="sm"
-          required
-          autosize
-          minRows={3}
-        />
-
         <DatePickerInput
           label="Leave Date"
           placeholder="Select leave period"
@@ -266,13 +255,23 @@ export const ApplyLeaveTimesheetModal = ({
           clearable
           required
         />
+        <Textarea
+          label="Reason"
+          placeholder="Enter leave reason"
+          value={leaveReason}
+          onChange={e => setLeaveReason(e.currentTarget.value)}
+          mb="sm"
+          required
+          autosize
+          minRows={3}
+        />
 
         <Group justify="flex-end" mt="md">
           <Button variant="outline" onClick={closeLeaveModal}>
             Cancel
           </Button>
           <Button color="green" onClick={handleLeaveSubmit} loading={isLoading}>
-            Submit Leave
+            Submit
           </Button>
         </Group>
       </Box>

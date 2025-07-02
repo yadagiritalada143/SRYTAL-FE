@@ -65,4 +65,4 @@ export const adminNavLinks = [
     icon: IconWorldCheck,
     name: 'Employment Roles',
   },
-].sort((a, b) => a.name.length - b.name.length);
+];
