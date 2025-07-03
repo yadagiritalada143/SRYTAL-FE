@@ -27,7 +27,6 @@ export const TaskPopover = ({
         return 'grey';
     }
   };
-  console.log(status);
   return (
     <Popover
       opened={opened}

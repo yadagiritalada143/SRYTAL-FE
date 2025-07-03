@@ -18,6 +18,7 @@ import { prepareSubmitData } from './helper';
 import { submitTimeSheet } from '../../../services/common-services';
 import { useCustomToast } from '../../../utils/common/toast';
 import { IconCheck, IconX } from '@tabler/icons-react';
+import { OrganizationConfig } from '../../../interfaces/organization';
 
 export const EditTimeEntryModal = ({
   openedEntryModal,
@@ -39,7 +40,7 @@ export const EditTimeEntryModal = ({
       opened={openedEntryModal}
       onClose={closeEntryModal}
       title="Edit Time Entry"
-      size="sm"
+      size="lg"
     >
       <Box p="sm">
         <Text fw={500} mb="xs">
@@ -241,7 +242,7 @@ export const ApplyLeaveTimesheetModal = ({
       opened={openedLeaveModal}
       onClose={closeLeaveModal}
       title="Apply for Leave"
-      size="md"
+      size="lg"
     >
       <Box p="sm">
         <DatePickerInput
@@ -280,46 +281,37 @@ export const ApplyLeaveTimesheetModal = ({
 };
 
 export const ConfirmTimesheetSubmitModal = ({
-  openedSubmitModal,
-  closeSubmitModal,
   changesMade,
   setChangesMade,
+  organizationConfig,
+  setTimeEntries,
+  originalEntries,
 }: {
-  openedSubmitModal: boolean;
-  closeSubmitModal: () => void;
   changesMade: EmployeeTimesheet[];
   setChangesMade: (value: React.SetStateAction<EmployeeTimesheet[]>) => void;
+  organizationConfig: OrganizationConfig;
+  setTimeEntries: React.Dispatch<React.SetStateAction<EmployeeTimesheet[]>>;
+  originalEntries: EmployeeTimesheet[];
 }) => {
   const { showSuccessToast } = useCustomToast();
-
   const handleSubmit = async () => {
     try {
       const submitData = prepareSubmitData(changesMade);
       submitTimeSheet(submitData);
       showSuccessToast('Timesheet submitted successfully');
       setChangesMade([]);
-      closeSubmitModal();
     } catch {
       toast.error('Failed to submit timesheet');
     }
   };
+
   return (
-    <StandardModal
-      opened={openedSubmitModal}
-      onClose={closeSubmitModal}
-      title={
-        <Text fw={600} size="lg">
-          Confirm Timesheet Submission
-        </Text>
-      }
-      size="xl"
-      radius="md"
-      padding="lg"
-    >
-      <Box p="sm">
-        <Text mb="lg" c="dimmed">
+    <>
+      <Box p="sm" m="md">
+        <Text mb="lg" ta="center">
           Please review your changes before submission. You're about to update{' '}
-          {changesMade.length} time entries.
+          {changesMade.length} time{' '}
+          {changesMade.length < 2 ? 'entry ' : 'entries'}
         </Text>
 
         <Box>
@@ -331,11 +323,21 @@ export const ConfirmTimesheetSubmitModal = ({
             withColumnBorders
           >
             <thead
+              className="text-xs"
               style={{
                 position: 'sticky',
+                backgroundColor:
+                  organizationConfig.organization_theme.theme.backgroundColor,
+                color: organizationConfig.organization_theme.theme.color,
               }}
             >
-              <tr>
+              <tr
+                style={{
+                  backgroundColor:
+                    organizationConfig.organization_theme.theme.backgroundColor,
+                  color: organizationConfig.organization_theme.theme.color,
+                }}
+              >
                 <th
                   className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis"
                   style={{ minWidth: '120px' }}
@@ -404,7 +406,7 @@ export const ConfirmTimesheetSubmitModal = ({
         </Box>
 
         <Group justify="space-between" mt="xl">
-          <Text size="sm" c="dimmed">
+          <Text size="sm">
             Total changes:{' '}
             <Badge color="blue" variant="light">
               {changesMade.length}
@@ -413,11 +415,14 @@ export const ConfirmTimesheetSubmitModal = ({
           <Group>
             <Button
               variant="outline"
-              onClick={closeSubmitModal}
               radius="md"
+              onClick={() => {
+                setChangesMade([]);
+                setTimeEntries(originalEntries);
+              }}
               leftSection={<IconX size={16} />}
             >
-              Cancel
+              Clear
             </Button>
             <Button
               color="green"
@@ -425,11 +430,11 @@ export const ConfirmTimesheetSubmitModal = ({
               radius="md"
               leftSection={<IconCheck size={16} />}
             >
-              Confirm Submission
+              Submit
             </Button>
           </Group>
         </Group>
       </Box>
-    </StandardModal>
+    </>
   );
 };
