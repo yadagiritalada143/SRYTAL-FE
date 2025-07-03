@@ -25,7 +25,6 @@ import {
   IconBeach,
   IconCalendarOff,
   IconX,
-  IconCheck,
 } from '@tabler/icons-react';
 import { useDisclosure } from '@mantine/hooks';
 import moment from 'moment-timezone';
@@ -58,10 +57,6 @@ const DateTableComponent = () => {
     useDisclosure(false);
   const [openedEntryModal, { open: openEntryModal, close: closeEntryModal }] =
     useDisclosure(false);
-  const [
-    openedSubmitModal,
-    { open: openSubmitModal, close: closeSubmitModal },
-  ] = useDisclosure(false);
   const [openedSearch, { toggle: toggleSearch }] = useDisclosure(false);
   const [dateRange, setDateRange] = useState<DatesRangeValue>([
     moment().tz('Asia/Kolkata').toDate(),
@@ -262,9 +257,6 @@ const DateTableComponent = () => {
     if (status) {
       return (
         <Box
-          onDoubleClick={() =>
-            edit && openEditModal(timesheet, setCurrentEntry, openEntryModal)
-          }
           style={{
             height: '100%',
             display: 'flex',
@@ -345,8 +337,12 @@ const DateTableComponent = () => {
               }}
               leftSection={<IconCalendar size={16} />}
               size="sm"
-              minDate={moment().subtract(1, 'month').toDate()}
-              maxDate={moment().add(2, 'weeks').toDate()}
+              minDate={moment().subtract(3, 'month').toDate()}
+              maxDate={
+                moment().date() >= 26
+                  ? moment().add(1, 'month').toDate()
+                  : moment().endOf('month').toDate()
+              }
               value={dateRange}
               placeholder="Pick date range (max 14 days)"
               allowSingleDateInRange={false}
@@ -406,21 +402,6 @@ const DateTableComponent = () => {
           }
         />
       </Collapse>
-      {changesMade.length > 0 && (
-        <Box
-          mt="md"
-          mb="md"
-          style={{ display: 'flex', justifyContent: 'flex-end' }}
-        >
-          <Button
-            leftSection={<IconCheck size={16} />}
-            color="green"
-            onClick={openSubmitModal}
-          >
-            Submit Changes
-          </Button>
-        </Box>
-      )}
 
       {isLoading ? (
         <Box
@@ -585,12 +566,16 @@ const DateTableComponent = () => {
         timeEntries={timeEntries}
         fetchTimesheetData={fetchTimesheetData}
       />
-      <ConfirmTimesheetSubmitModal
-        openedSubmitModal={openedSubmitModal}
-        closeSubmitModal={closeSubmitModal}
-        changesMade={changesMade}
-        setChangesMade={setChangesMade}
-      />
+
+      {changesMade.length > 0 && (
+        <ConfirmTimesheetSubmitModal
+          changesMade={changesMade}
+          setChangesMade={setChangesMade}
+          organizationConfig={organizationConfig}
+          setTimeEntries={setTimeEntries}
+          originalEntries={originalEntries}
+        />
+      )}
     </ColorDiv>
   );
 };
