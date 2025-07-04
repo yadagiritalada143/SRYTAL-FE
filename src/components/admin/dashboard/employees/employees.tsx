@@ -171,7 +171,7 @@ const Employees = () => {
                 }}
               >
                 <tr>
-                  <th className="p-2 border ">Id</th>
+                  <th className="p-2 border ">S.No</th>
                   <th className="p-2 border">Employee ID</th>
                   <th className="p-2 border">First Name</th>
                   <th className="p-2 border">Last Name</th>

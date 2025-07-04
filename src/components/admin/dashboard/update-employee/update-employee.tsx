@@ -29,7 +29,10 @@ import { organizationAdminUrls } from '../../../../utils/common/constants';
 import { BgDiv } from '../../../common/style-components/bg-div';
 import { useDisclosure } from '@mantine/hooks';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
-import { organizationThemeAtom } from '../../../../atoms/organization-atom';
+import {
+  organizationEmployeeAtom,
+  organizationThemeAtom,
+} from '../../../../atoms/organization-atom';
 import { useCustomToast } from '../../../../utils/common/toast';
 import { DatePickerInput } from '@mantine/dates';
 import { DeleteEmployeeModel } from './delete-model';
@@ -67,11 +70,15 @@ const UpdateEmployee = () => {
   const [bloodGroupOptions, setBloodGroupOptions] = useRecoilState(
     bloodGroupOptionsAtom
   );
+  const [employeeList, setEmployeeList] = useRecoilState(
+    organizationEmployeeAtom
+  );
   const [employmentRolesOptions, setEmploymentRolesOptions] =
     useRecoilState(employeeRolesAtom);
   const [employmentTypeOptions, setEmploymentTypes] =
     useRecoilState(employmentTypesAtom);
   const setEmployeeDetails = useSetRecoilState(employeeDetailsAtom);
+  type SelectOption = { value: string; label: string; id?: string };
 
   useEffect(() => {
     if (!employmentTypeOptions) {
@@ -122,9 +129,44 @@ const UpdateEmployee = () => {
   }, [bloodGroupOptions, setBloodGroupOptions]);
 
   const onSubmit = (data: EmployeeUpdateForm) => {
+    const roles = employmentRolesOptions as SelectOption[] | null;
+    const types = employmentTypeOptions as SelectOption[] | null;
+    const bloodGroups = bloodGroupOptions as SelectOption[] | null;
+    const employeeRoleFull = (data.employeeRole || [])
+      .map(id => {
+        const match = roles?.find(r => r.value === id);
+        return match
+          ? {
+              _id: match.value,
+              designation: match.label,
+              id: match.value,
+            }
+          : null;
+      })
+      .filter(Boolean);
+    const employmentTypeFull = types?.find(
+      t => t.value === data.employmentType
+    );
+    const bloodGroupFull = bloodGroups?.find(
+      bg => bg.value === data.bloodGroup
+    );
     const updatedData = {
       ...data,
-      employeeRole: data.employeeRole?.filter(role => role),
+      employeeRole: employeeRoleFull,
+      employmentType: employmentTypeFull
+        ? {
+            _id: employmentTypeFull.value,
+            employmentType: employmentTypeFull.label,
+            id: employmentTypeFull.value,
+          }
+        : undefined,
+      bloodGroup: bloodGroupFull
+        ? {
+            _id: bloodGroupFull.value,
+            type: bloodGroupFull.label,
+            id: bloodGroupFull.value,
+          }
+        : undefined,
     };
 
     if (
@@ -134,9 +176,22 @@ const UpdateEmployee = () => {
     ) {
       delete updatedData.bankDetailsInfo;
     }
-
-    updateEmployeeDetailsByAdmin(updatedData)
+    const { id, employeeRole, employmentType, bloodGroup, ...rest } =
+      updatedData;
+    const payload = {
+      ...rest,
+      employeeRole: employeeRoleFull.map(role => role?._id),
+      employmentType: updatedData.employmentType?._id,
+      bloodGroup: updatedData.bloodGroup?._id,
+    };
+    updateEmployeeDetailsByAdmin(payload)
       .then(() => {
+        setEmployeeList((prevList: any) =>
+          prevList.map((emp: any) =>
+            emp.id === updatedData.id ? { ...emp, ...updatedData } : emp
+          )
+        );
+        localStorage.setItem('id', updatedData.employeeId);
         showSuccessToast('Employee details updated !');
         navigate(-1);
       })
@@ -150,6 +205,7 @@ const UpdateEmployee = () => {
     getEmployeeDetailsByAdmin(employeeId)
       .then(emp => {
         const formatted = {
+          id: emp.id,
           ...emp,
           bloodGroup: emp.bloodGroup?.id,
           employmentType: emp.employmentType?.id,
