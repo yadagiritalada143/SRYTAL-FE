@@ -21,6 +21,7 @@ const Employees = () => {
   );
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const navigate = useNavigate();
   const organizationConfig = useRecoilValue(organizationThemeAtom);
 
@@ -58,6 +59,18 @@ const Employees = () => {
     });
 
     setFilteredEmployees(filtered);
+  };
+
+  const handleSortByEmployeeId = () => {
+    const sorted = [...filteredEmployees].sort((a, b) => {
+      const empA = a.employeeId?.toLowerCase() || '';
+      const empB = b.employeeId?.toLowerCase() || '';
+      return sortOrder === 'asc'
+        ? empA.localeCompare(empB)
+        : empB.localeCompare(empA);
+    });
+    setFilteredEmployees(sorted);
+    setSortOrder(prev => (prev === 'asc' ? 'desc' : 'asc'));
   };
 
   const handleEmployeeSelect = (employeeId: string) => {
@@ -171,8 +184,13 @@ const Employees = () => {
                 }}
               >
                 <tr>
-                  <th className="p-2 border ">Id</th>
-                  <th className="p-2 border">Employee ID</th>
+                  <th className="p-2 border ">S.No</th>
+                  <th
+                    className="p-2 border cursor-pointer"
+                    onClick={handleSortByEmployeeId}
+                  >
+                    Employee ID {sortOrder === 'asc' ? '▲' : '▼'}
+                  </th>{' '}
                   <th className="p-2 border">First Name</th>
                   <th className="p-2 border">Last Name</th>
                   <th className="p-2 border">Email</th>
