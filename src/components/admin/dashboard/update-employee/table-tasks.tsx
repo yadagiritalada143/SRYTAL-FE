@@ -259,7 +259,6 @@ const PackagesTaskTable = ({
             total={totalPages}
             value={activePage}
             onChange={setActivePage}
-            color={organizationConfig.organization_theme.theme.button.color}
           />
         </div>
       )}
