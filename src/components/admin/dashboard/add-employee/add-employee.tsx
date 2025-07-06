@@ -1,25 +1,32 @@
-import { Controller, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { TextInput, Button, Loader, Select } from "@mantine/core";
-import { toast } from "react-toastify";
-import { useMantineTheme } from "@mantine/core";
+import { Controller, useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { TextInput, Button, Loader, Select } from '@mantine/core';
+import { toast } from 'react-toastify';
+import { useMantineTheme } from '@mantine/core';
 import {
   AddEmployeeForm,
   addEmployeeSchema,
-} from "../../../../forms/add-employee";
-import { registerEmployee } from "../../../../services/admin-services";
-import axios from "axios";
-import { IconCircleDashedCheck, IconX } from "@tabler/icons-react";
-import { useNavigate } from "react-router";
-import { organizationAdminUrls } from "../../../../utils/common/constants";
-import { BgDiv } from "../../../common/style-components/bg-div";
-import { useRecoilValue } from "recoil";
-import { organizationThemeAtom } from "../../../../atoms/organization-atom";
+} from '../../../../forms/add-employee';
+import {
+  getAllEmployeeDetailsByAdmin,
+  registerEmployee,
+} from '../../../../services/admin-services';
+import axios from 'axios';
+import { IconCircleDashedCheck, IconX } from '@tabler/icons-react';
+import { useNavigate } from 'react-router';
+import { organizationAdminUrls } from '../../../../utils/common/constants';
+import { BgDiv } from '../../../common/style-components/bg-div';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
+import {
+  organizationEmployeeAtom,
+  organizationThemeAtom,
+} from '../../../../atoms/organization-atom';
 
 const AddEmployee = () => {
   const navigate = useNavigate();
   const theme = useMantineTheme();
   const organizationConfig = useRecoilValue(organizationThemeAtom);
+  const setEmployeeList = useSetRecoilState(organizationEmployeeAtom);
   const {
     register,
     handleSubmit,
@@ -34,10 +41,12 @@ const AddEmployee = () => {
   const onSubmit = async (employeeDetails: AddEmployeeForm) => {
     try {
       await registerEmployee(employeeDetails);
+      const updatedEmployees = await getAllEmployeeDetailsByAdmin();
+      setEmployeeList(updatedEmployees);
       toast(
         `${
-          getValues("userRole")[0].toUpperCase() +
-          getValues("userRole").slice(1)
+          getValues('userRole')[0].toUpperCase() +
+          getValues('userRole').slice(1)
         } created successfully !`,
         {
           style: {
@@ -60,10 +69,10 @@ const AddEmployee = () => {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         toast.error(
-          "Failed: " + (error.response?.data?.message || "Unknown error")
+          'Failed: ' + (error.response?.data?.message || 'Unknown error')
         );
       } else {
-        toast.error("An unexpected error occurred.");
+        toast.error('An unexpected error occurred.');
       }
     }
   };
@@ -102,21 +111,21 @@ const AddEmployee = () => {
             <TextInput
               label="First Name"
               placeholder="Enter first name"
-              {...register("firstName")}
+              {...register('firstName')}
               error={errors.firstName?.message}
             />
 
             <TextInput
               label="Last Name"
               placeholder="Enter last name"
-              {...register("lastName")}
+              {...register('lastName')}
               error={errors.lastName?.message}
             />
 
             <TextInput
               label="Email"
               placeholder="Enter email"
-              {...register("email")}
+              {...register('email')}
               error={errors.email?.message}
             />
 
@@ -124,7 +133,7 @@ const AddEmployee = () => {
               label="Phone Number"
               placeholder="Enter phone number"
               type="tel"
-              {...register("mobileNumber")}
+              {...register('mobileNumber')}
               error={errors.mobileNumber?.message}
             />
             <Controller
@@ -138,8 +147,8 @@ const AddEmployee = () => {
                   placeholder="Select user role"
                   value={field.value}
                   data={[
-                    { label: "Employee", value: "employee" },
-                    { label: "Recruiter", value: "recruiter" },
+                    { label: 'Employee', value: 'employee' },
+                    { label: 'Recruiter', value: 'recruiter' },
                   ]}
                 />
               )}
@@ -161,7 +170,7 @@ const AddEmployee = () => {
               }
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Creating..." : "Create Employee"}
+              {isSubmitting ? 'Creating...' : 'Create Employee'}
             </Button>
           </div>
         </form>
