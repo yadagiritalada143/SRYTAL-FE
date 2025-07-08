@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 import {
   Button,
   Group,
@@ -8,20 +8,22 @@ import {
   Modal,
   Box,
   TextInput,
-} from "@mantine/core";
-import { toast } from "react-toastify";
-import { useDisclosure } from "@mantine/hooks";
-import { IconEdit } from "@tabler/icons-react";
+} from '@mantine/core';
+import { toast } from 'react-toastify';
+import { useDisclosure } from '@mantine/hooks';
+import { IconEdit } from '@tabler/icons-react';
 import {
   addEmployeeRoleByAdmin,
   deleteEmployeeRoleByAdmin,
   getAllEmployeeRoleByAdmin,
   updateEmployeeRoleByAdmin,
-} from "../../../../services/admin-services";
-import { useRecoilValue } from "recoil";
-import { organizationThemeAtom } from "../../../../atoms/organization-atom";
-import { useMantineTheme } from "@mantine/core";
-import { SearchBarFullWidht } from "../../../common/search-bar/search-bar";
+} from '../../../../services/admin-services';
+import { useRecoilValue } from 'recoil';
+import { organizationThemeAtom } from '../../../../atoms/organization-atom';
+import { useMantineTheme } from '@mantine/core';
+import { SearchBarFullWidht } from '../../../common/search-bar/search-bar';
+
+const isValidDesignation = (value: string) => /^[A-Za-z ]+$/.test(value);
 
 const EmploymentRoles = () => {
   const [employmentRoles, setEmploymentRoles] = useState<
@@ -33,9 +35,9 @@ const EmploymentRoles = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [activePage, setActivePage] = useState(1);
   const [selectedRole, setSelectedRole] = useState<any | null>(null);
-  const [newTypeRole, setNewRoleName] = useState("");
+  const [newTypeRole, setNewRoleName] = useState('');
   const organizationConfig = useRecoilValue(organizationThemeAtom);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const theme = useMantineTheme();
 
   const [editModalOpened, { open: openEditModal, close: closeEditModal }] =
@@ -57,9 +59,8 @@ const EmploymentRoles = () => {
       const data = await getAllEmployeeRoleByAdmin();
       setEmploymentRoles(data);
       setFilteredEmployementRole(data);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-      toast.error("Failed to fetch employment types");
+      toast.error('Failed to fetch employment types');
     } finally {
       setIsLoading(false);
     }
@@ -76,58 +77,60 @@ const EmploymentRoles = () => {
   };
 
   const confirmEdit = async () => {
+    if (!isValidDesignation(selectedRole.designation)) {
+      toast.error('Only letters and spaces are allowed');
+      return;
+    }
     setIsLoading(true);
     try {
       await updateEmployeeRoleByAdmin(
         selectedRole.id,
         selectedRole.designation
       );
-      toast.success(" Updated successfully");
+      toast.success('Updated successfully');
       fetchEmployementRoles();
       closeEditModal();
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-      toast.error("Failed to update ");
+      toast.error('Failed to update');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Confirm delete
   const confirmDelete = async () => {
     setIsLoading(true);
     try {
       await deleteEmployeeRoleByAdmin(selectedRole.id);
-      toast.success(" Deleted successfully");
+      toast.success('Deleted successfully');
       fetchEmployementRoles();
       closeDeleteModal();
       closeEditModal();
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-      toast.error("Failed to delete ");
+      toast.error('Failed to delete');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Handle add blood group
   const handleAdd = async () => {
+    if (!isValidDesignation(newTypeRole)) {
+      toast.error('Only letters and spaces are allowed');
+      return;
+    }
     setIsLoading(true);
     try {
       await addEmployeeRoleByAdmin({ designation: newTypeRole });
-      toast.success("Added successfully");
+      toast.success('Added successfully');
       fetchEmployementRoles();
       closeAddModal();
-      setNewRoleName("");
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      setNewRoleName('');
     } catch (error) {
-      toast.error("Failed to add ");
+      toast.error('Failed to add');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Pagination
   const itemsPerPage = 10;
   const totalPages = Math.ceil(filteredEmployementRole.length / itemsPerPage);
   const paginatedData = filteredEmployementRole.slice(
@@ -139,7 +142,7 @@ const EmploymentRoles = () => {
     const query = e.target.value;
     setSearch(query);
 
-    const filtered = employmentRoles.filter((role) => {
+    const filtered = employmentRoles.filter(role => {
       role.designation.toString().toLowerCase();
       role.designation.toString().trim();
       return (
@@ -247,7 +250,12 @@ const EmploymentRoles = () => {
           <TextInput
             label="Name"
             value={newTypeRole}
-            onChange={(e) => setNewRoleName(e.target.value)}
+            onChange={e => {
+              const value = e.target.value;
+              if (value === '' || isValidDesignation(value)) {
+                setNewRoleName(value);
+              }
+            }}
             placeholder="Enter name"
             required
             mb="md"
@@ -286,13 +294,16 @@ const EmploymentRoles = () => {
         <Box>
           <TextInput
             label="Name"
-            value={selectedRole?.designation || ""}
-            onChange={(e) =>
-              setSelectedRole({
-                ...selectedRole,
-                designation: e.target.value,
-              })
-            }
+            value={selectedRole?.designation || ''}
+            onChange={e => {
+              const value = e.target.value;
+              if (value === '' || isValidDesignation(value)) {
+                setSelectedRole({
+                  ...selectedRole,
+                  designation: value,
+                });
+              }
+            }}
             required
             mb="md"
           />
