@@ -22,6 +22,7 @@ import {
   getAllEmploymentTypes,
   getAllEmployeeRoleByAdmin,
   handlePasswordResetByAdmin,
+  getAllEmployeeDetailsByAdmin,
 } from '../../../../services/admin-services';
 import { toast } from 'react-toastify';
 import { useEffect, useState } from 'react';
@@ -29,7 +30,10 @@ import { organizationAdminUrls } from '../../../../utils/common/constants';
 import { BgDiv } from '../../../common/style-components/bg-div';
 import { useDisclosure } from '@mantine/hooks';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
-import { organizationThemeAtom } from '../../../../atoms/organization-atom';
+import {
+  organizationEmployeeAtom,
+  organizationThemeAtom,
+} from '../../../../atoms/organization-atom';
 import { useCustomToast } from '../../../../utils/common/toast';
 import { DatePickerInput } from '@mantine/dates';
 import { DeleteEmployeeModel } from './delete-model';
@@ -47,6 +51,9 @@ const UpdateEmployee = () => {
   const params = useParams();
   const employeeId = params.employeeId as string;
   const theme = useMantineTheme();
+  const [employeeList, setEmployeeList] = useRecoilState(
+    organizationEmployeeAtom
+  );
   const organizationConfig = useRecoilValue(organizationThemeAtom);
 
   const {
@@ -136,7 +143,10 @@ const UpdateEmployee = () => {
     }
 
     updateEmployeeDetailsByAdmin(updatedData)
-      .then(() => {
+      .then(async () => {
+        const updatedEmployees = await getAllEmployeeDetailsByAdmin();
+        setEmployeeList(updatedEmployees);
+        localStorage.setItem('id', employeeId);
         showSuccessToast('Employee details updated !');
         navigate(-1);
       })
@@ -176,7 +186,9 @@ const UpdateEmployee = () => {
     };
 
     deleteEmployeeByAdmin(payload)
-      .then(() => {
+      .then(async () => {
+        const updatedEmployees = await getAllEmployeeDetailsByAdmin();
+        setEmployeeList(updatedEmployees);
         showSuccessToast('Employee deleted successfully !');
         navigate(
           `${organizationAdminUrls(
