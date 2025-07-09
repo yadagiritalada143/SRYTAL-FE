@@ -1,30 +1,37 @@
-import { useRef, useState } from "react";
+import { useRef, useCallback } from 'react';
 
 const useHorizontalScroll = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [startX, setStartX] = useState(0);
-  const [scrollLeft, setScrollLeft] = useState(0);
+  const isDragging = useRef(false);
+  const startX = useRef(0);
+  const scrollLeft = useRef(0);
 
-  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    setIsDragging(true);
-    setStartX(e.pageX - (scrollRef.current?.offsetLeft || 0));
-    setScrollLeft(scrollRef.current?.scrollLeft || 0);
-  };
+  const handleMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    isDragging.current = true;
+    startX.current = e.pageX - (scrollRef.current?.offsetLeft || 0);
+    scrollLeft.current = scrollRef.current?.scrollLeft || 0;
+  }, []);
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!isDragging) return;
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isDragging.current) return;
     e.preventDefault();
     const x = e.pageX - (scrollRef.current?.offsetLeft || 0);
-    const walk = (x - startX) * 2; // Adjust scrolling speed
+    const walk = (x - startX.current) * 2;
     if (scrollRef.current) {
-      scrollRef.current.scrollLeft = scrollLeft - walk;
+      scrollRef.current.scrollLeft = scrollLeft.current - walk;
     }
+  }, []);
+
+  const handleMouseUp = useCallback(() => {
+    isDragging.current = false;
+  }, []);
+
+  return {
+    scrollRef,
+    handleMouseDown,
+    handleMouseMove,
+    handleMouseUp,
   };
-
-  const handleMouseUp = () => setIsDragging(false);
-
-  return { scrollRef, handleMouseDown, handleMouseMove, handleMouseUp };
 };
 
 export default useHorizontalScroll;

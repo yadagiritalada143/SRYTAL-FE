@@ -51,9 +51,7 @@ const UpdateEmployee = () => {
   const params = useParams();
   const employeeId = params.employeeId as string;
   const theme = useMantineTheme();
-  const [employeeList, setEmployeeList] = useRecoilState(
-    organizationEmployeeAtom
-  );
+  const setEmployeeList = useSetRecoilState(organizationEmployeeAtom);
   const organizationConfig = useRecoilValue(organizationThemeAtom);
 
   const {
