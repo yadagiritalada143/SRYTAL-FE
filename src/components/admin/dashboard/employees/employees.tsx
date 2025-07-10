@@ -43,8 +43,16 @@ const Employees = () => {
   const organizationConfig = useRecoilValue(organizationThemeAtom);
   const itemPerPage = 10;
 
-  const { scrollRef, handleMouseDown, handleMouseMove, handleMouseUp } =
-    useHorizontalScroll();
+  const {
+    scrollRef,
+    handleMouseDown,
+    handleMouseMove,
+    handleMouseUp,
+    handleTouchEnd,
+    handleTouchMove,
+    handleTouchStart,
+  } = useHorizontalScroll();
+
   useEffect(() => {
     if (employees.length > 0) {
       setFilteredEmployees(employees);
@@ -172,9 +180,6 @@ const Employees = () => {
     }
     setTotalPages(Math.ceil(filteredEmployees.length / itemPerPage));
   }, [filteredEmployees]);
-  console.log('render');
-
-  console.log(activePage);
 
   return (
     <div
@@ -220,12 +225,15 @@ const Employees = () => {
           </div>
         ) : (
           <div
-            className="flex overflow-auto sm:overflow-hidden max-w-full shadow-lg rounded-lg"
+            className="flex max-w-full shadow-lg rounded-lg"
             ref={scrollRef}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
             style={{ userSelect: 'none', overflowX: 'hidden', cursor: 'grab' }}
           >
             <table className="w-full text-center shadow-md border ">
