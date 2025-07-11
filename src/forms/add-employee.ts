@@ -21,3 +21,5 @@ export const addEmployeeSchema = z.object({
     .regex(/^\d+$/, { message: 'Phone number must contain only digits' }),
   userRole: z.enum(['employee', 'recruiter']),
 });
+
+export type AddEmployeeForm = z.infer<typeof addEmployeeSchema>;

@@ -1,32 +1,58 @@
-import { Button, useMantineTheme, Loader } from '@mantine/core';
-import { IconEdit, IconPackage, IconUser } from '@tabler/icons-react';
-import { useEffect, useState } from 'react';
+import {
+  Button,
+  useMantineTheme,
+  Loader,
+  TextInput,
+  Pagination,
+  Center,
+} from '@mantine/core';
+import {
+  IconEdit,
+  IconPackage,
+  IconSearch,
+  IconUser,
+} from '@tabler/icons-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAllEmployeeDetailsByAdmin } from '../../../../services/admin-services';
 import { toast } from 'react-toastify';
 import { organizationAdminUrls } from '../../../../utils/common/constants';
-import { SearchBarFullWidht } from '../../../common/search-bar/search-bar';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import {
   organizationEmployeeAtom,
   organizationThemeAtom,
 } from '../../../../atoms/organization-atom';
 import useHorizontalScroll from '../../../../hooks/horizontal-scroll';
+import { debounce } from '../../../../utils/common/debounce';
+import { EmployeeInterface } from '../../../../interfaces/employee';
 
 const Employees = () => {
   const theme = useMantineTheme();
   const [employees, setEmployees] = useRecoilState(organizationEmployeeAtom);
-  const [filteredEmployees, setFilteredEmployees] = useRecoilState(
-    organizationEmployeeAtom
-  );
+  const [activePage, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [filteredEmployees, setFilteredEmployees] = useState<
+    EmployeeInterface[]
+  >([]);
+  const highlightScrollRef = useRef(false);
+
   const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const navigate = useNavigate();
   const organizationConfig = useRecoilValue(organizationThemeAtom);
+  const itemPerPage = 10;
 
-  const { scrollRef, handleMouseDown, handleMouseMove, handleMouseUp } =
-    useHorizontalScroll();
+  const {
+    scrollRef,
+    handleMouseDown,
+    handleMouseMove,
+    handleMouseUp,
+    handleTouchEnd,
+    handleTouchMove,
+    handleTouchStart,
+  } = useHorizontalScroll();
+
   useEffect(() => {
     if (employees.length > 0) {
       setFilteredEmployees(employees);
@@ -45,20 +71,35 @@ const Employees = () => {
       });
   }, [employees, setEmployees, setFilteredEmployees]);
 
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const query = e.target.value;
-    setSearchQuery(query);
+  const paginatedEmployees = useMemo(() => {
+    const start = (activePage - 1) * itemPerPage;
+    const end = start + itemPerPage;
+    return filteredEmployees.slice(start, end);
+  }, [filteredEmployees, activePage]);
 
-    const filtered = employees.filter(employee => {
-      return (
-        employee.firstName.toLowerCase().includes(query.toLowerCase()) ||
-        employee.lastName.toLowerCase().includes(query.toLowerCase()) ||
-        employee.email.toLowerCase().includes(query.toLowerCase()) ||
-        employee.mobileNumber.toString().includes(query.toLowerCase())
-      );
-    });
+  const debouncedFilter = useMemo(
+    () =>
+      debounce((query: string) => {
+        if (!query.length) {
+          setFilteredEmployees(employees);
+        }
+        const filtered = employees.filter(employee => {
+          return (
+            employee.firstName.toLowerCase().includes(query.toLowerCase()) ||
+            employee.lastName.toLowerCase().includes(query.toLowerCase()) ||
+            employee.email.toLowerCase().includes(query.toLowerCase()) ||
+            employee.mobileNumber.toString().includes(query.toLowerCase())
+          );
+        });
 
-    setFilteredEmployees(filtered);
+        setFilteredEmployees(filtered);
+      }, 300),
+    [setFilteredEmployees, employees]
+  );
+
+  const handleSearch = () => {
+    const query = inputRef.current?.value || '';
+    debouncedFilter(query);
   };
 
   const handleSortByEmployeeId = () => {
@@ -91,28 +132,54 @@ const Employees = () => {
 
   useEffect(() => {
     const selectedEmployee = localStorage.getItem('id');
+
     if (selectedEmployee && filteredEmployees.length > 0) {
-      const rowElement = document.getElementById(
-        `employee-${selectedEmployee}`
+      const index = filteredEmployees.findIndex(
+        emp => emp._id === selectedEmployee
       );
-      if (rowElement) {
-        rowElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        rowElement.style.backgroundColor =
-          organizationConfig.organization_theme.theme.backgroundColor;
-        rowElement.style.color =
-          organizationConfig.organization_theme.theme.color;
-        setTimeout(() => {
-          rowElement.style.backgroundColor = '';
-          rowElement.style.color = '';
-        }, 2000);
-      }
-      localStorage.removeItem('id');
+      if (index === -1) return;
+
+      const targetPage = Math.floor(index / itemPerPage) + 1;
+
+      highlightScrollRef.current = true;
+      setPage(targetPage);
+
+      const timer = setTimeout(() => {
+        const rowElement = document.getElementById(
+          `employee-${selectedEmployee}`
+        );
+        if (rowElement) {
+          rowElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          rowElement.style.backgroundColor =
+            organizationConfig.organization_theme.theme.backgroundColor;
+          rowElement.style.color =
+            organizationConfig.organization_theme.theme.color;
+
+          setTimeout(() => {
+            localStorage.removeItem('id');
+            rowElement.style.backgroundColor = '';
+            rowElement.style.color = '';
+          }, 2000);
+        }
+
+        highlightScrollRef.current = false;
+      }, 300);
+
+      return () => clearTimeout(timer);
     }
   }, [
     filteredEmployees,
     organizationConfig.organization_theme.theme.backgroundColor,
     organizationConfig.organization_theme.theme.color,
+    itemPerPage,
   ]);
+
+  useEffect(() => {
+    if (!highlightScrollRef.current) {
+      setPage(1);
+    }
+    setTotalPages(Math.ceil(filteredEmployees.length / itemPerPage));
+  }, [filteredEmployees]);
 
   return (
     <div
@@ -139,12 +206,16 @@ const Employees = () => {
             Add Employee
           </Button>
         </div>
+        <div className="w-full my-2">
+          <TextInput
+            ref={inputRef}
+            rightSection={<IconSearch />}
+            onChange={handleSearch}
+            className="my-4"
+            placeholder="Search by Name, Email, Phone"
+          />
+        </div>
 
-        <SearchBarFullWidht
-          search={searchQuery}
-          handleSearch={handleSearch}
-          placeHolder="Search by Name, Email, Phone"
-        />
         {isLoading ? (
           <div className="flex justify-center items-center h-48">
             <Loader
@@ -154,13 +225,16 @@ const Employees = () => {
           </div>
         ) : (
           <div
-            className="flex overflow-auto sm:overflow-hidden max-w-full shadow-lg rounded-lg"
+            className="flex max-w-full shadow-lg rounded-lg"
             ref={scrollRef}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
-            style={{ userSelect: 'none' }}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            style={{ userSelect: 'none', overflowX: 'hidden', cursor: 'grab' }}
           >
             <table className="w-full text-center shadow-md border ">
               <colgroup>
@@ -214,11 +288,11 @@ const Employees = () => {
                 </div>
               ) : (
                 <tbody className="text-sm">
-                  {filteredEmployees.length > 0 ? (
-                    filteredEmployees.map((employee, index) => (
+                  {paginatedEmployees.length > 0 ? (
+                    paginatedEmployees.map((employee, index) => (
                       <tr key={employee._id} id={`employee-${employee._id}`}>
                         <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                          {index + 1}
+                          {index + 1 + (activePage - 1) * itemPerPage}
                         </td>
                         <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
                           {employee.employeeId}
@@ -290,6 +364,15 @@ const Employees = () => {
           </div>
         )}
       </div>
+      {totalPages > 1 && (
+        <Center className="my-8">
+          <Pagination
+            value={activePage}
+            onChange={setPage}
+            total={totalPages}
+          />
+        </Center>
+      )}
     </div>
   );
 };
