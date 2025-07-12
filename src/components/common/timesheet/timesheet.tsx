@@ -25,6 +25,7 @@ import {
   IconBeach,
   IconCalendarOff,
   IconX,
+  IconCheck,
 } from '@tabler/icons-react';
 import { useDisclosure } from '@mantine/hooks';
 import moment from 'moment-timezone';
@@ -51,8 +52,13 @@ import {
   ConfirmTimesheetSubmitModal,
   EditTimeEntryModal,
 } from './modals';
+import { TimeEntriesTable } from './time-entries';
 
 const DateTableComponent = () => {
+  const [
+    openedSubmitModal,
+    { open: openSubmitModal, close: closeSubmitModal },
+  ] = useDisclosure(false);
   const [openedLeaveModal, { open: openLeaveModal, close: closeLeaveModal }] =
     useDisclosure(false);
   const [openedEntryModal, { open: openEntryModal, close: closeEntryModal }] =
@@ -402,6 +408,21 @@ const DateTableComponent = () => {
           }
         />
       </Collapse>
+      {changesMade.length > 0 && (
+        <Box
+          mt="md"
+          mb="md"
+          style={{ display: 'flex', justifyContent: 'flex-end' }}
+        >
+          <Button
+            leftSection={<IconCheck size={16} />}
+            color="green"
+            onClick={openSubmitModal}
+          >
+            Submit Changes
+          </Button>
+        </Box>
+      )}
 
       {isLoading ? (
         <Box
@@ -567,13 +588,17 @@ const DateTableComponent = () => {
         fetchTimesheetData={fetchTimesheetData}
       />
 
+      <TimeEntriesTable
+        organizationConfig={organizationConfig}
+        changesMade={timeEntries.filter(time => time.hours > 0)}
+      />
+
       {changesMade.length > 0 && (
         <ConfirmTimesheetSubmitModal
+          openedSubmitModal={openedSubmitModal}
+          closeSubmitModal={closeSubmitModal}
           changesMade={changesMade}
           setChangesMade={setChangesMade}
-          organizationConfig={organizationConfig}
-          setTimeEntries={setTimeEntries}
-          originalEntries={originalEntries}
         />
       )}
     </ColorDiv>
