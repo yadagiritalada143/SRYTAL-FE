@@ -1,17 +1,19 @@
-import Header from "../../components/landing/header/header";
-import Main from "../../components/landing/main/main";
-import Footer from "../../components/landing/footer/footer";
-import About from "../../components/landing/about/about";
-import Services from "../../components/landing/services/services";
-import PromoBanner from "../../components/landing/promo/promo";
-import WhyChooseUs from "../../components/landing/choose/choose";
-import ContactComponent from "../../components/landing/contact/contact";
-import Technologies from "../../components/landing/technologies/technologies";
-import VisitorCount from "../../components/landing/count/count";
-import { useMediaQuery } from "@mantine/hooks";
+import Header from '../../components/landing/header/header';
+import Main from '../../components/landing/main/main';
+import Footer from '../../components/landing/footer/footer';
+import About from '../../components/landing/about/about';
+import Services from '../../components/landing/services/services';
+import PromoBanner from '../../components/landing/promo/promo';
+import WhyChooseUs from '../../components/landing/choose/choose';
+import ContactComponent from '../../components/landing/contact/contact';
+import Technologies from '../../components/landing/technologies/technologies';
+import VisitorCount from '../../components/landing/count/count';
+import { useMediaQuery } from '@mantine/hooks';
+import { Suspense } from 'react';
+import { LazySection } from '../../hooks/lazy-loading';
 
 const Landing = () => {
-  const isSmallScreen = useMediaQuery("(max-width: 768px)");
+  const isSmallScreen = useMediaQuery('(max-width: 768px)');
   return (
     <div className="relative  w-full h-screen bg-gray-900 text-white overflow-x-hidden">
       <div className="fixed top-10 left-10 w-32 h-32 bg-purple-500 rounded-full opacity-50 animate-move1"></div>
@@ -21,12 +23,12 @@ const Landing = () => {
       <div
         className="flex flex-col justify-between"
         style={{
-          backgroundImage: "url(/public/wal2.jpg)",
-          backgroundSize: "cover",
-          backgroundRepeat: "no-repeat",
-          backgroundPosition: "center center",
-          backgroundAttachment: "fixed",
-          height: isSmallScreen ? "140dvh" : "120dvh",
+          backgroundImage: 'url(/public/wal2.jpg)',
+          backgroundSize: 'cover',
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'center center',
+          backgroundAttachment: 'fixed',
+          height: isSmallScreen ? '140dvh' : '120dvh',
         }}
       >
         <Header />
@@ -50,10 +52,14 @@ const Landing = () => {
       <div className=" py-6 w-full max-w-5xl mx-auto">
         <WhyChooseUs />
       </div>
+      <Suspense fallback={<div className="text-center">Loading About...</div>}>
+        <LazySection>
+          <div className=" py-6 w-full mx-auto">
+            <VisitorCount />
+          </div>
+        </LazySection>
+      </Suspense>
 
-      <div className=" py-6 w-full mx-auto">
-        <VisitorCount />
-      </div>
       <div className=" py-6 w-full mx-auto">
         <ContactComponent />
       </div>

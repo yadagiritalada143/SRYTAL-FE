@@ -2,9 +2,19 @@ import { z } from 'zod';
 
 export const employeeSchema = z.object({
   employeeId: z.string(),
-  firstName: z.string().min(1, 'First Name is required'),
-  lastName: z.string().min(1, 'Last Name is required'),
-  email: z.string().email('Invalid email address'),
+  firstName: z
+    .string()
+    .min(1, { message: 'First name is required' })
+    .regex(/^[A-Za-z\s]+$/, {
+      message: 'First name must contain only letters and spaces',
+    }),
+  lastName: z
+    .string()
+    .min(1, { message: 'Last name is required' })
+    .regex(/^[A-Za-z\s]+$/, {
+      message: 'Last name must contain only letters and spaces',
+    }),
+  email: z.string().email({ message: 'Invalid email address' }),
   mobileNumber: z
     .string()
     .min(10, { message: 'Phone number must be 10 digits' })

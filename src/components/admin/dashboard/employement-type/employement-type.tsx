@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 import {
   Button,
   Group,
@@ -8,21 +8,23 @@ import {
   Modal,
   Box,
   TextInput,
-} from "@mantine/core";
-import { toast } from "react-toastify";
-import { useDisclosure } from "@mantine/hooks";
-import { IconEdit } from "@tabler/icons-react";
+} from '@mantine/core';
+import { toast } from 'react-toastify';
+import { useDisclosure } from '@mantine/hooks';
+import { IconEdit } from '@tabler/icons-react';
 import {
   addEmploymentTypeByAdmin,
   updateEmploymentTypeByAdmin,
   deleteEmploymentTypeByAdmin,
   getAllEmploymentTypes,
-} from "../../../../services/admin-services";
-import { useRecoilState, useRecoilValue } from "recoil";
-import { organizationThemeAtom } from "../../../../atoms/organization-atom";
-import { useMantineTheme } from "@mantine/core";
-import { SearchBarFullWidht } from "../../../common/search-bar/search-bar";
-import { employeeTypeAtom } from "../../../../atoms/employeetypes-atom";
+} from '../../../../services/admin-services';
+import { useRecoilState, useRecoilValue } from 'recoil';
+import { organizationThemeAtom } from '../../../../atoms/organization-atom';
+import { useMantineTheme } from '@mantine/core';
+import { SearchBarFullWidht } from '../../../common/search-bar/search-bar';
+import { employeeTypeAtom } from '../../../../atoms/employeetypes-atom';
+
+const isValidEmploymentType = (name: string) => /^[A-Za-z ]+$/.test(name);
 
 const EmploymentTypes = () => {
   const [employmentTypes, setEmploymentTypes] =
@@ -33,9 +35,9 @@ const EmploymentTypes = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [activePage, setActivePage] = useState(1);
   const [selectedType, setSelectedType] = useState<any | null>(null);
-  const [newTypeName, setNewTypeName] = useState("");
+  const [newTypeName, setNewTypeName] = useState('');
   const organizationConfig = useRecoilValue(organizationThemeAtom);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const theme = useMantineTheme();
 
   const [editModalOpened, { open: openEditModal, close: closeEditModal }] =
@@ -62,9 +64,8 @@ const EmploymentTypes = () => {
       const data = await getAllEmploymentTypes();
       setEmploymentTypes(data);
       setFilteredEmployementType(data);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-      toast.error("Failed to fetch employment types");
+      toast.error('Failed to fetch employment types');
     } finally {
       setIsLoading(false);
     }
@@ -81,58 +82,61 @@ const EmploymentTypes = () => {
   };
 
   const confirmEdit = async () => {
+    if (!isValidEmploymentType(selectedType?.employmentType)) {
+      toast.error('Employment type must contain only alphabets and spaces.');
+      return;
+    }
     setIsLoading(true);
     try {
       await updateEmploymentTypeByAdmin(
         selectedType.id,
-        selectedType.employmentType
+        selectedType.employmentType.trim()
       );
-      toast.success(" Updated successfully");
+      toast.success('Updated successfully');
       fetchEmployementTypes();
       closeEditModal();
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-      toast.error("Failed to update ");
+      toast.error('Failed to update');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Confirm delete
   const confirmDelete = async () => {
     setIsLoading(true);
     try {
       await deleteEmploymentTypeByAdmin(selectedType.id);
-      toast.success(" Deleted successfully");
+      toast.success('Deleted successfully');
       fetchEmployementTypes();
       closeDeleteModal();
       closeEditModal();
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-      toast.error("Failed to delete ");
+      toast.error('Failed to delete');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Handle add blood group
   const handleAdd = async () => {
+    if (!isValidEmploymentType(newTypeName)) {
+      toast.error('Employment type must contain only alphabets and spaces.');
+      return;
+    }
+
     setIsLoading(true);
     try {
-      await addEmploymentTypeByAdmin({ employmentType: newTypeName });
-      toast.success("Added successfully");
+      await addEmploymentTypeByAdmin({ employmentType: newTypeName.trim() });
+      toast.success('Added successfully');
       fetchEmployementTypes();
       closeAddModal();
-      setNewTypeName("");
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      setNewTypeName('');
     } catch (error) {
-      toast.error("Failed to add ");
+      toast.error('Failed to add');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Pagination
   const itemsPerPage = 10;
   const totalPages = Math.ceil(filteredEmployementType.length / itemsPerPage);
   const paginatedData = filteredEmployementType.slice(
@@ -143,8 +147,7 @@ const EmploymentTypes = () => {
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
     setSearch(query);
-
-    const filtered = employmentTypes.filter((type) => {
+    const filtered = employmentTypes.filter(type => {
       type.employmentType.toString().toLowerCase();
       type.employmentType.toString().trim();
       return (
@@ -174,7 +177,7 @@ const EmploymentTypes = () => {
           Manage Employment Types
         </h1>
         <div className="text-right">
-          <Button onClick={openAddModal}> Add Employment Type</Button>
+          <Button onClick={openAddModal}>Add Employment Type</Button>
         </div>
 
         <SearchBarFullWidht
@@ -255,7 +258,7 @@ const EmploymentTypes = () => {
           <TextInput
             label="Name"
             value={newTypeName}
-            onChange={(e) => setNewTypeName(e.target.value)}
+            onChange={e => setNewTypeName(e.target.value)}
             placeholder="Enter name"
             required
             mb="md"
@@ -294,8 +297,8 @@ const EmploymentTypes = () => {
         <Box>
           <TextInput
             label="Name"
-            value={selectedType?.employmentType || ""}
-            onChange={(e) =>
+            value={selectedType?.employmentType || ''}
+            onChange={e =>
               setSelectedType({
                 ...selectedType,
                 employmentType: e.target.value,

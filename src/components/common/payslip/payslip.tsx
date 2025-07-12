@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Box,
   Button,
@@ -24,34 +24,45 @@ import {
 } from '@tabler/icons-react';
 import moment from 'moment';
 import { ColorDiv } from '../style-components/c-div';
+import { getUserDetails } from '../../../services/user-services';
+import { EmployeeInterface } from '../../../interfaces/employee';
+import { toast } from 'react-toastify';
 
 const PayslipList = () => {
   const organizationConfig = useRecoilValue(organizationThemeAtom);
   const theme = organizationConfig.organization_theme.theme;
+  const [userDetails, setUserDetails] = useState<EmployeeInterface | null>(
+    null
+  );
 
-  const payslipData = [
-    {
-      employeeName: 'Test Employee',
-      amount: '₹ 32000.00',
-      year: '2025',
-      month: 'May',
-      status: 'PAID',
-    },
-    {
-      employeeName: 'Another Employee',
-      amount: '₹ 45000.00',
-      year: '2025',
-      month: 'July',
-      status: 'PAID',
-    },
-    {
-      employeeName: 'Another Employee',
-      amount: '₹ 45000.00',
-      year: '2025',
-      month: 'June',
-      status: 'UNPAID',
-    },
-  ];
+  useEffect(() => {
+    getUserDetails()
+      .then(res => setUserDetails(res))
+      .catch(err =>
+        toast.error(
+          err?.message ||
+            err?.response?.data?.message ||
+            'Failed to fetch user details'
+        )
+      );
+  }, []);
+
+  const payslipData = userDetails
+    ? [
+        {
+          employeeName: `${userDetails.firstName} ${userDetails.lastName || ''}`,
+          year: '2025',
+          month: 'May',
+          status: 'PAID',
+        },
+        {
+          employeeName: `${userDetails.firstName} ${userDetails.lastName || ''}`,
+          year: '2025',
+          month: 'June',
+          status: 'UNPAID',
+        },
+      ]
+    : [];
 
   const getMonthIndex = (monthName: string) => {
     const months = [

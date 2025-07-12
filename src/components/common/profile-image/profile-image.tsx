@@ -1,12 +1,15 @@
-import React, { useEffect, useState } from "react";
-import { Button } from "@mantine/core";
-import { IconUser, IconUpload, IconLoader } from "@tabler/icons-react";
-import { OrganizationConfig } from "../../../interfaces/organization";
-import { toast } from "react-toastify";
-import { uploadProfileImage } from "../../../services/user-services";
-import { useCustomToast } from "../../../utils/common/toast";
-import { useRecoilState } from "recoil";
-import { profileImageAtom } from "../../../atoms/profile-image";
+import React, { useEffect, useState } from 'react';
+import { Button } from '@mantine/core';
+import { IconUser, IconUpload, IconLoader } from '@tabler/icons-react';
+import { OrganizationConfig } from '../../../interfaces/organization';
+import { toast } from 'react-toastify';
+import {
+  getProfileImage,
+  uploadProfileImage,
+} from '../../../services/user-services';
+import { useCustomToast } from '../../../utils/common/toast';
+import { useRecoilState } from 'recoil';
+import { profileImageAtom } from '../../../atoms/profile-image';
 
 interface Props {
   organizationConfig: OrganizationConfig;
@@ -36,7 +39,7 @@ const ProfileImageUploader: React.FC<Props> = () => {
 
   const handleUploadImage = () => {
     if (!image) {
-      toast.warning("Please select an image before uploading.");
+      toast.warning('Please select an image before uploading.');
       return;
     }
     setIsLoading(true);
@@ -46,14 +49,36 @@ const ProfileImageUploader: React.FC<Props> = () => {
         setImageUrl(newImageUrl);
         setImage(null);
 
-        showSuccessToast("Profile image uploaded successfully !");
+        showSuccessToast('Profile image uploaded successfully !');
       })
-      .catch((error) => {
-        console.error("Upload failed:", error);
-        toast.error(error?.response?.data?.message || "Something went wrong");
+      .catch(error => {
+        console.error('Upload failed:', error);
+        toast.error(error?.response?.data?.message || 'Something went wrong');
       })
       .finally(() => setIsLoading(false));
   };
+
+  useEffect(() => {
+    setIsLoading(true);
+
+    getProfileImage()
+      .then(async response => {
+        if (!response || !(response instanceof Blob)) {
+          throw new Error('Invalid image data');
+        }
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64Image = reader.result as string;
+          setImageUrl(base64Image);
+        };
+        reader.readAsDataURL(response);
+      })
+      .catch(() => {
+        setImageUrl('');
+      })
+      .finally(() => setIsLoading(false));
+  }, [setImageUrl]);
 
   return (
     <div className="flex flex-col items-center">
@@ -66,7 +91,7 @@ const ProfileImageUploader: React.FC<Props> = () => {
           <img
             src={imageUrl}
             className="w-full h-full object-cover rounded-lg"
-            onError={() => setImageUrl("")}
+            onError={() => setImageUrl('')}
             alt="Profile"
           />
         ) : (
@@ -77,7 +102,7 @@ const ProfileImageUploader: React.FC<Props> = () => {
 
         <div
           className={`absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 ${
-            imageUrl ? "opacity-0 group-hover:opacity-100" : "opacity-100"
+            imageUrl ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'
           } transition-opacity rounded-lg`}
         >
           <label className="cursor-pointer flex flex-col items-center justify-center">

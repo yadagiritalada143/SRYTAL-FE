@@ -42,7 +42,6 @@ const PackagesTaskTable = ({
   const [editModalOpened, { open: openEditModal, close: closeEditModal }] =
     useDisclosure(false);
 
-  // Pagination
   const itemsPerPage = 10;
   const totalPages = Math.ceil(filteredPackages.length / itemsPerPage);
   const paginatedData = filteredPackages.slice(
@@ -82,7 +81,7 @@ const PackagesTaskTable = ({
       return packageMatches || taskMatches;
     });
     setFilteredPackages(filtered);
-    setActivePage(1); // Reset to first page when search changes
+    setActivePage(1);
   }, [searchTerm, packagesList]);
 
   const handleDeletePackage = async (packageId: string) => {
@@ -146,7 +145,7 @@ const PackagesTaskTable = ({
           placeholder="Search packages or tasks..."
           value={searchTerm}
           onChange={handleSearch}
-          className="w-full md:w-1/2"
+          className="w-full"
         />
       </div>
 
@@ -185,11 +184,13 @@ const PackagesTaskTable = ({
             <tbody className="text-sm">
               {paginatedData.length > 0 ? (
                 paginatedData.map((pkg, index) => (
-                  <tr key={pkg.packageId} className="border-b align-top">
-                    <td className="px-4 py-2 border">
+                  <tr key={pkg.packageId} className="border-b">
+                    <td className="px-4 py-2 border align-middle text-center">
                       {(activePage - 1) * itemsPerPage + index + 1}
                     </td>
-                    <td className="px-4 py-2 border text-left">{pkg.title}</td>
+                    <td className="px-4 py-2 border align-middle ">
+                      {pkg.title}
+                    </td>
                     <td className="px-4 py-2 border text-left">
                       {pkg.tasks?.length > 0 ? (
                         <div className="space-y-1">
@@ -258,7 +259,6 @@ const PackagesTaskTable = ({
             total={totalPages}
             value={activePage}
             onChange={setActivePage}
-            color={organizationConfig.organization_theme.theme.button.color}
           />
         </div>
       )}
