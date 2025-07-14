@@ -242,7 +242,7 @@ export const prepareSubmitData = (changesMade: EmployeeTimesheet[]) => {
       isWeekOff: false,
       id: entry.id,
       leaveReason: '',
-      status: '',
+      status: 'Waiting For Approval',
     });
   });
 
