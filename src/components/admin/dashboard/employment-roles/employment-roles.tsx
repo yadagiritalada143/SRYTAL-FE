@@ -23,7 +23,8 @@ import { organizationThemeAtom } from '../../../../atoms/organization-atom';
 import { useMantineTheme } from '@mantine/core';
 import { SearchBarFullWidht } from '../../../common/search-bar/search-bar';
 
-const isValidDesignation = (value: string) => /^[A-Za-z ]+$/.test(value);
+const isValidDesignation = (value: string) =>
+  /^([A-Za-z()\-\s_]|[0-9])+$/.test(value) && !/\d{2,}/.test(value);
 
 const EmploymentRoles = () => {
   const [employmentRoles, setEmploymentRoles] = useState<
