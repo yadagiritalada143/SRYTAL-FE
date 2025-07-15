@@ -588,10 +588,12 @@ const DateTableComponent = () => {
         fetchTimesheetData={fetchTimesheetData}
       />
 
-      <TimeEntriesTable
-        organizationConfig={organizationConfig}
-        changesMade={timeEntries.filter(time => time.hours > 0)}
-      />
+      {!changesMade.length && (
+        <TimeEntriesTable
+          organizationConfig={organizationConfig}
+          changesMade={timeEntries.filter(time => time.hours > 0)}
+        />
+      )}
 
       {changesMade.length > 0 && (
         <ConfirmTimesheetSubmitModal
