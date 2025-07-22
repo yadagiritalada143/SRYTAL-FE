@@ -4,6 +4,7 @@ import { DateValue } from '@mantine/dates';
 
 import axios from 'axios';
 import moment from 'moment';
+import { toast } from 'react-toastify';
 
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -67,7 +68,7 @@ apiClient.interceptors.request.use(
       try {
         token = await refreshAccessToken();
       } catch (error) {
-        console.error('Failed to refresh token. Redirecting to login...');
+        toast.error('Failed to refresh token. Redirecting to login...');
         logoutUser();
         return Promise.reject(error);
       }
@@ -85,7 +86,7 @@ apiClient.interceptors.response.use(
     const originalRequest = error.config;
 
     if (originalRequest.url.includes('/admin/refreshToken')) {
-      console.error('Refresh Token Expired. Redirecting to login...');
+      toast.error('Refresh Token Expired. Redirecting to login...');
       logoutUser();
       return Promise.reject(error);
     }
@@ -98,7 +99,7 @@ apiClient.interceptors.response.use(
         originalRequest.headers['auth_token'] = newAccessToken;
         return apiClient(originalRequest);
       } catch (refreshError) {
-        console.error('Session expired. Please log in again.');
+        toast.error('Session expired. Please log in again.');
         logoutUser();
         return Promise.reject(refreshError);
       }

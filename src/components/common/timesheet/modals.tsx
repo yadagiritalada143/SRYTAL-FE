@@ -77,6 +77,7 @@ export const EditTimeEntryModal = ({
                 ...prev,
                 ...currentEntry,
                 hours: clampedValue,
+                status: '',
               }));
             }
           }}
@@ -92,6 +93,7 @@ export const EditTimeEntryModal = ({
               ...prev,
               ...currentEntry,
               comments: e.target.value,
+              status: '',
             }));
           }}
           autosize

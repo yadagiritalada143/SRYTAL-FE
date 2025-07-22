@@ -5,14 +5,16 @@ import { OrganizationConfig } from '../../../interfaces/organization';
 
 export const TimeEntriesTable = ({
   changesMade,
+  pendingChanges,
   organizationConfig,
 }: {
   changesMade: EmployeeTimesheet[];
+  pendingChanges: number;
   organizationConfig: OrganizationConfig;
 }) => {
   return (
     <Box className="my-12">
-      {changesMade.length && (
+      {changesMade.length ? (
         <Table
           striped
           highlightOnHover
@@ -106,10 +108,14 @@ export const TimeEntriesTable = ({
                             ? 'red'
                             : entry.status === 'Waiting For Approval'
                               ? 'orange'
-                              : ''
+                              : 'orange'
                       }
                     >
-                      {entry.status || 'Not Submitted'}
+                      {entry.status
+                        ? entry.status
+                        : pendingChanges > 0
+                          ? 'Not Submitted'
+                          : 'Waiting For Approval'}
                     </Text>
                   </td>
                 </tr>
@@ -117,6 +123,8 @@ export const TimeEntriesTable = ({
             })}
           </tbody>
         </Table>
+      ) : (
+        <></>
       )}
     </Box>
   );

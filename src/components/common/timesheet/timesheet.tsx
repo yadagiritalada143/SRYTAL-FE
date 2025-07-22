@@ -170,7 +170,7 @@ const DateTableComponent = () => {
       comments: currentEntry.comments,
       leaveReason: currentEntry.leaveReason,
       id: currentEntry.id,
-      status: 'pending',
+      status: currentEntry.status,
     };
 
     setTimeEntries(prev => {
@@ -588,12 +588,11 @@ const DateTableComponent = () => {
         fetchTimesheetData={fetchTimesheetData}
       />
 
-      {!changesMade.length && (
-        <TimeEntriesTable
-          organizationConfig={organizationConfig}
-          changesMade={timeEntries.filter(time => time.hours > 0)}
-        />
-      )}
+      <TimeEntriesTable
+        organizationConfig={organizationConfig}
+        pendingChanges={changesMade.length}
+        changesMade={timeEntries.filter(time => time.hours > 0)}
+      />
 
       {changesMade.length > 0 && (
         <ConfirmTimesheetSubmitModal
