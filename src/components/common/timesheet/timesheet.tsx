@@ -64,10 +64,12 @@ const DateTableComponent = () => {
   const [openedEntryModal, { open: openEntryModal, close: closeEntryModal }] =
     useDisclosure(false);
   const [openedSearch, { toggle: toggleSearch }] = useDisclosure(false);
-  const [dateRange, setDateRange] = useState<DatesRangeValue>([
-    moment().tz('Asia/Kolkata').toDate(),
-    moment().tz('Asia/Kolkata').add(6, 'days').toDate(),
-  ]);
+  const [dateRange, setDateRange] = useState<DatesRangeValue>(() => {
+    const today = moment().tz('Asia/Kolkata');
+    const startOfWeek = today.clone().startOf('isoWeek');
+    const endOfWeek = today.clone().endOf('isoWeek');
+    return [startOfWeek.toDate(), endOfWeek.toDate()];
+  });
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [timeEntries, setTimeEntries] = useState<EmployeeTimesheet[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -275,25 +277,31 @@ const DateTableComponent = () => {
         </Box>
       );
     }
-
+    const isEditableDate = moment(date).isSame(moment(), 'month');
     return (
-      <Tooltip label="Double click to edit hours" withArrow>
+      <Tooltip
+        label={
+          isEditableDate ? 'Double click to edit hours' : 'Editing not allowed'
+        }
+        withArrow
+      >
         <Box
           onDoubleClick={() =>
-            edit && openEditModal(timesheet, setCurrentEntry, openEntryModal)
+            isEditableDate &&
+            openEditModal(timesheet, setCurrentEntry, openEntryModal)
           }
           style={{
             height: '28px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            cursor: 'pointer',
+            cursor: isEditableDate ? 'pointer' : 'not-allowed',
           }}
         >
           <TaskPopover
             short={hours.toString() || '0'}
-            full={edit ? comments : "Can't Edit"}
-            status={edit ? timesheetStatus : 'Not started'}
+            full={isEditableDate ? comments : "Can't Edit"}
+            status={isEditableDate ? timesheetStatus : 'Not started'}
             bgColor={[
               organizationConfig.organization_theme.theme.backgroundColor,
               organizationConfig.organization_theme.theme.color,

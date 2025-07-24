@@ -25,7 +25,12 @@ export const getDateRangeArray = (
 };
 
 export const isPastDate = (date: string) => {
-  return moment(date).isBefore(moment(), 'day');
+  const input = moment(date);
+  const today = moment();
+  if (input.month() === today.month() && input.year() === today.year()) {
+    return false;
+  }
+  return input.isBefore(today, 'day');
 };
 
 export const formatDisplayDate = (date: string) => {
@@ -87,6 +92,9 @@ export const trackChanges = (
       e.task_id === newEntry.task_id &&
       e.date === newEntry.date
   );
+  if (originalEntry && !newEntry.id) {
+    newEntry.id = originalEntry.id;
+  }
 
   if (
     !originalEntry ||
