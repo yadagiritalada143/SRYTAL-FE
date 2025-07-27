@@ -5,11 +5,11 @@ import { OrganizationConfig } from '../../../interfaces/organization';
 
 export const TimeEntriesTable = ({
   changesMade,
-  pendingChanges,
-  organizationConfig,
+  pendingChanges = 0,
+  organizationConfig
 }: {
   changesMade: EmployeeTimesheet[];
-  pendingChanges: number;
+  pendingChanges?: number;
   organizationConfig: OrganizationConfig;
 }) => {
   return (
@@ -27,14 +27,14 @@ export const TimeEntriesTable = ({
               position: 'sticky',
               backgroundColor:
                 organizationConfig.organization_theme.theme.backgroundColor,
-              color: organizationConfig.organization_theme.theme.color,
+              color: organizationConfig.organization_theme.theme.color
             }}
           >
             <tr
               style={{
                 backgroundColor:
                   organizationConfig.organization_theme.theme.backgroundColor,
-                color: organizationConfig.organization_theme.theme.color,
+                color: organizationConfig.organization_theme.theme.color
               }}
             >
               <th
@@ -111,11 +111,9 @@ export const TimeEntriesTable = ({
                               : 'orange'
                       }
                     >
-                      {entry.status
-                        ? entry.status
-                        : pendingChanges > 0
-                          ? 'Not Submitted'
-                          : 'Waiting For Approval'}
+                      {!pendingChanges && entry.status === 'Not Submitted'
+                        ? 'Waiting For Approval'
+                        : entry.status}
                     </Text>
                   </td>
                 </tr>

@@ -10,12 +10,12 @@ const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,
-  headers: { 'Content-Type': 'application/json' },
+  headers: { 'Content-Type': 'application/json' }
 });
 
 const apiClientComm = axios.create({
   baseURL: BASE_URL,
-  headers: { 'Content-Type': 'application/json' },
+  headers: { 'Content-Type': 'application/json' }
 });
 const refreshAccessToken = async () => {
   try {
@@ -25,7 +25,7 @@ const refreshAccessToken = async () => {
     }
 
     const response = await apiClient.get('/admin/refreshToken', {
-      headers: { refresh_token: refreshToken },
+      headers: { refresh_token: refreshToken }
     });
 
     const { token: newAccessToken } = response.data;
@@ -174,12 +174,14 @@ export const getOrganizationConfig = async (organizationName: string) => {
 
 export const getTimesheetData = async (
   startDate: DateValue,
-  endDate: DateValue
+  endDate: DateValue,
+  employeeId?: string
 ) => {
   try {
     const { data } = await apiClient.post('/fetchEmployeePackageDetailsById', {
       startDate: moment(startDate).format('YYYY-MM-DD'),
       endDate: moment(endDate).format('YYYY-MM-DD'),
+      ...(employeeId && { employeeId: employeeId })
     });
     return data.employeePackageDetails?.length > 0 &&
       data.employeePackageDetails[0]?.packages
@@ -190,9 +192,12 @@ export const getTimesheetData = async (
   }
 };
 
-export const submitTimeSheet = async (data: any) => {
+export const submitTimeSheet = async (data: any, employeeId?: string) => {
   try {
-    await apiClient.put('updateEmployeeTimesheet', { packages: data });
+    await apiClient.put('updateEmployeeTimesheet', {
+      packages: data,
+      ...(employeeId && { employeeId: employeeId })
+    });
   } catch (error) {
     throw error;
   }
