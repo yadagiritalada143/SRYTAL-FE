@@ -78,7 +78,6 @@ export const EditTimeEntryModal = React.memo(
       () => moment(currentEntry.date).format('DD MMM YYYY'),
       [currentEntry.date]
     );
-    console.log('render in edit');
     return (
       <StandardModal
         opened={openedEntryModal}
