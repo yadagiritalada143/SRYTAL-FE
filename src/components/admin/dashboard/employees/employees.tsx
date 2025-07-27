@@ -4,13 +4,14 @@ import {
   Loader,
   TextInput,
   Pagination,
-  Center,
+  Center
 } from '@mantine/core';
 import {
+  IconCalendarTime,
   IconEdit,
   IconPackage,
   IconSearch,
-  IconUser,
+  IconUser
 } from '@tabler/icons-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -20,7 +21,7 @@ import { organizationAdminUrls } from '../../../../utils/common/constants';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import {
   organizationEmployeeAtom,
-  organizationThemeAtom,
+  organizationThemeAtom
 } from '../../../../atoms/organization-atom';
 import useHorizontalScroll from '../../../../hooks/horizontal-scroll';
 import { debounce } from '../../../../utils/common/debounce';
@@ -50,7 +51,7 @@ const Employees = () => {
     handleMouseUp,
     handleTouchEnd,
     handleTouchMove,
-    handleTouchStart,
+    handleTouchStart
   } = useHorizontalScroll();
 
   useEffect(() => {
@@ -130,6 +131,14 @@ const Employees = () => {
     );
   };
 
+  const handleTimesheet = (employeeId: string) => {
+    navigate(
+      `${organizationAdminUrls(
+        organizationConfig.organization_name
+      )}/dashboard/timesheet/${employeeId}`
+    );
+  };
+
   useEffect(() => {
     const selectedEmployee = localStorage.getItem('id');
 
@@ -171,7 +180,7 @@ const Employees = () => {
     filteredEmployees,
     organizationConfig.organization_theme.theme.backgroundColor,
     organizationConfig.organization_theme.theme.color,
-    itemPerPage,
+    itemPerPage
   ]);
 
   useEffect(() => {
@@ -185,7 +194,7 @@ const Employees = () => {
     <div
       style={{
         color: organizationConfig.organization_theme.theme.button.textColor,
-        fontFamily: theme.fontFamily,
+        fontFamily: theme.fontFamily
       }}
     >
       <div>
@@ -254,7 +263,7 @@ const Employees = () => {
                 style={{
                   backgroundColor:
                     organizationConfig.organization_theme.theme.backgroundColor,
-                  color: organizationConfig.organization_theme.theme.color,
+                  color: organizationConfig.organization_theme.theme.color
                 }}
               >
                 <tr>
@@ -275,6 +284,7 @@ const Employees = () => {
                   <th className="p-2 border">Employee Role</th>
                   <th className="p-2 border">Update Details</th>
                   <th className="p-2 border">Update Package</th>
+                  <th className="p-2 border">Timesheet</th>
                 </tr>
               </thead>
               {isLoading ? (
@@ -346,6 +356,15 @@ const Employees = () => {
                             onClick={() => handlePackageSelect(employee._id)}
                           >
                             <IconPackage /> {'  '}
+                            <IconEdit />
+                          </Button>
+                        </td>
+                        <td
+                          id={`employee-${employee._id}`}
+                          className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis"
+                        >
+                          <Button onClick={() => handleTimesheet(employee._id)}>
+                            <IconCalendarTime /> {'  '}
                             <IconEdit />
                           </Button>
                         </td>

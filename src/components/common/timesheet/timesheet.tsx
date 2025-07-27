@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Button,
   Title,
@@ -13,7 +13,7 @@ import {
   Box,
   Tooltip,
   Collapse,
-  Center,
+  Center
 } from '@mantine/core';
 import { DatePickerInput, DatesRangeValue } from '@mantine/dates';
 import {
@@ -25,16 +25,19 @@ import {
   IconBeach,
   IconCalendarOff,
   IconX,
-  IconCheck,
+  IconCheck
 } from '@tabler/icons-react';
-import { useDisclosure } from '@mantine/hooks';
+import { useDebouncedValue, useDisclosure } from '@mantine/hooks';
 import moment from 'moment-timezone';
 import { toast } from 'react-toastify';
 import { TaskPopover } from './task-popover';
 import { ColorDiv } from '../style-components/c-div';
 import { useRecoilValue } from 'recoil';
 import { organizationThemeAtom } from '../../../atoms/organization-atom';
-import { EmployeeTimesheet } from '../../../interfaces/timesheet';
+import {
+  EmployeeTimesheet,
+  TimesheetStatus
+} from '../../../interfaces/timesheet';
 import { getTimesheetData } from '../../../services/common-services';
 import {
   formatData,
@@ -45,19 +48,20 @@ import {
   getTasksByProject,
   navigateDateRange,
   openEditModal,
-  trackChanges,
+  trackChanges
 } from './helper';
 import {
   ApplyLeaveTimesheetModal,
   ConfirmTimesheetSubmitModal,
-  EditTimeEntryModal,
+  EditTimeEntryModal
 } from './modals';
 import { TimeEntriesTable } from './time-entries';
+import useHorizontalScroll from '../../../hooks/horizontal-scroll';
 
 const DateTableComponent = () => {
   const [
     openedSubmitModal,
-    { open: openSubmitModal, close: closeSubmitModal },
+    { open: openSubmitModal, close: closeSubmitModal }
   ] = useDisclosure(false);
   const [openedLeaveModal, { open: openLeaveModal, close: closeLeaveModal }] =
     useDisclosure(false);
@@ -73,12 +77,22 @@ const DateTableComponent = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [timeEntries, setTimeEntries] = useState<EmployeeTimesheet[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery] = useDebouncedValue(searchQuery, 1000);
   const [currentEntry, setCurrentEntry] = useState<EmployeeTimesheet>();
   const [originalEntries, setOriginalEntries] = useState<EmployeeTimesheet[]>(
     []
   );
   const [changesMade, setChangesMade] = useState<EmployeeTimesheet[]>([]);
   const organizationConfig = useRecoilValue(organizationThemeAtom);
+  const {
+    scrollRef,
+    handleMouseDown,
+    handleMouseMove,
+    handleMouseUp,
+    handleTouchEnd,
+    handleTouchMove,
+    handleTouchStart
+  } = useHorizontalScroll();
 
   const fetchTimesheetData = useCallback(async () => {
     setIsLoading(true);
@@ -103,51 +117,71 @@ const DateTableComponent = () => {
     }
   }, [fetchTimesheetData, dateRange]);
 
-  const filteredProjects = Array.from(
-    new Map(
-      timeEntries
-        .filter(
-          entry =>
-            entry.project_name
-              .toLowerCase()
-              .includes(searchQuery.toLowerCase()) ||
-            entry.task_name.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-        .map(entry => [
-          entry.project_id,
-          {
-            id: entry.project_id,
-            title: entry.project_name,
-            taskId: entry.task_id,
-            task_name: entry.task_name,
-          },
-        ])
-    ).values()
+  const filteredProjects = useMemo(
+    () =>
+      Array.from(
+        new Map(
+          timeEntries
+            .filter(
+              entry =>
+                entry.project_name
+                  .toLowerCase()
+                  .includes(debouncedSearchQuery.toLowerCase()) ||
+                entry.task_name
+                  .toLowerCase()
+                  .includes(debouncedSearchQuery.toLowerCase())
+            )
+            .map(entry => [
+              entry.project_id,
+              {
+                id: entry.project_id,
+                title: entry.project_name,
+                taskId: entry.task_id,
+                task_name: entry.task_name
+              }
+            ])
+        ).values()
+      ),
+    [timeEntries, debouncedSearchQuery]
   );
 
-  const filteredTasks = Array.from(
-    new Map(
-      timeEntries
-        .filter(
-          entry =>
-            entry.project_name
-              .toLowerCase()
-              .includes(searchQuery.toLowerCase()) ||
-            entry.task_name.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-        .map(entry => [
-          entry.task_id,
-          {
-            id: entry.project_id,
-            title: entry.project_name,
-            taskId: entry.task_id,
-            task_name: entry.task_name,
-          },
-        ])
-    ).values()
+  const filteredTasks = useMemo(
+    () =>
+      Array.from(
+        new Map(
+          timeEntries
+            .filter(
+              entry =>
+                entry.project_name
+                  .toLowerCase()
+                  .includes(debouncedSearchQuery.toLowerCase()) ||
+                entry.task_name
+                  .toLowerCase()
+                  .includes(debouncedSearchQuery.toLowerCase())
+            )
+            .map(entry => [
+              entry.task_id,
+              {
+                id: entry.project_id,
+                title: entry.project_name,
+                taskId: entry.task_id,
+                task_name: entry.task_name
+              }
+            ])
+        ).values()
+      ),
+    [timeEntries, debouncedSearchQuery]
   );
 
-  const filteredTasksIds = new Set(filteredTasks.map(p => p.taskId));
+  const filteredTasksIds = useMemo(
+    () => new Set(filteredTasks.map(p => p.taskId)),
+    [filteredTasks]
+  );
+
+  const dateRangeArray = useMemo(
+    () => getDateRangeArray(...dateRange),
+    [dateRange]
+  );
 
   const handleEntrySubmit = () => {
     if (!currentEntry) return;
@@ -172,7 +206,7 @@ const DateTableComponent = () => {
       comments: currentEntry.comments,
       leaveReason: currentEntry.leaveReason,
       id: currentEntry.id,
-      status: currentEntry.status,
+      status: 'Not Submitted' as TimesheetStatus
     };
 
     setTimeEntries(prev => {
@@ -189,7 +223,6 @@ const DateTableComponent = () => {
         return updated;
       }
 
-      toast.warning('No existing entry found to update');
       return prev;
     });
 
@@ -200,7 +233,7 @@ const DateTableComponent = () => {
   const renderStatusBadge = ({
     label,
     comment,
-    status,
+    status
   }: {
     label: string;
     comment: string;
@@ -211,20 +244,20 @@ const DateTableComponent = () => {
         color: 'blue',
         icon: <IconSunOff size={14} />,
         label: 'Week Off',
-        comment,
+        comment
       },
       holiday: {
         color: 'orange',
         icon: <IconBeach size={14} />,
         label: 'Holiday',
-        comment,
+        comment
       },
       leave: {
         color: 'red',
         icon: <IconCalendarOff size={14} />,
         label: 'Leave',
-        comment,
-      },
+        comment
+      }
     };
 
     const config = statusConfig[label as keyof typeof statusConfig];
@@ -243,7 +276,7 @@ const DateTableComponent = () => {
             status={status}
             bgColor={[
               organizationConfig.organization_theme.theme.backgroundColor,
-              organizationConfig.organization_theme.theme.color,
+              organizationConfig.organization_theme.theme.color
             ]}
           />
         </Text>
@@ -251,14 +284,14 @@ const DateTableComponent = () => {
     );
   };
 
-  const renderHoursCell = (timesheet: EmployeeTimesheet, edit: boolean) => {
+  const renderHoursCell = (timesheet: EmployeeTimesheet) => {
     const {
       date,
       task_id,
       project_id,
       hours,
       comments,
-      status: timesheetStatus,
+      status: timesheetStatus
     } = timesheet;
     const status = getDateStatus(date, task_id, project_id, timeEntries);
 
@@ -270,7 +303,7 @@ const DateTableComponent = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            cursor: 'pointer',
+            cursor: 'pointer'
           }}
         >
           {renderStatusBadge({ ...status, status: timesheetStatus })}
@@ -295,7 +328,7 @@ const DateTableComponent = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            cursor: isEditableDate ? 'pointer' : 'not-allowed',
+            cursor: isEditableDate ? 'pointer' : 'not-allowed'
           }}
         >
           <TaskPopover
@@ -304,7 +337,7 @@ const DateTableComponent = () => {
             status={isEditableDate ? timesheetStatus : 'Not started'}
             bgColor={[
               organizationConfig.organization_theme.theme.backgroundColor,
-              organizationConfig.organization_theme.theme.color,
+              organizationConfig.organization_theme.theme.color
             ]}
           />
         </Box>
@@ -438,7 +471,7 @@ const DateTableComponent = () => {
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            height: '200px',
+            height: '200px'
           }}
         >
           <Loader
@@ -447,21 +480,32 @@ const DateTableComponent = () => {
           />
         </Box>
       ) : (
-        <Box style={{ overflowX: 'auto' }}>
+        <div
+          className="flex max-w-full shadow-lg rounded-lg"
+          ref={scrollRef}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          style={{ userSelect: 'none', overflowX: 'hidden', cursor: 'grab' }}
+        >
           <Table striped highlightOnHover>
             <thead
               className="text-xs"
               style={{
                 backgroundColor:
                   organizationConfig.organization_theme.theme.backgroundColor,
-                color: organizationConfig.organization_theme.theme.color,
+                color: organizationConfig.organization_theme.theme.color
               }}
             >
               <tr
                 style={{
                   backgroundColor:
                     organizationConfig.organization_theme.theme.backgroundColor,
-                  color: organizationConfig.organization_theme.theme.color,
+                  color: organizationConfig.organization_theme.theme.color
                 }}
               >
                 <th
@@ -476,7 +520,7 @@ const DateTableComponent = () => {
                 >
                   Task
                 </th>
-                {getDateRangeArray(...dateRange).map(date => (
+                {dateRangeArray.map(date => (
                   <th
                     key={date}
                     style={{ minWidth: '80px', textAlign: 'center' }}
@@ -492,7 +536,7 @@ const DateTableComponent = () => {
                 const tasks = getTasksByProject(
                   project.id,
                   timeEntries,
-                  searchQuery
+                  debouncedSearchQuery
                 );
                 if (tasks.length === 0) return null;
 
@@ -519,7 +563,7 @@ const DateTableComponent = () => {
                           bgColor={[
                             organizationConfig.organization_theme.theme
                               .backgroundColor,
-                            organizationConfig.organization_theme.theme.color,
+                            organizationConfig.organization_theme.theme.color
                           ]}
                         />
                       </Center>
@@ -537,25 +581,22 @@ const DateTableComponent = () => {
                           key={`${project.id}-${task.id}-${date}`}
                         >
                           {entry
-                            ? renderHoursCell(entry, true)
-                            : renderHoursCell(
-                                {
-                                  date: moment(date).format('YYYY-MM-DD'),
-                                  isVacation: false,
-                                  isHoliday: false,
-                                  isWeekOff: false,
-                                  project_id: project.id,
-                                  task_id: task.id,
-                                  hours: 0,
-                                  project_name: project.title,
-                                  task_name: task.title,
-                                  comments: '',
-                                  leaveReason: '',
-                                  id: '',
-                                  status: 'pending',
-                                },
-                                false
-                              )}
+                            ? renderHoursCell(entry)
+                            : renderHoursCell({
+                                date: moment(date).format('YYYY-MM-DD'),
+                                isVacation: false,
+                                isHoliday: false,
+                                isWeekOff: false,
+                                project_id: project.id,
+                                task_id: task.id,
+                                hours: 0,
+                                project_name: project.title,
+                                task_name: task.title,
+                                comments: '',
+                                leaveReason: '',
+                                id: '',
+                                status: 'Not Submitted' as TimesheetStatus
+                              })}
                         </td>
                       );
                     })}
@@ -578,7 +619,7 @@ const DateTableComponent = () => {
               })}
             </tbody>
           </Table>
-        </Box>
+        </div>
       )}
       {currentEntry && (
         <EditTimeEntryModal

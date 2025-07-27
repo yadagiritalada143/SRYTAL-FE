@@ -4,6 +4,7 @@ import {
   EmployeeTimesheet,
   Package,
   Task,
+  TimesheetStatus
 } from '../../../interfaces/timesheet';
 import { toast } from 'react-toastify';
 
@@ -60,6 +61,7 @@ export const formatData = (data: { packageId: Package; tasks: Task[] }[]) => {
   return data.flatMap(pkg =>
     pkg.tasks.flatMap(task =>
       task.timesheet.map(timesheet => {
+        const status = timesheet.status;
         return {
           date: moment(timesheet.date).format('YYYY-MM-DD'),
           isVacation: timesheet.isVacation ?? false,
@@ -73,7 +75,7 @@ export const formatData = (data: { packageId: Package; tasks: Task[] }[]) => {
           comments: timesheet.comments ?? '',
           id: timesheet._id,
           leaveReason: timesheet.leaveReason,
-          status: timesheet.status,
+          status: status as TimesheetStatus
         };
       })
     )
@@ -195,7 +197,7 @@ export const openEditModal = (
     isWeekOff,
     leaveReason,
     comments,
-    status,
+    status
   } = timesheet;
   if (isPastDate(date)) {
     toast.error("You can't edit for past dates");
@@ -215,18 +217,21 @@ export const openEditModal = (
     hours,
     comments,
     id,
-    status,
+    status
   });
   openEntryModal();
 };
 
-export const prepareSubmitData = (changesMade: EmployeeTimesheet[]) => {
+export const prepareSubmitData = (
+  changesMade: EmployeeTimesheet[],
+  status?: TimesheetStatus
+) => {
   const packagesMap = new Map<string, any>();
   changesMade.forEach(entry => {
     if (!packagesMap.has(entry.project_id)) {
       packagesMap.set(entry.project_id, {
         packageId: entry.project_id,
-        tasks: [],
+        tasks: []
       });
     }
 
@@ -236,7 +241,7 @@ export const prepareSubmitData = (changesMade: EmployeeTimesheet[]) => {
     if (!task) {
       task = {
         taskId: entry.task_id,
-        timesheet: [],
+        timesheet: []
       };
       pkg.tasks.push(task);
     }
@@ -250,7 +255,11 @@ export const prepareSubmitData = (changesMade: EmployeeTimesheet[]) => {
       isWeekOff: false,
       id: entry.id,
       leaveReason: '',
-      status: 'Waiting For Approval',
+      status: status
+        ? status === 'Not Submitted'
+          ? 'Waiting For Approval'
+          : status
+        : 'Waiting For Approval'
     });
   });
 
