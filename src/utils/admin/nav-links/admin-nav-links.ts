@@ -1,4 +1,5 @@
 import {
+  IconBell,
   IconBuildings,
   IconDroplet,
   IconNetwork,
@@ -7,7 +8,7 @@ import {
   IconUserEdit,
   IconUsers,
   IconUsersGroup,
-  IconWorldCheck,
+  IconWorldCheck
 } from '@tabler/icons-react';
 
 export const adminNavLinks = [
@@ -15,54 +16,60 @@ export const adminNavLinks = [
     role: 'admin',
     url: 'admin/dashboard',
     icon: IconUsers,
-    name: 'Employees',
+    name: 'Employees'
   },
   {
     role: 'admin',
     url: 'admin/dashboard/profile',
     icon: IconUserEdit,
-    name: 'Profile',
+    name: 'Profile'
+  },
+  {
+    role: 'admin',
+    url: 'admin/dashboard/notifications',
+    icon: IconBell,
+    name: 'Notifications'
   },
   {
     role: 'admin',
     url: 'admin/dashboard/reports',
     icon: IconNotebook,
-    name: 'Reports',
+    name: 'Reports'
   },
   {
     role: 'admin',
     url: 'admin/dashboard/packages',
     icon: IconPackage,
-    name: 'Packages',
+    name: 'Packages'
   },
   {
     role: 'admin',
     url: 'admin/dashboard/pool-candidates',
     icon: IconUsersGroup,
-    name: 'Pool Candidates',
+    name: 'Pool Candidates'
   },
   {
     role: 'admin',
     url: 'admin/dashboard/pool-companies',
     icon: IconBuildings,
-    name: 'Pool Companies',
+    name: 'Pool Companies'
   },
   {
     role: 'admin',
     url: 'admin/dashboard/blood-group-management',
     icon: IconDroplet,
-    name: 'Blood Groups',
+    name: 'Blood Groups'
   },
   {
     role: 'admin',
     url: 'admin/dashboard/employment-type-management',
     icon: IconNetwork,
-    name: 'Employment Types',
+    name: 'Employment Types'
   },
   {
     role: 'admin',
     url: 'admin/dashboard/employment-role-management',
     icon: IconWorldCheck,
-    name: 'Employment Roles',
-  },
+    name: 'Employment Roles'
+  }
 ];
