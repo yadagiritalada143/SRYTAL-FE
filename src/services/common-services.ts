@@ -4,17 +4,18 @@ import { DateValue } from '@mantine/dates';
 
 import axios from 'axios';
 import moment from 'moment';
+import { toast } from 'react-toastify';
 
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,
-  headers: { 'Content-Type': 'application/json' },
+  headers: { 'Content-Type': 'application/json' }
 });
 
 const apiClientComm = axios.create({
   baseURL: BASE_URL,
-  headers: { 'Content-Type': 'application/json' },
+  headers: { 'Content-Type': 'application/json' }
 });
 const refreshAccessToken = async () => {
   try {
@@ -24,7 +25,7 @@ const refreshAccessToken = async () => {
     }
 
     const response = await apiClient.get('/admin/refreshToken', {
-      headers: { refresh_token: refreshToken },
+      headers: { refresh_token: refreshToken }
     });
 
     const { token: newAccessToken } = response.data;
@@ -67,7 +68,7 @@ apiClient.interceptors.request.use(
       try {
         token = await refreshAccessToken();
       } catch (error) {
-        console.error('Failed to refresh token. Redirecting to login...');
+        toast.error('Failed to refresh token. Redirecting to login...');
         logoutUser();
         return Promise.reject(error);
       }
@@ -85,7 +86,7 @@ apiClient.interceptors.response.use(
     const originalRequest = error.config;
 
     if (originalRequest.url.includes('/admin/refreshToken')) {
-      console.error('Refresh Token Expired. Redirecting to login...');
+      toast.error('Refresh Token Expired. Redirecting to login...');
       logoutUser();
       return Promise.reject(error);
     }
@@ -98,7 +99,7 @@ apiClient.interceptors.response.use(
         originalRequest.headers['auth_token'] = newAccessToken;
         return apiClient(originalRequest);
       } catch (refreshError) {
-        console.error('Session expired. Please log in again.');
+        toast.error('Session expired. Please log in again.');
         logoutUser();
         return Promise.reject(refreshError);
       }
@@ -173,12 +174,14 @@ export const getOrganizationConfig = async (organizationName: string) => {
 
 export const getTimesheetData = async (
   startDate: DateValue,
-  endDate: DateValue
+  endDate: DateValue,
+  employeeId?: string
 ) => {
   try {
     const { data } = await apiClient.post('/fetchEmployeePackageDetailsById', {
       startDate: moment(startDate).format('YYYY-MM-DD'),
       endDate: moment(endDate).format('YYYY-MM-DD'),
+      ...(employeeId && { employeeId: employeeId })
     });
     return data.employeePackageDetails?.length > 0 &&
       data.employeePackageDetails[0]?.packages
@@ -189,9 +192,12 @@ export const getTimesheetData = async (
   }
 };
 
-export const submitTimeSheet = async (data: any) => {
+export const submitTimeSheet = async (data: any, employeeId?: string) => {
   try {
-    await apiClient.put('updateEmployeeTimesheet', { packages: data });
+    await apiClient.put('updateEmployeeTimesheet', {
+      packages: data,
+      ...(employeeId && { employeeId: employeeId })
+    });
   } catch (error) {
     throw error;
   }

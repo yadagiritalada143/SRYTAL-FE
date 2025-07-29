@@ -24,7 +24,8 @@ import { useMantineTheme } from '@mantine/core';
 import { SearchBarFullWidht } from '../../../common/search-bar/search-bar';
 import { employeeTypeAtom } from '../../../../atoms/employeetypes-atom';
 
-const isValidEmploymentType = (name: string) => /^[A-Za-z ]+$/.test(name);
+const isValidEmploymentType = (name: string) =>
+  /^([A-Za-z()\-\s_]|[0-9])+$/.test(name) && !/\d{2,}/.test(name);
 
 const EmploymentTypes = () => {
   const [employmentTypes, setEmploymentTypes] =

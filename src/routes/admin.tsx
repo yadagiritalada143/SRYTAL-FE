@@ -33,6 +33,7 @@ import AddPackage from '../components/admin/dashboard/add-package/add-package';
 import UpdatePackage from '../components/admin/dashboard/update-package/update-package';
 import DateTableComponent from '../components/common/timesheet/timesheet';
 import PackagePageWrapper from '../components/admin/dashboard/update-employee/package-wrapper';
+import { EmployeeTimesheetAdminView } from '../components/admin/dashboard/employee-timesheet/employee-timesheet';
 
 const AdminRoutes = () => {
   const { organization } = useParams<{ organization: string }>();
@@ -60,43 +61,43 @@ const AdminRoutes = () => {
       primary: organizationConfig.organization_theme.theme.colors
         .primary as any,
       secondary: organizationConfig.organization_theme.theme.colors
-        .secondary as any,
+        .secondary as any
     },
     headings: {
-      fontFamily: organizationConfig.organization_theme.theme.fontFamily,
+      fontFamily: organizationConfig.organization_theme.theme.fontFamily
     },
     components: {
       Avatar: {
         styles: () => ({
           root: {
-            color: organizationConfig.organization_theme.theme.color,
-          },
-        }),
+            color: organizationConfig.organization_theme.theme.color
+          }
+        })
       },
       Modal: {
         styles: () => ({
           title: {
             fontWeight: 600,
             fontSize: '1.25rem',
-            color: organizationConfig.organization_theme.theme.color,
+            color: organizationConfig.organization_theme.theme.color
           },
           header: {
             backgroundColor:
               organizationConfig.organization_theme.theme.headerBackgroundColor,
-            borderBottom: `1px solid ${organizationConfig.organization_theme.theme.borderColor}`,
+            borderBottom: `1px solid ${organizationConfig.organization_theme.theme.borderColor}`
           },
           content: {
             backgroundColor:
               organizationConfig.organization_theme.theme.backgroundColor,
-            color: organizationConfig.organization_theme.theme.color,
+            color: organizationConfig.organization_theme.theme.color
           },
           close: {
             color: organizationConfig.organization_theme.theme.color,
             '&:hover': {
               backgroundColor: 'transparent',
-              color: organizationConfig.organization_theme.theme.linkColor,
-            },
-          },
+              color: organizationConfig.organization_theme.theme.linkColor
+            }
+          }
         }),
         defaultProps: {
           radius: 'md',
@@ -104,29 +105,29 @@ const AdminRoutes = () => {
           padding: 'xl',
           size: '600px',
           overlayBlur: 3,
-          overlayOpacity: 0.7,
-        },
+          overlayOpacity: 0.7
+        }
       },
       Menu: {
         styles: () => ({
           dropdown: {
             backgroundColor:
-              organizationConfig.organization_theme.theme.colors.primary[5],
+              organizationConfig.organization_theme.theme.colors.primary[5]
           },
           label: {
-            color: organizationConfig.organization_theme.theme.button.textColor,
+            color: organizationConfig.organization_theme.theme.button.textColor
           },
           item: {
-            color: organizationConfig.organization_theme.theme.button.textColor,
-          },
-        }),
+            color: organizationConfig.organization_theme.theme.button.textColor
+          }
+        })
       },
       Loader: {
         styles: () => ({
           root: {
-            color: organizationConfig.organization_theme.theme.button.textColor,
-          },
-        }),
+            color: organizationConfig.organization_theme.theme.button.textColor
+          }
+        })
       },
       Button: {
         styles: () => ({
@@ -134,12 +135,11 @@ const AdminRoutes = () => {
             backgroundColor:
               organizationConfig.organization_theme.theme.button.color,
             color: organizationConfig.organization_theme.theme.button.textColor,
-            borderColor:
-              organizationConfig.organization_theme.theme.borderColor,
-          },
-        }),
-      },
-    },
+            borderColor: organizationConfig.organization_theme.theme.borderColor
+          }
+        })
+      }
+    }
   };
 
   return (
@@ -177,6 +177,10 @@ const AdminRoutes = () => {
             <Route
               path="package/:employeeId"
               element={<PackagePageWrapper />}
+            />
+            <Route
+              path="timesheet/:employeeId"
+              element={<EmployeeTimesheetAdminView />}
             />
             <Route path="pool-candidates" element={<PoolCandidateList />} />
             <Route

@@ -27,7 +27,12 @@ export interface Package {
   description: string;
   isDeleted: boolean;
 }
-
+export enum TimesheetStatus {
+  WaitingForApproval = 'Waiting For Approval',
+  Approved = 'Approved',
+  Rejected = 'Rejected',
+  NotSubmitted = 'Not Submitted'
+}
 export interface EmployeeTimesheet {
   date: string;
   isVacation: boolean;
@@ -41,5 +46,5 @@ export interface EmployeeTimesheet {
   comments: string;
   leaveReason: string;
   id: string;
-  status: string;
+  status: TimesheetStatus;
 }
