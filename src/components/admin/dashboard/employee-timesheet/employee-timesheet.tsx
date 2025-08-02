@@ -44,8 +44,10 @@ import {
 } from '../../../../services/common-services';
 import { employeeDetailsAtom } from '../../../../atoms/employee-atom';
 import { getEmployeeDetailsByAdmin } from '../../../../services/admin-services';
+import { BackButton } from '../../../common/style-components/buttons';
 
 export const EmployeeTimesheetAdminView = () => {
+  const [dateSortOrder, setDateSortOrder] = useState<'asc' | 'desc'>('asc');
   const { employeeId } = useParams<{ employeeId: string }>();
   const organizationConfig = useRecoilValue(organizationThemeAtom);
   const theme = organizationConfig.organization_theme.theme;
@@ -67,6 +69,10 @@ export const EmployeeTimesheetAdminView = () => {
   );
   const [employeeDetails, setEmployeeDetails] =
     useRecoilState(employeeDetailsAtom);
+
+  const handleDateSort = () => {
+    setDateSortOrder(prev => (prev === 'asc' ? 'desc' : 'asc'));
+  };
 
   // Fetch employee details
   useEffect(() => {
@@ -134,8 +140,20 @@ export const EmployeeTimesheetAdminView = () => {
       );
     }
 
+    result.sort((a, b) => {
+      const dateA = new Date(a.date).getTime();
+      const dateB = new Date(b.date).getTime();
+      return dateSortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+    });
+
     return result;
-  }, [timesheets, selectedStatus, dateRange, debouncedSearchQuery]);
+  }, [
+    timesheets,
+    selectedStatus,
+    dateRange,
+    debouncedSearchQuery,
+    dateSortOrder
+  ]);
 
   const handleStatusChange = useCallback(
     async (timesheetIds: string[], status: TimesheetStatus) => {
@@ -231,7 +249,7 @@ export const EmployeeTimesheetAdminView = () => {
   );
   return (
     <div style={{ color: theme.button.textColor }}>
-      <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold underline text-center px-2 py-4">
+      <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold underline text-center px-2 py-5">
         Timesheet Management
       </h1>
 
@@ -244,26 +262,33 @@ export const EmployeeTimesheetAdminView = () => {
           borderLeft: `4px solid ${theme.primaryColor}`
         }}
       >
-        <Group grow c={theme.button.color}>
-          <Stack gap="xs">
-            <Group gap="sm">
-              <IconId size={18} color={theme.primaryColor} />
-              <Text fw={500}>Employee ID:</Text>
-              <Text>{employeeDetails?.employeeId}</Text>
-            </Group>
-            <Group gap="sm">
-              <IconUser size={18} color={theme.primaryColor} />
-              <Text fw={500}>Name:</Text>
-              <Text>
-                {employeeDetails?.firstName} {employeeDetails?.lastName}
-              </Text>
-            </Group>
-            <Group gap="sm">
-              <IconMail size={18} color={theme.primaryColor} />
-              <Text fw={500}>Email:</Text>
-              <Text>{employeeDetails?.email}</Text>
-            </Group>
-          </Stack>
+        <Group
+          wrap="wrap"
+          gap="md"
+          justify="space-between"
+          align="center"
+          c={theme.button.color}
+        >
+          <Group gap="xs">
+            <IconId size={18} color={theme.primaryColor} />
+            <Text fw={500}>Employee ID:</Text>
+            <Text>{employeeDetails?.employeeId}</Text>
+          </Group>
+          <Group gap="xs">
+            <IconUser size={18} color={theme.primaryColor} />
+            <Text fw={500}>Name:</Text>
+            <Text>
+              {employeeDetails?.firstName} {employeeDetails?.lastName}
+            </Text>
+          </Group>
+          <Group gap="xs">
+            <IconMail size={18} color={theme.primaryColor} />
+            <Text fw={500}>Email:</Text>
+            <Text>{employeeDetails?.email}</Text>
+          </Group>
+          <div className="flex justify-end">
+            <BackButton id={employeeId ?? ''} />
+          </div>
         </Group>
 
         <Divider my="md" />
@@ -282,6 +307,7 @@ export const EmployeeTimesheetAdminView = () => {
           />
 
           <DatePickerInput
+            className="w-full sm:w-auto"
             type="range"
             label="Date Range"
             c={theme.button.color}
@@ -401,20 +427,27 @@ export const EmployeeTimesheetAdminView = () => {
               }}
             >
               <tr>
-                <th className="p-2 border">
-                  <Checkbox
-                    checked={isAllSelected}
-                    indeterminate={
-                      selectedTimesheets.length > 0 && !isAllSelected
-                    }
-                    onChange={e => toggleSelectAll(e.currentTarget.checked)}
-                  />
+                <th className="p-2 border text-center align-middle">
+                  <div className="flex justify-center items-center">
+                    <Checkbox
+                      checked={isAllSelected}
+                      indeterminate={
+                        selectedTimesheets.length > 0 && !isAllSelected
+                      }
+                      onChange={e => toggleSelectAll(e.currentTarget.checked)}
+                    />
+                  </div>
                 </th>
                 <th
-                  style={{ color: theme.button.color }}
-                  className="p-2 border"
+                  className="p-2 border cursor-pointer select-none text-center align-middle"
+                  onClick={handleDateSort}
                 >
-                  Date
+                  <div className="flex justify-center items-center gap-1">
+                    <span style={{ color: theme.button.color }}>Date</span>
+                    <span className="text-xsm text-white">
+                      {dateSortOrder === 'asc' ? '▲' : '▼'}
+                    </span>
+                  </div>
                 </th>
                 <th
                   style={{ color: theme.button.color }}
@@ -451,11 +484,13 @@ export const EmployeeTimesheetAdminView = () => {
             <tbody className="text-sm">
               {filteredTimesheets.map(timesheet => (
                 <tr key={timesheet.id}>
-                  <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                    <Checkbox
-                      checked={selectedTimesheets.includes(timesheet.id)}
-                      onChange={() => toggleSingleSelection(timesheet.id)}
-                    />
+                  <td className="p-2 border text-center align-middle">
+                    <div className="flex justify-center items-center">
+                      <Checkbox
+                        checked={selectedTimesheets.includes(timesheet.id)}
+                        onChange={() => toggleSingleSelection(timesheet.id)}
+                      />
+                    </div>
                   </td>
                   <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
                     {moment(timesheet.date).format('MMM D, YYYY')}
@@ -472,8 +507,8 @@ export const EmployeeTimesheetAdminView = () => {
                   <td className="px-4 py-2 border">
                     {getStatusBadge(timesheet.status)}
                   </td>
-                  <td className="px-4 py-2 border">
-                    <Group gap="xs">
+                  <td className="p-2 border text-center align-middle">
+                    <div className="flex justify-center items-center gap-2">
                       <Button
                         size="xs"
                         variant="outline"
@@ -512,7 +547,7 @@ export const EmployeeTimesheetAdminView = () => {
                       >
                         Reject
                       </Button>
-                    </Group>
+                    </div>
                   </td>
                 </tr>
               ))}

@@ -310,7 +310,9 @@ const DateTableComponent = () => {
         </Box>
       );
     }
-    const isEditableDate = moment(date).isSame(moment(), 'month');
+    const isEditableDate =
+      moment(date).isSame(moment(), 'month') ||
+      moment(date).isoWeek() === moment().isoWeek();
     return (
       <Tooltip
         label={
@@ -372,14 +374,14 @@ const DateTableComponent = () => {
             <DatePickerInput
               type="range"
               onChange={value => {
-                if (value[0] && value[1]) {
-                  const daysDiff =
-                    moment(value[1]).diff(moment(value[0]), 'days') + 1;
-                  if (daysDiff > 14) {
-                    toast.error('Maximum date range is 14 days');
-                    return;
-                  }
-                }
+                // if (value[0] && value[1]) {
+                //   const daysDiff =
+                //     moment(value[1]).diff(moment(value[0]), 'days') + 1;
+                //   if (daysDiff > 14) {
+                //     toast.error('Maximum date range is 14 days');
+                //     return;
+                //   }
+                // }
                 setDateRange(value);
               }}
               leftSection={<IconCalendar size={16} />}
@@ -391,7 +393,7 @@ const DateTableComponent = () => {
                   : moment().endOf('month').toDate()
               }
               value={dateRange}
-              placeholder="Pick date range (max 14 days)"
+              placeholder="Pick date range"
               allowSingleDateInRange={false}
             />
 
@@ -523,12 +525,18 @@ const DateTableComponent = () => {
                 {dateRangeArray.map(date => (
                   <th
                     key={date}
+                    className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis"
                     style={{ minWidth: '80px', textAlign: 'center' }}
                   >
                     {formatDisplayDate(date)}
                   </th>
                 ))}
-                <th style={{ minWidth: '80px' }}>Total</th>
+                <th
+                  className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis"
+                  style={{ minWidth: '80px' }}
+                >
+                  Total
+                </th>
               </tr>
             </thead>
             <tbody>

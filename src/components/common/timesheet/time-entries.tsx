@@ -87,12 +87,18 @@ export const TimeEntriesTable = ({
                       </Badge>
                     </td>
                   )}
-                  <td className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis">
+                  <td
+                    className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis"
+                    style={{ textAlign: 'center' }}
+                  >
                     <Text fw={500} lineClamp={2}>
                       {entry.hours}
                     </Text>
                   </td>
-                  <td className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis">
+                  <td
+                    className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis"
+                    style={{ textAlign: 'center' }}
+                  >
                     <Text lineClamp={2}>{entry.comments}</Text>
                   </td>
                   <td
