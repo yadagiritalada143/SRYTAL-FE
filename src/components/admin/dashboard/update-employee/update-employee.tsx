@@ -6,13 +6,13 @@ import {
   useMantineTheme,
   MultiSelect,
   Loader,
-  Textarea,
+  Textarea
 } from '@mantine/core';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   EmployeeUpdateForm,
-  employeeSchema,
+  employeeSchema
 } from '../../../../forms/update-employee';
 import {
   getAllBloodGroupByAdmin,
@@ -22,7 +22,7 @@ import {
   getAllEmploymentTypes,
   getAllEmployeeRoleByAdmin,
   handlePasswordResetByAdmin,
-  getAllEmployeeDetailsByAdmin,
+  getAllEmployeeDetailsByAdmin
 } from '../../../../services/admin-services';
 import { toast } from 'react-toastify';
 import { useEffect, useState } from 'react';
@@ -32,7 +32,7 @@ import { useDisclosure } from '@mantine/hooks';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import {
   organizationEmployeeAtom,
-  organizationThemeAtom,
+  organizationThemeAtom
 } from '../../../../atoms/organization-atom';
 import { useCustomToast } from '../../../../utils/common/toast';
 import { DatePickerInput } from '@mantine/dates';
@@ -42,7 +42,7 @@ import {
   employeeDetailsAtom,
   bloodGroupOptionsAtom,
   employmentTypesAtom,
-  employeeRolesAtom,
+  employeeRolesAtom
 } from '../../../../atoms/employee-atom';
 import { useRecoilState } from 'recoil';
 
@@ -59,9 +59,9 @@ const UpdateEmployee = () => {
     handleSubmit,
     formState: { errors },
     control,
-    reset,
+    reset
   } = useForm<EmployeeUpdateForm>({
-    resolver: zodResolver(employeeSchema),
+    resolver: zodResolver(employeeSchema)
   });
 
   const [opened, { open, close }] = useDisclosure(false);
@@ -79,57 +79,51 @@ const UpdateEmployee = () => {
   const setEmployeeDetails = useSetRecoilState(employeeDetailsAtom);
 
   useEffect(() => {
-    if (!employmentTypeOptions) {
-      getAllEmploymentTypes()
-        .then(response => {
-          const types = response.map((res: any) => ({
-            value: res._id,
-            label: res.employmentType,
-          }));
-          setEmploymentTypes(types);
-        })
-        .catch(error => {
-          toast.error(error?.response?.data?.message || 'Something went wrong');
-        });
-    }
-  }, [employmentTypeOptions, setEmploymentTypes]);
+    getAllEmploymentTypes()
+      .then(response => {
+        const types = response.map((res: any) => ({
+          value: res._id,
+          label: res.employmentType
+        }));
+        setEmploymentTypes(types);
+      })
+      .catch(error => {
+        toast.error(error?.response?.data?.message || 'Something went wrong');
+      });
+  }, [setEmploymentTypes]);
 
   useEffect(() => {
-    if (!employmentRolesOptions) {
-      getAllEmployeeRoleByAdmin()
-        .then(response => {
-          const roles = response.map((res: any) => ({
-            value: res._id,
-            label: res.designation,
-          }));
-          setEmploymentRolesOptions(roles);
-        })
-        .catch(error => {
-          toast.error(error?.response?.data?.message || 'Something went wrong');
-        });
-    }
-  }, [employmentRolesOptions, setEmploymentRolesOptions]);
+    getAllEmployeeRoleByAdmin()
+      .then(response => {
+        const roles = response.map((res: any) => ({
+          value: res._id,
+          label: res.designation
+        }));
+        setEmploymentRolesOptions(roles);
+      })
+      .catch(error => {
+        toast.error(error?.response?.data?.message || 'Something went wrong');
+      });
+  }, [setEmploymentRolesOptions]);
 
   useEffect(() => {
-    if (!bloodGroupOptions) {
-      getAllBloodGroupByAdmin()
-        .then(response => {
-          const options = response.map((res: any) => ({
-            value: res._id,
-            label: res.type,
-          }));
-          setBloodGroupOptions(options);
-        })
-        .catch(error => {
-          toast.error(error?.response?.data?.message || 'Something went wrong');
-        });
-    }
-  }, [bloodGroupOptions, setBloodGroupOptions]);
+    getAllBloodGroupByAdmin()
+      .then(response => {
+        const options = response.map((res: any) => ({
+          value: res._id,
+          label: res.type
+        }));
+        setBloodGroupOptions(options);
+      })
+      .catch(error => {
+        toast.error(error?.response?.data?.message || 'Something went wrong');
+      });
+  }, [setBloodGroupOptions]);
 
   const onSubmit = (data: EmployeeUpdateForm) => {
     const updatedData = {
       ...data,
-      employeeRole: data.employeeRole?.filter(role => role),
+      employeeRole: data.employeeRole?.filter(role => role)
     };
 
     if (
@@ -164,7 +158,7 @@ const UpdateEmployee = () => {
           employeeRole: emp.employeeRole.map((role: any) => role.id),
           dateOfBirth: emp.dateOfBirth
             ? new Date(emp.dateOfBirth).toISOString().split('T')[0]
-            : '',
+            : ''
         };
         setEmployeeDetails(formatted);
         reset(formatted);
@@ -180,7 +174,7 @@ const UpdateEmployee = () => {
   const handleDeleteEmployee = () => {
     const payload = {
       id: employeeId,
-      confirmDelete: agreeTerms,
+      confirmDelete: agreeTerms
     };
 
     deleteEmployeeByAdmin(payload)
@@ -225,7 +219,7 @@ const UpdateEmployee = () => {
               onSubmit={handleSubmit(onSubmit)}
               style={{
                 backgroundColor:
-                  organizationConfig.organization_theme.theme.backgroundColor,
+                  organizationConfig.organization_theme.theme.backgroundColor
               }}
               className="rounded-lg shadow-lg w-full max-w-4xl p-8"
             >
