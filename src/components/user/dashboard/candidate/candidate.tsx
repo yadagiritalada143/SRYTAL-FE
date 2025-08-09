@@ -1,106 +1,152 @@
-import { Button, Loader, Table } from "@mantine/core";
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
-import { getAllPoolCandidatesByEmployee } from "../../../../services/user-services";
+import { Button, Loader, Table, Center, Pagination } from '@mantine/core';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { getAllPoolCandidatesByEmployee } from '../../../../services/user-services';
 import {
   commonUrls,
   organizationAdminUrls,
-  organizationEmployeeUrls,
-} from "../../../../utils/common/constants";
-import { SearchBarFullWidht } from "../../../common/search-bar/search-bar";
-import { useRecoilValue } from "recoil";
-import { organizationThemeAtom } from "../../../../atoms/organization-atom";
-import moment from "moment";
-import useHorizontalScroll from "../../../../hooks/horizontal-scroll";
+  organizationEmployeeUrls
+} from '../../../../utils/common/constants';
+import { SearchBarFullWidht } from '../../../common/search-bar/search-bar';
+import { useRecoilValue } from 'recoil';
+import { organizationThemeAtom } from '../../../../atoms/organization-atom';
+import moment from 'moment';
+import useHorizontalScroll from '../../../../hooks/horizontal-scroll';
+import { CandidateInterface } from '../../../../interfaces/candidate';
 
 const PoolCandidateList = () => {
   const navigate = useNavigate();
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const [candidates, setCandidates] = useState([]);
-  const [filteredCandidates, setFilteredCandidates] = useState([]);
+  const [filteredCandidates, setFilteredCandidates] = useState<
+    CandidateInterface[]
+  >([]);
   const [isLoading, setIsLoading] = useState(true);
   const organizationConfig = useRecoilValue(organizationThemeAtom);
   const { scrollRef, handleMouseDown, handleMouseMove, handleMouseUp } =
     useHorizontalScroll();
+  const [activePage, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const itemPerPage = 10;
+  const highlightScrollRef = useRef(false);
 
   useEffect(() => {
     getAllPoolCandidatesByEmployee()
-      .then((candidates) => {
+      .then(candidates => {
         setCandidates(candidates);
         setFilteredCandidates(candidates);
         setIsLoading(false);
       })
-      .catch((error) => {
-        toast(error?.response?.data?.message || "Something went wrong");
+      .catch(error => {
+        toast(error?.response?.data?.message || 'Something went wrong');
         setIsLoading(false);
       });
   }, []);
 
-  const handleNavigate = (id: string) => {
-    if (localStorage.getItem("userRole") === "admin") {
-      navigate(
-        `${organizationAdminUrls(
-          organizationConfig.organization_name
-        )}/dashboard/${id}/edit-pool-candidate`
-      );
-    } else {
-      navigate(
-        `${organizationEmployeeUrls(
-          organizationConfig.organization_name
-        )}/dashboard/${id}/edit-pool-candidate`
-      );
-    }
-  };
+  const handleNavigate = useCallback(
+    (id: string) => {
+      if (localStorage.getItem('userRole') === 'admin') {
+        navigate(
+          `${organizationAdminUrls(
+            organizationConfig.organization_name
+          )}/dashboard/${id}/edit-pool-candidate`
+        );
+      } else {
+        navigate(
+          `${organizationEmployeeUrls(
+            organizationConfig.organization_name
+          )}/dashboard/${id}/edit-pool-candidate`
+        );
+      }
+    },
+    [navigate, organizationConfig.organization_name]
+  );
 
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const query = e.target.value;
-    setSearch(query);
+  const handleSearch = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const query = e.target.value;
+      setSearch(query);
 
-    const filtered = candidates.filter((candidate: any) => {
-      return (
-        candidate.candidateName
-          .toLowerCase()
-          .includes(query.toLocaleLowerCase()) ||
-        candidate.contact.email.toLowerCase().includes(query) ||
-        candidate.contact.phone.toString().includes(query) ||
-        candidate.evaluatedSkills?.toLowerCase().toString().includes(query)
-      );
-    });
+      const filtered = candidates.filter((candidate: any) => {
+        return (
+          candidate.candidateName
+            .toLowerCase()
+            .includes(query.toLocaleLowerCase()) ||
+          candidate.contact.email.toLowerCase().includes(query.toLowerCase()) ||
+          candidate.contact.phone.toString().includes(query) ||
+          candidate.evaluatedSkills?.toLowerCase().toString().includes(query)
+        );
+      });
 
-    setFilteredCandidates(filtered);
-  };
+      setFilteredCandidates(filtered);
+    },
+    [candidates]
+  );
 
   useEffect(() => {
-    const selectedCandidate = localStorage.getItem("id");
+    const selectedCandidate = localStorage.getItem('id');
     if (selectedCandidate && filteredCandidates.length > 0) {
-      const rowElement = document.getElementById(
-        `candidate-${selectedCandidate}`
+      const index = filteredCandidates.findIndex(
+        emps => emps._id === selectedCandidate
       );
-      if (rowElement) {
-        rowElement.scrollIntoView({ behavior: "smooth", block: "center" });
-        rowElement.style.backgroundColor =
-          organizationConfig.organization_theme.theme.backgroundColor;
-        rowElement.style.color =
-          organizationConfig.organization_theme.theme.color;
-        setTimeout(() => {
-          rowElement.style.backgroundColor = "";
-          rowElement.style.color = "";
-        }, 2000);
-      }
-      localStorage.removeItem("id");
+      if (index === -1) return;
+      const targetPage = Math.floor(index / itemPerPage) + 1;
+      highlightScrollRef.current = true;
+      setPage(targetPage);
+
+      const timer = setTimeout(() => {
+        const rowElement = document.getElementById(
+          `candidate-${selectedCandidate}`
+        );
+        if (rowElement) {
+          rowElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          rowElement.style.backgroundColor =
+            organizationConfig.organization_theme.theme.backgroundColor;
+          rowElement.style.color =
+            organizationConfig.organization_theme.theme.color;
+          setTimeout(() => {
+            localStorage.removeItem('id');
+            rowElement.style.backgroundColor = '';
+            rowElement.style.color = '';
+          }, 2000);
+        }
+        highlightScrollRef.current = false;
+      }, 300);
+
+      return () => clearTimeout(timer);
     }
   }, [
     filteredCandidates,
     organizationConfig.organization_theme.theme.backgroundColor,
     organizationConfig.organization_theme.theme.color,
+    itemPerPage
   ]);
+
+  useEffect(() => {
+    if (!highlightScrollRef.current) {
+      setPage(1);
+    }
+    setTotalPages(Math.ceil(filteredCandidates.length / itemPerPage));
+  }, [filteredCandidates]);
+
+  const paginatedCandidates = useMemo(() => {
+    const start = (activePage - 1) * itemPerPage;
+    const end = start + itemPerPage;
+    return filteredCandidates.slice(start, end);
+  }, [filteredCandidates, activePage]);
 
   return (
     <div
       style={{
         color: organizationConfig.organization_theme.theme.button.textColor,
-        fontFamily: organizationConfig.organization_theme.theme.fontFamily,
+        fontFamily: organizationConfig.organization_theme.theme.fontFamily
       }}
       className="p-6"
     >
@@ -135,7 +181,7 @@ const PoolCandidateList = () => {
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
-        style={{ userSelect: "none" }}
+        style={{ userSelect: 'none' }}
       >
         <Table className="w-full text-center shadow-md border table-auto">
           <colgroup>
@@ -153,7 +199,7 @@ const PoolCandidateList = () => {
             style={{
               backgroundColor:
                 organizationConfig.organization_theme.theme.backgroundColor,
-              color: organizationConfig.organization_theme.theme.color,
+              color: organizationConfig.organization_theme.theme.color
             }}
           >
             <tr className="border-b ">
@@ -184,13 +230,15 @@ const PoolCandidateList = () => {
             </tbody>
           ) : (
             <tbody>
-              {filteredCandidates.map((candidate: any, index: number) => (
+              {paginatedCandidates.map((candidate: any, index: number) => (
                 <tr
                   id={`candidate-${candidate._id}`}
                   key={candidate._id}
                   className="border-b transition-all duration-200 text-left"
                 >
-                  <td className="px-4 py-2 border-r ">{index + 1}</td>
+                  <td className="px-4 py-2 border-r ">
+                    {index + 1 + (activePage - 1) * itemPerPage}
+                  </td>
                   <td className="px-4 py-2 border-r ">
                     {candidate.candidateName}
                   </td>
@@ -204,26 +252,26 @@ const PoolCandidateList = () => {
                     {candidate.totalYearsOfExperience}
                   </td>
                   <td className="px-4 py-2 border-r">
-                    {candidate?.createdBy?.firstName || ""}{" "}
-                    {candidate?.createdBy?.lastName || ""}
+                    {candidate?.createdBy?.firstName || ''}{' '}
+                    {candidate?.createdBy?.lastName || ''}
                   </td>
                   <td className="px-4 py-2 border-r ">
                     {moment(new Date(candidate.createdAt)).format(
-                      "MMMM Do YYYY"
+                      'MMMM Do YYYY'
                     )}
                   </td>
 
                   <td className="px-4 py-2 border-r ">
                     {candidate?.comments?.length
                       ? `${candidate.comments[0].userId?.firstName} ${candidate.comments[0].userId?.lastName}`
-                      : "N/A"}
+                      : 'N/A'}
                   </td>
                   <td className="px-4 py-2 border-r ">
                     {candidate?.comments?.length
                       ? moment(
                           new Date(candidate.comments[0]?.updateAt)
-                        ).format("MMMM Do YYYY")
-                      : "N/A"}
+                        ).format('MMMM Do YYYY')
+                      : 'N/A'}
                   </td>
 
                   <td className="px-4 py-2">
@@ -240,6 +288,15 @@ const PoolCandidateList = () => {
           )}
         </Table>
       </div>
+      {!isLoading && totalPages > 1 && (
+        <Center className="my-8">
+          <Pagination
+            value={activePage}
+            onChange={setPage}
+            total={totalPages}
+          />
+        </Center>
+      )}
     </div>
   );
 };
