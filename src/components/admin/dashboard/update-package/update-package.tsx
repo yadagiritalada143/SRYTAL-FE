@@ -4,17 +4,17 @@ import {
   Button,
   Textarea,
   Loader,
-  MultiSelect,
+  MultiSelect
 } from '@mantine/core';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   packageSchema,
-  PackageUpdateForm,
+  PackageUpdateForm
 } from '../../../../forms/update-package';
 
 import { toast } from 'react-toastify';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { BgDiv } from '../../../common/style-components/bg-div';
 import { useRecoilValue } from 'recoil';
 import { organizationThemeAtom } from '../../../../atoms/organization-atom';
@@ -23,7 +23,7 @@ import {
   deletePackageByAdmin,
   getAllEmployeeDetailsByAdmin,
   getPackageDetailsByAdmin,
-  updatePackageByAdmin,
+  updatePackageByAdmin
 } from '../../../../services/admin-services';
 import { useDisclosure } from '@mantine/hooks';
 import { useCustomToast } from '../../../../utils/common/toast';
@@ -58,9 +58,9 @@ const UpdatePackage = () => {
     handleSubmit,
     formState: { errors },
     control,
-    reset,
+    reset
   } = useForm<PackageUpdateForm>({
-    resolver: zodResolver(packageSchema),
+    resolver: zodResolver(packageSchema)
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -87,7 +87,7 @@ const UpdatePackage = () => {
             : null,
           endDate: packageDetails.endDate
             ? new Date(packageDetails.endDate)
-            : null,
+            : null
         });
       })
       .catch(error => {
@@ -114,7 +114,8 @@ const UpdatePackage = () => {
         toast.error(error?.response?.data?.message || 'Something went wrong');
       });
   };
-  const fetchPackageDetails = async () => {
+
+  const fetchPackageDetails = useCallback(async () => {
     if (!packageId) return;
 
     setIsLoading(true);
@@ -135,7 +136,7 @@ const UpdatePackage = () => {
           : null,
         endDate: packageDetails.endDate
           ? new Date(packageDetails.endDate)
-          : null,
+          : null
       });
     } catch (error: any) {
       toast.error(
@@ -144,7 +145,7 @@ const UpdatePackage = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [packageId, reset]);
 
   const onSubmit = async (data: PackageUpdateForm) => {
     if (!packageId) return;
@@ -173,7 +174,7 @@ const UpdatePackage = () => {
         const filterApprovers = response.map(
           (approver: { _id: string; firstName: string; lastName: string }) => ({
             value: approver._id,
-            label: `${approver.firstName} ${approver.lastName}`,
+            label: `${approver.firstName} ${approver.lastName}`
           })
         );
 
@@ -203,7 +204,7 @@ const UpdatePackage = () => {
               className="rounded-lg shadow-lg w-full max-w-2xl p-8 ml-auto mr-auto"
               style={{
                 backgroundColor:
-                  organizationConfig.organization_theme.theme.backgroundColor,
+                  organizationConfig.organization_theme.theme.backgroundColor
               }}
             >
               <div className="flex flex-wrap items-center justify-between gap-3 mb-6">

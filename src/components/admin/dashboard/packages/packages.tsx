@@ -1,6 +1,13 @@
-import { Button, useMantineTheme, Loader, Tooltip } from '@mantine/core';
+import {
+  Button,
+  useMantineTheme,
+  Loader,
+  Tooltip,
+  Center,
+  Pagination
+} from '@mantine/core';
 import { IconEdit } from '@tabler/icons-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PackageInterface } from '../../../../interfaces/package';
 import { getAllPackagesByAdmin } from '../../../../services/admin-services';
@@ -25,14 +32,79 @@ const Packages = () => {
 
   const { scrollRef, handleMouseDown, handleMouseMove, handleMouseUp } =
     useHorizontalScroll();
+  const [activePage, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const itemPerPage = 10;
+  const highlightScrollRef = useRef(false);
 
-  const handlePackageSelect = (packageId: string) => {
-    navigate(
-      `${organizationAdminUrls(
-        organizationConfig.organization_name
-      )}/dashboard/updates/${packageId}`
-    );
-  };
+  const handlePackageSelect = useCallback(
+    (packageId: string) => {
+      localStorage.setItem('packageId', packageId);
+      navigate(
+        `${organizationAdminUrls(
+          organizationConfig.organization_name
+        )}/dashboard/updates/${packageId}`
+      );
+    },
+    [navigate, organizationConfig.organization_name]
+  );
+
+  useEffect(() => {
+    const selectedPackage = localStorage.getItem('packageId');
+
+    if (selectedPackage && filteredPackages.length > 0) {
+      const index = filteredPackages.findIndex(
+        pkg => pkg._id === selectedPackage
+      );
+      if (index === -1) return;
+
+      const targetPage = Math.floor(index / itemPerPage) + 1;
+      highlightScrollRef.current = true;
+      setPage(targetPage);
+
+      const timer = setTimeout(() => {
+        const rowElement = document.getElementById(
+          `package-${selectedPackage}`
+        );
+        if (rowElement) {
+          rowElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          rowElement.style.backgroundColor =
+            organizationConfig.organization_theme.theme.backgroundColor;
+          rowElement.style.color =
+            organizationConfig.organization_theme.theme.color;
+
+          setTimeout(() => {
+            localStorage.removeItem('packageId');
+            rowElement.style.backgroundColor = '';
+            rowElement.style.color = '';
+          }, 2000);
+        }
+
+        highlightScrollRef.current = false;
+      }, 300);
+
+      return () => clearTimeout(timer);
+    }
+  }, [
+    filteredPackages,
+    organizationConfig.organization_theme.theme.backgroundColor,
+    organizationConfig.organization_theme.theme.color,
+    itemPerPage
+  ]);
+
+  useEffect(() => {
+    if (!highlightScrollRef.current) {
+      setPage(1);
+    }
+    setTotalPages(Math.ceil(filteredPackages.length / itemPerPage));
+  }, [filteredPackages]);
+
+  const paginatedPackages = useMemo(() => {
+    const start = (activePage - 1) * itemPerPage;
+    const end = start + itemPerPage;
+    return filteredPackages.slice(start, end);
+  }, [filteredPackages, activePage]);
+
   useEffect(() => {
     getAllPackagesByAdmin()
       .then(packagesList => {
@@ -64,7 +136,7 @@ const Packages = () => {
     <div
       style={{
         color: organizationConfig.organization_theme.theme.button.textColor,
-        fontFamily: theme.fontFamily,
+        fontFamily: theme.fontFamily
       }}
     >
       <div>
@@ -122,7 +194,7 @@ const Packages = () => {
                 style={{
                   backgroundColor:
                     organizationConfig.organization_theme.theme.backgroundColor,
-                  color: organizationConfig.organization_theme.theme.color,
+                  color: organizationConfig.organization_theme.theme.color
                 }}
               >
                 <tr>
@@ -135,10 +207,12 @@ const Packages = () => {
                 </tr>
               </thead>
               <tbody className="text-sm">
-                {filteredPackages.length > 0 ? (
-                  filteredPackages.map((pkg: PackageInterface, index) => (
-                    <tr key={pkg._id}>
-                      <td className="px-4 py-2 border">{index + 1}</td>
+                {paginatedPackages.length > 0 ? (
+                  paginatedPackages.map((pkg: PackageInterface, index) => (
+                    <tr key={pkg._id} id={`package-${pkg._id}`}>
+                      <td className="px-4 py-2 border">
+                        {index + 1 + (activePage - 1) * itemPerPage}
+                      </td>
                       <td className="px-4 py-2 border">{pkg.title}</td>
                       <td className="px-4 py-2 border">
                         <Tooltip label={pkg.description} withArrow>
@@ -156,7 +230,10 @@ const Packages = () => {
                         {moment(pkg.endDate).format('YYYY-MM-DD')}
                       </td>
                       <td className="px-4 py-2 border">
-                        <Button onClick={() => handlePackageSelect(pkg._id)}>
+                        <Button
+                          onClick={() => handlePackageSelect(pkg._id)}
+                          className="cursor-pointer"
+                        >
                           <IconEdit />
                         </Button>
                       </td>
@@ -164,7 +241,7 @@ const Packages = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={7} className="px-4 py-2">
+                    <td colSpan={6} className="px-4 py-2">
                       No Packages found.
                     </td>
                   </tr>
@@ -172,6 +249,15 @@ const Packages = () => {
               </tbody>
             </table>
           </div>
+        )}
+        {!isLoading && totalPages > 1 && (
+          <Center className="my-8">
+            <Pagination
+              value={activePage}
+              onChange={setPage}
+              total={totalPages}
+            />
+          </Center>
         )}
       </div>
     </div>
