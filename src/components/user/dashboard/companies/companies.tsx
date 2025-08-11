@@ -136,7 +136,7 @@ const Companies = () => {
         placeHolder="Search by company name"
       />
       <div
-        className="w-full overflow-x-auto shadow-lg rounded-lg"
+        className="flex overflow-auto sm:overflow-hidden max-w-full shadow-lg rounded-lg"
         ref={scrollRef}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
