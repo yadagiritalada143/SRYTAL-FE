@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Button,
   Group,
@@ -8,6 +8,7 @@ import {
   Box,
   TextInput,
   Title,
+  Center
 } from '@mantine/core';
 import { toast } from 'react-toastify';
 import { useDisclosure } from '@mantine/hooks';
@@ -16,7 +17,7 @@ import {
   getAllBloodGroupByAdmin,
   addBloodGroupByAdmin,
   updateBloodGroupByAdmin,
-  deleteBloodGroupByAdmin,
+  deleteBloodGroupByAdmin
 } from '../../../../services/admin-services';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { organizationThemeAtom } from '../../../../atoms/organization-atom';
@@ -25,6 +26,9 @@ import { SearchBarFullWidht } from '../../../common/search-bar/search-bar';
 import { bloodGroupAtom } from '../../../../atoms/bloodgroup-atom';
 import { StandardModal } from '../../../UI/Models/base-model';
 import { useCustomToast } from '../../../../utils/common/toast';
+
+const isValidBloodGroup = (group: string) =>
+  /^(A|B|AB|O)\s*(\+|-)(ve)?$/i.test(group.trim());
 
 const BloodGroupTable = () => {
   const [bloodGroups, setBloodGroups] = useRecoilState(bloodGroupAtom);
@@ -42,7 +46,7 @@ const BloodGroupTable = () => {
     useDisclosure(false);
   const [
     deleteModalOpened,
-    { open: openDeleteModal, close: closeDeleteModal },
+    { open: openDeleteModal, close: closeDeleteModal }
   ] = useDisclosure(false);
   const [addModalOpened, { open: openAddModal, close: closeAddModal }] =
     useDisclosure(false);
@@ -80,6 +84,22 @@ const BloodGroupTable = () => {
   };
 
   const confirmEdit = async () => {
+    const trimmedGroup = selectedGroup.type.trim();
+    if (!isValidBloodGroup(trimmedGroup)) {
+      toast.error('Invalid blood group format');
+      return;
+    }
+
+    const exists = bloodGroups.some(
+      bg =>
+        bg.type.toLowerCase() === trimmedGroup.toLowerCase() &&
+        bg.id !== selectedGroup.id
+    );
+
+    if (exists) {
+      toast.error('Blood group already exists');
+      return;
+    }
     setIsLoading(true);
     try {
       await updateBloodGroupByAdmin(selectedGroup.id, selectedGroup.type);
@@ -111,6 +131,20 @@ const BloodGroupTable = () => {
 
   // Handle add blood group
   const handleAdd = async () => {
+    const trimmedGroup = newGroupName.trim();
+    if (!isValidBloodGroup(trimmedGroup)) {
+      toast.error('Invalid blood group format');
+      return;
+    }
+
+    const exists = bloodGroups.some(
+      bg => bg.type.toLowerCase() === trimmedGroup.toLowerCase()
+    );
+
+    if (exists) {
+      toast.error('Blood group already exists');
+      return;
+    }
     setIsLoading(true);
     try {
       await addBloodGroupByAdmin({ type: newGroupName });
@@ -125,13 +159,18 @@ const BloodGroupTable = () => {
     }
   };
 
-  // Pagination
+  // Pagination logic
   const itemsPerPage = 10;
-  const totalPages = Math.ceil(filteredBloodGroups.length / itemsPerPage);
-  const paginatedData = filteredBloodGroups.slice(
-    (activePage - 1) * itemsPerPage,
-    activePage * itemsPerPage
-  );
+  const totalPages = useMemo(() => {
+    return Math.ceil(filteredBloodGroups.length / itemsPerPage);
+  }, [filteredBloodGroups.length]);
+
+  const paginatedData = useMemo(() => {
+    return filteredBloodGroups.slice(
+      (activePage - 1) * itemsPerPage,
+      activePage * itemsPerPage
+    );
+  }, [filteredBloodGroups, activePage]);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
@@ -152,7 +191,7 @@ const BloodGroupTable = () => {
     <div
       style={{
         color: organizationConfig.organization_theme.theme.button.textColor,
-        fontFamily: theme.fontFamily,
+        fontFamily: theme.fontFamily
       }}
       className="h-auto"
     >
@@ -190,7 +229,7 @@ const BloodGroupTable = () => {
                 style={{
                   backgroundColor:
                     organizationConfig.organization_theme.theme.backgroundColor,
-                  color: organizationConfig.organization_theme.theme.color,
+                  color: organizationConfig.organization_theme.theme.color
                 }}
               >
                 <tr>
@@ -203,7 +242,7 @@ const BloodGroupTable = () => {
                 {paginatedData.map((bloodGroup, index) => (
                   <tr key={bloodGroup._id}>
                     <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                      {index + 1}
+                      {index + 1 + (activePage - 1) * itemsPerPage}{' '}
                     </td>
                     <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
                       {bloodGroup.type}
@@ -215,17 +254,19 @@ const BloodGroupTable = () => {
                     </td>
                   </tr>
                 ))}
-                {totalPages > 1 && (
-                  <Pagination
-                    total={totalPages}
-                    value={activePage}
-                    onChange={setActivePage}
-                    mt="md"
-                  />
-                )}
               </tbody>
             </table>
           </div>
+        )}
+        {totalPages > 1 && (
+          <Center className="my-8">
+            <Pagination
+              total={totalPages}
+              value={activePage}
+              onChange={setActivePage}
+              mt="md"
+            />
+          </Center>
         )}
       </div>
 

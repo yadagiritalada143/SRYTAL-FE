@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Button,
   Group,
@@ -8,6 +8,7 @@ import {
   Modal,
   Box,
   TextInput,
+  Center
 } from '@mantine/core';
 import { toast } from 'react-toastify';
 import { useDisclosure } from '@mantine/hooks';
@@ -16,7 +17,7 @@ import {
   addEmploymentTypeByAdmin,
   updateEmploymentTypeByAdmin,
   deleteEmploymentTypeByAdmin,
-  getAllEmploymentTypes,
+  getAllEmploymentTypes
 } from '../../../../services/admin-services';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { organizationThemeAtom } from '../../../../atoms/organization-atom';
@@ -45,7 +46,7 @@ const EmploymentTypes = () => {
     useDisclosure(false);
   const [
     deleteModalOpened,
-    { open: openDeleteModal, close: closeDeleteModal },
+    { open: openDeleteModal, close: closeDeleteModal }
   ] = useDisclosure(false);
   const [addModalOpened, { open: openAddModal, close: closeAddModal }] =
     useDisclosure(false);
@@ -59,7 +60,7 @@ const EmploymentTypes = () => {
     }
   }, []);
 
-  const fetchEmployementTypes = async () => {
+  const fetchEmployementTypes = useCallback(async () => {
     setIsLoading(true);
     try {
       const data = await getAllEmploymentTypes();
@@ -70,7 +71,7 @@ const EmploymentTypes = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [setEmploymentTypes]);
 
   const handleEdit = (group: any) => {
     setSelectedType(group);
@@ -138,12 +139,18 @@ const EmploymentTypes = () => {
     }
   };
 
+  // Pagination logic
   const itemsPerPage = 10;
-  const totalPages = Math.ceil(filteredEmployementType.length / itemsPerPage);
-  const paginatedData = filteredEmployementType.slice(
-    (activePage - 1) * itemsPerPage,
-    activePage * itemsPerPage
-  );
+  const totalPages = useMemo(() => {
+    return Math.ceil(filteredEmployementType.length / itemsPerPage);
+  }, [filteredEmployementType.length]);
+
+  const paginatedData = useMemo(() => {
+    return filteredEmployementType.slice(
+      (activePage - 1) * itemsPerPage,
+      activePage * itemsPerPage
+    );
+  }, [filteredEmployementType, activePage]);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
@@ -169,7 +176,7 @@ const EmploymentTypes = () => {
     <div
       style={{
         color: organizationConfig.organization_theme.theme.button.textColor,
-        fontFamily: theme.fontFamily,
+        fontFamily: theme.fontFamily
       }}
       className="h-auto"
     >
@@ -207,7 +214,7 @@ const EmploymentTypes = () => {
                 style={{
                   backgroundColor:
                     organizationConfig.organization_theme.theme.backgroundColor,
-                  color: organizationConfig.organization_theme.theme.color,
+                  color: organizationConfig.organization_theme.theme.color
                 }}
               >
                 <tr>
@@ -220,7 +227,7 @@ const EmploymentTypes = () => {
                 {paginatedData.map((employmentT, index) => (
                   <tr key={employmentT._id}>
                     <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                      {index + 1}
+                      {index + 1 + (activePage - 1) * itemsPerPage}{' '}
                     </td>
                     <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
                       {employmentT.employmentType}
@@ -232,17 +239,19 @@ const EmploymentTypes = () => {
                     </td>
                   </tr>
                 ))}
-                {totalPages > 1 && (
-                  <Pagination
-                    total={totalPages}
-                    value={activePage}
-                    onChange={setActivePage}
-                    mt="md"
-                  />
-                )}
               </tbody>
             </table>
           </div>
+        )}
+        {totalPages > 1 && (
+          <Center className="my-8">
+            <Pagination
+              total={totalPages}
+              value={activePage}
+              onChange={setActivePage}
+              mt="md"
+            />
+          </Center>
         )}
       </div>
       <Modal
@@ -302,7 +311,7 @@ const EmploymentTypes = () => {
             onChange={e =>
               setSelectedType({
                 ...selectedType,
-                employmentType: e.target.value,
+                employmentType: e.target.value
               })
             }
             required
