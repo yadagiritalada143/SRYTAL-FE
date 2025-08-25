@@ -5,14 +5,12 @@ import {
   Text,
   Button,
   Group,
-  LoadingOverlay,
   Badge,
   Modal,
   TextInput,
   Checkbox,
   ActionIcon,
   Paper,
-  Stack,
   Divider
 } from '@mantine/core';
 import { DatePickerInput, DatesRangeValue } from '@mantine/dates';
@@ -45,6 +43,7 @@ import {
 import { employeeDetailsAtom } from '../../../../atoms/employee-atom';
 import { getEmployeeDetailsByAdmin } from '../../../../services/admin-services';
 import { BackButton } from '../../../common/style-components/buttons';
+import { Loader } from '@mantine/core';
 
 export const EmployeeTimesheetAdminView = () => {
   const [dateSortOrder, setDateSortOrder] = useState<'asc' | 'desc'>('asc');
@@ -61,7 +60,7 @@ export const EmployeeTimesheetAdminView = () => {
     moment().startOf('month').toDate(),
     moment().endOf('month').toDate()
   ]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [selectedTimesheets, setSelectedTimesheets] = useState<string[]>([]);
   const [opened, { open, close }] = useDisclosure(false);
   const [bulkStatus, setBulkStatus] = useState<TimesheetStatus>(
@@ -286,14 +285,14 @@ export const EmployeeTimesheetAdminView = () => {
             <Text fw={500}>Email:</Text>
             <Text>{employeeDetails?.email}</Text>
           </Group>
-          <div className="flex justify-end">
+          <div className="w-full sm:w-auto flex justify-center sm:justify-end">
             <BackButton id={employeeId ?? ''} />
           </div>
         </Group>
 
         <Divider my="md" />
 
-        <Group grow align="flex-end">
+        <div className="flex flex-col gap-4 md:flex-row md:items-end md:gap-3 w-full">
           <Select
             label="Status"
             c={theme.button.color}
@@ -304,16 +303,17 @@ export const EmployeeTimesheetAdminView = () => {
               setSelectedStatus(value as TimesheetStatus | null)
             }
             clearable
+            className="w-full md:flex-1"
           />
 
           <DatePickerInput
-            className="w-full sm:w-auto"
             type="range"
             label="Date Range"
             c={theme.button.color}
             placeholder="Select date range"
             value={dateRange}
             onChange={setDateRange}
+            className="w-full md:flex-1"
           />
 
           <TextInput
@@ -323,17 +323,18 @@ export const EmployeeTimesheetAdminView = () => {
             leftSection={<IconSearch size={16} />}
             value={searchQuery}
             onChange={e => setSearchQuery(e.currentTarget.value)}
+            className="w-full md:flex-1"
           />
 
           <Button
             variant="outline"
             onClick={resetFilters}
             leftSection={<IconX size={16} />}
-            style={{ alignSelf: 'flex-end' }}
+            className="w-full md:flex-1 self-end md:self-auto"
           >
             Clear Filters
           </Button>
-        </Group>
+        </div>
       </Paper>
 
       {selectedTimesheets.length > 0 && (
@@ -353,7 +354,12 @@ export const EmployeeTimesheetAdminView = () => {
             color: theme.button.color
           }}
         >
-          <Group justify="space-between" wrap="nowrap">
+          <Group
+            justify="space-between"
+            wrap="wrap"
+            gap="sm"
+            style={{ flexDirection: 'row', rowGap: '0.5rem' }}
+          >
             <Text fw={500}>
               <Badge variant="filled" color="blue" mr="sm">
                 {selectedTimesheets.length}
@@ -361,13 +367,13 @@ export const EmployeeTimesheetAdminView = () => {
               timesheet(s) selected
             </Text>
 
-            <Group wrap="nowrap" gap="sm">
+            <Group wrap="wrap" gap="sm">
               <Select
                 placeholder="Select action"
                 data={actionOptions}
                 value={bulkStatus}
                 onChange={value => setBulkStatus(value as TimesheetStatus)}
-                style={{ width: '180px' }}
+                style={{ width: '180px', minWidth: '150px' }}
                 leftSection={
                   bulkStatus === TimesheetStatus.Approved ? (
                     <IconCircleCheck
@@ -411,148 +417,152 @@ export const EmployeeTimesheetAdminView = () => {
       )}
 
       <Box pos="relative">
-        <LoadingOverlay visible={isLoading} overlayProps={{ blur: 2 }} />
-
-        {filteredTimesheets.length === 0 ? (
+        {isLoading ? (
+          <div className="flex justify-center items-center h-48">
+            <Loader size="xl" color={theme.primaryColor} />
+          </div>
+        ) : filteredTimesheets.length === 0 ? (
           <Text ta="center" my="xl">
             No timesheets found matching your criteria
           </Text>
         ) : (
-          <table className="w-full text-center shadow-md border">
-            <thead
-              className="text-xs"
-              style={{
-                backgroundColor: theme.backgroundColor,
-                color: theme.button.textColor
-              }}
-            >
-              <tr>
-                <th className="p-2 border text-center align-middle">
-                  <div className="flex justify-center items-center">
-                    <Checkbox
-                      checked={isAllSelected}
-                      indeterminate={
-                        selectedTimesheets.length > 0 && !isAllSelected
-                      }
-                      onChange={e => toggleSelectAll(e.currentTarget.checked)}
-                    />
-                  </div>
-                </th>
-                <th
-                  className="p-2 border cursor-pointer select-none text-center align-middle"
-                  onClick={handleDateSort}
-                >
-                  <div className="flex justify-center items-center gap-1">
-                    <span style={{ color: theme.button.color }}>Date</span>
-                    <span className="text-xsm text-white">
-                      {dateSortOrder === 'asc' ? '▲' : '▼'}
-                    </span>
-                  </div>
-                </th>
-                <th
-                  style={{ color: theme.button.color }}
-                  className="p-2 border"
-                >
-                  Project
-                </th>
-                <th
-                  style={{ color: theme.button.color }}
-                  className="p-2 border"
-                >
-                  Task
-                </th>
-                <th
-                  style={{ color: theme.button.color }}
-                  className="p-2 border"
-                >
-                  Hours
-                </th>
-                <th
-                  style={{ color: theme.button.color }}
-                  className="p-2 border"
-                >
-                  Status
-                </th>
-                <th
-                  style={{ color: theme.button.color }}
-                  className="p-2 border"
-                >
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="text-sm">
-              {filteredTimesheets.map(timesheet => (
-                <tr key={timesheet.id}>
-                  <td className="p-2 border text-center align-middle">
+          <div className="overflow-x-auto w-full">
+            <table className="w-full min-w-[700px] text-center shadow-md border">
+              <thead
+                className="text-xs"
+                style={{
+                  backgroundColor: theme.backgroundColor,
+                  color: theme.button.textColor
+                }}
+              >
+                <tr>
+                  <th className="p-2 border text-center align-middle">
                     <div className="flex justify-center items-center">
                       <Checkbox
-                        checked={selectedTimesheets.includes(timesheet.id)}
-                        onChange={() => toggleSingleSelection(timesheet.id)}
+                        checked={isAllSelected}
+                        indeterminate={
+                          selectedTimesheets.length > 0 && !isAllSelected
+                        }
+                        onChange={e => toggleSelectAll(e.currentTarget.checked)}
                       />
                     </div>
-                  </td>
-                  <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                    {moment(timesheet.date).format('MMM D, YYYY')}
-                  </td>
-                  <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                    {timesheet.project_name}
-                  </td>
-                  <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                    {timesheet.task_name}
-                  </td>
-                  <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                    {timesheet.hours}
-                  </td>
-                  <td className="px-4 py-2 border">
-                    {getStatusBadge(timesheet.status)}
-                  </td>
-                  <td className="p-2 border text-center align-middle">
-                    <div className="flex justify-center items-center gap-2">
-                      <Button
-                        size="xs"
-                        variant="outline"
-                        color="green"
-                        onClick={() => {
-                          setSelectedTimesheets([timesheet.id]);
-                          setBulkStatus(TimesheetStatus.Approved);
-                          handleStatusChange(
-                            [timesheet.id],
-                            TimesheetStatus.Approved
-                          );
-                        }}
-                        disabled={
-                          timesheet.status !==
-                          TimesheetStatus.WaitingForApproval
-                        }
-                      >
-                        Approve
-                      </Button>
-                      <Button
-                        size="xs"
-                        variant="outline"
-                        color="red"
-                        onClick={() => {
-                          setSelectedTimesheets([timesheet.id]);
-                          setBulkStatus(TimesheetStatus.Rejected);
-                          handleStatusChange(
-                            [timesheet.id],
-                            TimesheetStatus.Rejected
-                          );
-                        }}
-                        disabled={
-                          timesheet.status !==
-                          TimesheetStatus.WaitingForApproval
-                        }
-                      >
-                        Reject
-                      </Button>
+                  </th>
+                  <th
+                    className="p-2 border cursor-pointer select-none text-center align-middle"
+                    onClick={handleDateSort}
+                  >
+                    <div className="flex justify-center items-center gap-1">
+                      <span style={{ color: theme.button.color }}>Date</span>
+                      <span className="text-xsm text-white">
+                        {dateSortOrder === 'asc' ? '▲' : '▼'}
+                      </span>
                     </div>
-                  </td>
+                  </th>
+                  <th
+                    style={{ color: theme.button.color }}
+                    className="p-2 border"
+                  >
+                    Project
+                  </th>
+                  <th
+                    style={{ color: theme.button.color }}
+                    className="p-2 border"
+                  >
+                    Task
+                  </th>
+                  <th
+                    style={{ color: theme.button.color }}
+                    className="p-2 border"
+                  >
+                    Hours
+                  </th>
+                  <th
+                    style={{ color: theme.button.color }}
+                    className="p-2 border"
+                  >
+                    Status
+                  </th>
+                  <th
+                    style={{ color: theme.button.color }}
+                    className="p-2 border"
+                  >
+                    Actions
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="text-sm">
+                {filteredTimesheets.map(timesheet => (
+                  <tr key={timesheet.id}>
+                    <td className="p-2 border text-center align-middle">
+                      <div className="flex justify-center items-center">
+                        <Checkbox
+                          checked={selectedTimesheets.includes(timesheet.id)}
+                          onChange={() => toggleSingleSelection(timesheet.id)}
+                        />
+                      </div>
+                    </td>
+                    <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
+                      {moment(timesheet.date).format('MMM D, YYYY')}
+                    </td>
+                    <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
+                      {timesheet.project_name}
+                    </td>
+                    <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
+                      {timesheet.task_name}
+                    </td>
+                    <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
+                      {timesheet.hours}
+                    </td>
+                    <td className="px-4 py-2 border">
+                      {getStatusBadge(timesheet.status)}
+                    </td>
+                    <td className="p-2 border text-center align-middle">
+                      <div className="flex justify-center items-center gap-2">
+                        <Button
+                          size="xs"
+                          variant="outline"
+                          color="green"
+                          onClick={() => {
+                            setSelectedTimesheets([timesheet.id]);
+                            setBulkStatus(TimesheetStatus.Approved);
+                            handleStatusChange(
+                              [timesheet.id],
+                              TimesheetStatus.Approved
+                            );
+                          }}
+                          disabled={
+                            timesheet.status !==
+                            TimesheetStatus.WaitingForApproval
+                          }
+                        >
+                          Approve
+                        </Button>
+                        <Button
+                          size="xs"
+                          variant="outline"
+                          color="red"
+                          onClick={() => {
+                            setSelectedTimesheets([timesheet.id]);
+                            setBulkStatus(TimesheetStatus.Rejected);
+                            handleStatusChange(
+                              [timesheet.id],
+                              TimesheetStatus.Rejected
+                            );
+                          }}
+                          disabled={
+                            timesheet.status !==
+                            TimesheetStatus.WaitingForApproval
+                          }
+                        >
+                          Reject
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </Box>
 

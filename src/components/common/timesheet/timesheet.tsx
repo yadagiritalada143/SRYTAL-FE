@@ -57,6 +57,7 @@ import {
 } from './modals';
 import { TimeEntriesTable } from './time-entries';
 import useHorizontalScroll from '../../../hooks/horizontal-scroll';
+import { useMediaQuery } from '@mantine/hooks';
 
 const DateTableComponent = () => {
   const [
@@ -93,6 +94,7 @@ const DateTableComponent = () => {
     handleTouchMove,
     handleTouchStart
   } = useHorizontalScroll();
+  const isMobile = useMediaQuery('(max-width: 768px)');
 
   const fetchTimesheetData = useCallback(async () => {
     setIsLoading(true);
@@ -321,6 +323,11 @@ const DateTableComponent = () => {
         withArrow
       >
         <Box
+          onClick={() => {
+            if (isMobile && isEditableDate) {
+              openEditModal(timesheet, setCurrentEntry, openEntryModal);
+            }
+          }}
           onDoubleClick={() =>
             isEditableDate &&
             openEditModal(timesheet, setCurrentEntry, openEntryModal)
@@ -351,7 +358,7 @@ const DateTableComponent = () => {
     <ColorDiv className="w-100 p-5">
       <Title
         order={2}
-        className="text-xl sm:text-2xl md:text-3xl font-extrabold underline text-center px-2 py-4"
+        className="text-xl sm:text-xl md:text-2xl lg:text-3xl font-extrabold underline text-center px-2 py-4"
       >
         Timesheet
       </Title>
@@ -410,7 +417,7 @@ const DateTableComponent = () => {
         </Grid.Col>
 
         <Grid.Col span={{ xs: 12, md: 4 }}>
-          <Group justify="flex-end" gap="sm">
+          <Group justify="flex-end" gap="sm" className="flex-col sm:flex-row">
             <Button
               onClick={toggleSearch}
               variant="outline"
@@ -420,6 +427,7 @@ const DateTableComponent = () => {
               leftSection={
                 openedSearch ? <IconX size={16} /> : <IconSearch size={16} />
               }
+              className="w-full sm:w-auto"
             >
               {openedSearch ? 'Close' : 'Search'}
             </Button>
@@ -430,6 +438,7 @@ const DateTableComponent = () => {
               radius="md"
               size="sm"
               leftSection={<IconCalendarOff size={16} />}
+              className="w-full sm:w-auto"
             >
               Apply Leave
             </Button>
@@ -483,7 +492,8 @@ const DateTableComponent = () => {
         </Box>
       ) : (
         <div
-          className="flex max-w-full shadow-lg rounded-lg"
+          className="w-full overflow-x-auto rounded-lg shadow-lg"
+          style={{ WebkitOverflowScrolling: 'touch' }}
           ref={scrollRef}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
@@ -492,9 +502,12 @@ const DateTableComponent = () => {
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
-          style={{ userSelect: 'none', overflowX: 'hidden', cursor: 'grab' }}
         >
-          <Table striped highlightOnHover>
+          <Table
+            striped
+            highlightOnHover
+            className="min-w-[700px] md:min-w-full"
+          >
             <thead
               className="text-xs"
               style={{
@@ -552,7 +565,7 @@ const DateTableComponent = () => {
                   <tr key={`${project.id}-${task.id}`}>
                     {taskIndex === 0 && (
                       <td
-                        className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis "
+                        className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis"
                         rowSpan={tasks.length}
                         style={{ verticalAlign: 'middle' }}
                       >
@@ -563,7 +576,7 @@ const DateTableComponent = () => {
                         </Center>
                       </td>
                     )}
-                    <td className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis">
+                    <td className="px-1 py-1 border whitespace-nowrap text-ellipsis">
                       <Center>
                         <TaskPopover
                           short={task.title}
