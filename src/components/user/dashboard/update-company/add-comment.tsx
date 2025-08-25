@@ -1,17 +1,17 @@
-import { BgDiv } from "../../../common/style-components/bg-div";
-import { Button, Grid, Group, Textarea } from "@mantine/core";
-import { OrganizationConfig } from "../../../../interfaces/organization";
+import { BgDiv } from '../../../common/style-components/bg-div';
+import { Button, Grid, Group, Textarea } from '@mantine/core';
+import { OrganizationConfig } from '../../../../interfaces/organization';
 
-import { addCommentByRecruiter } from "../../../../services/user-services";
-import { useCustomToast } from "../../../../utils/common/toast";
-import { toast } from "react-toastify";
-import { useState } from "react";
+import { addCommentByRecruiter } from '../../../../services/user-services';
+import { useCustomToast } from '../../../../utils/common/toast';
+import { toast } from 'react-toastify';
+import { useState } from 'react';
 
 const AddCommentPoolCompany = ({
   organizationConfig,
   setComments,
   companyId,
-  user,
+  user
 }: {
   organizationConfig: OrganizationConfig;
   user: any;
@@ -20,27 +20,31 @@ const AddCommentPoolCompany = ({
   comments: any;
 }) => {
   const { showSuccessToast } = useCustomToast();
-  const [newComment, setNewComment] = useState<string>("");
+  const [newComment, setNewComment] = useState<string>('');
 
   const handleAddComment = () => {
+    if (!newComment.trim()) {
+      toast.error("Comment can't be empty!");
+      return;
+    }
     addCommentByRecruiter(companyId, newComment)
       .then(() => {
-        showSuccessToast("Your comment has been added !");
+        showSuccessToast('Your comment has been added !');
         const comment = {
           userId: {
             firstName: user.firstName,
-            lastName: user.lastName,
+            lastName: user.lastName
           },
           updateAt: new Date().toLocaleDateString(),
-          comment: newComment,
+          comment: newComment
         };
         setComments((prev: any) => [comment, ...prev]);
-        setNewComment("");
+        setNewComment('');
         close();
       })
-      .catch((error) =>
+      .catch(error =>
         toast.error(
-          error || error.response.data.message || "Something went wrong"
+          error || error.response.data.message || 'Something went wrong'
         )
       );
   };
@@ -50,18 +54,19 @@ const AddCommentPoolCompany = ({
         <form
           style={{
             backgroundColor:
-              organizationConfig.organization_theme.theme.backgroundColor,
+              organizationConfig.organization_theme.theme.backgroundColor
           }}
           className="rounded-lg shadow-lg w-full p-8"
         >
           <Grid>
             <Grid.Col span={12}>
               <Textarea
+                required
                 label="Comment"
                 autosize
                 rows={4}
                 value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
+                onChange={e => setNewComment(e.target.value)}
               />
             </Grid.Col>
           </Grid>
