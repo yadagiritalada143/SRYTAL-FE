@@ -109,7 +109,9 @@ apiClient.interceptors.response.use(
   }
 );
 
-export const login = async (Credentials: LoginForm) => {
+export const login = async (
+  Credentials: LoginForm
+): Promise<{ userRole: string }> => {
   try {
     const response = await apiClientComm.post('/admin/login', Credentials);
 
@@ -119,11 +121,11 @@ export const login = async (Credentials: LoginForm) => {
       localStorage.setItem('token', token);
       localStorage.setItem('userRole', userRole);
       localStorage.setItem('refreshToken', refreshToken);
+      localStorage.setItem('createdAt', new Date().toISOString());
     }
 
     return response.data;
   } catch (error) {
-    console.error('Login Error:', error);
     throw error;
   }
 };
