@@ -3,7 +3,7 @@ import {
   Route,
   Outlet,
   useNavigate,
-  useParams,
+  useParams
 } from 'react-router-dom';
 import { OrganizationConfig } from '../interfaces/organization';
 import EmployeeLogin from '../pages/user/login/login';
@@ -33,6 +33,8 @@ import PayslipList from '../components/common/payslip/payslip';
 import Support from '../components/common/support/support';
 import MyTasks from '../components/common/mytasks/mytasks';
 import Announcements from '../components/common/announcements/announcements';
+import Mentees from '../components/common/mentees/mentees';
+import UpdateMenteeTasks from '../components/common/update-mentee-task/update-mentee-task';
 
 const EmployeeRoutes = () => {
   const { organization } = useParams<{ organization: string }>();
@@ -60,43 +62,43 @@ const EmployeeRoutes = () => {
       primary: organizationConfig.organization_theme.theme.colors
         .primary as any,
       secondary: organizationConfig.organization_theme.theme.colors
-        .secondary as any,
+        .secondary as any
     },
     headings: {
-      fontFamily: organizationConfig.organization_theme.theme.fontFamily,
+      fontFamily: organizationConfig.organization_theme.theme.fontFamily
     },
     components: {
       Avatar: {
         styles: () => ({
           root: {
-            color: organizationConfig.organization_theme.theme.color,
-          },
-        }),
+            color: organizationConfig.organization_theme.theme.color
+          }
+        })
       },
       Modal: {
         styles: () => ({
           title: {
             fontWeight: 600,
             fontSize: '1.25rem',
-            color: organizationConfig.organization_theme.theme.color,
+            color: organizationConfig.organization_theme.theme.color
           },
           header: {
             backgroundColor:
               organizationConfig.organization_theme.theme.headerBackgroundColor,
-            borderBottom: `1px solid ${organizationConfig.organization_theme.theme.borderColor}`,
+            borderBottom: `1px solid ${organizationConfig.organization_theme.theme.borderColor}`
           },
           content: {
             backgroundColor:
               organizationConfig.organization_theme.theme.backgroundColor,
-            color: organizationConfig.organization_theme.theme.color,
+            color: organizationConfig.organization_theme.theme.color
           },
           close: {
             color: organizationConfig.organization_theme.theme.color,
             '&:hover': {
               backgroundColor: 'transparent',
-              color: organizationConfig.organization_theme.theme.linkColor,
-            },
-          },
+              color: organizationConfig.organization_theme.theme.linkColor
+            }
+          }
         }),
         defaultProps: {
           radius: 'md',
@@ -104,30 +106,30 @@ const EmployeeRoutes = () => {
           padding: 'xl',
           size: '600px',
           overlayBlur: 3,
-          overlayOpacity: 0.7,
-        },
+          overlayOpacity: 0.7
+        }
       },
 
       Menu: {
         styles: () => ({
           dropdown: {
             backgroundColor:
-              organizationConfig.organization_theme.theme.colors.primary[5],
+              organizationConfig.organization_theme.theme.colors.primary[5]
           },
           label: {
-            color: organizationConfig.organization_theme.theme.button.textColor,
+            color: organizationConfig.organization_theme.theme.button.textColor
           },
           item: {
-            color: organizationConfig.organization_theme.theme.button.textColor,
-          },
-        }),
+            color: organizationConfig.organization_theme.theme.button.textColor
+          }
+        })
       },
       Loader: {
         styles: () => ({
           root: {
-            color: organizationConfig.organization_theme.theme.button.textColor,
-          },
-        }),
+            color: organizationConfig.organization_theme.theme.button.textColor
+          }
+        })
       },
       Button: {
         styles: () => ({
@@ -135,12 +137,11 @@ const EmployeeRoutes = () => {
             backgroundColor:
               organizationConfig.organization_theme.theme.button.color,
             color: organizationConfig.organization_theme.theme.button.textColor,
-            borderColor:
-              organizationConfig.organization_theme.theme.borderColor,
-          },
-        }),
-      },
-    },
+            borderColor: organizationConfig.organization_theme.theme.borderColor
+          }
+        })
+      }
+    }
   };
 
   return (
@@ -224,6 +225,15 @@ const EmployeeRoutes = () => {
                 element={
                   <div>
                     <Announcements />
+                  </div>
+                }
+              />
+              <Route path="mentees" element={<Mentees />} />
+              <Route
+                path="common/mentees/:empId"
+                element={
+                  <div>
+                    <UpdateMenteeTasks />
                   </div>
                 }
               />
