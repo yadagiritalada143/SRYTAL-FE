@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Button,
   Group,
@@ -8,6 +8,7 @@ import {
   Modal,
   Box,
   TextInput,
+  Center
 } from '@mantine/core';
 import { toast } from 'react-toastify';
 import { useDisclosure } from '@mantine/hooks';
@@ -16,15 +17,15 @@ import {
   addEmployeeRoleByAdmin,
   deleteEmployeeRoleByAdmin,
   getAllEmployeeRoleByAdmin,
-  updateEmployeeRoleByAdmin,
+  updateEmployeeRoleByAdmin
 } from '../../../../services/admin-services';
 import { useRecoilValue } from 'recoil';
 import { organizationThemeAtom } from '../../../../atoms/organization-atom';
 import { useMantineTheme } from '@mantine/core';
 import { SearchBarFullWidht } from '../../../common/search-bar/search-bar';
 
-const isValidDesignation = (value: string) =>
-  /^([A-Za-z()\-\s_]|[0-9])+$/.test(value) && !/\d{2,}/.test(value);
+const isValidDesignation = (designation: string) =>
+  /^([A-Za-z()\-\s_]|[0-9])+$/.test(designation) && !/\d{2,}/.test(designation);
 
 const EmploymentRoles = () => {
   const [employmentRoles, setEmploymentRoles] = useState<
@@ -45,7 +46,7 @@ const EmploymentRoles = () => {
     useDisclosure(false);
   const [
     deleteModalOpened,
-    { open: openDeleteModal, close: closeDeleteModal },
+    { open: openDeleteModal, close: closeDeleteModal }
   ] = useDisclosure(false);
   const [addModalOpened, { open: openAddModal, close: closeAddModal }] =
     useDisclosure(false);
@@ -54,7 +55,7 @@ const EmploymentRoles = () => {
     fetchEmployementRoles();
   }, []);
 
-  const fetchEmployementRoles = async () => {
+  const fetchEmployementRoles = useCallback(async () => {
     setIsLoading(true);
     try {
       const data = await getAllEmployeeRoleByAdmin();
@@ -65,7 +66,7 @@ const EmploymentRoles = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [setEmploymentRoles]);
 
   const handleEdit = (group: any) => {
     setSelectedRole(group);
@@ -79,7 +80,21 @@ const EmploymentRoles = () => {
 
   const confirmEdit = async () => {
     if (!isValidDesignation(selectedRole.designation)) {
-      toast.error('Only letters and spaces are allowed');
+      toast.error(
+        'Only letters, numbers, spaces, underscores, hyphens, and parentheses are allowed. No two or more consecutive digits.'
+      );
+      return;
+    }
+
+    if (
+      employmentRoles.some(
+        role =>
+          role.designation.toLowerCase() ===
+            selectedRole.designation.toLowerCase() &&
+          role.id !== selectedRole.id
+      )
+    ) {
+      toast.error('This role already exists');
       return;
     }
     setIsLoading(true);
@@ -115,7 +130,18 @@ const EmploymentRoles = () => {
 
   const handleAdd = async () => {
     if (!isValidDesignation(newTypeRole)) {
-      toast.error('Only letters and spaces are allowed');
+      toast.error(
+        'Only letters, numbers, spaces, underscores, hyphens, and parentheses are allowed. No two or more consecutive digits.'
+      );
+      return;
+    }
+
+    if (
+      employmentRoles.some(
+        role => role.designation.toLowerCase() === newTypeRole.toLowerCase()
+      )
+    ) {
+      toast.error('This role already exists');
       return;
     }
     setIsLoading(true);
@@ -132,12 +158,18 @@ const EmploymentRoles = () => {
     }
   };
 
+  // Pagination logic
   const itemsPerPage = 10;
-  const totalPages = Math.ceil(filteredEmployementRole.length / itemsPerPage);
-  const paginatedData = filteredEmployementRole.slice(
-    (activePage - 1) * itemsPerPage,
-    activePage * itemsPerPage
-  );
+  const totalPages = useMemo(() => {
+    return Math.ceil(filteredEmployementRole.length / itemsPerPage);
+  }, [filteredEmployementRole.length]);
+
+  const paginatedData = useMemo(() => {
+    return filteredEmployementRole.slice(
+      (activePage - 1) * itemsPerPage,
+      activePage * itemsPerPage
+    );
+  }, [filteredEmployementRole, activePage]);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
@@ -161,7 +193,7 @@ const EmploymentRoles = () => {
     <div
       style={{
         color: organizationConfig.organization_theme.theme.button.textColor,
-        fontFamily: theme.fontFamily,
+        fontFamily: theme.fontFamily
       }}
       className="h-auto"
     >
@@ -199,7 +231,7 @@ const EmploymentRoles = () => {
                 style={{
                   backgroundColor:
                     organizationConfig.organization_theme.theme.backgroundColor,
-                  color: organizationConfig.organization_theme.theme.color,
+                  color: organizationConfig.organization_theme.theme.color
                 }}
               >
                 <tr>
@@ -212,7 +244,7 @@ const EmploymentRoles = () => {
                 {paginatedData.map((employmentR, index) => (
                   <tr key={employmentR._id}>
                     <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                      {index + 1}
+                      {index + 1 + (activePage - 1) * itemsPerPage}{' '}
                     </td>
                     <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
                       {employmentR.designation}
@@ -224,17 +256,19 @@ const EmploymentRoles = () => {
                     </td>
                   </tr>
                 ))}
-                {totalPages > 1 && (
-                  <Pagination
-                    total={totalPages}
-                    value={activePage}
-                    onChange={setActivePage}
-                    mt="md"
-                  />
-                )}
               </tbody>
             </table>
           </div>
+        )}
+        {totalPages > 1 && (
+          <Center className="my-8">
+            <Pagination
+              total={totalPages}
+              value={activePage}
+              onChange={setActivePage}
+              mt="md"
+            />
+          </Center>
         )}
       </div>
       <Modal
@@ -301,7 +335,7 @@ const EmploymentRoles = () => {
               if (value === '' || isValidDesignation(value)) {
                 setSelectedRole({
                   ...selectedRole,
-                  designation: value,
+                  designation: value
                 });
               }
             }}

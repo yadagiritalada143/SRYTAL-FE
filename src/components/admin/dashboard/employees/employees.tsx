@@ -13,7 +13,7 @@ import {
   IconSearch,
   IconUser
 } from '@tabler/icons-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAllEmployeeDetailsByAdmin } from '../../../../services/admin-services';
 import { toast } from 'react-toastify';
@@ -115,29 +115,38 @@ const Employees = () => {
     setSortOrder(prev => (prev === 'asc' ? 'desc' : 'asc'));
   };
 
-  const handleEmployeeSelect = (employeeId: string) => {
-    navigate(
-      `${organizationAdminUrls(
-        organizationConfig.organization_name
-      )}/dashboard/update/${employeeId}`
-    );
-  };
+  const handleEmployeeSelect = useCallback(
+    (employeeId: string) => {
+      navigate(
+        `${organizationAdminUrls(
+          organizationConfig.organization_name
+        )}/dashboard/update/${employeeId}`
+      );
+    },
+    [organizationConfig.organization_name, navigate]
+  );
 
-  const handlePackageSelect = (employeeId: string) => {
-    navigate(
-      `${organizationAdminUrls(
-        organizationConfig.organization_name
-      )}/dashboard/package/${employeeId}`
-    );
-  };
+  const handlePackageSelect = useCallback(
+    (employeeId: string) => {
+      navigate(
+        `${organizationAdminUrls(
+          organizationConfig.organization_name
+        )}/dashboard/package/${employeeId}`
+      );
+    },
+    [organizationConfig.organization_name, navigate]
+  );
 
-  const handleTimesheet = (employeeId: string) => {
-    navigate(
-      `${organizationAdminUrls(
-        organizationConfig.organization_name
-      )}/dashboard/timesheet/${employeeId}`
-    );
-  };
+  const handleTimesheet = useCallback(
+    (employeeId: string) => {
+      navigate(
+        `${organizationAdminUrls(
+          organizationConfig.organization_name
+        )}/dashboard/timesheet/${employeeId}`
+      );
+    },
+    [organizationConfig.organization_name, navigate]
+  );
 
   useEffect(() => {
     const selectedEmployee = localStorage.getItem('id');
@@ -149,7 +158,6 @@ const Employees = () => {
       if (index === -1) return;
 
       const targetPage = Math.floor(index / itemPerPage) + 1;
-
       highlightScrollRef.current = true;
       setPage(targetPage);
 
