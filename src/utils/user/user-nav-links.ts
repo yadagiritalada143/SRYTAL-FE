@@ -7,7 +7,7 @@ import {
   IconMessageCircle,
   IconTool,
   IconUserEdit,
-  IconUsersGroup,
+  IconUsersGroup
 } from '@tabler/icons-react';
 
 export const NavLinks = [
@@ -15,84 +15,90 @@ export const NavLinks = [
     role: 'employee',
     url: 'employee/dashboard/profile',
     icon: IconUserEdit,
-    name: 'My Profile',
+    name: 'My Profile'
   },
   {
     role: 'recruiter',
     url: 'employee/dashboard/profile',
     icon: IconUserEdit,
-    name: 'My Profile',
+    name: 'My Profile'
   },
   {
     role: 'recruiter',
     url: 'employee/dashboard/pool-candidates',
     icon: IconUsersGroup,
-    name: 'Pool Candidates',
+    name: 'Pool Candidates'
   },
   {
     role: 'recruiter',
     url: 'employee/dashboard/pool-companies',
     icon: IconBuildings,
-    name: 'Pool Companies',
+    name: 'Pool Companies'
   },
   {
     role: 'employee',
     url: 'employee/dashboard/dashboard',
     icon: IconLayoutDashboard,
-    name: 'Dashboard',
+    name: 'Dashboard'
   },
   {
     role: 'recruiter',
     url: 'employee/dashboard/timesheet',
     icon: IconCalendarTime,
-    name: 'Timesheet',
+    name: 'Timesheet'
   },
   {
     role: 'employee',
     url: 'employee/dashboard/timesheet',
     icon: IconCalendarTime,
-    name: 'Timesheet',
+    name: 'Timesheet'
   },
   {
     role: 'recruiter',
     url: 'employee/dashboard/employee',
     icon: IconCurrencyDollar,
-    name: 'Payslip',
+    name: 'Payslip'
   },
   {
     role: 'employee',
     url: 'employee/dashboard/payslip',
     icon: IconCurrencyDollar,
-    name: 'Payslip',
+    name: 'Payslip'
   },
   {
     role: 'employee',
     url: 'employee/dashboard/announcements',
     icon: IconMessageCircle,
-    name: 'Announcements',
+    name: 'Announcements'
   },
   {
     role: 'recruiter',
     url: 'employee/dashboard/announcements',
     icon: IconMessageCircle,
-    name: 'Announcements',
+    name: 'Announcements'
   },
   {
     role: 'employee',
     url: 'employee/dashboard/mytasks',
     icon: IconCheckbox,
-    name: 'My Tasks',
+    name: 'My Tasks'
   },
   {
     role: 'employee',
     url: 'employee/dashboard/support',
     icon: IconTool,
-    name: 'Support',
+    name: 'Support'
   },
   {
     role: 'recruiter',
     url: 'employee/dashboard/support',
     icon: IconTool,
-    name: 'Support',
+    name: 'Support'
   },
+  {
+    role: 'employee',
+    url: 'employee/dashboard/mentees',
+    icon: IconUsersGroup,
+    name: 'Mentees'
+  }
 ].sort((a, b) => a.name.length - b.name.length);
