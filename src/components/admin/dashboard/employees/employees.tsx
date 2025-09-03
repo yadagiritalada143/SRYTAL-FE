@@ -70,7 +70,7 @@ const Employees = () => {
         toast(error?.response?.data?.message || 'Something went wrong');
         setIsLoading(false);
       });
-  }, [employees, setEmployees, setFilteredEmployees]);
+  }, [setEmployees]);
 
   const paginatedEmployees = useMemo(() => {
     const start = (activePage - 1) * itemPerPage;
