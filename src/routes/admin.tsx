@@ -7,7 +7,7 @@ import AddCompany from '../components/user/dashboard/add-company/add-company';
 import Employees from '../components/admin/dashboard/employees/employees';
 import UpdateEmployee from '../components/admin/dashboard/update-employee/update-employee';
 import { Outlet } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { toast } from 'react-toastify';
 import { MantineProvider } from '@mantine/core';
 import '@mantine/core/styles.css';
@@ -34,12 +34,16 @@ import UpdatePackage from '../components/admin/dashboard/update-package/update-p
 import DateTableComponent from '../components/common/timesheet/timesheet';
 import PackagePageWrapper from '../components/admin/dashboard/update-employee/package-wrapper';
 import { EmployeeTimesheetAdminView } from '../components/admin/dashboard/employee-timesheet/employee-timesheet';
+import { ThemeToggleButton } from '../components/UI/Theme-toggle-button/button';
+import { themeAtom } from '../atoms/theme';
 
 const AdminRoutes = () => {
   const { organization } = useParams<{ organization: string }>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const organizationConfig = useRecoilValue(organizationThemeAtom);
   const setOrganizationConfig = useSetRecoilState(organizationThemeAtom);
+  const isDarkTheme = useRecoilValue(themeAtom);
+  const setTheme = useSetRecoilState(themeAtom);
 
   useEffect(() => {
     if (organization) {
@@ -53,101 +57,229 @@ const AdminRoutes = () => {
     }
   }, [organization, setOrganizationConfig]);
 
-  const theme = {
-    colorScheme: organizationConfig.organization_theme.theme.colorScheme,
-    primaryColor: organizationConfig.organization_theme.theme.primaryColor,
-    fontFamily: organizationConfig.organization_theme.theme.fontFamily,
-    colors: {
-      primary: organizationConfig.organization_theme.theme.colors
-        .primary as any,
-      secondary: organizationConfig.organization_theme.theme.colors
-        .secondary as any
-    },
-    headings: {
-      fontFamily: organizationConfig.organization_theme.theme.fontFamily
-    },
-    components: {
-      Avatar: {
-        styles: () => ({
-          root: {
-            color: organizationConfig.organization_theme.theme.color
-          }
-        })
+  // Get the current theme configuration based on theme mode
+  const currentThemeConfig = useMemo(() => {
+    const orgTheme = organizationConfig.organization_theme;
+
+    // Check if new dual themes structure exists
+    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+  }, [organizationConfig, isDarkTheme]);
+
+  const mantineTheme = useMemo(() => {
+    return {
+      colorScheme: currentThemeConfig.colorScheme,
+      primaryColor: currentThemeConfig.primaryColor,
+      fontFamily: currentThemeConfig.fontFamily,
+      colors: {
+        primary: currentThemeConfig.colors.primary as any,
+        secondary: currentThemeConfig.colors.secondary as any
       },
-      Modal: {
-        styles: () => ({
-          title: {
-            fontWeight: 600,
-            fontSize: '1.25rem',
-            color: organizationConfig.organization_theme.theme.color
-          },
-          header: {
-            backgroundColor:
-              organizationConfig.organization_theme.theme.headerBackgroundColor,
-            borderBottom: `1px solid ${organizationConfig.organization_theme.theme.borderColor}`
-          },
-          content: {
-            backgroundColor:
-              organizationConfig.organization_theme.theme.backgroundColor,
-            color: organizationConfig.organization_theme.theme.color
-          },
-          close: {
-            color: organizationConfig.organization_theme.theme.color,
-            '&:hover': {
-              backgroundColor: 'transparent',
-              color: organizationConfig.organization_theme.theme.linkColor
+      headings: {
+        fontFamily: currentThemeConfig.fontFamily
+      },
+      components: {
+        Avatar: {
+          styles: () => ({
+            root: {
+              color: currentThemeConfig.color,
+              transition: 'color 0.3s ease-in-out'
             }
+          })
+        },
+        Modal: {
+          styles: () => ({
+            title: {
+              fontWeight: 600,
+              fontSize: '1.25rem',
+              color: currentThemeConfig.color,
+              transition: 'color 0.3s ease-in-out'
+            },
+            header: {
+              backgroundColor: currentThemeConfig.headerBackgroundColor,
+              borderBottom: `1px solid ${currentThemeConfig.borderColor}`,
+              transition:
+                'background-color 0.3s ease-in-out, border-color 0.3s ease-in-out'
+            },
+            content: {
+              backgroundColor: currentThemeConfig.backgroundColor,
+              color: currentThemeConfig.color,
+              transition:
+                'background-color 0.3s ease-in-out, color 0.3s ease-in-out'
+            },
+            close: {
+              color: currentThemeConfig.color,
+              transition:
+                'color 0.3s ease-in-out, background-color 0.3s ease-in-out',
+              '&:hover': {
+                backgroundColor: 'transparent',
+                color: currentThemeConfig.linkColor
+              }
+            }
+          }),
+          defaultProps: {
+            radius: 'md',
+            shadow: 'xl',
+            padding: 'xl',
+            size: '600px',
+            overlayblur: 3,
+            overlayopacity: 0.7
           }
-        }),
-        defaultProps: {
-          radius: 'md',
-          shadow: 'xl',
-          padding: 'xl',
-          size: '600px',
-          overlayBlur: 3,
-          overlayOpacity: 0.7
+        },
+        Menu: {
+          styles: () => ({
+            dropdown: {
+              backgroundColor: currentThemeConfig.colors.primary[5],
+              transition: 'background-color 0.3s ease-in-out'
+            },
+            label: {
+              color: currentThemeConfig.button.textColor,
+              transition: 'color 0.3s ease-in-out'
+            },
+            item: {
+              color: currentThemeConfig.button.textColor,
+              transition: 'color 0.3s ease-in-out'
+            }
+          })
+        },
+        Loader: {
+          styles: () => ({
+            root: {
+              color: currentThemeConfig.button.textColor,
+              transition: 'color 0.3s ease-in-out'
+            }
+          })
+        },
+        Button: {
+          styles: () => ({
+            root: {
+              backgroundColor: currentThemeConfig.button.color,
+              color: currentThemeConfig.button.textColor,
+              borderColor: currentThemeConfig.borderColor,
+              transition:
+                'background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out',
+              '&:hover': {
+                backgroundColor:
+                  currentThemeConfig.button.hoverColor ||
+                  currentThemeConfig.button.color,
+                transform: 'translateY(-1px)',
+                transition: 'all 0.2s ease-in-out'
+              }
+            }
+          })
+        },
+        TextInput: {
+          styles: () => ({
+            input: {
+              backgroundColor: currentThemeConfig.headerBackgroundColor,
+              color: currentThemeConfig.color,
+              borderColor: currentThemeConfig.borderColor,
+              transition:
+                'background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out',
+              '&:focus': {
+                borderColor: currentThemeConfig.button.color
+              }
+            },
+            label: {
+              color: currentThemeConfig.color,
+              transition: 'color 0.3s ease-in-out'
+            }
+          })
+        },
+        PasswordInput: {
+          styles: () => ({
+            input: {
+              backgroundColor: currentThemeConfig.headerBackgroundColor,
+              color: currentThemeConfig.color,
+              borderColor: currentThemeConfig.borderColor,
+              transition:
+                'background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out',
+              '&:focus': {
+                borderColor: currentThemeConfig.button.color
+              }
+            },
+            label: {
+              color: currentThemeConfig.color,
+              transition: 'color 0.3s ease-in-out'
+            },
+            innerInput: {
+              backgroundColor: currentThemeConfig.headerBackgroundColor,
+              color: currentThemeConfig.color,
+              transition:
+                'background-color 0.3s ease-in-out, color 0.3s ease-in-out'
+            }
+          })
+        },
+        Select: {
+          styles: () => ({
+            input: {
+              backgroundColor: currentThemeConfig.headerBackgroundColor,
+              color: currentThemeConfig.color,
+              borderColor: currentThemeConfig.borderColor,
+              transition:
+                'background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out',
+              '&:focus': {
+                borderColor: currentThemeConfig.button.color
+              }
+            },
+            label: {
+              color: currentThemeConfig.color,
+              transition: 'color 0.3s ease-in-out'
+            }
+          })
+        },
+        Table: {
+          styles: () => ({
+            table: {
+              backgroundColor: currentThemeConfig.backgroundColor,
+              color: currentThemeConfig.color,
+              transition:
+                'background-color 0.3s ease-in-out, color 0.3s ease-in-out'
+            },
+            th: {
+              backgroundColor: currentThemeConfig.headerBackgroundColor,
+              color: currentThemeConfig.color,
+              borderColor: currentThemeConfig.borderColor,
+              transition:
+                'background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out'
+            },
+            td: {
+              borderColor: currentThemeConfig.borderColor,
+              color: currentThemeConfig.color,
+              transition:
+                'border-color 0.3s ease-in-out, color 0.3s ease-in-out'
+            }
+          })
+        },
+        Card: {
+          styles: () => ({
+            root: {
+              backgroundColor: currentThemeConfig.headerBackgroundColor,
+              color: currentThemeConfig.color,
+              borderColor: currentThemeConfig.borderColor,
+              transition:
+                'background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out'
+            }
+          })
         }
-      },
-      Menu: {
-        styles: () => ({
-          dropdown: {
-            backgroundColor:
-              organizationConfig.organization_theme.theme.colors.primary[5]
-          },
-          label: {
-            color: organizationConfig.organization_theme.theme.button.textColor
-          },
-          item: {
-            color: organizationConfig.organization_theme.theme.button.textColor
-          }
-        })
-      },
-      Loader: {
-        styles: () => ({
-          root: {
-            color: organizationConfig.organization_theme.theme.button.textColor
-          }
-        })
-      },
-      Button: {
-        styles: () => ({
-          root: {
-            backgroundColor:
-              organizationConfig.organization_theme.theme.button.color,
-            color: organizationConfig.organization_theme.theme.button.textColor,
-            borderColor: organizationConfig.organization_theme.theme.borderColor
-          }
-        })
       }
-    }
-  };
+    };
+  }, [currentThemeConfig]);
 
   return (
-    <MantineProvider theme={theme}>
+    <MantineProvider theme={mantineTheme}>
       <LoadingOverlay
         visible={isLoading}
         loaderProps={{ children: <Loader /> }}
       />
+      <div
+        className="d-flex justify-end p-4 absolute right-0 transition-colors duration-300 ease-in-out"
+        style={{
+          backgroundColor: 'transparent',
+          zIndex: 1000
+        }}
+      >
+        <ThemeToggleButton isDarkTheme={isDarkTheme} setTheme={setTheme} />
+      </div>
       <Routes>
         <Route path="/login" element={<AdminLogin />} />
         <Route
