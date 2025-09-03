@@ -164,9 +164,14 @@ const AdminLogin = () => {
       <Modal
         opened={forgotPasswordOpen}
         onClose={() => setForgotPasswordOpen(false)}
-        title="Forgot Password"
+        title="Reset your password"
         centered
         size="md"
+        transitionProps={{
+          transition: 'slide-right',
+          duration: 300,
+          timingFunction: 'ease'
+        }}
       >
         <ForgotPassword closeModal={() => setForgotPasswordOpen(false)} />
       </Modal>

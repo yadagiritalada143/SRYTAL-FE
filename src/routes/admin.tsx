@@ -121,8 +121,8 @@ const AdminRoutes = () => {
             shadow: 'xl',
             padding: 'xl',
             size: '600px',
-            overlayBlur: 3,
-            overlayOpacity: 0.7
+            overlayblur: 3,
+            overlayopacity: 0.7
           }
         },
         Menu: {
