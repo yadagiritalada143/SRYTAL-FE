@@ -1,27 +1,22 @@
-import { IconLogout } from '@tabler/icons-react';
+import { IconLogout, IconX } from '@tabler/icons-react';
 import { memo } from 'react';
-import {
-  Avatar,
-  Center,
-  Stack,
-  UnstyledButton,
-  useMantineTheme,
-} from '@mantine/core';
+import { Avatar, Stack, UnstyledButton, useMantineTheme } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import { useLocation } from 'react-router-dom';
 import classes from './navbar.module.css';
-import { BgDiv } from '../../common/style-components/bg-div';
 import { NavbarLink } from './nav-link';
 import { NavbarProps } from './types';
 import { useRecoilValue } from 'recoil';
 import { userDetailsAtom } from '../../../atoms/user';
 import { logoutUser } from '../../../services/user-services';
 import { useCustomToast } from '../../../utils/common/toast';
+import { ThemeBackground } from '../Theme-background/background';
+
 function NavbarMenu({
   navLinks,
   organizationConfig,
   isDrawerOpen,
-  setIsDrawerOpen,
+  setIsDrawerOpen
 }: NavbarProps) {
   const user = useRecoilValue(userDetailsAtom);
   const theme = useMantineTheme();
@@ -29,17 +24,16 @@ function NavbarMenu({
   const location = useLocation();
   const themeColor = organizationConfig.organization_theme.theme.color;
   const { showSuccessToast } = useCustomToast();
-  const handleMouseEnter = () => {
-    if (!isMobile) setIsDrawerOpen();
+
+  const toggleDrawer = () => {
+    setIsDrawerOpen();
   };
 
-  const handleMouseLeave = () => {
-    if (!isMobile && isDrawerOpen) setIsDrawerOpen();
-  };
   const handleLogout = () => {
     logoutUser();
     showSuccessToast('Successfully logged out');
   };
+
   const currentPath = location.pathname;
 
   const links = navLinks
@@ -65,49 +59,66 @@ function NavbarMenu({
     });
 
   return (
-    <BgDiv
-      className={`${classes.navbar} ${
-        isDrawerOpen ? classes.expanded : classes.collapsed
-      } overflow-auto scrollbar-hide`}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
-      {isDrawerOpen ? (
-        <img
-          src={organizationConfig.organization_theme.logo}
-          alt="Organization Logo"
-          className={classes.logoExpanded}
-        />
-      ) : (
-        <Center>
-          <Avatar
-            className="cursor-pointer"
-            src={organizationConfig.organization_theme.logo}
-          />
-        </Center>
+    <>
+      {/* Backdrop */}
+      {isDrawerOpen && (
+        <div className={classes.backdrop} onClick={toggleDrawer} />
       )}
 
-      <div className={classes.navbarMain}>
-        <Stack justify="center" gap={20}>
-          {links}
-        </Stack>
-      </div>
+      <UnstyledButton
+        onClick={toggleDrawer}
+        className={`${classes.fab} ${isDrawerOpen ? classes.fabOpen : ''}`}
+        style={{
+          backgroundColor: themeColor
+        }}
+      >
+        <div className={classes.fabContent}>
+          {isDrawerOpen ? (
+            <IconX size={24} color="white" />
+          ) : (
+            <Avatar
+              src={organizationConfig.organization_theme.logo}
+              alt="Organization Logo"
+              size={64}
+              className={classes.fabLogo}
+            />
+          )}
+        </div>
+      </UnstyledButton>
 
-      <Stack justify="center" className="my-2" gap={20}>
-        <UnstyledButton
-          onClick={handleLogout}
-          className="flex items-center gap-3 px-1 py-1 rounded-md transition duration-150 w-full hover:bg-opacity-10"
-          style={{
-            color: themeColor,
-            backgroundColor:
-              organizationConfig.organization_theme.theme.backgroundColor,
-          }}
-        >
-          <IconLogout stroke={1.5} />
-          {isDrawerOpen && <span className="text-sm font-medium">Logout</span>}
-        </UnstyledButton>
-      </Stack>
-    </BgDiv>
+      <ThemeBackground
+        className={`${classes.navbar} ${
+          isDrawerOpen ? classes.expanded : classes.collapsed
+        } overflow-auto scrollbar-hide`}
+      >
+        <div className={classes.navbarHeader}>
+          <img
+            src={organizationConfig.organization_theme.logo}
+            alt="Organization Logo"
+            className={classes.logoExpanded}
+          />
+        </div>
+
+        <div className={classes.navbarMain}>
+          <Stack justify="center" gap={20}>
+            {links}
+          </Stack>
+        </div>
+
+        <Stack justify="center" className="my-2" gap={20}>
+          <UnstyledButton
+            onClick={handleLogout}
+            className="flex items-center gap-3 px-1 py-1 rounded-md transition duration-150 w-full hover:bg-opacity-10 hover:shadow-sm"
+            style={{
+              color: themeColor
+            }}
+          >
+            <IconLogout stroke={1.5} />
+            <span className="text-sm font-medium">Logout</span>
+          </UnstyledButton>
+        </Stack>
+      </ThemeBackground>
+    </>
   );
 }
 
