@@ -9,8 +9,6 @@ export interface NavbarLinkProps {
   organization: OrganizationConfig;
   isActive: boolean;
   onClick?: () => void;
-  isExpanded?: boolean;
-  isMobile: boolean | undefined;
   setIsDrawerOpen: () => void;
 }
 

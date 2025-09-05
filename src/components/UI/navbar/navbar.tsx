@@ -1,7 +1,6 @@
 import { IconLogout, IconX } from '@tabler/icons-react';
 import { memo } from 'react';
-import { Avatar, Stack, UnstyledButton, useMantineTheme } from '@mantine/core';
-import { useMediaQuery } from '@mantine/hooks';
+import { Avatar, Stack, UnstyledButton } from '@mantine/core';
 import { useLocation } from 'react-router-dom';
 import classes from './navbar.module.css';
 import { NavbarLink } from './nav-link';
@@ -19,8 +18,6 @@ function NavbarMenu({
   setIsDrawerOpen
 }: NavbarProps) {
   const user = useRecoilValue(userDetailsAtom);
-  const theme = useMantineTheme();
-  const isMobile = useMediaQuery(`(max-width: ${theme.breakpoints.sm})`);
   const location = useLocation();
   const themeColor = organizationConfig.organization_theme.theme.color;
   const { showSuccessToast } = useCustomToast();
@@ -51,8 +48,6 @@ function NavbarMenu({
           role={link.role}
           organization={organizationConfig}
           isActive={isActive}
-          isMobile={isMobile}
-          isExpanded={isDrawerOpen}
           setIsDrawerOpen={setIsDrawerOpen}
         />
       );

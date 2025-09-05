@@ -1,7 +1,10 @@
 import { useNavigate } from 'react-router-dom';
 import { NavbarLinkProps } from './types';
-import { UnstyledButton, Tooltip } from '@mantine/core';
+import { UnstyledButton } from '@mantine/core';
 import { useCallback, useMemo } from 'react';
+import { organizationThemeAtom } from '../../../atoms/organization-atom';
+import { useRecoilValue } from 'recoil';
+import { themeAtom } from '../../../atoms/theme';
 
 export function NavbarLink({
   icon: Icon,
@@ -10,30 +13,31 @@ export function NavbarLink({
   organization,
   isActive,
   onClick,
-  isExpanded,
-  isMobile = false,
   setIsDrawerOpen
 }: NavbarLinkProps) {
   const navigate = useNavigate();
+  const organizationConfig = useRecoilValue(organizationThemeAtom);
+  const isDarkTheme = useRecoilValue(themeAtom);
 
-  // Memoize theme color to prevent recalculation
-  const themeColor = useMemo(
-    () => organization.organization_theme.theme.color,
-    [organization.organization_theme.theme.color]
-  );
+  const currentThemeConfig = useMemo(() => {
+    const orgTheme = organizationConfig.organization_theme;
 
-  // Memoize styles to prevent recreating on each render
+    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+  }, [organizationConfig, isDarkTheme]);
+
   const buttonStyles = useMemo(
     () => ({
-      color: isActive ? '#ffffff' : themeColor,
-      backgroundColor: isActive ? themeColor : 'transparent',
+      color: isActive
+        ? currentThemeConfig.backgroundColor
+        : currentThemeConfig.color,
+      backgroundColor: isActive ? currentThemeConfig.color : 'transparent',
       borderLeft: isActive
-        ? `4px solid ${themeColor}`
+        ? `4px solid ${currentThemeConfig.color}`
         : '4px solid transparent',
-      '--hover-color': `${themeColor}20`, // 20% opacity for hover
-      '--active-shadow': `0 0 0 2px ${themeColor}40` // Subtle focus ring
+      '--hover-color': `${currentThemeConfig.color}20`,
+      '--active-shadow': `0 0 0 2px ${currentThemeConfig.color}40`
     }),
-    [isActive, themeColor]
+    [isActive, currentThemeConfig.color, currentThemeConfig.backgroundColor]
   );
 
   // Optimize click handler with useCallback
@@ -44,48 +48,28 @@ export function NavbarLink({
       const fullPath = `/${organization.organization_name}/${url}`;
       navigate(fullPath, { replace: false });
 
-      // Close drawer on mobile/when expanded
-      if (isMobile || isExpanded) {
-        setIsDrawerOpen();
-      }
+      setIsDrawerOpen();
     }
-  }, [
-    onClick,
-    url,
-    organization.organization_name,
-    navigate,
-    isMobile,
-    isExpanded,
-    setIsDrawerOpen
-  ]);
+  }, [onClick, url, organization.organization_name, navigate, setIsDrawerOpen]);
 
   // Memoize button content
   const buttonContent = useMemo(
     () => (
       <>
-        <div className="navbar-link-icon">
+        <div>
           <Icon
             stroke={1.5}
             size={20}
             className="transition-transform duration-200 group-hover:scale-110"
           />
         </div>
-        {isExpanded && (
-          <span className="navbar-link-text text-sm font-medium transition-all duration-200 group-hover:translate-x-1">
-            {name}
-          </span>
-        )}
-        {/* Active indicator dot */}
-        {isActive && (
-          <div
-            className="ml-auto w-2 h-2 rounded-full animate-pulse"
-            style={{ backgroundColor: '#ffffff' }}
-            aria-hidden="true"
-          />
-        )}
+        <hr />
+        <span className="navbar-link-text text-sm font-medium transition-all duration-200 group-hover:translate-x-1">
+          {name}
+        </span>
       </>
     ),
-    [Icon, isExpanded, name, isActive]
+    [Icon, name]
   );
 
   const button = (
@@ -99,7 +83,7 @@ export function NavbarLink({
         focus:outline-none focus:ring-2 focus:ring-offset-2
         active:scale-95 transform
         ${isActive ? 'navbar-link-active' : 'navbar-link-inactive'}
-        ${!isExpanded ? 'justify-center' : ''}
+
       `}
       style={buttonStyles}
       data-active={isActive}
@@ -111,25 +95,6 @@ export function NavbarLink({
       {buttonContent}
     </UnstyledButton>
   );
-
-  // Show tooltip only when collapsed to provide context
-  if (!isExpanded) {
-    return (
-      <Tooltip
-        label={name}
-        position="right"
-        withArrow
-        openDelay={300}
-        closeDelay={100}
-        style={{
-          backgroundColor: themeColor,
-          color: '#ffffff'
-        }}
-      >
-        {button}
-      </Tooltip>
-    );
-  }
 
   return button;
 }
