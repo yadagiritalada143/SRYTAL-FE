@@ -1,5 +1,5 @@
-import { IconLogout, IconX } from '@tabler/icons-react';
-import { memo } from 'react';
+import { IconX } from '@tabler/icons-react';
+import { memo, useMemo } from 'react';
 import { Avatar, Stack, UnstyledButton } from '@mantine/core';
 import { useLocation } from 'react-router-dom';
 import classes from './navbar.module.css';
@@ -10,16 +10,21 @@ import { userDetailsAtom } from '../../../atoms/user';
 import { logoutUser } from '../../../services/user-services';
 import { useCustomToast } from '../../../utils/common/toast';
 import { ThemeBackground } from '../Theme-background/background';
+import { organizationThemeAtom } from '../../../atoms/organization-atom';
+import { themeAtom } from '../../../atoms/theme';
+import { LogoutButton } from '../Buttons/buttons';
 
-function NavbarMenu({
-  navLinks,
-  organizationConfig,
-  isDrawerOpen,
-  setIsDrawerOpen
-}: NavbarProps) {
+function NavbarMenu({ navLinks, isDrawerOpen, setIsDrawerOpen }: NavbarProps) {
   const user = useRecoilValue(userDetailsAtom);
   const location = useLocation();
-  const themeColor = organizationConfig.organization_theme.theme.color;
+  const organizationConfig = useRecoilValue(organizationThemeAtom);
+  const isDarkTheme = useRecoilValue(themeAtom);
+
+  const currentThemeConfig = useMemo(() => {
+    const orgTheme = organizationConfig.organization_theme;
+
+    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+  }, [organizationConfig, isDarkTheme]);
   const { showSuccessToast } = useCustomToast();
 
   const toggleDrawer = () => {
@@ -55,43 +60,55 @@ function NavbarMenu({
 
   return (
     <>
-      {/* Backdrop */}
       {isDrawerOpen && (
         <div className={classes.backdrop} onClick={toggleDrawer} />
       )}
 
-      <UnstyledButton
-        onClick={toggleDrawer}
-        className={`${classes.fab} ${isDrawerOpen ? classes.fabOpen : ''}`}
-        style={{
-          backgroundColor: themeColor
-        }}
-      >
-        <div className={classes.fabContent}>
-          {isDrawerOpen ? (
-            <IconX size={24} color="white" />
-          ) : (
-            <Avatar
-              src={organizationConfig.organization_theme.logo}
-              alt="Organization Logo"
-              size={64}
-              className={classes.fabLogo}
-            />
-          )}
-        </div>
-      </UnstyledButton>
+      {!isDrawerOpen && (
+        <UnstyledButton
+          onClick={toggleDrawer}
+          className={`${classes.fab}`}
+          style={{
+            backgroundColor: currentThemeConfig.backgroundColor
+          }}
+        >
+          <div className={classes.fabContent}>
+            {isDrawerOpen ? (
+              <span></span>
+            ) : (
+              <Avatar
+                src={organizationConfig.organization_theme.logo}
+                alt="Organization Logo"
+                size={64}
+                className={classes.fabLogo}
+              />
+            )}
+          </div>
+        </UnstyledButton>
+      )}
 
       <ThemeBackground
         className={`${classes.navbar} ${
           isDrawerOpen ? classes.expanded : classes.collapsed
         } overflow-auto scrollbar-hide`}
       >
-        <div className={classes.navbarHeader}>
+        <div
+          className={`${classes.navbarHeader}`}
+          style={{
+            backgroundColor: `${currentThemeConfig.color}10`,
+            borderBottom: `${currentThemeConfig.color}100`
+          }}
+        >
+          <LogoutButton handleLogout={handleLogout} />
+
           <img
             src={organizationConfig.organization_theme.logo}
             alt="Organization Logo"
             className={classes.logoExpanded}
           />
+          <div onClick={toggleDrawer} className={classes.fabX}>
+            <IconX color={currentThemeConfig.color} />
+          </div>
         </div>
 
         <div className={classes.navbarMain}>
@@ -99,19 +116,6 @@ function NavbarMenu({
             {links}
           </Stack>
         </div>
-
-        <Stack justify="center" className="my-2" gap={20}>
-          <UnstyledButton
-            onClick={handleLogout}
-            className="flex items-center gap-3 px-1 py-1 rounded-md transition duration-150 w-full hover:bg-opacity-10 hover:shadow-sm"
-            style={{
-              color: themeColor
-            }}
-          >
-            <IconLogout stroke={1.5} />
-            <span className="text-sm font-medium">Logout</span>
-          </UnstyledButton>
-        </Stack>
       </ThemeBackground>
     </>
   );

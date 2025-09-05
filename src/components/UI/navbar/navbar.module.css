@@ -12,7 +12,21 @@
   z-index: 1001;
   border: none;
   cursor: pointer;
-
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateZ(0);
+  backdrop-filter: blur(10px);
+}
+.fabX {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1001;
+  border: none;
+  background-color: rgb(255, 103, 103);
+  cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   transform: translateZ(0);
   backdrop-filter: blur(10px);
@@ -27,16 +41,16 @@
   transform: scale(0.95);
 }
 
-/* FAB when navbar is open */
-.fabOpen {
-  bottom: calc(100vh - 80px);
-  background-color: #dc2626 !important; /* Red color for close */
-  transform: rotate(180deg);
+.fabX:hover {
+  transform: scale(1.1);
+  box-shadow: 0 8px 25px rgb(255, 103, 103);
 }
 
-.fabOpen:hover {
-  transform: rotate(180deg) scale(1.1);
+.fabX:active {
+  transform: scale(0.95);
 }
+
+/* FAB when navbar is open */
 
 /* FAB content container */
 .fabContent {
@@ -59,7 +73,6 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
   z-index: 999;
   backdrop-filter: blur(2px);
   animation: fadeIn 0.3s ease-out;
@@ -92,7 +105,6 @@
   border-top-right-radius: 24px;
   border-top-left-radius: 24px;
   backdrop-filter: blur(20px);
-  box-shadow: 0 -4px 32px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 }
 
@@ -111,12 +123,9 @@
 /* Navbar Header */
 .navbarHeader {
   padding: 2rem 2rem 1rem 2rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.1),
-    rgba(255, 255, 255, 0.05)
-  );
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 /* Logo in navbar header */
@@ -191,10 +200,6 @@
     border-top-right-radius: 24px;
   }
 
-  .fabOpen {
-    bottom: calc(100vh - 70px);
-  }
-
   .logoExpanded {
     width: 70px;
     height: 70px;
@@ -232,11 +237,6 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.1),
-    rgba(255, 255, 255, 0.05)
-  );
   backdrop-filter: blur(20px);
   z-index: -1;
 }
