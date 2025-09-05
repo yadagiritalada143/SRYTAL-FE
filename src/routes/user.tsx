@@ -35,6 +35,7 @@ import MyTasks from '../components/common/mytasks/mytasks';
 import Announcements from '../components/common/announcements/announcements';
 import Mentees from '../components/common/mentees/mentees';
 import UpdateMenteeTasks from '../components/common/update-mentee-task/update-mentee-task';
+import TaskDetail from '../components/common/mytasks/taskdetails';
 
 const EmployeeRoutes = () => {
   const { organization } = useParams<{ organization: string }>();
@@ -219,6 +220,10 @@ const EmployeeRoutes = () => {
                     <MyTasks />
                   </div>
                 }
+              />
+              <Route
+                path="mytasks/:taskId"
+                element={<div>{<TaskDetail />}</div>}
               />
               <Route
                 path="announcements"
