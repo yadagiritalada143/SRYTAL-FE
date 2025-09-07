@@ -15,12 +15,12 @@ const BackButton: React.FC<ButtonProps> = ({
 }) => {
   return (
     <button
-      className="bg-white text-center w-28 rounded-lg h-8 relative text-black text-sm font-semibold group"
+      className="bg-white text-center w-20 rounded-lg h-8 relative text-black text-sm font-semibold group"
       type="button"
       onClick={onClick}
     >
       <div
-        className={`${color} rounded-md h-7 w-1/4 flex items-center justify-center absolute left-1 top-[2px] group-hover:w-[105px] z-10 duration-500`}
+        className={`${color} rounded-md h-7 w-1/4 flex items-center justify-center absolute left-1 top-[2px] group-hover:w-[74px] z-10 duration-500`}
       >
         {icon ? (
           icon

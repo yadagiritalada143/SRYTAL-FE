@@ -141,7 +141,7 @@ const UpdateMenteeTasks = () => {
 
           <div className="w-full sm:w-auto flex justify-center sm:justify-end">
             <BackButton
-              label="Go Back"
+              label="Back"
               onClick={() =>
                 navigate(
                   `${organizationEmployeeUrls(

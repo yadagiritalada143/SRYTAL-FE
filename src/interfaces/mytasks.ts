@@ -2,6 +2,9 @@ export interface Lesson {
   id: string;
   title: string;
   duration: string;
+  videoUrl?: string;
+  pdfUrl?: string;
+  link?: string;
 }
 
 export interface Section {
