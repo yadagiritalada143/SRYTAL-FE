@@ -183,6 +183,8 @@ const ForgotPassword = ({ closeModal }: ForgotPasswordProps) => {
         {/* Action Buttons */}
         <Group justify="space-between" mt="md">
           <CancelStyledButton
+            size="md"
+            label="Cancel"
             variant="subtle"
             onClick={(e: { preventDefault: () => void }) => {
               e.preventDefault();
