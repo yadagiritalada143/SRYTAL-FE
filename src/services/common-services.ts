@@ -113,7 +113,7 @@ export const login = async (
   Credentials: LoginForm
 ): Promise<{ userRole: string }> => {
   try {
-    const response = await apiClientComm.post('/admin/login', Credentials);
+    const response = await apiClientComm.post('/login', Credentials);
 
     const { token, userRole, refreshToken } = response.data;
 
