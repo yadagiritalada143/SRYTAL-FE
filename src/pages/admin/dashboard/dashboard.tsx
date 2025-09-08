@@ -2,12 +2,12 @@ import { useEffect, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import AdminNavbar from '../../../components/UI/navbar/navbar';
 import { adminNavLinks } from '../../../utils/admin/nav-links/admin-nav-links';
-import { BgDiv } from '../../../components/common/style-components/bg-div';
 import { organizationThemeAtom } from '../../../atoms/organization-atom';
 import { useRecoilValue } from 'recoil';
 import { useDisclosure } from '@mantine/hooks';
 import { userDetailsAtom } from '../../../atoms/user';
 import { ChangePasswordPopup } from '../../../components/UI/Models/updatePassword';
+import { ThemeBackground } from '../../../components/UI/Theme-background/background';
 
 const AdminDashboard = () => {
   const [isDrawerOpen, setDrawerOpen] = useState(false);
@@ -25,7 +25,7 @@ const AdminDashboard = () => {
     }
   }, [user, open]);
   return (
-    <BgDiv className="flex min-h-screen ">
+    <ThemeBackground className="flex min-h-screen ">
       <AdminNavbar
         navLinks={adminNavLinks}
         organizationConfig={organizationConfig}
@@ -41,7 +41,7 @@ const AdminDashboard = () => {
         </div>
       </div>
       <ChangePasswordPopup opened={opened} close={close} forceUpdate={true} />
-    </BgDiv>
+    </ThemeBackground>
   );
 };
 

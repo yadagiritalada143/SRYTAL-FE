@@ -1,17 +1,30 @@
 import {
   Button,
-  useMantineTheme,
   Loader,
   TextInput,
   Pagination,
-  Center
+  Center,
+  Table,
+  Stack,
+  Group,
+  Text,
+  ActionIcon,
+  Tooltip,
+  Badge,
+  Container,
+  Card,
+  Flex,
+  Select
 } from '@mantine/core';
 import {
   IconCalendarTime,
-  IconEdit,
   IconPackage,
   IconSearch,
-  IconUser
+  IconUser,
+  IconPlus,
+  IconSortAscending,
+  IconSortDescending,
+  IconFilter
 } from '@tabler/icons-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -26,23 +39,230 @@ import {
 import useHorizontalScroll from '../../../../hooks/horizontal-scroll';
 import { debounce } from '../../../../utils/common/debounce';
 import { EmployeeInterface } from '../../../../interfaces/employee';
+import { themeAtom } from '../../../../atoms/theme';
+
+// Constants
+const ITEMS_PER_PAGE_OPTIONS = ['5', '10', '20', '50'];
+const DEFAULT_ITEMS_PER_PAGE = 10;
+
+// Types
+type SortField = 'employeeId' | 'firstName' | 'lastName' | 'email';
+type SortOrder = 'asc' | 'desc';
+
+interface SortConfig {
+  field: SortField;
+  order: SortOrder;
+}
+
+// Custom hook for employee filtering and sorting
+const useEmployeeFilters = (employees: EmployeeInterface[]) => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortConfig, setSortConfig] = useState<SortConfig>({
+    field: 'employeeId',
+    order: 'asc'
+  });
+  const [roleFilter, setRoleFilter] = useState<string>('');
+
+  const filteredAndSortedEmployees = useMemo(() => {
+    let filtered = employees;
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = employees.filter(
+        employee =>
+          employee.firstName.toLowerCase().includes(query) ||
+          employee.lastName.toLowerCase().includes(query) ||
+          employee.email.toLowerCase().includes(query) ||
+          employee.mobileNumber.toString().includes(query) ||
+          employee.employeeId?.toLowerCase().includes(query)
+      );
+    }
+
+    // Apply role filter
+    if (roleFilter) {
+      filtered = filtered.filter(
+        employee =>
+          employee.userRole?.toLowerCase() === roleFilter.toLowerCase()
+      );
+    }
+
+    // Apply sorting
+    return filtered.sort((a, b) => {
+      const aValue = a[sortConfig.field]?.toString().toLowerCase() || '';
+      const bValue = b[sortConfig.field]?.toString().toLowerCase() || '';
+
+      const comparison = aValue.localeCompare(bValue);
+      return sortConfig.order === 'asc' ? comparison : -comparison;
+    });
+  }, [employees, searchQuery, sortConfig, roleFilter]);
+
+  const handleSort = useCallback((field: SortField) => {
+    setSortConfig(prev => ({
+      field,
+      order: prev.field === field && prev.order === 'asc' ? 'desc' : 'asc'
+    }));
+  }, []);
+
+  return {
+    searchQuery,
+    setSearchQuery,
+    sortConfig,
+    handleSort,
+    roleFilter,
+    setRoleFilter,
+    filteredEmployees: filteredAndSortedEmployees
+  };
+};
+
+// Employee Actions Component
+const EmployeeActions: React.FC<{
+  employeeId: string;
+  onEdit: (id: string) => void;
+  onPackage: (id: string) => void;
+  onTimesheet: (id: string) => void;
+}> = ({ employeeId, onEdit, onPackage, onTimesheet }) => (
+  <Group gap="xs" justify="center">
+    <Tooltip label="Edit Employee Details">
+      <ActionIcon
+        variant="subtle"
+        color="blue"
+        onClick={() => onEdit(employeeId)}
+        size="sm"
+      >
+        <IconUser size={16} />
+      </ActionIcon>
+    </Tooltip>
+    <Tooltip label="Update Package">
+      <ActionIcon
+        variant="subtle"
+        color="green"
+        onClick={() => onPackage(employeeId)}
+        size="sm"
+      >
+        <IconPackage size={16} />
+      </ActionIcon>
+    </Tooltip>
+    <Tooltip label="View Timesheet">
+      <ActionIcon
+        variant="subtle"
+        color="orange"
+        onClick={() => onTimesheet(employeeId)}
+        size="sm"
+      >
+        <IconCalendarTime size={16} />
+      </ActionIcon>
+    </Tooltip>
+  </Group>
+);
+
+// Table Header Component
+const TableHeader: React.FC<{
+  sortConfig: SortConfig;
+  onSort: (field: SortField) => void;
+  themeConfig: any;
+}> = ({ sortConfig, onSort, themeConfig }) => {
+  const SortableHeader: React.FC<{
+    field: SortField;
+    children: React.ReactNode;
+  }> = ({ field, children }) => (
+    <Table.Th
+      className="p-3 border cursor-pointer select-none hover:bg-opacity-80 transition-colors"
+      onClick={() => onSort(field)}
+    >
+      <Group gap="xs" justify="center">
+        <Text size="sm" fw={500}>
+          {children}
+        </Text>
+        {sortConfig.field === field &&
+          (sortConfig.order === 'asc' ? (
+            <IconSortAscending size={14} />
+          ) : (
+            <IconSortDescending size={14} />
+          ))}
+      </Group>
+    </Table.Th>
+  );
+
+  return (
+    <Table.Thead
+      style={{
+        backgroundColor: themeConfig.backgroundColor,
+        color: themeConfig.color
+      }}
+    >
+      <Table.Tr>
+        <Table.Th className="p-3 border text-center">
+          <Text size="sm" fw={500}>
+            S.No
+          </Text>
+        </Table.Th>
+        <SortableHeader field="employeeId">Employee ID</SortableHeader>
+        <SortableHeader field="firstName">First Name</SortableHeader>
+        <SortableHeader field="lastName">Last Name</SortableHeader>
+        <SortableHeader field="email">Email</SortableHeader>
+        <Table.Th className="p-3 border text-center">
+          <Text size="sm" fw={500}>
+            Mobile
+          </Text>
+        </Table.Th>
+        <Table.Th className="p-3 border text-center">
+          <Text size="sm" fw={500}>
+            Role
+          </Text>
+        </Table.Th>
+        <Table.Th className="p-3 border text-center">
+          <Text size="sm" fw={500}>
+            Employment
+          </Text>
+        </Table.Th>
+        <Table.Th className="p-3 border text-center">
+          <Text size="sm" fw={500}>
+            Blood Group
+          </Text>
+        </Table.Th>
+        <Table.Th className="p-3 border text-center">
+          <Text size="sm" fw={500}>
+            Designations
+          </Text>
+        </Table.Th>
+        <Table.Th className="p-3 border text-center">
+          <Text size="sm" fw={500}>
+            Actions
+          </Text>
+        </Table.Th>
+      </Table.Tr>
+    </Table.Thead>
+  );
+};
 
 const Employees = () => {
-  const theme = useMantineTheme();
   const [employees, setEmployees] = useRecoilState(organizationEmployeeAtom);
-  const [activePage, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [filteredEmployees, setFilteredEmployees] = useState<
-    EmployeeInterface[]
-  >([]);
-  const highlightScrollRef = useRef(false);
-
+  const [activePage, setActivePage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(DEFAULT_ITEMS_PER_PAGE);
   const [isLoading, setIsLoading] = useState(true);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [error, setError] = useState<string | null>(null);
+  const isDarkTheme = useRecoilValue(themeAtom);
   const navigate = useNavigate();
   const organizationConfig = useRecoilValue(organizationThemeAtom);
-  const itemPerPage = 10;
+  // Get the current theme configuration based on theme mode
+  const currentThemeConfig = useMemo(() => {
+    const orgTheme = organizationConfig.organization_theme;
+
+    // Check if new dual themes structure exists
+    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+  }, [organizationConfig, isDarkTheme]);
+  const highlightEmployeeId = useRef<string | null>(null);
+
+  const {
+    searchQuery,
+    setSearchQuery,
+    sortConfig,
+    handleSort,
+    roleFilter,
+    setRoleFilter,
+    filteredEmployees
+  } = useEmployeeFilters(employees);
 
   const {
     scrollRef,
@@ -54,353 +274,350 @@ const Employees = () => {
     handleTouchStart
   } = useHorizontalScroll();
 
+  // Debounced search
+  const debouncedSearch = useMemo(
+    () => debounce((query: string) => setSearchQuery(query), 300),
+    [setSearchQuery]
+  );
+
+  // Pagination logic
+  const { paginatedEmployees, totalPages } = useMemo(() => {
+    const start = (activePage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    const paginated = filteredEmployees.slice(start, end);
+    const pages = Math.ceil(filteredEmployees.length / itemsPerPage);
+
+    return { paginatedEmployees: paginated, totalPages: pages };
+  }, [filteredEmployees, activePage, itemsPerPage]);
+
+  // Unique roles for filter
+  const uniqueRoles = useMemo(() => {
+    const roles = employees.map(emp => emp.userRole).filter(Boolean);
+    return Array.from(new Set(roles));
+  }, [employees]);
+
+  // Data fetching
   useEffect(() => {
     if (employees.length > 0) {
-      setFilteredEmployees(employees);
       setIsLoading(false);
       return;
     }
-    getAllEmployeeDetailsByAdmin()
-      .then(employeesList => {
+
+    const fetchEmployees = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const employeesList = await getAllEmployeeDetailsByAdmin();
         setEmployees(employeesList);
-        setFilteredEmployees(employeesList);
+      } catch (error: any) {
+        const errorMessage =
+          error?.response?.data?.message || 'Failed to load employees';
+        setError(errorMessage);
+        toast.error(errorMessage);
+      } finally {
         setIsLoading(false);
-      })
-      .catch(error => {
-        toast(error?.response?.data?.message || 'Something went wrong');
-        setIsLoading(false);
-      });
-  }, [setEmployees]);
+      }
+    };
 
-  const paginatedEmployees = useMemo(() => {
-    const start = (activePage - 1) * itemPerPage;
-    const end = start + itemPerPage;
-    return filteredEmployees.slice(start, end);
-  }, [filteredEmployees, activePage]);
+    fetchEmployees();
+  }, [employees.length, setEmployees]);
 
-  const debouncedFilter = useMemo(
-    () =>
-      debounce((query: string) => {
-        if (!query.length) {
-          setFilteredEmployees(employees);
-        }
-        const filtered = employees.filter(employee => {
-          return (
-            employee.firstName.toLowerCase().includes(query.toLowerCase()) ||
-            employee.lastName.toLowerCase().includes(query.toLowerCase()) ||
-            employee.email.toLowerCase().includes(query.toLowerCase()) ||
-            employee.mobileNumber.toString().includes(query.toLowerCase())
-          );
-        });
+  // Reset page when filters change
+  useEffect(() => {
+    setActivePage(1);
+  }, [searchQuery, roleFilter, itemsPerPage]);
 
-        setFilteredEmployees(filtered);
-      }, 300),
-    [setFilteredEmployees, employees]
-  );
+  // Employee highlighting logic
+  useEffect(() => {
+    const selectedEmployeeId = localStorage.getItem('id');
+    if (!selectedEmployeeId || filteredEmployees.length === 0) return;
 
-  const handleSearch = () => {
-    const query = inputRef.current?.value || '';
-    debouncedFilter(query);
-  };
+    const employeeIndex = filteredEmployees.findIndex(
+      emp => emp._id === selectedEmployeeId
+    );
 
-  const handleSortByEmployeeId = () => {
-    const sorted = [...filteredEmployees].sort((a, b) => {
-      const empA = a.employeeId?.toLowerCase() || '';
-      const empB = b.employeeId?.toLowerCase() || '';
-      return sortOrder === 'asc'
-        ? empA.localeCompare(empB)
-        : empB.localeCompare(empA);
-    });
-    setFilteredEmployees(sorted);
-    setSortOrder(prev => (prev === 'asc' ? 'desc' : 'asc'));
-  };
+    if (employeeIndex === -1) return;
 
-  const handleEmployeeSelect = useCallback(
+    const targetPage = Math.floor(employeeIndex / itemsPerPage) + 1;
+    setActivePage(targetPage);
+    highlightEmployeeId.current = selectedEmployeeId;
+
+    const timer = setTimeout(() => {
+      const element = document.getElementById(`employee-${selectedEmployeeId}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        element.style.backgroundColor =
+          organizationConfig.organization_theme.theme.backgroundColor;
+        element.style.color = organizationConfig.organization_theme.theme.color;
+
+        setTimeout(() => {
+          localStorage.removeItem('id');
+          element.style.backgroundColor = '';
+          element.style.color = '';
+          highlightEmployeeId.current = null;
+        }, 2000);
+      }
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [
+    filteredEmployees,
+    itemsPerPage,
+    organizationConfig.organization_theme.theme
+  ]);
+
+  // Navigation handlers
+  const handleEmployeeEdit = useCallback(
     (employeeId: string) => {
       navigate(
-        `${organizationAdminUrls(
-          organizationConfig.organization_name
-        )}/dashboard/update/${employeeId}`
+        `${organizationAdminUrls(organizationConfig.organization_name)}/dashboard/update/${employeeId}`
       );
     },
-    [organizationConfig.organization_name, navigate]
+    [navigate, organizationConfig.organization_name]
   );
 
-  const handlePackageSelect = useCallback(
+  const handlePackageUpdate = useCallback(
     (employeeId: string) => {
       navigate(
-        `${organizationAdminUrls(
-          organizationConfig.organization_name
-        )}/dashboard/package/${employeeId}`
+        `${organizationAdminUrls(organizationConfig.organization_name)}/dashboard/package/${employeeId}`
       );
     },
-    [organizationConfig.organization_name, navigate]
+    [navigate, organizationConfig.organization_name]
   );
 
   const handleTimesheet = useCallback(
     (employeeId: string) => {
       navigate(
-        `${organizationAdminUrls(
-          organizationConfig.organization_name
-        )}/dashboard/timesheet/${employeeId}`
+        `${organizationAdminUrls(organizationConfig.organization_name)}/dashboard/timesheet/${employeeId}`
       );
     },
-    [organizationConfig.organization_name, navigate]
+    [navigate, organizationConfig.organization_name]
   );
 
-  useEffect(() => {
-    const selectedEmployee = localStorage.getItem('id');
+  const handleAddEmployee = useCallback(() => {
+    navigate(
+      `${organizationAdminUrls(organizationConfig.organization_name)}/dashboard/addemployee`
+    );
+  }, [navigate, organizationConfig.organization_name]);
 
-    if (selectedEmployee && filteredEmployees.length > 0) {
-      const index = filteredEmployees.findIndex(
-        emp => emp._id === selectedEmployee
-      );
-      if (index === -1) return;
-
-      const targetPage = Math.floor(index / itemPerPage) + 1;
-      highlightScrollRef.current = true;
-      setPage(targetPage);
-
-      const timer = setTimeout(() => {
-        const rowElement = document.getElementById(
-          `employee-${selectedEmployee}`
-        );
-        if (rowElement) {
-          rowElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          rowElement.style.backgroundColor =
-            organizationConfig.organization_theme.theme.backgroundColor;
-          rowElement.style.color =
-            organizationConfig.organization_theme.theme.color;
-
-          setTimeout(() => {
-            localStorage.removeItem('id');
-            rowElement.style.backgroundColor = '';
-            rowElement.style.color = '';
-          }, 2000);
-        }
-
-        highlightScrollRef.current = false;
-      }, 300);
-
-      return () => clearTimeout(timer);
-    }
-  }, [
-    filteredEmployees,
-    organizationConfig.organization_theme.theme.backgroundColor,
-    organizationConfig.organization_theme.theme.color,
-    itemPerPage
-  ]);
-
-  useEffect(() => {
-    if (!highlightScrollRef.current) {
-      setPage(1);
-    }
-    setTotalPages(Math.ceil(filteredEmployees.length / itemPerPage));
-  }, [filteredEmployees]);
+  if (error) {
+    return (
+      <Container size="lg" py="xl">
+        <Card shadow="sm" p="lg" radius="md" withBorder>
+          <Text ta="center" size="lg">
+            {error}
+          </Text>
+          <Center mt="md">
+            <Button onClick={() => window.location.reload()}>Try Again</Button>
+          </Center>
+        </Card>
+      </Container>
+    );
+  }
 
   return (
-    <div
-      style={{
-        color: organizationConfig.organization_theme.theme.button.textColor,
-        fontFamily: theme.fontFamily
-      }}
-    >
-      <div>
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold underline text-center px-2 py-4">
-          Manage Employee
-        </h1>
+    <Container size="xl" py="md" my="xl">
+      <Stack gap="md">
+        {/* Header */}
+        <Card shadow="sm" p="lg" radius="md" withBorder>
+          <Flex justify="space-between" align="center" wrap="wrap" gap="md">
+            <Text size="xl" fw={700}>
+              Employee Management ({filteredEmployees.length} employees)
+            </Text>
+            <Button
+              leftSection={<IconPlus size={16} />}
+              onClick={handleAddEmployee}
+              variant="filled"
+            >
+              Add Employee
+            </Button>
+          </Flex>
+        </Card>
 
-        <div className="text-right">
-          <Button
-            onClick={() =>
-              navigate(
-                `${organizationAdminUrls(
-                  organizationConfig.organization_name
-                )}/dashboard/addemployee`
-              )
-            }
-          >
-            Add Employee
-          </Button>
-        </div>
-        <div className="w-full my-2">
-          <TextInput
-            ref={inputRef}
-            rightSection={<IconSearch />}
-            onChange={handleSearch}
-            className="my-4"
-            placeholder="Search by Name, Email, Phone"
-          />
-        </div>
+        {/* Filters */}
+        <Card shadow="sm" p="md" radius="md" withBorder>
+          <Stack gap="md">
+            <Group grow>
+              <TextInput
+                placeholder="Search by name, email, phone, or employee ID..."
+                leftSection={<IconSearch size={16} />}
+                onChange={e => debouncedSearch(e.target.value)}
+                radius="md"
+              />
+              <Select
+                placeholder="Filter by role"
+                data={uniqueRoles.map(role => ({ value: role, label: role }))}
+                value={roleFilter}
+                onChange={value => setRoleFilter(value ?? '')}
+                clearable
+                leftSection={<IconFilter size={16} />}
+                radius="md"
+              />
+            </Group>
 
-        {isLoading ? (
-          <div className="flex justify-center items-center h-48">
-            <Loader
-              size="xl"
-              color={organizationConfig.organization_theme.theme.button.color}
-            />
-          </div>
-        ) : (
-          <div
-            className="flex max-w-full shadow-lg rounded-lg"
-            ref={scrollRef}
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            style={{ userSelect: 'none', overflowX: 'hidden', cursor: 'grab' }}
-          >
-            <table className="w-full text-center shadow-md border ">
-              <colgroup>
-                <col className="w-32" />
-                <col className="w-56" />
-                <col className="w-32" />
-                <col className="w-32" />
-                <col className="w-32" />
-                <col className="w-32" />
-                <col className="w-32" />
-                <col className="w-32" />
-                <col className="w-32" />
-                <col className="w-32" />
-              </colgroup>
-              <thead
-                className="text-xs"
-                style={{
-                  backgroundColor:
-                    organizationConfig.organization_theme.theme.backgroundColor,
-                  color: organizationConfig.organization_theme.theme.color
-                }}
+            <Group justify="space-between">
+              <Group gap="xs">
+                <Text size="sm">Items per page:</Text>
+                <Select
+                  data={ITEMS_PER_PAGE_OPTIONS}
+                  value={itemsPerPage.toString()}
+                  onChange={value =>
+                    setItemsPerPage(Number(value) || DEFAULT_ITEMS_PER_PAGE)
+                  }
+                  w={80}
+                  size="sm"
+                />
+              </Group>
+
+              {filteredEmployees.length !== employees.length && (
+                <Badge variant="light" color="blue">
+                  {filteredEmployees.length} of {employees.length} employees
+                </Badge>
+              )}
+            </Group>
+          </Stack>
+        </Card>
+
+        {/* Table */}
+        <Card shadow="sm" p={0} radius="md" withBorder>
+          {isLoading ? (
+            <Center p="xl">
+              <Stack align="center" gap="md">
+                <Loader size="xl" />
+                <Text>Loading employees...</Text>
+              </Stack>
+            </Center>
+          ) : (
+            <div
+              ref={scrollRef}
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseUp}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              style={{
+                overflowX: 'auto'
+              }}
+            >
+              <Table
+                stickyHeader
+                withTableBorder={false}
+                withColumnBorders
+                verticalSpacing="sm"
               >
-                <tr>
-                  <th className="p-2 border ">S.No</th>
-                  <th
-                    className="p-2 border cursor-pointer"
-                    onClick={handleSortByEmployeeId}
-                  >
-                    Employee ID {sortOrder === 'asc' ? '▲' : '▼'}
-                  </th>{' '}
-                  <th className="p-2 border">First Name</th>
-                  <th className="p-2 border">Last Name</th>
-                  <th className="p-2 border">Email</th>
-                  <th className="p-2 border">Mobile Number</th>
-                  <th className="p-2 border">Role</th>
-                  <th className="p-2 border">Employment Type</th>
-                  <th className="p-2 border">Blood Group</th>
-                  <th className="p-2 border">Employee Role</th>
-                  <th className="p-2 border">Update Details</th>
-                  <th className="p-2 border">Update Package</th>
-                  <th className="p-2 border">Timesheet</th>
-                </tr>
-              </thead>
-              {isLoading ? (
-                <div className="flex justify-center items-center h-48">
-                  <Loader
-                    size="xl"
-                    color={
-                      organizationConfig.organization_theme.theme.button.color
-                    }
-                  />
-                </div>
-              ) : (
-                <tbody className="text-sm">
+                <TableHeader
+                  sortConfig={sortConfig}
+                  onSort={handleSort}
+                  themeConfig={currentThemeConfig}
+                />
+                <Table.Tbody>
                   {paginatedEmployees.length > 0 ? (
                     paginatedEmployees.map((employee, index) => (
-                      <tr key={employee._id} id={`employee-${employee._id}`}>
-                        <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                          {index + 1 + (activePage - 1) * itemPerPage}
-                        </td>
-                        <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                          {employee.employeeId}
-                        </td>
-                        <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                          {employee.firstName}
-                        </td>
-                        <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                          {employee.lastName}
-                        </td>
-                        <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                          {employee.email}
-                        </td>
-                        <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                          {employee.mobileNumber}
-                        </td>
-                        <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                          {employee.userRole}
-                        </td>
-                        <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                          {employee.employmentType?.employmentType}
-                        </td>
-                        <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                          {employee.bloodGroup?.type}
-                        </td>
-                        <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                          <ul>
-                            {employee.employeeRole?.map((role, index) => (
-                              <li key={role._id}>
-                                {index + 1}. {role.designation}
-                              </li>
-                            ))}
-                          </ul>
-                        </td>
-                        <td
-                          id={`employee-${employee._id}`}
-                          className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis"
-                        >
-                          <Button
-                            onClick={() => handleEmployeeSelect(employee._id)}
-                          >
-                            <IconUser /> {'  '}
-                            <IconEdit />
-                          </Button>
-                        </td>
-                        <td
-                          id={`employee-${employee._id}`}
-                          className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis"
-                        >
-                          <Button
-                            onClick={() => handlePackageSelect(employee._id)}
-                          >
-                            <IconPackage /> {'  '}
-                            <IconEdit />
-                          </Button>
-                        </td>
-                        <td
-                          id={`employee-${employee._id}`}
-                          className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis"
-                        >
-                          <Button onClick={() => handleTimesheet(employee._id)}>
-                            <IconCalendarTime /> {'  '}
-                            <IconEdit />
-                          </Button>
-                        </td>
-                      </tr>
+                      <Table.Tr
+                        key={employee._id}
+                        id={`employee-${employee._id}`}
+                        className="transition-colors"
+                      >
+                        <Table.Td className="text-center p-3">
+                          <Text size="sm">
+                            {index + 1 + (activePage - 1) * itemsPerPage}
+                          </Text>
+                        </Table.Td>
+                        <Table.Td className="p-3">
+                          <Text size="sm" fw={500}>
+                            {employee.employeeId || 'N/A'}
+                          </Text>
+                        </Table.Td>
+                        <Table.Td className="p-3">
+                          <Text size="sm">{employee.firstName}</Text>
+                        </Table.Td>
+                        <Table.Td className="p-3">
+                          <Text size="sm">{employee.lastName}</Text>
+                        </Table.Td>
+                        <Table.Td className="p-3">
+                          <Text size="sm">{employee.email}</Text>
+                        </Table.Td>
+                        <Table.Td className="p-3 text-center">
+                          <Text size="sm">{employee.mobileNumber}</Text>
+                        </Table.Td>
+                        <Table.Td className="p-3 text-center">
+                          <Badge size="sm">{employee.userRole || 'N/A'}</Badge>
+                        </Table.Td>
+                        <Table.Td className="p-3 text-center">
+                          <Text size="sm">
+                            {employee.employmentType?.employmentType || 'N/A'}
+                          </Text>
+                        </Table.Td>
+                        <Table.Td className="p-3 text-center">
+                          <Badge size="sm">
+                            {employee.bloodGroup?.type || 'N/A'}
+                          </Badge>
+                        </Table.Td>
+                        <Table.Td className="p-3">
+                          <Stack gap={4}>
+                            {employee.employeeRole?.map(role => (
+                              <Badge key={role._id} size="xs">
+                                {role.designation}
+                              </Badge>
+                            )) || <Text size="xs">None</Text>}
+                          </Stack>
+                        </Table.Td>
+                        <Table.Td className="p-3">
+                          <EmployeeActions
+                            employeeId={employee._id}
+                            onEdit={handleEmployeeEdit}
+                            onPackage={handlePackageUpdate}
+                            onTimesheet={handleTimesheet}
+                          />
+                        </Table.Td>
+                      </Table.Tr>
                     ))
                   ) : (
-                    <tr>
-                      <td colSpan={9} className="px-4 py-2">
-                        No employees found.
-                      </td>
-                    </tr>
+                    <Table.Tr>
+                      <Table.Td colSpan={11} className="text-center p-8">
+                        <Stack align="center" gap="md">
+                          <Text size="lg">No employees found</Text>
+                          <Text size="sm">
+                            {searchQuery || roleFilter
+                              ? 'Try adjusting your search or filters'
+                              : 'Start by adding your first employee'}
+                          </Text>
+                          {!searchQuery && !roleFilter && (
+                            <Button
+                              variant="light"
+                              leftSection={<IconPlus size={16} />}
+                              onClick={handleAddEmployee}
+                            >
+                              Add Employee
+                            </Button>
+                          )}
+                        </Stack>
+                      </Table.Td>
+                    </Table.Tr>
                   )}
-                </tbody>
-              )}
-            </table>
-          </div>
+                </Table.Tbody>
+              </Table>
+            </div>
+          )}
+        </Card>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <Center>
+            <Pagination
+              value={activePage}
+              onChange={setActivePage}
+              total={totalPages}
+              size="sm"
+              radius="md"
+              withEdges
+            />
+          </Center>
         )}
-      </div>
-      {totalPages > 1 && (
-        <Center className="my-8">
-          <Pagination
-            value={activePage}
-            onChange={setPage}
-            total={totalPages}
-          />
-        </Center>
-      )}
-    </div>
+      </Stack>
+    </Container>
   );
 };
 
