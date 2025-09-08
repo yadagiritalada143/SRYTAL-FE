@@ -18,6 +18,9 @@
     ],
     "*.{json,css,md}": [
       "prettier --write"
+    ],
+    "**/*.{ts,tsx}": [
+      "tsc --noEmit --skipLibCheck"
     ]
   },
   "dependencies": {
