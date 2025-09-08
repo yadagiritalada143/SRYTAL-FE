@@ -15,11 +15,12 @@ import {
 } from '@mantine/core';
 import { useRecoilValue } from 'recoil';
 import { organizationThemeAtom } from '../../../atoms/organization-atom';
-import { menteesAtom } from '../../../atoms/mentees-atom';
+// import { menteesAtom } from '../../../atoms/mentees-atom';
 import { useNavigate } from 'react-router-dom';
-import ButtonAnimate from '../buttonanimate/button';
-import CountButton from '../buttonanimate/Countbutton';
 import { IconSearch } from '@tabler/icons-react';
+import CountButton from '../../UI/Buttonsanimate/Countbutton';
+import ButtonAnimate from '../../UI/Buttonsanimate/Button';
+import { organizationEmployeeUrls } from '../../../utils/common/constants';
 
 const mockMentees = [
   {
@@ -221,7 +222,11 @@ const Mentees = () => {
                       <ButtonAnimate
                         primaryText="Assign"
                         onClick={() =>
-                          navigate(`/common/mentees/${mentee.empId}`)
+                          navigate(
+                            `${organizationEmployeeUrls(
+                              organizationConfig.organization_name
+                            )}/dashboard/common/mentees/${mentee.empId}`
+                          )
                         }
                       >
                         Assign
