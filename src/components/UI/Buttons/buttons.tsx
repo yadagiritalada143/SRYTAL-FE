@@ -3,12 +3,14 @@ import styles from './button.module.css';
 interface StyledButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   label: string;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  variant?: 'filled' | 'outline' | 'light' | 'subtle' | 'transparent';
 }
 
 export const CancelStyledButton = ({
   label,
   size = 'md',
+  variant = 'filled',
   ...props
 }: StyledButtonProps) => {
   const chars = label.split('');
