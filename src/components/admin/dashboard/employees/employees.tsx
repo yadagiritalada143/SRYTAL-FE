@@ -86,11 +86,14 @@ const useEmployeeFilters = (employees: EmployeeInterface[]) => {
           employee.userRole?.toLowerCase() === roleFilter.toLowerCase()
       );
     }
-
     // Apply sorting
-    return filtered.sort((a, b) => {
-      const aValue = a[sortConfig.field]?.toString().toLowerCase() || '';
-      const bValue = b[sortConfig.field]?.toString().toLowerCase() || '';
+    return [...filtered].sort((a, b) => {
+      const aValue = a.employeeId
+        ? a[sortConfig.field]?.toString().toLowerCase()
+        : '';
+      const bValue = b.employeeId
+        ? b[sortConfig.field]?.toString().toLowerCase()
+        : '';
 
       const comparison = aValue.localeCompare(bValue);
       return sortConfig.order === 'asc' ? comparison : -comparison;
@@ -167,10 +170,10 @@ const TableHeader: React.FC<{
     children: React.ReactNode;
   }> = ({ field, children }) => (
     <Table.Th
-      className="p-3 border cursor-pointer select-none hover:bg-opacity-80 transition-colors"
+      className="border cursor-pointer select-none hover:bg-opacity-80 transition-colors"
       onClick={() => onSort(field)}
     >
-      <Group gap="xs" justify="center">
+      <Group justify="center">
         <Text size="sm" fw={500}>
           {children}
         </Text>
@@ -346,9 +349,8 @@ const Employees = () => {
       const element = document.getElementById(`employee-${selectedEmployeeId}`);
       if (element) {
         element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        element.style.backgroundColor =
-          organizationConfig.organization_theme.theme.backgroundColor;
-        element.style.color = organizationConfig.organization_theme.theme.color;
+        element.style.backgroundColor = `${currentThemeConfig.button.color}50`;
+        element.style.color = `${currentThemeConfig.button.textColor}70`;
 
         setTimeout(() => {
           localStorage.removeItem('id');
@@ -363,7 +365,8 @@ const Employees = () => {
   }, [
     filteredEmployees,
     itemsPerPage,
-    organizationConfig.organization_theme.theme
+    currentThemeConfig.button.color,
+    currentThemeConfig.button.textColor
   ]);
 
   // Navigation handlers
@@ -501,12 +504,7 @@ const Employees = () => {
                 overflowX: 'auto'
               }}
             >
-              <Table
-                stickyHeader
-                withTableBorder={false}
-                withColumnBorders
-                verticalSpacing="sm"
-              >
+              <Table stickyHeader withTableBorder withColumnBorders>
                 <TableHeader
                   sortConfig={sortConfig}
                   onSort={handleSort}
@@ -537,7 +535,7 @@ const Employees = () => {
                           <Text size="sm">{employee.lastName}</Text>
                         </Table.Td>
                         <Table.Td className="p-3">
-                          <Text size="sm">{employee.email}</Text>
+                          <Text size="sm">{employee.email.slice(0, 20)}</Text>
                         </Table.Td>
                         <Table.Td className="p-3 text-center">
                           <Text size="sm">{employee.mobileNumber}</Text>
