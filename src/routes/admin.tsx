@@ -77,7 +77,24 @@ const AdminRoutes = () => {
       headings: {
         fontFamily: currentThemeConfig.fontFamily
       },
+
       components: {
+        Title: {
+          styles: () => ({
+            root: {
+              color: currentThemeConfig.color,
+              transition: 'color 0.3s ease-in-out'
+            }
+          })
+        },
+        Text: {
+          styles: () => ({
+            root: {
+              color: currentThemeConfig.color,
+              transition: 'color 0.3s ease-in-out'
+            }
+          })
+        },
         Avatar: {
           styles: () => ({
             root: {
