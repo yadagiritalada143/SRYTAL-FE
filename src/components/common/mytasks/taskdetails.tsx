@@ -227,7 +227,7 @@ const TaskDetail = () => {
   const progress = Math.round((completedLessons.length / totalLessons) * 100);
 
   return (
-    <div className="flex flex-col gap-6 ml-20 mr-20">
+    <div className="flex flex-col gap-6 px-5 sm:px-8 lg:px-20">
       {/* Back Button */}
       <BackButton
         label="Back"
@@ -241,7 +241,7 @@ const TaskDetail = () => {
       />
 
       <div className="flex flex-col lg:flex-row gap-8">
-        <div className="w-full lg:w-1/3">
+        <div className="w-full lg:w-1/3 flex-shrink-0">
           <Card shadow="md" radius="lg" withBorder p="lg">
             <div className="rounded-lg overflow-hidden">
               <img
@@ -292,24 +292,20 @@ const TaskDetail = () => {
             </Text>
 
             {/* Actions */}
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full items-center">
               <Button
-                fullWidth
                 color="teal"
                 radius="md"
-                size="sm"
-                className="shadow-sm hover:shadow-md transition"
+                className="shadow-sm hover:shadow-md transition text-sm sm:text-base py-2 sm:py-3 [&>span]:whitespace-normal [&>span]:leading-snug text-center w-[90%] sm:w-1/2"
                 onClick={handleResumeCourse}
               >
                 Resume Course
               </Button>
               <Button
-                fullWidth
                 variant="light"
                 color="blue"
                 radius="md"
-                size="sm"
-                className="shadow-sm hover:shadow-md transition"
+                className="shadow-sm hover:shadow-md transition text-sm sm:text-base py-2 sm:py-3 [&>span]:whitespace-normal [&>span]:leading-snug text-center w-[90%] sm:w-1/2"
                 onClick={handleMarkAsCompleted}
               >
                 Mark as Completed
@@ -354,7 +350,7 @@ const TaskDetail = () => {
                       <div
                         key={lesson.id}
                         id={lesson.id}
-                        className="flex items-center justify-between py-2 group hover:bg-gray-50 rounded-md px-2 cursor-pointer"
+                        className="flex items-center justify-between py-2 group hover:bg-gray-50 rounded-md px-2 cursor-pointer flex-wrap"
                         onClick={() => {
                           const index = allLessons.findIndex(
                             (less: Lesson) => less.id === lesson.id
@@ -401,7 +397,9 @@ const TaskDetail = () => {
           <StandardModal
             opened={openedLessonModal}
             onClose={() => setOpenedLessonModal(false)}
-            size="50%"
+            classNames={{
+              content: 'w-[90%] sm:w-[50%] max-w-[90%]'
+            }}
             centered
             title={selectedLesson?.title}
           >

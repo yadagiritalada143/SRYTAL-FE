@@ -34,7 +34,7 @@ import Support from '../components/common/support/support';
 import MyTasks from '../components/common/mytasks/mytasks';
 import Announcements from '../components/common/announcements/announcements';
 import Mentees from '../components/common/mentees/mentees';
-import UpdateMenteeTasks from '../components/common/update-mentee-task/update-mentee-task';
+import UpdateMenteeTasks from '../components/common/update-mentee-task/UpdateMenteeTasks';
 import TaskDetail from '../components/common/mytasks/taskdetails';
 
 const EmployeeRoutes = () => {
