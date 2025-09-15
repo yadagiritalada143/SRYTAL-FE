@@ -1,181 +1,354 @@
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { TextInput, Button, Loader, Select } from '@mantine/core';
+import {
+  TextInput,
+  Button,
+  Select,
+  Container,
+  Card,
+  Stack,
+  Group,
+  Text,
+  ActionIcon,
+  Grid,
+  Alert,
+  Progress
+} from '@mantine/core';
 import { toast } from 'react-toastify';
-import { useMantineTheme } from '@mantine/core';
 import {
   AddEmployeeForm,
-  addEmployeeSchema,
+  addEmployeeSchema
 } from '../../../../forms/add-employee';
 import {
   getAllEmployeeDetailsByAdmin,
-  registerEmployee,
+  registerEmployee
 } from '../../../../services/admin-services';
 import axios from 'axios';
-import { IconCircleDashedCheck, IconX } from '@tabler/icons-react';
+import {
+  IconCircleDashedCheck,
+  IconX,
+  IconUser,
+  IconMail,
+  IconPhone,
+  IconUserCheck,
+  IconArrowLeft,
+  IconAlertCircle
+} from '@tabler/icons-react';
 import { useNavigate } from 'react-router';
 import { organizationAdminUrls } from '../../../../utils/common/constants';
-import { BgDiv } from '../../../common/style-components/bg-div';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import {
   organizationEmployeeAtom,
-  organizationThemeAtom,
+  organizationThemeAtom
 } from '../../../../atoms/organization-atom';
+import { useMemo, useState } from 'react';
+import { themeAtom } from '../../../../atoms/theme';
+import { ThemeBackground } from '../../../UI/Theme-background/background';
+
+// Constants
+const USER_ROLES = [
+  { label: 'Employee', value: 'employee' },
+  { label: 'Recruiter', value: 'recruiter' },
+  { label: 'Manager', value: 'manager' },
+  { label: 'Admin', value: 'admin' }
+];
 
 const AddEmployee = () => {
   const navigate = useNavigate();
-  const theme = useMantineTheme();
   const organizationConfig = useRecoilValue(organizationThemeAtom);
+  const isDarkTheme = useRecoilValue(themeAtom);
   const setEmployeeList = useSetRecoilState(organizationEmployeeAtom);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  // Get current theme configuration
+  const currentThemeConfig = useMemo(() => {
+    const orgTheme = organizationConfig.organization_theme;
+    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+  }, [organizationConfig, isDarkTheme]);
+
   const {
     register,
     handleSubmit,
     reset,
     control,
     getValues,
-    formState: { errors, isSubmitting },
+    watch,
+    formState: { errors, isSubmitting, isValid, isDirty }
   } = useForm<AddEmployeeForm>({
     resolver: zodResolver(addEmployeeSchema),
+    mode: 'onChange'
   });
+
+  // Watch form values for progress calculation
+  const watchedFields = watch();
+  const filledFields = Object.values(watchedFields).filter(
+    value => value && value.toString().trim().length > 0
+  ).length;
+  const totalFields = Object.keys(addEmployeeSchema.shape).length;
+  const progressPercentage = Math.round((filledFields / totalFields) * 100);
 
   const onSubmit = async (employeeDetails: AddEmployeeForm) => {
     try {
+      setSubmitError(null);
+
       await registerEmployee(employeeDetails);
+
+      // Update employee list in state
       const updatedEmployees = await getAllEmployeeDetailsByAdmin();
       setEmployeeList(updatedEmployees);
-      toast(
-        `${
-          getValues('userRole')[0].toUpperCase() +
-          getValues('userRole').slice(1)
-        } created successfully !`,
+
+      // Show success toast with better styling
+      const roleName = getValues('userRole');
+      const capitalizedRole =
+        roleName.charAt(0).toUpperCase() + roleName.slice(1);
+
+      toast.success(
+        `${capitalizedRole} "${getValues('firstName')} ${getValues('lastName')}" created successfully!`,
         {
           style: {
-            color: theme.colors.primary[2],
-            backgroundColor:
-              organizationConfig.organization_theme.theme.backgroundColor,
+            color: currentThemeConfig.color,
+            backgroundColor: currentThemeConfig.backgroundColor,
+            border: `1px solid ${currentThemeConfig.borderColor}`
           },
           progressStyle: {
-            background: theme.colors.primary[8],
+            background: currentThemeConfig.button.color
           },
-          icon: <IconCircleDashedCheck width={32} height={32} />,
+          icon: <IconCircleDashedCheck size={24} />,
+          position: 'top-right',
+          autoClose: 4000
         }
       );
+
+      // Reset form and navigate
       reset();
       navigate(
-        `${organizationAdminUrls(
-          organizationConfig.organization_name
-        )}/dashboard`
+        `${organizationAdminUrls(organizationConfig.organization_name)}/dashboard`
       );
     } catch (error) {
+      let errorMessage = 'An unexpected error occurred.';
+
       if (axios.isAxiosError(error)) {
-        toast.error(
-          'Failed: ' + (error.response?.data?.message || 'Unknown error')
-        );
-      } else {
-        toast.error('An unexpected error occurred.');
+        errorMessage =
+          error.response?.data?.message || 'Failed to create employee';
       }
+
+      setSubmitError(errorMessage);
+      toast.error(errorMessage, {
+        style: {
+          color: currentThemeConfig.color,
+          backgroundColor: currentThemeConfig.backgroundColor
+        }
+      });
+    }
+  };
+
+  const handleCancel = () => {
+    if (isDirty) {
+      const confirmLeave = window.confirm(
+        'You have unsaved changes. Are you sure you want to leave?'
+      );
+      if (!confirmLeave) return;
+    }
+
+    navigate(
+      `${organizationAdminUrls(organizationConfig.organization_name)}/dashboard`
+    );
+  };
+
+  const handleReset = () => {
+    const confirmReset = window.confirm(
+      'Are you sure you want to clear all form data?'
+    );
+    if (confirmReset) {
+      reset();
+      setSubmitError(null);
     }
   };
 
   return (
-    <div className="flex items-center justify-center h-screen ">
-      <BgDiv>
-        <form
-          onSubmit={handleSubmit(onSubmit)}
+    <Container size="md" py="xl">
+      <ThemeBackground>
+        <Card
+          shadow="lg"
+          radius="md"
+          withBorder
+          p="xl"
           style={{
-            backgroundColor:
-              organizationConfig.organization_theme.theme.backgroundColor,
+            backgroundColor: currentThemeConfig.backgroundColor,
+            borderColor: currentThemeConfig.borderColor
           }}
-          className="w-full max-w-2xl p-8 shadow-lg rounded-lg"
         >
-          <div className="flex justify-between">
-            <div></div>
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-center mb-4 sm:mb-6 underline">
-              Add Employee
-            </h2>
-            <Button
-              className="rounded-full px-2 py-1 text-sm sm:px-3 sm:py-2 sm:text-base"
-              onClick={() =>
-                navigate(
-                  `${organizationAdminUrls(
-                    organizationConfig.organization_name
-                  )}/dashboard`
-                )
-              }
-            >
-              <IconX size={18} />
-            </Button>
-          </div>
+          <Stack gap="lg">
+            {/* Header */}
+            <Group justify="space-between" align="flex-start">
+              <Stack gap="xs">
+                <Text size="xl" fw={700} c={currentThemeConfig.color}>
+                  Add New Employee
+                </Text>
+                <Text size="sm" c="dimmed">
+                  Fill in the details below to create a new employee account
+                </Text>
+              </Stack>
 
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
-            <TextInput
-              label="First Name"
-              placeholder="Enter first name"
-              {...register('firstName')}
-              error={errors.firstName?.message}
-            />
+              <ActionIcon
+                variant="subtle"
+                color="gray"
+                onClick={handleCancel}
+                size="lg"
+              >
+                <IconX size={20} />
+              </ActionIcon>
+            </Group>
 
-            <TextInput
-              label="Last Name"
-              placeholder="Enter last name"
-              {...register('lastName')}
-              error={errors.lastName?.message}
-            />
-
-            <TextInput
-              label="Email"
-              placeholder="Enter email"
-              {...register('email')}
-              error={errors.email?.message}
-            />
-
-            <TextInput
-              label="Phone Number"
-              placeholder="Enter phone number"
-              type="tel"
-              {...register('mobileNumber')}
-              error={errors.mobileNumber?.message}
-            />
-            <Controller
-              name="userRole"
-              control={control}
-              render={({ field }) => (
-                <Select
-                  label="User Role"
-                  {...field}
-                  error={errors.userRole?.message}
-                  placeholder="Select user role"
-                  value={field.value}
-                  data={[
-                    { label: 'Employee', value: 'employee' },
-                    { label: 'Recruiter', value: 'recruiter' },
-                  ]}
+            {/* Progress Indicator */}
+            {isDirty && (
+              <Stack gap="xs">
+                <Group justify="space-between">
+                  <Text size="sm" c="dimmed">
+                    Form Progress
+                  </Text>
+                  <Text size="sm" c="dimmed">
+                    {progressPercentage}%
+                  </Text>
+                </Group>
+                <Progress
+                  value={progressPercentage}
+                  size="sm"
+                  color={currentThemeConfig.button.color}
+                  radius="xl"
                 />
-              )}
-            />
+              </Stack>
+            )}
 
-            <Button
-              className=" mt-7 rounded-md"
-              type="submit"
-              data-testid="submitButton"
-              leftSection={
-                isSubmitting && (
-                  <Loader
-                    size="xs"
-                    color={
-                      organizationConfig.organization_theme.theme.button.color
+            {/* Error Alert */}
+            {submitError && (
+              <Alert
+                icon={<IconAlertCircle size={16} />}
+                color="red"
+                title="Error"
+                variant="light"
+              >
+                {submitError}
+              </Alert>
+            )}
+
+            {/* Form */}
+            <form onSubmit={handleSubmit(onSubmit)}>
+              <Stack gap="md">
+                <Grid>
+                  <Grid.Col span={{ base: 12, sm: 6 }}>
+                    <TextInput
+                      label="First Name"
+                      placeholder="Enter first name"
+                      leftSection={<IconUser size={16} />}
+                      {...register('firstName')}
+                      error={errors.firstName?.message}
+                      required
+                    />
+                  </Grid.Col>
+
+                  <Grid.Col span={{ base: 12, sm: 6 }}>
+                    <TextInput
+                      label="Last Name"
+                      placeholder="Enter last name"
+                      leftSection={<IconUser size={16} />}
+                      {...register('lastName')}
+                      error={errors.lastName?.message}
+                      required
+                    />
+                  </Grid.Col>
+
+                  <Grid.Col span={{ base: 12, sm: 6 }}>
+                    <TextInput
+                      label="Email Address"
+                      placeholder="Enter email address"
+                      type="email"
+                      leftSection={<IconMail size={16} />}
+                      {...register('email')}
+                      error={errors.email?.message}
+                      required
+                    />
+                  </Grid.Col>
+
+                  <Grid.Col span={{ base: 12, sm: 6 }}>
+                    <TextInput
+                      label="Phone Number"
+                      placeholder="Enter phone number"
+                      type="tel"
+                      leftSection={<IconPhone size={16} />}
+                      {...register('mobileNumber')}
+                      error={errors.mobileNumber?.message}
+                      required
+                    />
+                  </Grid.Col>
+
+                  <Grid.Col span={{ base: 12, sm: 6 }}>
+                    <Controller
+                      name="userRole"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          label="User Role"
+                          placeholder="Select user role"
+                          leftSection={<IconUserCheck size={16} />}
+                          data={USER_ROLES}
+                          {...field}
+                          error={errors.userRole?.message}
+                          required
+                          searchable
+                          clearable
+                        />
+                      )}
+                    />
+                  </Grid.Col>
+                </Grid>
+
+                {/* Action Buttons */}
+                <Group justify="flex-end" gap="md" mt="xl">
+                  <Button
+                    variant="subtle"
+                    color="gray"
+                    leftSection={<IconArrowLeft size={16} />}
+                    onClick={handleCancel}
+                  >
+                    Cancel
+                  </Button>
+
+                  {isDirty && (
+                    <Button
+                      variant="light"
+                      color="orange"
+                      onClick={handleReset}
+                    >
+                      Reset Form
+                    </Button>
+                  )}
+
+                  <Button
+                    type="submit"
+                    loading={isSubmitting}
+                    disabled={!isValid || isSubmitting}
+                    leftSection={
+                      !isSubmitting && <IconCircleDashedCheck size={16} />
                     }
-                  />
-                )
-              }
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Creating...' : 'Create Employee'}
-            </Button>
-          </div>
-        </form>
-      </BgDiv>
-    </div>
+                    loaderProps={{
+                      size: 'sm',
+                      color: currentThemeConfig.button.textColor
+                    }}
+                    style={{
+                      backgroundColor: currentThemeConfig.button.color,
+                      color: currentThemeConfig.button.textColor
+                    }}
+                  >
+                    {isSubmitting ? 'Creating Employee...' : 'Create Employee'}
+                  </Button>
+                </Group>
+              </Stack>
+            </form>
+          </Stack>
+        </Card>
+      </ThemeBackground>
+    </Container>
   );
 };
 

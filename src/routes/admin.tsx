@@ -87,6 +87,26 @@ const AdminRoutes = () => {
             }
           })
         },
+        Tabs: {
+          styles: () => ({
+            root: {
+              transition: 'all 0.3s ease-in-out'
+            },
+            list: {
+              borderColor: currentThemeConfig.headerBackgroundColor,
+              borderRadius: '8px',
+              padding: '4px'
+            },
+            tab: {
+              color: currentThemeConfig.button.color,
+              fontWeight: 500
+            }
+          }),
+          defaultProps: {
+            variant: 'default',
+            radius: 'md'
+          }
+        },
         Text: {
           styles: () => ({
             root: {
