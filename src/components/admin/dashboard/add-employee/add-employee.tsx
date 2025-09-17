@@ -48,9 +48,9 @@ import { ThemeBackground } from '../../../UI/Theme-background/background';
 // Constants
 const USER_ROLES = [
   { label: 'Employee', value: 'employee' },
-  { label: 'Recruiter', value: 'recruiter' },
-  { label: 'Manager', value: 'manager' },
-  { label: 'Admin', value: 'admin' }
+  { label: 'Recruiter', value: 'recruiter' }
+  // { label: 'Manager', value: 'manager' },
+  // { label: 'Admin', value: 'admin' }
 ];
 
 const AddEmployee = () => {
@@ -143,13 +143,6 @@ const AddEmployee = () => {
   };
 
   const handleCancel = () => {
-    if (isDirty) {
-      const confirmLeave = window.confirm(
-        'You have unsaved changes. Are you sure you want to leave?'
-      );
-      if (!confirmLeave) return;
-    }
-
     navigate(
       `${organizationAdminUrls(organizationConfig.organization_name)}/dashboard`
     );
@@ -307,7 +300,6 @@ const AddEmployee = () => {
                 <Group justify="flex-end" gap="md" mt="xl">
                   <Button
                     variant="subtle"
-                    color="gray"
                     leftSection={<IconArrowLeft size={16} />}
                     onClick={handleCancel}
                   >
