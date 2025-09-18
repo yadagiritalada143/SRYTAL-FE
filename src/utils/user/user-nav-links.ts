@@ -1,4 +1,5 @@
 import {
+  IconBook,
   IconBuildings,
   IconCalendarTime,
   IconCheckbox,
@@ -100,5 +101,11 @@ export const NavLinks = [
     url: 'employee/dashboard/mentees',
     icon: IconUsersGroup,
     name: 'Mentees'
+  },
+  {
+    role: 'employee',
+    url: 'employee/dashboard/contentwriter',
+    icon: IconBook,
+    name: 'Content Writer'
   }
 ].sort((a, b) => a.name.length - b.name.length);
