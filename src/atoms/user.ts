@@ -1,16 +1,12 @@
-import { atom } from "recoil";
+import { atom } from 'recoil';
+import { UserDetails } from '../interfaces/user';
 
-export const userDetailsAtom = atom<{
-  firstName: string;
-  lastName: string;
-  userRole: string;
-  passwordResetRequired: string;
-}>({
-  key: "userDetails",
+export const userDetailsAtom = atom<UserDetails>({
+  key: 'userDetails',
   default: {
-    firstName: "",
-    lastName: "",
-    userRole: "",
-    passwordResetRequired: "false",
-  },
+    firstName: '',
+    lastName: '',
+    userRole: '',
+    passwordResetRequired: 'false'
+  }
 });
