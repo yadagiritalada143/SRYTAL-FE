@@ -5,6 +5,7 @@ import { DateValue } from '@mantine/dates';
 import axios from 'axios';
 import moment from 'moment';
 import { toast } from 'react-toastify';
+import { UserDetails } from '../interfaces/user';
 
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -109,9 +110,7 @@ apiClient.interceptors.response.use(
   }
 );
 
-export const login = async (
-  Credentials: LoginForm
-): Promise<{ userRole: string }> => {
+export const login = async (Credentials: LoginForm): Promise<UserDetails> => {
   try {
     const response = await apiClientComm.post('/admin/login', Credentials);
 
