@@ -1,19 +1,20 @@
-import { Button, Loader, PasswordInput, TextInput, Modal } from "@mantine/core";
-import { useForm } from "react-hook-form";
-import { LoginForm, loginSchema } from "../../../forms/login";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { login } from "../../../services/common-services";
-import { toast } from "react-toastify";
-import axios from "axios";
-import { BgDiv } from "../../../components/common/style-components/bg-div";
-import { useCustomToast } from "../../../utils/common/toast";
-import { organizationThemeAtom } from "../../../atoms/organization-atom";
-import { useRecoilValue, useSetRecoilState } from "recoil";
-import { organizationEmployeeUrls } from "../../../utils/common/constants";
-import { userDetailsAtom } from "../../../atoms/user";
-import ForgotPassword from "../../../components/common/forgetPassword/forgetPassword";
+import { Button, Loader, PasswordInput, TextInput, Modal } from '@mantine/core';
+import { useForm } from 'react-hook-form';
+import { LoginForm, loginSchema } from '../../../forms/login';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { login } from '../../../services/common-services';
+import { toast } from 'react-toastify';
+import axios from 'axios';
+import { BgDiv } from '../../../components/common/style-components/bg-div';
+import { useCustomToast } from '../../../utils/common/toast';
+import { organizationThemeAtom } from '../../../atoms/organization-atom';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
+import { organizationEmployeeUrls } from '../../../utils/common/constants';
+import { userDetailsAtom } from '../../../atoms/user';
+import ForgotPassword from '../../../components/common/forgetPassword/forgetPassword';
+import { UserDetails } from '../../../interfaces/user';
 
 const EmployeeLogin = () => {
   const { showSuccessToast } = useCustomToast();
@@ -24,18 +25,18 @@ const EmployeeLogin = () => {
   const {
     register,
     formState: { errors, isSubmitting },
-    handleSubmit,
+    handleSubmit
   } = useForm<LoginForm>({ resolver: zodResolver(loginSchema) });
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const userRole = localStorage.getItem("userRole");
+    const token = localStorage.getItem('token');
+    const userRole = localStorage.getItem('userRole');
 
     if (token) {
-      if (userRole === "recruiter") {
+      if (userRole === 'recruiter') {
         navigate(`/${organization}/employee/dashboard/pool-companies`);
-      } else if (userRole === "employee") {
+      } else if (userRole === 'employee') {
         navigate(`/${organization}/employee/dashboard/profile`);
       }
     }
@@ -43,15 +44,15 @@ const EmployeeLogin = () => {
 
   const Submit = async (formData: LoginForm) => {
     try {
-      const data = await login(formData);
+      const data: UserDetails = await login(formData);
       setUser({
         firstName: data.firstName,
         lastName: data.lastName,
         userRole: data.userRole,
-        passwordResetRequired: data.passwordResetRequired,
+        passwordResetRequired: data.passwordResetRequired
       });
 
-      if (data.userRole === "recruiter") {
+      if (data.userRole === 'recruiter') {
         navigate(
           `${organizationEmployeeUrls(
             organizationConfig.organization_name
@@ -64,14 +65,14 @@ const EmployeeLogin = () => {
           )}/dashboard/profile`
         );
       }
-      showSuccessToast("Login successfully !");
+      showSuccessToast('Login successfully !');
     } catch (error) {
       if (axios.isAxiosError(error)) {
         toast.error(
-          "Login failed: " + (error.response?.data?.message || "Unknown error")
+          'Login failed: ' + (error.response?.data?.message || 'Unknown error')
         );
       } else {
-        toast.error("An unexpected error occurred.");
+        toast.error('An unexpected error occurred.');
       }
     }
   };
@@ -82,7 +83,7 @@ const EmployeeLogin = () => {
         className=" shadow-lg border rounded-lg p-6 max-w-md w-full"
         style={{
           backgroundColor:
-            organizationConfig.organization_theme.theme.backgroundColor,
+            organizationConfig.organization_theme.theme.backgroundColor
         }}
       >
         <div className="flex flex-col items-center">
@@ -97,17 +98,17 @@ const EmployeeLogin = () => {
         </div>
         <div className="mb-4">
           <TextInput
-            {...register("email")}
+            {...register('email')}
             label="Email"
             error={errors.email?.message}
-            onChange={(e) => {
-              e.target.value = e.target.value.replace(/\s/g, "");
+            onChange={e => {
+              e.target.value = e.target.value.replace(/\s/g, '');
             }}
           />
         </div>
         <div className="mb-4">
           <PasswordInput
-            {...register("password")}
+            {...register('password')}
             label="Password"
             error={errors.password?.message}
           />
@@ -127,7 +128,7 @@ const EmployeeLogin = () => {
               type="submit"
               data-testid="loginButton"
               className="w-1/2 md:w-auto"
-              style={{ minWidth: "200px" }}
+              style={{ minWidth: '200px' }}
               disabled={isSubmitting}
               leftSection={
                 isSubmitting && (
@@ -141,7 +142,7 @@ const EmployeeLogin = () => {
                 )
               }
             >
-              {isSubmitting ? "Logging in..." : "Login"}
+              {isSubmitting ? 'Logging in...' : 'Login'}
             </Button>
           </div>
         </div>
