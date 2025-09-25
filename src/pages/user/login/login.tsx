@@ -91,43 +91,44 @@ const EmployeeLogin = () => {
   };
   return (
     <ThemeBackground
-      className="flex h-screen w-full"
+      className="flex h-screen w-full transition-colors duration-500 ease-out"
       style={{
         background: `linear-gradient(135deg, ${backgroundColor} 0%, #f8f9fa 100%)`
       }}
     >
       {/* Left section */}
       <div
-        className="hidden md:flex w-1/2 flex-col items-center justify-center p-8"
+        className="hidden md:flex w-1/2 flex-col items-center justify-center p-8 transition-all duration-500 ease-out"
         style={{
           backgroundColor: backgroundColor,
           color: color,
-          borderRadius: '0 100px 100px 0'
+          borderRadius: '0 100px 100px 0',
+          boxShadow: '4px 0 12px rgba(0, 0, 0, 0.15)'
         }}
       >
         {/* Logo at center */}
         <img
           src={organizationConfig.organization_theme.logo}
           alt={organizationConfig.organization_name}
-          className="max-h-28 object-contain transition-transform duration-300 hover:scale-105 mb-6"
+          className="max-h-28 object-contain transition-transform duration-300 ease-out hover:scale-105 mb-6"
         />
 
         {/* Welcome text */}
-        <div className="text-center">
+        <div className="text-center transition-colors duration-500 ease-out">
           <h2 className="text-5xl font-bold mb-5">Welcome Back !</h2>
           <div className="flex items-center justify-center gap-2 mb-2">
             <div
-              className="w-8 h-0.5"
+              className="w-8 h-0.5 transition-colors duration-500 ease-out"
               style={{ backgroundColor: currentThemeConfig.button.color }}
             />
             <span
-              className="text-sm font-medium uppercase tracking-wider"
+              className="text-sm font-medium uppercase tracking-wider transition-colors duration-500 ease-out"
               style={{ color: currentThemeConfig.button.color }}
             >
               Employee Portal
             </span>
             <div
-              className="w-8 h-0.5"
+              className="w-8 h-0.5 transition-colors duration-500 ease-out"
               style={{ backgroundColor: currentThemeConfig.button.color }}
             />
           </div>
@@ -138,9 +139,12 @@ const EmployeeLogin = () => {
       <div className="flex w-full md:w-1/2 justify-center items-center px-6">
         <ThemeForm
           onSubmit={handleSubmit(Submit)}
-          className="shadow-lg border rounded-2xl p-8 max-w-md w-full"
+          className="shadow-lg border rounded-2xl p-8 max-w-md w-full transition-all duration-500 ease-out"
         >
-          <h1 className="text-3xl font-bold text-center mb-6" style={{ color }}>
+          <h1
+            className="text-3xl font-bold text-center mb-6 transition-colors duration-500 ease-out"
+            style={{ color }}
+          >
             Employee Login
           </h1>
 
