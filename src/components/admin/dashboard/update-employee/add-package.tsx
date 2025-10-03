@@ -358,8 +358,8 @@ const PackagesFormComponent = ({
               </Text>
             </Stack>
 
-            {progressStats.packages > 0 && (
-              <Box>
+            <Box>
+              {progressStats.packages > 0 && (
                 <Group gap="xs" justify="flex-end">
                   <Badge
                     variant="light"
@@ -373,18 +373,18 @@ const PackagesFormComponent = ({
                     {progressStats.totalTasks} Tasks
                   </Badge>
                 </Group>
-                <Group mt="md" gap="xs" justify="center">
-                  <ActionIcon
-                    variant="subtle"
-                    color={currentThemeConfig.button.color}
-                    size="lg"
-                    onClick={handleBack}
-                  >
-                    <IconArrowLeft size={20} />
-                  </ActionIcon>
-                </Group>
-              </Box>
-            )}
+              )}
+              <Group mt="md" gap="xs" justify="center">
+                <ActionIcon
+                  variant="subtle"
+                  color={currentThemeConfig.button.color}
+                  size="lg"
+                  onClick={handleBack}
+                >
+                  <IconArrowLeft size={20} />
+                </ActionIcon>
+              </Group>
+            </Box>
           </Group>
 
           {/* Progress Indicator */}
