@@ -19,7 +19,8 @@ import {
   Alert,
   Badge,
   Divider,
-  Box
+  Box,
+  ActionIcon
 } from '@mantine/core';
 import {
   IconPackage,
@@ -33,7 +34,8 @@ import {
   IconX,
   IconArrowRight,
   IconPackages,
-  IconSubtask
+  IconSubtask,
+  IconArrowLeft
 } from '@tabler/icons-react';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { employeeDetailsAtom } from '../../../../atoms/employee-atom';
@@ -63,6 +65,7 @@ import {
 import { PackagesList, Task } from '../../../../interfaces/package';
 import { StandardModal } from '../../../UI/Models/base-model';
 import { ThemeBackground } from '../../../UI/Theme-background/background';
+import { useNavigate } from 'react-router-dom';
 
 const PackagesFormComponent = ({
   organizationConfig,
@@ -80,6 +83,7 @@ const PackagesFormComponent = ({
   const [selectedPackagesData, setSelectedPackagesData] =
     useState<FormattedPackageData>();
   const [selectedTasks, setSelectedTasks] = useState<SelectedTasks>({});
+  const navigate = useNavigate();
 
   // Get current theme configuration
   const currentThemeConfig = useMemo(() => {
@@ -323,6 +327,16 @@ const PackagesFormComponent = ({
     }
   };
 
+  const handleBack = () => {
+    if (isDirty) {
+      const confirmLeave = window.confirm(
+        'You have unsaved changes. Are you sure you want to leave?'
+      );
+      if (!confirmLeave) return;
+    }
+    navigate(-1);
+  };
+
   return (
     <Container size="lg" py="xl">
       <ThemeBackground>
@@ -358,6 +372,16 @@ const PackagesFormComponent = ({
                     {progressStats.selectedTasksCount}/
                     {progressStats.totalTasks} Tasks
                   </Badge>
+                </Group>
+                <Group mt="md" gap="xs" justify="center">
+                  <ActionIcon
+                    variant="subtle"
+                    color={currentThemeConfig.button.color}
+                    size="lg"
+                    onClick={handleBack}
+                  >
+                    <IconArrowLeft size={20} />
+                  </ActionIcon>
                 </Group>
               </Box>
             )}
