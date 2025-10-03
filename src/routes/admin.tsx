@@ -222,6 +222,60 @@ const AdminRoutes = () => {
             }
           })
         },
+        DatePickerInput: {
+          styles: () => ({
+            input: {
+              backgroundColor: currentThemeConfig.headerBackgroundColor,
+              color: currentThemeConfig.color,
+              borderColor: currentThemeConfig.borderColor,
+              transition:
+                'background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out',
+              '&:focus': {
+                borderColor: currentThemeConfig.button.color
+              }
+            },
+            label: {
+              color: currentThemeConfig.color,
+              transition: 'color 0.3s ease-in-out'
+            }
+          })
+        },
+        Textarea: {
+          styles: () => ({
+            input: {
+              backgroundColor: currentThemeConfig.headerBackgroundColor,
+              color: currentThemeConfig.color,
+              borderColor: currentThemeConfig.borderColor,
+              transition:
+                'background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out',
+              '&:focus': {
+                borderColor: currentThemeConfig.button.color
+              }
+            },
+            label: {
+              color: currentThemeConfig.color,
+              transition: 'color 0.3s ease-in-out'
+            }
+          })
+        },
+        MultiSelect: {
+          styles: () => ({
+            input: {
+              backgroundColor: currentThemeConfig.headerBackgroundColor,
+              color: currentThemeConfig.color,
+              borderColor: currentThemeConfig.borderColor,
+              transition:
+                'background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out',
+              '&:focus': {
+                borderColor: currentThemeConfig.button.color
+              }
+            },
+            label: {
+              color: currentThemeConfig.color,
+              transition: 'color 0.3s ease-in-out'
+            }
+          })
+        },
         PasswordInput: {
           styles: () => ({
             input: {
