@@ -153,6 +153,7 @@ const EmployeeLogin = () => {
             <TextInput
               {...register('email')}
               label="Email"
+              autoComplete="off"
               placeholder="Enter your email"
               error={errors.email?.message}
               classNames={{
