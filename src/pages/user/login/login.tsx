@@ -2,12 +2,11 @@ import { Button, Loader, PasswordInput, TextInput, Modal } from '@mantine/core';
 import { useForm } from 'react-hook-form';
 import { LoginForm, loginSchema } from '../../../forms/login';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { login } from '../../../services/common-services';
 import { toast } from 'react-toastify';
 import axios from 'axios';
-import { BgDiv } from '../../../components/common/style-components/bg-div';
 import { useCustomToast } from '../../../utils/common/toast';
 import { organizationThemeAtom } from '../../../atoms/organization-atom';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
@@ -15,6 +14,10 @@ import { organizationEmployeeUrls } from '../../../utils/common/constants';
 import { userDetailsAtom } from '../../../atoms/user';
 import ForgotPassword from '../../../components/common/forgetPassword/forgetPassword';
 import { UserDetails } from '../../../interfaces/user';
+import { IconLockPassword, IconLogin2, IconMail } from '@tabler/icons-react';
+import { themeAtom } from '../../../atoms/theme';
+import { ThemeBackground } from '../../../components/UI/Theme-background/background';
+import { ThemeForm } from '../../../components/UI/Form/form';
 
 const EmployeeLogin = () => {
   const { showSuccessToast } = useCustomToast();
@@ -22,12 +25,22 @@ const EmployeeLogin = () => {
   const organizationConfig = useRecoilValue(organizationThemeAtom);
   const setUser = useSetRecoilState(userDetailsAtom);
   const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
+  const isDarkTheme = useRecoilValue(themeAtom);
   const {
     register,
     formState: { errors, isSubmitting },
     handleSubmit
   } = useForm<LoginForm>({ resolver: zodResolver(loginSchema) });
   const navigate = useNavigate();
+
+  // Get the current theme configuration for form styling
+  const currentThemeConfig = useMemo(() => {
+    const orgTheme = organizationConfig.organization_theme;
+
+    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+  }, [organizationConfig, isDarkTheme]);
+
+  const { backgroundColor, button, color, linkColor } = currentThemeConfig;
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -77,76 +90,142 @@ const EmployeeLogin = () => {
     }
   };
   return (
-    <BgDiv className="flex justify-center items-center h-screen px-4">
-      <form
-        onSubmit={handleSubmit(Submit)}
-        className=" shadow-lg border rounded-lg p-6 max-w-md w-full"
+    <ThemeBackground
+      className="flex h-screen w-full transition-colors duration-500 ease-out"
+      style={{
+        background: `linear-gradient(135deg, ${backgroundColor} 0%, #f8f9fa 100%)`
+      }}
+    >
+      {/* Left section */}
+      <div
+        className="hidden md:flex w-1/2 flex-col items-center justify-center p-8 transition-all duration-500 ease-out"
         style={{
-          backgroundColor:
-            organizationConfig.organization_theme.theme.backgroundColor
+          backgroundColor: backgroundColor,
+          color: color,
+          borderRadius: '0 100px 100px 0',
+          boxShadow: '4px 0 12px rgba(0, 0, 0, 0.15)'
         }}
       >
-        <div className="flex flex-col items-center">
-          <h1 className="text-3xl font-bold text-center mb-4">
-            EMPLOYEE LOGIN
+        {/* Logo at center */}
+        <img
+          src={organizationConfig.organization_theme.logo}
+          alt={organizationConfig.organization_name}
+          className="max-h-28 object-contain transition-transform duration-300 ease-out hover:scale-105 mb-6"
+        />
+
+        {/* Welcome text */}
+        <div className="text-center transition-colors duration-500 ease-out">
+          <h2 className="text-5xl font-bold mb-5">Welcome Back !</h2>
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <div
+              className="w-8 h-0.5 transition-colors duration-500 ease-out"
+              style={{ backgroundColor: currentThemeConfig.button.color }}
+            />
+            <span
+              className="text-sm font-medium uppercase tracking-wider transition-colors duration-500 ease-out"
+              style={{ color: currentThemeConfig.button.color }}
+            >
+              Employee Portal
+            </span>
+            <div
+              className="w-8 h-0.5 transition-colors duration-500 ease-out"
+              style={{ backgroundColor: currentThemeConfig.button.color }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Right section */}
+      <div className="flex w-full md:w-1/2 justify-center items-center px-6">
+        <ThemeForm
+          onSubmit={handleSubmit(Submit)}
+          className="shadow-lg border rounded-2xl p-8 max-w-md w-full transition-all duration-500 ease-out"
+        >
+          <h1
+            className="text-3xl font-bold text-center mb-6 transition-colors duration-500 ease-out"
+            style={{ color }}
+          >
+            Employee Login
           </h1>
-          <img
-            src={organizationConfig.organization_theme.logo}
-            className="mb-4 p-4 max-h-40 object-contain"
-            alt={organizationConfig.organization_name}
-          />
-        </div>
-        <div className="mb-4">
-          <TextInput
-            {...register('email')}
-            label="Email"
-            error={errors.email?.message}
-            onChange={e => {
-              e.target.value = e.target.value.replace(/\s/g, '');
-            }}
-          />
-        </div>
-        <div className="mb-4">
-          <PasswordInput
-            {...register('password')}
-            label="Password"
-            error={errors.password?.message}
-          />
-        </div>
-        <div className="flex flex-wrap justify-between items-center gap-4 mt-8">
-          <div className="w-full md:w-auto flex justify-center md:justify-start order-2 md:order-1">
+
+          {/* Email input */}
+          <div className="mb-4">
+            <TextInput
+              {...register('email')}
+              label="Email"
+              autoComplete="off"
+              placeholder="Enter your email"
+              error={errors.email?.message}
+              classNames={{
+                input: 'rounded-xl shadow-sm focus:border-blue-500',
+                label: 'font-medium mb-1'
+              }}
+              leftSection={<IconMail size={18} />}
+            />
+          </div>
+
+          {/* Password input */}
+          <div className="mb-4">
+            <PasswordInput
+              {...register('password')}
+              label="Password"
+              placeholder="Password"
+              error={errors.password?.message}
+              leftSection={
+                <span>
+                  <IconLockPassword />
+                </span>
+              }
+            />
+          </div>
+
+          {/* Forgot password */}
+          <div className="flex justify-end items-center mt-4 mb-6">
             <button
               type="button"
               onClick={() => setForgotPasswordOpen(true)}
-              className="text-sm underline"
+              className="text-sm hover:underline transition-colors"
+              style={{ color: linkColor }}
             >
-              Forgot Password
+              Forgot Password?
             </button>
           </div>
-          <div className="w-full md:w-auto flex justify-center order-1 md:order-2">
-            <Button
-              type="submit"
-              data-testid="loginButton"
-              className="w-1/2 md:w-auto"
-              style={{ minWidth: '200px' }}
-              disabled={isSubmitting}
-              leftSection={
-                isSubmitting && (
-                  <Loader
-                    size="xs"
-                    color={
-                      organizationConfig.organization_theme.theme.button
-                        .textColor
-                    }
-                  />
-                )
+
+          {/* Login button */}
+          <Button
+            type="submit"
+            data-testid="loginButton"
+            className="w-full rounded-full font-semibold transition-all duration-200"
+            disabled={isSubmitting}
+            style={{
+              color: button.textColor
+            }}
+            styles={{
+              root: {
+                '&:hover': {
+                  opacity: 0.9,
+                  transform: 'scale(1.01)'
+                },
+                '&:disabled': {
+                  opacity: 0.6,
+                  cursor: 'not-allowed'
+                }
               }
-            >
-              {isSubmitting ? 'Logging in...' : 'Login'}
-            </Button>
-          </div>
-        </div>
-      </form>
+            }}
+            leftSection={
+              isSubmitting ? (
+                <Loader size="xs" color={button.textColor} />
+              ) : (
+                <IconLogin2 size={18} />
+              )
+            }
+          >
+            {isSubmitting ? 'Logging in...' : 'Log in'}
+          </Button>
+        </ThemeForm>
+      </div>
+
+      {/* Forgot password modal */}
       <Modal
         opened={forgotPasswordOpen}
         onClose={() => setForgotPasswordOpen(false)}
@@ -156,7 +235,7 @@ const EmployeeLogin = () => {
       >
         <ForgotPassword closeModal={() => setForgotPasswordOpen(false)} />
       </Modal>
-    </BgDiv>
+    </ThemeBackground>
   );
 };
 
