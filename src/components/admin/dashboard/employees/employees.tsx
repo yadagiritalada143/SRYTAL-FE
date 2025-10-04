@@ -26,7 +26,13 @@ import {
   IconSortDescending,
   IconFilter
 } from '@tabler/icons-react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAllEmployeeDetailsByAdmin } from '../../../../services/admin-services';
 import { toast } from 'react-toastify';
@@ -40,6 +46,7 @@ import useHorizontalScroll from '../../../../hooks/horizontal-scroll';
 import { debounce } from '../../../../utils/common/debounce';
 import { EmployeeInterface } from '../../../../interfaces/employee';
 import { themeAtom } from '../../../../atoms/theme';
+import { useMediaQuery } from '@mantine/hooks';
 
 // Constants
 const ITEMS_PER_PAGE_OPTIONS = ['5', '10', '20', '50'];
@@ -239,6 +246,34 @@ const TableHeader: React.FC<{
   );
 };
 
+const HeadingComponent: React.FC<{
+  filteredEmployees: number;
+  handleAddEmployee: () => void;
+}> = ({ filteredEmployees = 0, handleAddEmployee }) => {
+  const isMobile = useMediaQuery('(max-width: 500px)');
+  return (
+    <Card shadow="sm" p="lg" radius="md" withBorder>
+      <Flex
+        direction={isMobile ? 'column' : 'row'}
+        justify="space-between"
+        align="center"
+        gap="md"
+      >
+        <Text size="xl" fw={700}>
+          Employee Management ({filteredEmployees} employees)
+        </Text>
+        <Button
+          leftSection={<IconPlus size={16} />}
+          onClick={handleAddEmployee}
+          variant="filled"
+        >
+          Add Employee
+        </Button>
+      </Flex>
+    </Card>
+  );
+};
+
 const Employees = () => {
   const [employees, setEmployees] = useRecoilState(organizationEmployeeAtom);
   const [activePage, setActivePage] = useState(1);
@@ -372,6 +407,7 @@ const Employees = () => {
   // Navigation handlers
   const handleEmployeeEdit = useCallback(
     (employeeId: string) => {
+      localStorage.setItem('id', employeeId);
       navigate(
         `${organizationAdminUrls(organizationConfig.organization_name)}/dashboard/update/${employeeId}`
       );
@@ -381,6 +417,7 @@ const Employees = () => {
 
   const handlePackageUpdate = useCallback(
     (employeeId: string) => {
+      localStorage.setItem('id', employeeId);
       navigate(
         `${organizationAdminUrls(organizationConfig.organization_name)}/dashboard/package/${employeeId}`
       );
@@ -390,6 +427,7 @@ const Employees = () => {
 
   const handleTimesheet = useCallback(
     (employeeId: string) => {
+      localStorage.setItem('id', employeeId);
       navigate(
         `${organizationAdminUrls(organizationConfig.organization_name)}/dashboard/timesheet/${employeeId}`
       );
@@ -422,21 +460,10 @@ const Employees = () => {
     <Container size="xl" py="md" my="xl">
       <Stack gap="md">
         {/* Header */}
-        <Card shadow="sm" p="lg" radius="md" withBorder>
-          <Flex justify="space-between" align="center" wrap="wrap" gap="md">
-            <Text size="xl" fw={700}>
-              Employee Management ({filteredEmployees.length} employees)
-            </Text>
-            <Button
-              leftSection={<IconPlus size={16} />}
-              onClick={handleAddEmployee}
-              variant="filled"
-            >
-              Add Employee
-            </Button>
-          </Flex>
-        </Card>
-
+        <HeadingComponent
+          filteredEmployees={filteredEmployees.length}
+          handleAddEmployee={handleAddEmployee}
+        />
         {/* Filters */}
         <Card shadow="sm" p="md" radius="md" withBorder>
           <Stack gap="md">
