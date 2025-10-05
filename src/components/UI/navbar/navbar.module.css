@@ -123,6 +123,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-top: 5%;
 }
 
 /* Logo in navbar header */

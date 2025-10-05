@@ -436,7 +436,6 @@ const PackagesFormComponent = ({
             shadow="lg"
             radius="md"
             withBorder
-            p="xl"
             style={{
               backgroundColor: currentThemeConfig.backgroundColor,
               borderColor: currentThemeConfig.borderColor
@@ -489,7 +488,6 @@ const PackagesFormComponent = ({
             shadow="lg"
             radius="md"
             withBorder
-            p="xl"
             style={{
               backgroundColor: currentThemeConfig.backgroundColor,
               borderColor: currentThemeConfig.borderColor
@@ -736,7 +734,6 @@ const PackagesFormComponent = ({
               shadow="lg"
               radius="md"
               withBorder
-              p="xl"
               style={{
                 backgroundColor: currentThemeConfig.backgroundColor,
                 borderColor: currentThemeConfig.borderColor
