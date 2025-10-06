@@ -80,6 +80,42 @@ const EmployeeRoutes = () => {
         fontFamily: currentThemeConfig.fontFamily
       },
       components: {
+        Title: {
+          styles: () => ({
+            root: {
+              color: currentThemeConfig.color,
+              transition: 'color 0.3s ease-in-out'
+            }
+          })
+        },
+        Tabs: {
+          styles: () => ({
+            root: {
+              transition: 'all 0.3s ease-in-out'
+            },
+            list: {
+              borderColor: currentThemeConfig.headerBackgroundColor,
+              borderRadius: '8px',
+              padding: '4px'
+            },
+            tab: {
+              color: currentThemeConfig.button.color,
+              fontWeight: 500
+            }
+          }),
+          defaultProps: {
+            variant: 'default',
+            radius: 'md'
+          }
+        },
+        Text: {
+          styles: () => ({
+            root: {
+              color: currentThemeConfig.color,
+              transition: 'color 0.3s ease-in-out'
+            }
+          })
+        },
         Avatar: {
           styles: () => ({
             root: {

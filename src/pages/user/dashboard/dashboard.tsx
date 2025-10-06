@@ -3,12 +3,12 @@ import { Outlet } from 'react-router-dom';
 import { IconMenu2, IconX } from '@tabler/icons-react';
 import UserNavbar from '../../../components/UI/navbar/navbar';
 import { NavLinks } from '../../../utils/user/user-nav-links';
-import { BgDiv } from '../../../components/common/style-components/bg-div';
 import { organizationThemeAtom } from '../../../atoms/organization-atom';
 import { useRecoilValue } from 'recoil';
 import { useDisclosure } from '@mantine/hooks';
 import { ChangePasswordPopup } from '../../../components/UI/Models/updatePassword';
 import { userDetailsAtom } from '../../../atoms/user';
+import { ThemeBackground } from '../../../components/UI/Theme-background/background';
 const UserDashboard = () => {
   const [isDrawerOpen, setDrawerOpen] = useState(false);
   const organizationConfig = useRecoilValue(organizationThemeAtom);
@@ -25,7 +25,7 @@ const UserDashboard = () => {
     }
   }, [user, open]);
   return (
-    <BgDiv className="flex min-h-screen relative">
+    <ThemeBackground className="flex min-h-screen relative">
       <div className="lg:hidden fixed top-4 left-4 z-50">
         <button
           onClick={toggleDrawer}
@@ -33,7 +33,7 @@ const UserDashboard = () => {
           style={{
             backgroundColor:
               organizationConfig.organization_theme.theme.button.color,
-            color: organizationConfig.organization_theme.theme.button.textColor,
+            color: organizationConfig.organization_theme.theme.button.textColor
           }}
         >
           <IconMenu2 size={24} />
@@ -49,7 +49,7 @@ const UserDashboard = () => {
               backgroundColor:
                 organizationConfig.organization_theme.theme.button.color,
               color:
-                organizationConfig.organization_theme.theme.button.textColor,
+                organizationConfig.organization_theme.theme.button.textColor
             }}
           >
             <IconX size={24} />
@@ -72,7 +72,7 @@ const UserDashboard = () => {
         </div>
       </div>
       <ChangePasswordPopup opened={opened} close={close} forceUpdate={true} />
-    </BgDiv>
+    </ThemeBackground>
   );
 };
 
