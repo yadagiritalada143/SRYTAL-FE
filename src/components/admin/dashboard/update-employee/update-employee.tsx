@@ -14,7 +14,6 @@ import {
   Grid,
   Divider,
   Alert,
-  ActionIcon,
   Tabs,
   Progress,
   Modal,
@@ -63,12 +62,12 @@ import {
   IconKey,
   IconTrash,
   IconDeviceFloppy,
-  IconArrowLeft,
   IconAlertTriangle,
   IconBriefcase,
   IconDroplet
 } from '@tabler/icons-react';
 import { themeAtom } from '../../../../atoms/theme';
+import { BackButton } from '../../../common/style-components/buttons';
 
 const UpdateEmployee = () => {
   const navigate = useNavigate();
@@ -293,9 +292,6 @@ const UpdateEmployee = () => {
         <Card shadow="sm" p="lg" radius="md" withBorder>
           <Group justify="space-between" align="center">
             <Group gap="md">
-              <ActionIcon variant="subtle" size="lg" onClick={handleBack}>
-                <IconArrowLeft size={20} />
-              </ActionIcon>
               <div>
                 <Text size="xl" fw={700} c={currentThemeConfig.color}>
                   Update Employee Profile
@@ -305,6 +301,7 @@ const UpdateEmployee = () => {
                 </Text>
               </div>
             </Group>
+            <BackButton id={employeeId} />
           </Group>
         </Card>
 

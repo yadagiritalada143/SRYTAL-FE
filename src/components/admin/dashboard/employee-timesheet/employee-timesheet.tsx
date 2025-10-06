@@ -17,22 +17,35 @@ import {
   Center,
   Loader,
   TextInput,
-  Pagination
+  Pagination,
+  Collapse,
+  Paper,
+  Divider,
+  Box,
+  rem,
+  SimpleGrid
 } from '@mantine/core';
 import { DatePickerInput, DatesRangeValue } from '@mantine/dates';
-import { useDebouncedValue, useDisclosure } from '@mantine/hooks';
+import {
+  useDebouncedValue,
+  useDisclosure,
+  useMediaQuery
+} from '@mantine/hooks';
 import {
   IconSearch,
   IconX,
   IconCircleCheck,
   IconCircleX,
-  IconId,
   IconUser,
   IconMail,
   IconSortAscending,
   IconSortDescending,
   IconCalendar,
-  IconFilter
+  IconFilter,
+  IconChevronDown,
+  IconChevronUp,
+  IconPhone,
+  IconBriefcase
 } from '@tabler/icons-react';
 import moment from 'moment';
 import { useParams } from 'react-router-dom';
@@ -56,10 +69,12 @@ import { BackButton } from '../../../common/style-components/buttons';
 import { themeAtom } from '../../../../atoms/theme';
 import { toast } from 'react-toastify';
 import { useCustomToast } from '../../../../utils/common/toast';
+import { getEmployeeInfoItems } from '../update-employee/helper-functions/add-package';
 
 // Constants
 const ITEMS_PER_PAGE_OPTIONS = ['10', '20', '50', '100'];
 const DEFAULT_ITEMS_PER_PAGE = 20;
+const MOBILE_ITEMS_PER_PAGE = 10;
 
 // Custom hook for timesheet filtering and sorting
 const useTimesheetFilters = (timesheets: EmployeeTimesheet[]) => {
@@ -77,12 +92,10 @@ const useTimesheetFilters = (timesheets: EmployeeTimesheet[]) => {
   const filteredAndSortedTimesheets = useMemo(() => {
     let result = [...timesheets];
 
-    // Apply status filter
     if (selectedStatus) {
       result = result.filter(ts => ts.status === selectedStatus);
     }
 
-    // Apply date range filter
     if (dateRange[0] && dateRange[1]) {
       result = result.filter(ts => {
         const date = moment(ts.date);
@@ -92,7 +105,6 @@ const useTimesheetFilters = (timesheets: EmployeeTimesheet[]) => {
       });
     }
 
-    // Apply search filter
     if (debouncedSearchQuery.trim()) {
       const query = debouncedSearchQuery.toLowerCase();
       result = result.filter(
@@ -103,7 +115,6 @@ const useTimesheetFilters = (timesheets: EmployeeTimesheet[]) => {
       );
     }
 
-    // Apply sorting
     result.sort((a, b) => {
       const dateA = new Date(a.date).getTime();
       const dateB = new Date(b.date).getTime();
@@ -144,12 +155,143 @@ const useTimesheetFilters = (timesheets: EmployeeTimesheet[]) => {
 const StatusBadge: React.FC<{ status: TimesheetStatus }> = ({ status }) => {
   switch (status) {
     case TimesheetStatus.Approved:
-      return <Badge color="green">Approved</Badge>;
+      return (
+        <Badge color="green" size="sm">
+          Approved
+        </Badge>
+      );
     case TimesheetStatus.Rejected:
-      return <Badge color="red">Rejected</Badge>;
+      return (
+        <Badge color="red" size="sm">
+          Rejected
+        </Badge>
+      );
     default:
-      return <Badge color="yellow">Pending</Badge>;
+      return (
+        <Badge color="yellow" size="sm">
+          Pending
+        </Badge>
+      );
   }
+};
+
+// Mobile Timesheet Card Component
+const MobileTimesheetCard: React.FC<{
+  timesheet: EmployeeTimesheet;
+  index: number;
+  isSelected: boolean;
+  onToggleSelect: (id: string) => void;
+  onApprove: (id: string) => void;
+  onReject: (id: string) => void;
+}> = ({
+  timesheet,
+  index,
+  isSelected,
+  onToggleSelect,
+  onApprove,
+  onReject
+}) => {
+  const [expanded, setExpanded] = useState(false);
+  const isPending = timesheet.status === TimesheetStatus.WaitingForApproval;
+
+  return (
+    <Paper
+      onClick={() => setExpanded(!expanded)}
+      shadow="xs"
+      p="sm"
+      radius="md"
+      withBorder
+    >
+      <Stack gap="xs">
+        <Flex justify="space-between" align="center">
+          <Group gap="xs">
+            <Checkbox
+              checked={isSelected}
+              onChange={() => onToggleSelect(timesheet.id)}
+            />
+            <Text size="sm" fw={600}>
+              #{index}
+            </Text>
+          </Group>
+        </Flex>
+
+        <Flex justify="space-between" align="center">
+          <Text size="sm" c="dimmed">
+            {moment(timesheet.date).format('MMM D, YYYY')}
+          </Text>
+          <StatusBadge status={timesheet.status} />
+        </Flex>
+
+        <Box>
+          <Text size="xs" c="dimmed">
+            Project
+          </Text>
+          <Text size="sm" fw={500}>
+            {timesheet.project_name}
+          </Text>
+        </Box>
+
+        <Collapse in={expanded}>
+          <Stack gap="xs">
+            <Divider />
+
+            <Box>
+              <Text size="xs" c="dimmed">
+                Task
+              </Text>
+              <Text size="sm">{timesheet.task_name}</Text>
+            </Box>
+
+            <Flex justify="space-between" align="center">
+              <Box>
+                <Text size="xs" c="dimmed">
+                  Hours
+                </Text>
+                <Badge size="sm" variant="light">
+                  {timesheet.hours}h
+                </Badge>
+              </Box>
+            </Flex>
+
+            {timesheet.comments && (
+              <Box>
+                <Text size="xs" c="dimmed">
+                  Comments
+                </Text>
+                <Text size="sm">{timesheet.comments}</Text>
+              </Box>
+            )}
+
+            {isPending && (
+              <>
+                <Divider />
+                <Group grow>
+                  <Button
+                    size="xs"
+                    variant="light"
+                    color="green"
+                    onClick={() => onApprove(timesheet.id)}
+                    leftSection={<IconCircleCheck size={14} />}
+                  >
+                    Approve
+                  </Button>
+                  <Button
+                    size="xs"
+                    variant="light"
+                    color="red"
+                    onClick={() => onReject(timesheet.id)}
+                    leftSection={<IconCircleX size={14} />}
+                  >
+                    Reject
+                  </Button>
+                </Group>
+              </>
+            )}
+          </Stack>
+        </Collapse>
+      </Stack>
+    </Paper>
+  );
 };
 
 // Timesheet Actions Component
@@ -206,22 +348,22 @@ const TableHeader: React.FC<{
       }}
     >
       <Table.Tr>
-        <Table.Th className="p-3 border text-center">
+        <Table.Th style={{ padding: rem(12), textAlign: 'center' }}>
           <Checkbox
             checked={isAllSelected}
             onChange={e => onToggleAll(e.currentTarget.checked)}
           />
         </Table.Th>
-        <Table.Th className="p-3 border text-center">
+        <Table.Th style={{ padding: rem(12), textAlign: 'center' }}>
           <Text size="sm" fw={500}>
             S.No
           </Text>
         </Table.Th>
         <Table.Th
-          className="border cursor-pointer select-none hover:bg-opacity-80 transition-colors"
+          style={{ cursor: 'pointer', userSelect: 'none' }}
           onClick={onSort}
         >
-          <Group justify="center">
+          <Group justify="center" gap="xs">
             <Text size="sm" fw={500}>
               Date
             </Text>
@@ -232,27 +374,27 @@ const TableHeader: React.FC<{
             )}
           </Group>
         </Table.Th>
-        <Table.Th className="p-3 border text-center">
+        <Table.Th style={{ padding: rem(12), textAlign: 'center' }}>
           <Text size="sm" fw={500}>
             Project
           </Text>
         </Table.Th>
-        <Table.Th className="p-3 border text-center">
+        <Table.Th style={{ padding: rem(12), textAlign: 'center' }}>
           <Text size="sm" fw={500}>
             Task
           </Text>
         </Table.Th>
-        <Table.Th className="p-3 border text-center">
+        <Table.Th style={{ padding: rem(12), textAlign: 'center' }}>
           <Text size="sm" fw={500}>
             Hours
           </Text>
         </Table.Th>
-        <Table.Th className="p-3 border text-center">
+        <Table.Th style={{ padding: rem(12), textAlign: 'center' }}>
           <Text size="sm" fw={500}>
             Status
           </Text>
         </Table.Th>
-        <Table.Th className="p-3 border text-center">
+        <Table.Th style={{ padding: rem(12), textAlign: 'center' }}>
           <Text size="sm" fw={500}>
             Actions
           </Text>
@@ -263,12 +405,18 @@ const TableHeader: React.FC<{
 };
 
 export const EmployeeTimesheetAdminView = () => {
-  const { employeeId } = useParams<{ employeeId: string }>();
+  const params = useParams();
+  const employeeId = params.employeeId as string;
   const isDarkTheme = useRecoilValue(themeAtom);
   const organizationConfig = useRecoilValue(organizationThemeAtom);
   const { showSuccessToast } = useCustomToast();
   const [employeeDetails, setEmployeeDetails] =
     useRecoilState(employeeDetailsAtom);
+
+  // Responsive breakpoints
+  const isMobile = useMediaQuery('(max-width: 768px)');
+  const isTablet = useMediaQuery('(max-width: 1024px)');
+  const isSmallMobile = useMediaQuery('(max-width: 500px)');
 
   const [timesheets, setTimesheets] = useState<EmployeeTimesheet[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -279,8 +427,18 @@ export const EmployeeTimesheetAdminView = () => {
   );
   const [activePage, setActivePage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(DEFAULT_ITEMS_PER_PAGE);
+  const [filtersExpanded, setFiltersExpanded] = useState(!isMobile);
 
   const [opened, { open, close }] = useDisclosure(false);
+
+  // Adjust items per page for mobile
+  useEffect(() => {
+    if (isSmallMobile && itemsPerPage > 5) {
+      setItemsPerPage(5);
+    } else if (isMobile && itemsPerPage > MOBILE_ITEMS_PER_PAGE) {
+      setItemsPerPage(MOBILE_ITEMS_PER_PAGE);
+    }
+  }, [isMobile, isSmallMobile, itemsPerPage]);
 
   const currentThemeConfig = useMemo(() => {
     const orgTheme = organizationConfig.organization_theme;
@@ -442,188 +600,407 @@ export const EmployeeTimesheetAdminView = () => {
 
   if (error) {
     return (
-      <Container size="lg" py="xl">
-        <Card shadow="sm" p="lg" radius="md" withBorder>
-          <Text ta="center" size="lg">
+      <Container
+        size={isSmallMobile ? 'xs' : isMobile ? 'sm' : 'lg'}
+        py="xl"
+        px={isSmallMobile ? 'xs' : 'md'}
+      >
+        <Card
+          shadow="sm"
+          p={isSmallMobile ? 'xs' : isMobile ? 'sm' : 'lg'}
+          radius="md"
+          withBorder
+        >
+          <Text
+            ta="center"
+            size={isSmallMobile ? 'sm' : isMobile ? 'md' : 'lg'}
+          >
             {error}
           </Text>
           <Center mt="md">
-            <Button onClick={() => window.location.reload()}>Try Again</Button>
+            <Button
+              onClick={() => window.location.reload()}
+              fullWidth={isMobile}
+              size={isSmallMobile ? 'sm' : 'md'}
+            >
+              Try Again
+            </Button>
           </Center>
         </Card>
       </Container>
     );
   }
+  const employeeInfoItems = getEmployeeInfoItems(employeeDetails);
+  const getInfoIcon = (label: string) => {
+    const iconSize = isMobile ? 14 : 16;
+    switch (label) {
+      case 'Name':
+        return <IconUser size={iconSize} />;
+      case 'Email':
+        return <IconMail size={iconSize} />;
+      case 'Phone':
+        return <IconPhone size={iconSize} />;
+      case 'Join Date':
+        return <IconCalendar size={iconSize} />;
+      case 'Role':
+        return <IconBriefcase size={iconSize} />;
+      default:
+        return <IconUser size={iconSize} />;
+    }
+  };
 
   return (
-    <Container size="xl" py="md" my="xl">
-      <Stack gap="md">
-        {/* Header with Employee Info */}
+    <Container
+      size={isTablet ? 'lg' : 'xl'}
+      py={isSmallMobile ? 'xs' : isMobile ? 'sm' : 'md'}
+      my={isSmallMobile ? 'xs' : isMobile ? 'sm' : 'xl'}
+      px={isSmallMobile ? 'xs' : isMobile ? 'sm' : 'md'}
+    >
+      <Stack gap={isMobile ? 'sm' : 'md'}>
         <Card shadow="sm" p="lg" radius="md" withBorder>
-          <Stack gap="md">
-            <Flex justify="space-between" align="center" wrap="wrap" gap="md">
-              <Text size="xl" fw={700}>
-                Timesheet Management ({filteredTimesheets.length} entries)
-              </Text>
-              <BackButton id={employeeId ?? ''} />
-            </Flex>
-
-            <Group wrap="wrap" gap="md">
-              <Group gap="xs">
-                <IconId size={18} color={currentThemeConfig.primaryColor} />
-                <Text fw={500}>Employee ID:</Text>
-                <Text>{employeeDetails?.employeeId || 'N/A'}</Text>
-              </Group>
-              <Group gap="xs">
-                <IconUser size={18} color={currentThemeConfig.primaryColor} />
-                <Text fw={500}>Name:</Text>
-                <Text>
-                  {employeeDetails?.firstName} {employeeDetails?.lastName}
+          <Group
+            justify="space-between"
+            align={isMobile ? 'flex-start' : 'center'}
+            wrap={isMobile ? 'wrap' : 'nowrap'}
+            gap="sm"
+          >
+            <Stack
+              gap={isMobile ? 4 : 6}
+              style={{ flex: isMobile ? '1 1 100%' : 'auto' }}
+            >
+              <Group gap={isMobile ? 8 : 10} align="center">
+                <IconCalendar
+                  size={isMobile ? 20 : 24}
+                  color={currentThemeConfig.button.color}
+                />
+                <Text
+                  size={isMobile ? 'lg' : 'xl'}
+                  fw={700}
+                  c={currentThemeConfig.color}
+                >
+                  Timesheet Management
                 </Text>
               </Group>
-              <Group gap="xs">
-                <IconMail size={18} color={currentThemeConfig.primaryColor} />
-                <Text fw={500}>Email:</Text>
-                <Text>{employeeDetails?.email}</Text>
-              </Group>
+
+              <Text
+                size={isMobile ? 'xs' : 'sm'}
+                c="dimmed"
+                style={{ lineHeight: 1.4, marginLeft: isMobile ? 28 : 34 }}
+              >
+                Manage and review your employee timesheets —{' '}
+                <Text span fw={600} c={currentThemeConfig.color}>
+                  {filteredTimesheets.length}
+                </Text>{' '}
+                entries found
+              </Text>
+            </Stack>
+
+            <BackButton id={employeeId} />
+          </Group>
+        </Card>
+        <Card
+          shadow="lg"
+          radius="md"
+          withBorder
+          p={isMobile ? 'md' : 'lg'}
+          style={{
+            backgroundColor: currentThemeConfig.backgroundColor,
+            borderColor: currentThemeConfig.borderColor
+          }}
+        >
+          <Stack gap={isMobile ? 'md' : 'lg'}>
+            <Group gap="sm">
+              <IconUser
+                size={isMobile ? 18 : 20}
+                color={currentThemeConfig.button.color}
+              />
+              <Text
+                size={isMobile ? 'md' : 'lg'}
+                fw={600}
+                c={currentThemeConfig.color}
+              >
+                Employee Information
+              </Text>
             </Group>
+
+            <SimpleGrid
+              cols={{ base: 1, xs: 1, sm: 2, md: 2, lg: 3 }}
+              spacing={isMobile ? 'md' : 'lg'}
+            >
+              {employeeInfoItems.map((item, index) => (
+                <Card
+                  key={index}
+                  radius="md"
+                  p={isMobile ? 'sm' : 'md'}
+                  style={{
+                    border: `1px solid ${currentThemeConfig.borderColor}`
+                  }}
+                >
+                  <Stack gap="xs">
+                    <Group gap="xs">
+                      {getInfoIcon(item.label)}
+                      <Text size={isMobile ? 'xs' : 'sm'} c="dimmed">
+                        {item.label}
+                      </Text>
+                    </Group>
+                    <Text
+                      size={isMobile ? 'sm' : 'md'}
+                      fw={500}
+                      c={currentThemeConfig.color}
+                      className="break-words"
+                    >
+                      {item.value || '-'}
+                    </Text>
+                  </Stack>
+                </Card>
+              ))}
+            </SimpleGrid>
           </Stack>
         </Card>
 
         {/* Filters */}
-        <Card shadow="sm" p="md" radius="md" withBorder>
-          <Stack gap="md">
-            <Group grow>
-              <Select
-                label="Status"
-                placeholder="Filter by status"
-                data={statusOptions}
-                value={selectedStatus}
-                onChange={value =>
-                  setSelectedStatus(value as TimesheetStatus | null)
+        <Card
+          shadow="sm"
+          p={isSmallMobile ? 'xs' : isMobile ? 'sm' : 'md'}
+          radius="md"
+          withBorder
+        >
+          <Stack gap="sm">
+            {isMobile && (
+              <Button
+                variant="light"
+                fullWidth
+                size={isSmallMobile ? 'xs' : 'sm'}
+                onClick={() => setFiltersExpanded(!filtersExpanded)}
+                rightSection={
+                  filtersExpanded ? (
+                    <IconChevronUp size={14} />
+                  ) : (
+                    <IconChevronDown size={14} />
+                  )
                 }
-                clearable
-                leftSection={<IconFilter size={16} />}
-                radius="md"
-              />
-              <DatePickerInput
-                type="range"
-                label="Date Range"
-                placeholder="Select date range"
-                value={dateRange}
-                onChange={setDateRange}
-                leftSection={<IconCalendar size={16} />}
-                radius="md"
-              />
-              <TextInput
-                label="Search"
-                placeholder="Search by project, task..."
-                leftSection={<IconSearch size={16} />}
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.currentTarget.value)}
-                radius="md"
-              />
-            </Group>
+                leftSection={<IconFilter size={14} />}
+              >
+                {filtersExpanded ? 'Hide Filters' : 'Show Filters'}
+              </Button>
+            )}
 
-            <Group justify="space-between">
-              <Group gap="xs">
-                <Text size="sm">Items per page:</Text>
-                <Select
-                  data={ITEMS_PER_PAGE_OPTIONS}
-                  value={itemsPerPage.toString()}
-                  onChange={value =>
-                    setItemsPerPage(Number(value) || DEFAULT_ITEMS_PER_PAGE)
-                  }
-                  w={80}
-                  size="sm"
-                />
-              </Group>
+            <Collapse in={filtersExpanded || !isMobile}>
+              <Stack gap="md">
+                <Stack gap="sm">
+                  <Select
+                    label="Status"
+                    placeholder="Filter by status"
+                    data={statusOptions}
+                    value={selectedStatus}
+                    onChange={value =>
+                      setSelectedStatus(value as TimesheetStatus | null)
+                    }
+                    clearable
+                    leftSection={<IconFilter size={14} />}
+                    radius="md"
+                    size={isSmallMobile ? 'xs' : 'sm'}
+                  />
+                  <DatePickerInput
+                    type="range"
+                    label="Date Range"
+                    placeholder="Select date range"
+                    value={dateRange}
+                    onChange={setDateRange}
+                    leftSection={<IconCalendar size={14} />}
+                    radius="md"
+                    size={isSmallMobile ? 'xs' : 'sm'}
+                    popoverProps={{ withinPortal: true }}
+                  />
+                  <TextInput
+                    label="Search"
+                    placeholder={
+                      isSmallMobile ? 'Search...' : 'Search by project, task...'
+                    }
+                    leftSection={<IconSearch size={14} />}
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.currentTarget.value)}
+                    radius="md"
+                    size={isSmallMobile ? 'xs' : 'sm'}
+                  />
+                </Stack>
 
-              <Group gap="sm">
-                {filteredTimesheets.length !== timesheets.length && (
-                  <Badge variant="light" color="blue">
-                    {filteredTimesheets.length} of {timesheets.length}{' '}
-                    timesheets
-                  </Badge>
-                )}
-                <Button
-                  variant="outline"
-                  onClick={resetFilters}
-                  leftSection={<IconX size={16} />}
-                  size="sm"
+                <Flex
+                  justify="space-between"
+                  align={isMobile ? 'stretch' : 'center'}
+                  direction={isMobile ? 'column' : 'row'}
+                  gap="sm"
                 >
-                  Clear Filters
-                </Button>
-              </Group>
-            </Group>
+                  <Group gap="xs">
+                    <Text size="xs">
+                      {isSmallMobile ? 'Per page:' : 'Items per page:'}
+                    </Text>
+                    <Select
+                      data={
+                        isSmallMobile
+                          ? ['5', '10']
+                          : isMobile
+                            ? ['10', '20']
+                            : ITEMS_PER_PAGE_OPTIONS
+                      }
+                      value={itemsPerPage.toString()}
+                      onChange={value =>
+                        setItemsPerPage(Number(value) || DEFAULT_ITEMS_PER_PAGE)
+                      }
+                      w={isSmallMobile ? 60 : 80}
+                      size="xs"
+                    />
+                  </Group>
+
+                  <Group gap="sm" grow={isMobile}>
+                    {filteredTimesheets.length !== timesheets.length && (
+                      <Badge variant="light" color="blue" size="xs">
+                        {filteredTimesheets.length} / {timesheets.length}
+                      </Badge>
+                    )}
+                    <Button
+                      variant="outline"
+                      onClick={resetFilters}
+                      leftSection={<IconX size={14} />}
+                      size="xs"
+                      fullWidth={isMobile}
+                    >
+                      {isSmallMobile ? 'Clear' : 'Clear Filters'}
+                    </Button>
+                  </Group>
+                </Flex>
+              </Stack>
+            </Collapse>
           </Stack>
         </Card>
 
         {/* Bulk Actions */}
         {selectedTimesheets.length > 0 && (
-          <Card shadow="sm" p="md" radius="md" withBorder>
-            <Group justify="space-between" wrap="wrap">
-              <Text fw={500}>
-                <Badge variant="filled" color="blue" mr="sm">
+          <Card
+            shadow="sm"
+            p={isSmallMobile ? 'xs' : isMobile ? 'sm' : 'md'}
+            radius="md"
+            withBorder
+          >
+            <Stack gap="sm">
+              <Text
+                fw={500}
+                size={isSmallMobile ? 'xs' : isMobile ? 'sm' : 'md'}
+              >
+                <Badge
+                  variant="filled"
+                  color="blue"
+                  mr="xs"
+                  size={isSmallMobile ? 'xs' : 'sm'}
+                >
                   {selectedTimesheets.length}
                 </Badge>
-                timesheet(s) selected
+                {isSmallMobile ? 'sel.' : 'selected'}
               </Text>
 
-              <Group gap="sm">
+              <Flex
+                gap="xs"
+                direction={isMobile ? 'column' : 'row'}
+                align="stretch"
+              >
                 <Select
                   placeholder="Select action"
                   data={actionOptions}
                   value={bulkStatus}
                   onChange={value => setBulkStatus(value as TimesheetStatus)}
-                  w={180}
+                  flex={isMobile ? undefined : 1}
+                  size={isSmallMobile ? 'xs' : 'sm'}
                   leftSection={
                     bulkStatus === TimesheetStatus.Approved ? (
-                      <IconCircleCheck size={16} />
+                      <IconCircleCheck size={14} />
                     ) : (
-                      <IconCircleX size={16} />
+                      <IconCircleX size={14} />
                     )
                   }
                 />
 
-                <Button
-                  color={
-                    bulkStatus === TimesheetStatus.Approved ? 'green' : 'red'
-                  }
-                  leftSection={
-                    bulkStatus === TimesheetStatus.Approved ? (
-                      <IconCircleCheck size={18} />
-                    ) : (
-                      <IconCircleX size={18} />
-                    )
-                  }
-                  onClick={open}
-                >
-                  Apply
-                </Button>
+                <Group gap="xs" grow={isMobile}>
+                  <Button
+                    color={
+                      bulkStatus === TimesheetStatus.Approved ? 'green' : 'red'
+                    }
+                    size={isSmallMobile ? 'xs' : 'sm'}
+                    leftSection={
+                      bulkStatus === TimesheetStatus.Approved ? (
+                        <IconCircleCheck size={16} />
+                      ) : (
+                        <IconCircleX size={16} />
+                      )
+                    }
+                    onClick={open}
+                  >
+                    {isSmallMobile ? 'Apply' : 'Apply Action'}
+                  </Button>
 
-                <ActionIcon
-                  variant="subtle"
-                  onClick={() => setSelectedTimesheets([])}
-                  aria-label="Clear selection"
-                >
-                  <IconX size={18} />
-                </ActionIcon>
-              </Group>
-            </Group>
+                  <ActionIcon
+                    variant="subtle"
+                    onClick={() => setSelectedTimesheets([])}
+                    size={isSmallMobile ? 'md' : 'lg'}
+                  >
+                    <IconX size={16} />
+                  </ActionIcon>
+                </Group>
+              </Flex>
+            </Stack>
           </Card>
         )}
 
-        {/* Table */}
-        <Card shadow="sm" p={0} radius="md" withBorder>
-          {isLoading ? (
-            <Center p="xl">
+        {/* Content - Table or Cards */}
+        {isLoading ? (
+          <Card shadow="sm" p="xl" radius="md" withBorder>
+            <Center>
               <Stack align="center" gap="md">
                 <Loader size="xl" />
                 <Text>Loading timesheets...</Text>
               </Stack>
             </Center>
-          ) : (
+          </Card>
+        ) : isMobile ? (
+          <Stack gap="sm">
+            {paginatedTimesheets.length > 0 ? (
+              paginatedTimesheets.map((timesheet, index) => (
+                <MobileTimesheetCard
+                  key={timesheet.id}
+                  timesheet={timesheet}
+                  index={index + 1 + (activePage - 1) * itemsPerPage}
+                  isSelected={selectedTimesheets.includes(timesheet.id)}
+                  onToggleSelect={toggleSingleSelection}
+                  onApprove={id =>
+                    handleStatusChange([id], TimesheetStatus.Approved)
+                  }
+                  onReject={id =>
+                    handleStatusChange([id], TimesheetStatus.Rejected)
+                  }
+                />
+              ))
+            ) : (
+              <Card shadow="sm" p="xl" radius="md" withBorder>
+                <Stack align="center" gap="md">
+                  <Text size="lg">No timesheets found</Text>
+                  <Text size="sm" ta="center">
+                    {searchQuery ||
+                    selectedStatus ||
+                    (dateRange[0] && dateRange[1])
+                      ? 'Try adjusting your filters'
+                      : 'No timesheet entries available'}
+                  </Text>
+                </Stack>
+              </Card>
+            )}
+          </Stack>
+        ) : (
+          <Card
+            shadow="sm"
+            p={0}
+            radius="md"
+            withBorder
+            style={{ overflowX: 'auto' }}
+          >
             <Table stickyHeader withTableBorder withColumnBorders>
               <TableHeader
                 sortOrder={sortOrder}
@@ -635,36 +1012,46 @@ export const EmployeeTimesheetAdminView = () => {
               <Table.Tbody>
                 {paginatedTimesheets.length > 0 ? (
                   paginatedTimesheets.map((timesheet, index) => (
-                    <Table.Tr key={timesheet.id} className="transition-colors">
-                      <Table.Td className="text-center p-3">
+                    <Table.Tr key={timesheet.id}>
+                      <Table.Td
+                        style={{ textAlign: 'center', padding: rem(12) }}
+                      >
                         <Checkbox
                           checked={selectedTimesheets.includes(timesheet.id)}
                           onChange={() => toggleSingleSelection(timesheet.id)}
                         />
                       </Table.Td>
-                      <Table.Td className="text-center p-3">
+                      <Table.Td
+                        style={{ textAlign: 'center', padding: rem(12) }}
+                      >
                         <Text size="sm">
                           {index + 1 + (activePage - 1) * itemsPerPage}
                         </Text>
                       </Table.Td>
-                      <Table.Td className="p-3 text-center">
+                      <Table.Td
+                        style={{ padding: rem(12), textAlign: 'center' }}
+                      >
                         <Text size="sm">
                           {moment(timesheet.date).format('MMM D, YYYY')}
                         </Text>
                       </Table.Td>
-                      <Table.Td className="p-3">
+                      <Table.Td style={{ padding: rem(12) }}>
                         <Text size="sm">{timesheet.project_name}</Text>
                       </Table.Td>
-                      <Table.Td className="p-3">
+                      <Table.Td style={{ padding: rem(12) }}>
                         <Text size="sm">{timesheet.task_name}</Text>
                       </Table.Td>
-                      <Table.Td className="p-3 text-center">
+                      <Table.Td
+                        style={{ padding: rem(12), textAlign: 'center' }}
+                      >
                         <Badge size="sm">{timesheet.hours}h</Badge>
                       </Table.Td>
-                      <Table.Td className="p-3 text-center">
+                      <Table.Td
+                        style={{ padding: rem(12), textAlign: 'center' }}
+                      >
                         <StatusBadge status={timesheet.status} />
                       </Table.Td>
-                      <Table.Td className="p-3">
+                      <Table.Td style={{ padding: rem(12) }}>
                         <TimesheetActions
                           timesheet={timesheet}
                           onApprove={id =>
@@ -679,7 +1066,10 @@ export const EmployeeTimesheetAdminView = () => {
                   ))
                 ) : (
                   <Table.Tr>
-                    <Table.Td colSpan={8} className="text-center p-8">
+                    <Table.Td
+                      colSpan={8}
+                      style={{ textAlign: 'center', padding: rem(32) }}
+                    >
                       <Stack align="center" gap="md">
                         <Text size="lg">No timesheets found</Text>
                         <Text size="sm">
@@ -695,8 +1085,8 @@ export const EmployeeTimesheetAdminView = () => {
                 )}
               </Table.Tbody>
             </Table>
-          )}
-        </Card>
+          </Card>
+        )}
 
         {/* Pagination */}
         {totalPages > 1 && (
@@ -705,9 +1095,11 @@ export const EmployeeTimesheetAdminView = () => {
               value={activePage}
               onChange={setActivePage}
               total={totalPages}
-              size="sm"
+              size={isSmallMobile ? 'xs' : isMobile ? 'sm' : 'md'}
               radius="md"
-              withEdges
+              withEdges={!isMobile}
+              siblings={isSmallMobile ? 0 : isMobile ? 0 : 1}
+              boundaries={isSmallMobile ? 1 : isMobile ? 1 : 2}
             />
           </Center>
         )}
@@ -717,28 +1109,42 @@ export const EmployeeTimesheetAdminView = () => {
       <Modal
         opened={opened}
         onClose={close}
-        title="Confirm Status Update"
-        size="md"
+        title={isSmallMobile ? 'Confirm' : 'Confirm Status Update'}
+        size={isSmallMobile ? 'xs' : isMobile ? 'sm' : 'md'}
         centered
+        fullScreen={isSmallMobile}
       >
         <Stack gap="md">
-          <Text>
-            Are you sure you want to{' '}
-            {bulkStatus === TimesheetStatus.Approved ? 'approve' : 'reject'}{' '}
-            {selectedTimesheets.length} timesheet(s)?
+          <Text size={isSmallMobile ? 'xs' : isMobile ? 'sm' : 'md'}>
+            {isSmallMobile ? (
+              <>
+                {bulkStatus === TimesheetStatus.Approved ? 'Approve' : 'Reject'}{' '}
+                {selectedTimesheets.length} timesheet(s)?
+              </>
+            ) : (
+              <>
+                Are you sure you want to{' '}
+                {bulkStatus === TimesheetStatus.Approved ? 'approve' : 'reject'}{' '}
+                {selectedTimesheets.length} timesheet(s)?
+              </>
+            )}
           </Text>
-          <Group justify="flex-end">
-            <Button variant="outline" onClick={close}>
+          <Group justify="flex-end" grow={isMobile}>
+            <Button
+              variant="outline"
+              onClick={close}
+              size={isSmallMobile ? 'xs' : 'sm'}
+            >
               Cancel
             </Button>
             <Button
               color={bulkStatus === TimesheetStatus.Approved ? 'green' : 'red'}
               onClick={() => handleStatusChange(selectedTimesheets, bulkStatus)}
+              size={isSmallMobile ? 'xs' : 'sm'}
             >
-              Confirm{' '}
-              {bulkStatus === TimesheetStatus.Approved
-                ? 'Approval'
-                : 'Rejection'}
+              {isSmallMobile
+                ? 'Confirm'
+                : `Confirm ${bulkStatus === TimesheetStatus.Approved ? 'Approval' : 'Rejection'}`}
             </Button>
           </Group>
         </Stack>

@@ -178,6 +178,17 @@ const AdminRoutes = () => {
             }
           })
         },
+        Paper: {
+          styles: () => ({
+            root: {
+              backgroundColor: currentThemeConfig.headerBackgroundColor,
+              borderBottom: `1px solid ${currentThemeConfig.borderColor}`,
+              color: currentThemeConfig.color,
+              transition:
+                'background-color 0.3s ease-in-out, border-color 0.3s ease-in-out'
+            }
+          })
+        },
         Loader: {
           styles: () => ({
             root: {
