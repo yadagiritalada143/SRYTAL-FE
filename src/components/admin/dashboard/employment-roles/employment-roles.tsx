@@ -6,13 +6,31 @@ import {
   Loader,
   Pagination,
   Modal,
-  Box,
   TextInput,
-  Center
+  Center,
+  Container,
+  Card,
+  Stack,
+  Table,
+  Badge,
+  ActionIcon,
+  Tooltip,
+  Select,
+  ScrollArea,
+  Flex,
+  Divider
 } from '@mantine/core';
 import { toast } from 'react-toastify';
-import { useDisclosure } from '@mantine/hooks';
-import { IconEdit } from '@tabler/icons-react';
+import { useDisclosure, useMediaQuery } from '@mantine/hooks';
+import {
+  IconEdit,
+  IconPlus,
+  IconTrash,
+  IconSearch,
+  IconAlertTriangle,
+  IconDeviceFloppy,
+  IconBriefcase
+} from '@tabler/icons-react';
 import {
   addEmployeeRoleByAdmin,
   deleteEmployeeRoleByAdmin,
@@ -21,26 +39,134 @@ import {
 } from '../../../../services/admin-services';
 import { useRecoilValue } from 'recoil';
 import { organizationThemeAtom } from '../../../../atoms/organization-atom';
-import { useMantineTheme } from '@mantine/core';
-import { SearchBarFullWidht } from '../../../common/search-bar/search-bar';
+import { themeAtom } from '../../../../atoms/theme';
+import { debounce } from '../../../../utils/common/debounce';
+
+const ITEMS_PER_PAGE_OPTIONS = ['5', '10', '20', '50'];
+const DEFAULT_ITEMS_PER_PAGE = 10;
 
 const isValidDesignation = (designation: string) =>
   /^([A-Za-z()\-\s_]|[0-9])+$/.test(designation) && !/\d{2,}/.test(designation);
+
+// Role Actions Component
+const RoleActions: React.FC<{
+  role: any;
+  onEdit: (role: any) => void;
+  isMobile?: boolean;
+}> = ({ role, onEdit, isMobile = false }) => (
+  <Group gap="xs" justify="center">
+    <Tooltip label="Edit Role">
+      <ActionIcon
+        variant="subtle"
+        color="blue"
+        onClick={() => onEdit(role)}
+        size={isMobile ? 'md' : 'sm'}
+      >
+        <IconEdit size={isMobile ? 18 : 16} />
+      </ActionIcon>
+    </Tooltip>
+  </Group>
+);
+
+// Mobile Role Card Component
+const MobileRoleCard: React.FC<{
+  role: any;
+  index: number;
+  activePage: number;
+  itemsPerPage: number;
+  onEdit: (role: any) => void;
+}> = ({ role, index, activePage, itemsPerPage, onEdit }) => {
+  return (
+    <Card shadow="sm" p="md" mb="sm" withBorder>
+      <Stack gap="sm">
+        <Group justify="space-between" align="center">
+          <Badge variant="filled" color="blue">
+            #{index + 1 + (activePage - 1) * itemsPerPage}
+          </Badge>
+          <ActionIcon
+            variant="subtle"
+            color="blue"
+            onClick={() => onEdit(role)}
+            size="md"
+          >
+            <IconEdit size={18} />
+          </ActionIcon>
+        </Group>
+
+        <Divider />
+
+        <Stack gap={2}>
+          <Text size="xs" fw={600} c="dimmed">
+            Employment Role
+          </Text>
+          <Text size="lg" fw={600}>
+            {role.designation}
+          </Text>
+        </Stack>
+      </Stack>
+    </Card>
+  );
+};
+
+// Header Component
+const HeadingComponent: React.FC<{
+  filteredCount: number;
+  onAdd: () => void;
+  isMobile?: boolean;
+}> = ({ filteredCount, onAdd, isMobile = false }) => (
+  <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder>
+    <Flex
+      direction={isMobile ? 'column' : 'row'}
+      justify="space-between"
+      align="center"
+      gap="md"
+    >
+      <Text
+        size={isMobile ? 'lg' : 'xl'}
+        fw={700}
+        ta={isMobile ? 'center' : 'left'}
+      >
+        Manage Employment Roles ({filteredCount} roles)
+      </Text>
+      <Button
+        leftSection={<IconPlus size={16} />}
+        onClick={onAdd}
+        variant="filled"
+        fullWidth={isMobile}
+        size={isMobile ? 'md' : 'sm'}
+      >
+        Add Role
+      </Button>
+    </Flex>
+  </Card>
+);
 
 const EmploymentRoles = () => {
   const [employmentRoles, setEmploymentRoles] = useState<
     { id: string; designation: string }[]
   >([]);
-  const [filteredEmployementRole, setFilteredEmployementRole] = useState<any[]>(
+  const [filteredEmploymentRole, setFilteredEmploymentRole] = useState<any[]>(
     []
   );
   const [isLoading, setIsLoading] = useState(true);
   const [activePage, setActivePage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(DEFAULT_ITEMS_PER_PAGE);
   const [selectedRole, setSelectedRole] = useState<any | null>(null);
-  const [newTypeRole, setNewRoleName] = useState('');
+  const [newRoleName, setNewRoleName] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+
   const organizationConfig = useRecoilValue(organizationThemeAtom);
-  const [search, setSearch] = useState('');
-  const theme = useMantineTheme();
+  const isDarkTheme = useRecoilValue(themeAtom);
+
+  // Responsive breakpoints
+  const isMobile = useMediaQuery('(max-width: 768px)');
+  const isSmallMobile = useMediaQuery('(max-width: 500px)');
+
+  // Get the current theme configuration
+  const currentThemeConfig = useMemo(() => {
+    const orgTheme = organizationConfig.organization_theme;
+    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+  }, [organizationConfig, isDarkTheme]);
 
   const [editModalOpened, { open: openEditModal, close: closeEditModal }] =
     useDisclosure(false);
@@ -51,25 +177,44 @@ const EmploymentRoles = () => {
   const [addModalOpened, { open: openAddModal, close: closeAddModal }] =
     useDisclosure(false);
 
-  useEffect(() => {
-    fetchEmployementRoles();
-  }, []);
-
-  const fetchEmployementRoles = useCallback(async () => {
+  const fetchEmploymentRoles = useCallback(async () => {
     setIsLoading(true);
     try {
       const data = await getAllEmployeeRoleByAdmin();
       setEmploymentRoles(data);
-      setFilteredEmployementRole(data);
-    } catch (error) {
-      toast.error('Failed to fetch employment types');
+      setFilteredEmploymentRole(data);
+    } catch {
+      toast.error('Failed to fetch employment roles');
     } finally {
       setIsLoading(false);
     }
-  }, [setEmploymentRoles]);
+  }, []);
 
-  const handleEdit = (group: any) => {
-    setSelectedRole(group);
+  useEffect(() => {
+    fetchEmploymentRoles();
+  }, [fetchEmploymentRoles]);
+
+  // Debounced search
+  const debouncedSearch = useMemo(
+    () =>
+      debounce((query: string) => {
+        const filtered = employmentRoles.filter(role =>
+          role.designation.toLowerCase().includes(query.toLowerCase())
+        );
+        setFilteredEmploymentRole(filtered);
+        setActivePage(1);
+      }, 300),
+    [employmentRoles]
+  );
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    debouncedSearch(query);
+  };
+
+  const handleEdit = (role: any) => {
+    setSelectedRole(role);
     openEditModal();
   };
 
@@ -104,9 +249,9 @@ const EmploymentRoles = () => {
         selectedRole.designation
       );
       toast.success('Updated successfully');
-      fetchEmployementRoles();
+      fetchEmploymentRoles();
       closeEditModal();
-    } catch (error) {
+    } catch {
       toast.error('Failed to update');
     } finally {
       setIsLoading(false);
@@ -118,10 +263,10 @@ const EmploymentRoles = () => {
     try {
       await deleteEmployeeRoleByAdmin(selectedRole.id);
       toast.success('Deleted successfully');
-      fetchEmployementRoles();
+      fetchEmploymentRoles();
       closeDeleteModal();
       closeEditModal();
-    } catch (error) {
+    } catch {
       toast.error('Failed to delete');
     } finally {
       setIsLoading(false);
@@ -129,7 +274,7 @@ const EmploymentRoles = () => {
   };
 
   const handleAdd = async () => {
-    if (!isValidDesignation(newTypeRole)) {
+    if (!isValidDesignation(newRoleName)) {
       toast.error(
         'Only letters, numbers, spaces, underscores, hyphens, and parentheses are allowed. No two or more consecutive digits.'
       );
@@ -138,7 +283,7 @@ const EmploymentRoles = () => {
 
     if (
       employmentRoles.some(
-        role => role.designation.toLowerCase() === newTypeRole.toLowerCase()
+        role => role.designation.toLowerCase() === newRoleName.toLowerCase()
       )
     ) {
       toast.error('This role already exists');
@@ -146,12 +291,12 @@ const EmploymentRoles = () => {
     }
     setIsLoading(true);
     try {
-      await addEmployeeRoleByAdmin({ designation: newTypeRole });
+      await addEmployeeRoleByAdmin({ designation: newRoleName });
       toast.success('Added successfully');
-      fetchEmployementRoles();
+      fetchEmploymentRoles();
       closeAddModal();
       setNewRoleName('');
-    } catch (error) {
+    } catch {
       toast.error('Failed to add');
     } finally {
       setIsLoading(false);
@@ -159,176 +304,277 @@ const EmploymentRoles = () => {
   };
 
   // Pagination logic
-  const itemsPerPage = 10;
-  const totalPages = useMemo(() => {
-    return Math.ceil(filteredEmployementRole.length / itemsPerPage);
-  }, [filteredEmployementRole.length]);
+  const { paginatedData, totalPages } = useMemo(() => {
+    const start = (activePage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    const paginated = filteredEmploymentRole.slice(start, end);
+    const pages = Math.ceil(filteredEmploymentRole.length / itemsPerPage);
 
-  const paginatedData = useMemo(() => {
-    return filteredEmployementRole.slice(
-      (activePage - 1) * itemsPerPage,
-      activePage * itemsPerPage
-    );
-  }, [filteredEmployementRole, activePage]);
+    return { paginatedData: paginated, totalPages: pages };
+  }, [filteredEmploymentRole, activePage, itemsPerPage]);
 
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const query = e.target.value;
-    setSearch(query);
-
-    const filtered = employmentRoles.filter(role => {
-      role.designation.toString().toLowerCase();
-      role.designation.toString().trim();
-      return (
-        role.designation
-          .toLowerCase()
-          .toString()
-          .includes(query.toLowerCase()) ||
-        role.designation.toLowerCase().toString().includes(query.toLowerCase())
-      );
-    });
-    setFilteredEmployementRole(filtered);
-  };
+  // Reset page when filters change
+  useEffect(() => {
+    setActivePage(1);
+  }, [itemsPerPage]);
 
   return (
-    <div
-      style={{
-        color: organizationConfig.organization_theme.theme.button.textColor,
-        fontFamily: theme.fontFamily
-      }}
-      className="h-auto"
-    >
-      <div>
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold underline text-center px-2 py-4">
-          Manage Employment Roles
-        </h1>
-        <div className="text-right">
-          <Button onClick={openAddModal}> Add Employment Role</Button>
-        </div>
-
-        <SearchBarFullWidht
-          search={search}
-          handleSearch={handleSearch}
-          placeHolder="Search by employment role"
+    <Container size="xl" py="md" my="xl" px={isSmallMobile ? 'xs' : 'md'}>
+      <Stack gap="md">
+        {/* Header */}
+        <HeadingComponent
+          filteredCount={filteredEmploymentRole.length}
+          onAdd={openAddModal}
+          isMobile={isMobile}
         />
 
-        {isLoading ? (
-          <div className="flex justify-center items-center h-48">
-            <Loader
-              size="xl"
-              color={organizationConfig.organization_theme.theme.button.color}
+        {/* Filters */}
+        <Card shadow="sm" p={isMobile ? 'sm' : 'md'} radius="md" withBorder>
+          <Stack gap="md">
+            <TextInput
+              placeholder="Search by employment role..."
+              leftSection={<IconSearch size={16} />}
+              value={searchQuery}
+              onChange={handleSearch}
+              radius="md"
+              size={isMobile ? 'sm' : 'md'}
             />
-          </div>
-        ) : (
-          <div className="overflow-auto max-w-full shadow-lg rounded-lg">
-            <table className="w-full text-center shadow-md border table-auto">
-              <colgroup>
-                <col className="w-16" />
-                <col className="w-32" />
-                <col className="w-32" />
-              </colgroup>
-              <thead
-                className="text-xs"
-                style={{
-                  backgroundColor:
-                    organizationConfig.organization_theme.theme.backgroundColor,
-                  color: organizationConfig.organization_theme.theme.color
-                }}
-              >
-                <tr>
-                  <th className="p-2 border">Id</th>
-                  <th className="p-2 border">Employment Role</th>
-                  <th className="p-2 border">Action</th>
-                </tr>
-              </thead>
-              <tbody className="text-sm">
-                {paginatedData.map((employmentR, index) => (
-                  <tr key={employmentR._id}>
-                    <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                      {index + 1 + (activePage - 1) * itemsPerPage}{' '}
-                    </td>
-                    <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                      {employmentR.designation}
-                    </td>
-                    <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                      <Button onClick={() => handleEdit(employmentR)}>
-                        <IconEdit />
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+
+            <Group justify="space-between" wrap={isMobile ? 'wrap' : 'nowrap'}>
+              <Group gap="xs">
+                <Text size="sm">Items per page:</Text>
+                <Select
+                  data={ITEMS_PER_PAGE_OPTIONS}
+                  value={itemsPerPage.toString()}
+                  onChange={value =>
+                    setItemsPerPage(Number(value) || DEFAULT_ITEMS_PER_PAGE)
+                  }
+                  w={80}
+                  size="sm"
+                />
+              </Group>
+
+              {filteredEmploymentRole.length !== employmentRoles.length && (
+                <Badge variant="light" color="blue">
+                  {filteredEmploymentRole.length} of {employmentRoles.length}{' '}
+                  roles
+                </Badge>
+              )}
+            </Group>
+          </Stack>
+        </Card>
+
+        {/* Table or Cards */}
+        <Card shadow="sm" p={0} radius="md" withBorder>
+          {isLoading ? (
+            <Center p="xl">
+              <Stack align="center" gap="md">
+                <Loader size="xl" />
+                <Text>Loading employment roles...</Text>
+              </Stack>
+            </Center>
+          ) : isMobile ? (
+            // Mobile Card View
+            <ScrollArea p="md">
+              <Stack gap="sm">
+                {paginatedData.length > 0 ? (
+                  paginatedData.map((role, index) => (
+                    <MobileRoleCard
+                      key={role.id}
+                      role={role}
+                      index={index}
+                      activePage={activePage}
+                      itemsPerPage={itemsPerPage}
+                      onEdit={handleEdit}
+                    />
+                  ))
+                ) : (
+                  <Card p="xl" withBorder>
+                    <Stack align="center" gap="md">
+                      <IconBriefcase size={48} opacity={0.5} />
+                      <Text size="lg" ta="center">
+                        No employment roles found
+                      </Text>
+                      <Text size="sm" ta="center">
+                        {searchQuery
+                          ? 'Try adjusting your search'
+                          : 'Start by adding your first employment role'}
+                      </Text>
+                      {!searchQuery && (
+                        <Button
+                          variant="light"
+                          leftSection={<IconPlus size={16} />}
+                          onClick={openAddModal}
+                          fullWidth={isSmallMobile}
+                        >
+                          Add Role
+                        </Button>
+                      )}
+                    </Stack>
+                  </Card>
+                )}
+              </Stack>
+            </ScrollArea>
+          ) : (
+            // Desktop Table View
+            <ScrollArea>
+              <Table stickyHeader withTableBorder withColumnBorders>
+                <Table.Thead
+                  style={{
+                    backgroundColor: currentThemeConfig.backgroundColor,
+                    color: currentThemeConfig.color
+                  }}
+                >
+                  <Table.Tr>
+                    <Table.Th
+                      className="p-3 border text-center"
+                      style={{ width: '100px' }}
+                    >
+                      <Text size="sm" fw={500}>
+                        S.No
+                      </Text>
+                    </Table.Th>
+                    <Table.Th className="p-3 border">
+                      <Text size="sm" fw={500}>
+                        Employment Role
+                      </Text>
+                    </Table.Th>
+                    <Table.Th
+                      className="p-3 border text-center"
+                      style={{ width: '120px' }}
+                    >
+                      <Text size="sm" fw={500}>
+                        Actions
+                      </Text>
+                    </Table.Th>
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>
+                  {paginatedData.length > 0 ? (
+                    paginatedData.map((role, index) => (
+                      <Table.Tr key={role.id} className="transition-colors">
+                        <Table.Td className="text-center p-3">
+                          <Text size="sm">
+                            {index + 1 + (activePage - 1) * itemsPerPage}
+                          </Text>
+                        </Table.Td>
+                        <Table.Td className="p-3">
+                          <Text size="sm" fw={500}>
+                            {role.designation}
+                          </Text>
+                        </Table.Td>
+                        <Table.Td className="p-3">
+                          <RoleActions role={role} onEdit={handleEdit} />
+                        </Table.Td>
+                      </Table.Tr>
+                    ))
+                  ) : (
+                    <Table.Tr>
+                      <Table.Td colSpan={3} className="text-center p-8">
+                        <Stack align="center" gap="md">
+                          <IconBriefcase size={48} opacity={0.5} />
+                          <Text size="lg">No employment roles found</Text>
+                          <Text size="sm">
+                            {searchQuery
+                              ? 'Try adjusting your search'
+                              : 'Start by adding your first employment role'}
+                          </Text>
+                          {!searchQuery && (
+                            <Button
+                              variant="light"
+                              leftSection={<IconPlus size={16} />}
+                              onClick={openAddModal}
+                            >
+                              Add Role
+                            </Button>
+                          )}
+                        </Stack>
+                      </Table.Td>
+                    </Table.Tr>
+                  )}
+                </Table.Tbody>
+              </Table>
+            </ScrollArea>
+          )}
+        </Card>
+
+        {/* Pagination */}
         {totalPages > 1 && (
-          <Center className="my-8">
+          <Center>
             <Pagination
-              total={totalPages}
               value={activePage}
               onChange={setActivePage}
-              mt="md"
+              total={totalPages}
+              size={isMobile ? 'sm' : 'md'}
+              radius="md"
+              withEdges
             />
           </Center>
         )}
-      </div>
+      </Stack>
+
+      {/* Add Modal */}
       <Modal
         opened={addModalOpened}
         onClose={closeAddModal}
         title={
-          <Text className="text-center font-bold text-xl">
-            Add New Employment Role
-          </Text>
+          <Group gap="xs">
+            <IconPlus size={20} />
+            <Text fw={600} size="lg">
+              Add New Employment Role
+            </Text>
+          </Group>
         }
         centered
+        size="md"
       >
-        <Box>
+        <Stack gap="md">
           <TextInput
-            label="Name"
-            value={newTypeRole}
+            label="Role Name"
+            value={newRoleName}
             onChange={e => {
               const value = e.target.value;
               if (value === '' || isValidDesignation(value)) {
                 setNewRoleName(value);
               }
             }}
-            placeholder="Enter name"
+            placeholder="Enter role name"
             required
-            mb="md"
+            size="md"
           />
-          <Group justify="flex-end">
-            <Button
-              bg={organizationConfig.organization_theme.theme.backgroundColor}
-              c={organizationConfig.organization_theme.theme.color}
-              variant="outline"
-              onClick={closeAddModal}
-            >
+          <Group justify="flex-end" mt="md">
+            <Button variant="default" onClick={closeAddModal}>
               Cancel
             </Button>
             <Button
-              bg={organizationConfig.organization_theme.theme.backgroundColor}
               onClick={handleAdd}
-              c={organizationConfig.organization_theme.theme.color}
-              disabled={isLoading}
+              disabled={isLoading || !newRoleName.trim()}
+              leftSection={<IconDeviceFloppy size={16} />}
             >
-              Add
+              {isLoading ? 'Adding...' : 'Add Role'}
             </Button>
           </Group>
-        </Box>
+        </Stack>
       </Modal>
 
+      {/* Edit Modal */}
       <Modal
         opened={editModalOpened}
         onClose={closeEditModal}
         title={
-          <Text className="text-center font-bold text-xl">
-            Edit Employment Role
-          </Text>
+          <Group gap="xs">
+            <IconEdit size={20} />
+            <Text fw={600} size="lg">
+              Edit Employment Role
+            </Text>
+          </Group>
         }
         centered
+        size="md"
       >
-        <Box>
+        <Stack gap="md">
           <TextInput
-            label="Name"
+            label="Role Name"
             value={selectedRole?.designation || ''}
             onChange={e => {
               const value = e.target.value;
@@ -340,67 +586,69 @@ const EmploymentRoles = () => {
               }
             }}
             required
-            mb="md"
+            size="md"
           />
-          <Group
-            justify="flex-end"
-            className="flex flex-row flex-wrap gap-2 sm:gap-4 mt-4"
-          >
+          <Group justify="space-between" mt="md">
             <Button
-              bg={organizationConfig.organization_theme.theme.backgroundColor}
-              c={organizationConfig.organization_theme.theme.color}
+              color="red"
               variant="outline"
-              className="text-sm px-3 py-2"
-              onClick={closeEditModal}
-            >
-              Cancel
-            </Button>
-            <Button
-              bg={organizationConfig.organization_theme.theme.backgroundColor}
-              c={organizationConfig.organization_theme.theme.color}
-              variant="outline"
-              className="text-sm px-3 py-2"
-              onClick={confirmEdit}
-            >
-              Save Changes
-            </Button>
-            <Button
-              bg="red"
-              className="text-sm px-3 py-2"
+              leftSection={<IconTrash size={16} />}
               onClick={() => handleDelete(selectedRole.id)}
             >
               Delete
             </Button>
+            <Group>
+              <Button variant="default" onClick={closeEditModal}>
+                Cancel
+              </Button>
+              <Button
+                onClick={confirmEdit}
+                disabled={isLoading}
+                leftSection={<IconDeviceFloppy size={16} />}
+              >
+                {isLoading ? 'Saving...' : 'Save Changes'}
+              </Button>
+            </Group>
           </Group>
-        </Box>
+        </Stack>
       </Modal>
 
+      {/* Delete Confirmation Modal */}
       <Modal
         opened={deleteModalOpened}
         onClose={closeDeleteModal}
         title={
-          <Text className="text-center font-bold text-xl">
-            Delete Employment Role
-          </Text>
+          <Group gap="xs">
+            <IconAlertTriangle size={24} color="red" />
+            <Text fw={600} size="lg" c="red">
+              Delete Employment Role
+            </Text>
+          </Group>
         }
         centered
+        size="md"
       >
-        <Text size="sm">Are you sure you want to delete this role?</Text>
-        <Group justify="flex-end" mt="md">
-          <Button
-            bg={organizationConfig.organization_theme.theme.backgroundColor}
-            c={organizationConfig.organization_theme.theme.color}
-            variant="outline"
-            onClick={closeDeleteModal}
-          >
-            Cancel
-          </Button>
-          <Button bg="red" onClick={confirmDelete}>
-            Delete
-          </Button>
-        </Group>
+        <Stack gap="md">
+          <Text size="sm">
+            Are you sure you want to delete this employment role? This action
+            cannot be undone.
+          </Text>
+          <Group justify="flex-end" mt="md">
+            <Button variant="default" onClick={closeDeleteModal}>
+              Cancel
+            </Button>
+            <Button
+              color="red"
+              onClick={confirmDelete}
+              disabled={isLoading}
+              leftSection={<IconTrash size={16} />}
+            >
+              {isLoading ? 'Deleting...' : 'Delete'}
+            </Button>
+          </Group>
+        </Stack>
       </Modal>
-    </div>
+    </Container>
   );
 };
 

@@ -1,29 +1,49 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useDisclosure } from '@mantine/hooks';
+import { useDisclosure, useMediaQuery } from '@mantine/hooks';
 import {
   AddCompanyForm,
-  addCompanySchema,
+  addCompanySchema
 } from '../../../../forms/add-company';
 import { useForm, Controller } from 'react-hook-form';
-import { Button, Checkbox, Select, TextInput, Title } from '@mantine/core';
+import {
+  Button,
+  Checkbox,
+  Select,
+  TextInput,
+  Title,
+  Container,
+  Card,
+  Stack,
+  Group,
+  Text,
+  Divider,
+  Grid,
+  Loader,
+  Center
+} from '@mantine/core';
 import {
   getCompanyDetailsByIdByRecruiter,
-  updateCompanyByRecruiter,
+  updateCompanyByRecruiter
 } from '../../../../services/user-services';
 import { toast } from 'react-toastify';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { useRecoilValue } from 'recoil';
 import { organizationThemeAtom } from '../../../../atoms/organization-atom';
 import { userDetailsAtom } from '../../../../atoms/user';
-import { BgDiv } from '../../../common/style-components/bg-div';
+import { themeAtom } from '../../../../atoms/theme';
 import { useCustomToast } from '../../../../utils/common/toast';
 import PoolCompaniesCommentsTable from './comments';
 import AddCommentPoolCompany from './add-comment';
 import { deletePoolCompanyByAdmin } from '../../../../services/admin-services';
 import { BackButton } from '../../../common/style-components/buttons';
 import { StandardModal } from '../../../UI/Models/base-model';
+import {
+  IconTrash,
+  IconDeviceFloppy,
+  IconAlertTriangle
+} from '@tabler/icons-react';
 
 const UpdateCompany = () => {
   const params = useParams();
@@ -31,9 +51,21 @@ const UpdateCompany = () => {
   const navigate = useNavigate();
   const organizationConfig = useRecoilValue(organizationThemeAtom);
   const user = useRecoilValue(userDetailsAtom);
+  const isDarkTheme = useRecoilValue(themeAtom);
   const [opened, { open, close }] = useDisclosure(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Responsive breakpoints
+  const isMobile = useMediaQuery('(max-width: 768px)');
+  const isSmallMobile = useMediaQuery('(max-width: 500px)');
+
+  // Get the current theme configuration
+  const currentThemeConfig = useMemo(() => {
+    const orgTheme = organizationConfig.organization_theme;
+    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+  }, [organizationConfig, isDarkTheme]);
 
   const [comments, setComments] = useState<
     {
@@ -49,12 +81,13 @@ const UpdateCompany = () => {
     formState: { errors, isSubmitting },
     handleSubmit,
     control,
-    reset,
+    reset
   } = useForm<AddCompanyForm>({
-    resolver: zodResolver(addCompanySchema),
+    resolver: zodResolver(addCompanySchema)
   });
 
   useEffect(() => {
+    setIsLoading(true);
     getCompanyDetailsByIdByRecruiter(companyId)
       .then(response => {
         reset(response);
@@ -64,7 +97,8 @@ const UpdateCompany = () => {
           setComments([]);
         }
       })
-      .catch(error => toast.error(error.response.data.message));
+      .catch(error => toast.error(error.response.data.message))
+      .finally(() => setIsLoading(false));
   }, [companyId, reset]);
 
   const onSubmit = async (data: AddCompanyForm) => {
@@ -80,7 +114,7 @@ const UpdateCompany = () => {
   const handleDeleteCompany = (companyId: string, agreeTerms: boolean) => {
     const payload = {
       companyId: companyId,
-      confirmDelete: agreeTerms,
+      confirmDelete: agreeTerms
     };
     deletePoolCompanyByAdmin(payload)
       .then(() => {
@@ -92,172 +126,261 @@ const UpdateCompany = () => {
       });
   };
 
+  if (isLoading) {
+    return (
+      <Container size="xl" py="xl">
+        <Center style={{ minHeight: '60vh' }}>
+          <Stack align="center" gap="md">
+            <Loader size="xl" />
+            <Text>Loading company details...</Text>
+          </Stack>
+        </Center>
+      </Container>
+    );
+  }
+
   return (
-    <div>
-      <BgDiv>
-        <form
-          style={{
-            backgroundColor:
-              organizationConfig.organization_theme.theme.backgroundColor,
-          }}
-          onSubmit={handleSubmit(onSubmit)}
-          className="space-y-4 rounded-lg shadow-lg w-full max-w-3xl  mx-auto p-8"
-        >
-          <div className="px-3 flex items-center justify-between gap-4 flex-wrap">
-            <Title
-              className="text-base sm:text-xl md:text-2xl font-extrabold underline text-left flex-1"
-              order={3}
-            >
+    <Container size="xl" py="md" my="xl" px={isSmallMobile ? 'xs' : 'md'}>
+      <Stack gap="md">
+        {/* Header Card */}
+        <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder>
+          <Group
+            justify="space-between"
+            align="center"
+            wrap={isMobile ? 'wrap' : 'nowrap'}
+          >
+            <Title order={isMobile ? 4 : 3} fw={700}>
               Update Company Details
             </Title>
             <BackButton id={companyId} />
-          </div>
-          <div className="px-4 flex flex-col sm:flex-row sm:items-end sm:gap-4 gap-2">
-            <TextInput
-              {...register('companyName')}
-              label="Company Name"
-              className="w-full sm:w-1/2 md:w-full"
-              disabled
-              error={errors.companyName?.message}
-            />
-            <Controller
-              name="status"
-              control={control}
-              render={({ field }) => (
-                <Select
-                  label="Select Status"
-                  placeholder="Pick value"
-                  className="w-full sm:w-1/2 md:w-full"
-                  {...field}
-                  data={[
-                    { value: 'Created', label: 'Created' },
-                    { value: 'Followed Up', label: 'Followed Up' },
-                    {
-                      value: 'Waiting For Response',
-                      label: 'Waiting For Response',
-                    },
-                    { value: 'Not Interested', label: 'Not Interested' },
-                    { value: 'On Boarded', label: 'On Boarded' },
-                    { value: 'Closed', label: 'Closed' },
-                  ]}
-                  value={field.value}
-                />
-              )}
-            />
-          </div>
+          </Group>
+        </Card>
 
-          <fieldset className="mx-4  p-4 border">
-            <legend className="text-lg font-semibold">Primary Contact</legend>
-            <TextInput
-              {...register('primaryContact.name')}
-              label="Name"
-              className="mb-2"
-              error={errors.primaryContact?.name?.message}
-            />
-            <TextInput
-              {...register('primaryContact.email')}
-              label="Email"
-              className="mb-2"
-              error={errors.primaryContact?.email?.message}
-            />
-            <TextInput
-              {...register('primaryContact.phone')}
-              label="Phone"
-              className="mb-2"
-              error={errors.primaryContact?.phone?.message}
-            />
-          </fieldset>
+        {/* Main Form Card */}
+        <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <Stack gap="lg">
+              {/* Company Name and Status */}
+              <Grid gutter="md">
+                <Grid.Col span={{ base: 12, sm: 6 }}>
+                  <TextInput
+                    {...register('companyName')}
+                    label="Company Name"
+                    disabled
+                    error={errors.companyName?.message}
+                    size={isMobile ? 'sm' : 'md'}
+                    autoComplete="off"
+                  />
+                </Grid.Col>
+                <Grid.Col span={{ base: 12, sm: 6 }}>
+                  <Controller
+                    name="status"
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        label="Select Status"
+                        placeholder="Pick value"
+                        {...field}
+                        data={[
+                          { value: 'Created', label: 'Created' },
+                          { value: 'Followed Up', label: 'Followed Up' },
+                          {
+                            value: 'Waiting For Response',
+                            label: 'Waiting For Response'
+                          },
+                          { value: 'Not Interested', label: 'Not Interested' },
+                          { value: 'On Boarded', label: 'On Boarded' },
+                          { value: 'Closed', label: 'Closed' }
+                        ]}
+                        value={field.value}
+                        size={isMobile ? 'sm' : 'md'}
+                      />
+                    )}
+                  />
+                </Grid.Col>
+              </Grid>
 
-          <div className="flex flex-wrap">
-            <fieldset className="flex-auto m-4 p-4 border">
-              <legend className="text-lg font-semibold">
-                Secondary Contact 1
-              </legend>
-              <TextInput
-                {...register('secondaryContact_1.name')}
-                label="Name"
-                className="mb-2"
-                error={errors.secondaryContact_1?.name?.message}
-              />
-              <TextInput
-                {...register('secondaryContact_1.email')}
-                label="Email"
-                className="mb-2"
-                error={errors.secondaryContact_1?.email?.message}
-              />
-              <TextInput
-                {...register('secondaryContact_1.phone')}
-                label="Phone"
-                className="mb-2"
-                error={errors.secondaryContact_1?.phone?.message}
-              />
-            </fieldset>
+              <Divider />
 
-            <fieldset className="flex-auto m-4 p-4 border">
-              <legend className="text-lg font-semibold">
-                Secondary Contact 2
-              </legend>
-              <TextInput
-                {...register('secondaryContact_2.name')}
-                label="Name"
-                className="mb-2"
-                error={errors.secondaryContact_2?.name?.message}
-              />
-              <TextInput
-                {...register('secondaryContact_2.email')}
-                label="Email"
-                className="mb-2"
-                error={errors.secondaryContact_2?.email?.message}
-              />
-              <TextInput
-                {...register('secondaryContact_2.phone')}
-                label="Phone"
-                className="mb-2"
-                error={errors.secondaryContact_2?.phone?.message}
-              />
-            </fieldset>
-          </div>
-          <div className="px-4">
-            <div className="my-4 flex flex-col sm:flex-row justify-between gap-4 sm:items-center">
-              <button
-                className="bg-red-500 text-white py-2 px-4 rounded w-full sm:w-auto"
-                onClick={e => {
-                  e.preventDefault();
-                  open();
-                }}
+              {/* Primary Contact */}
+              <Card withBorder p="md" radius="md">
+                <Stack gap="md">
+                  <Text size="lg" fw={600}>
+                    Primary Contact
+                  </Text>
+                  <Grid gutter="md">
+                    <Grid.Col span={12}>
+                      <TextInput
+                        {...register('primaryContact.name')}
+                        label="Name"
+                        error={errors.primaryContact?.name?.message}
+                        size={isMobile ? 'sm' : 'md'}
+                        autoComplete="off"
+                      />
+                    </Grid.Col>
+                    <Grid.Col span={{ base: 12, sm: 6 }}>
+                      <TextInput
+                        {...register('primaryContact.email')}
+                        label="Email"
+                        error={errors.primaryContact?.email?.message}
+                        size={isMobile ? 'sm' : 'md'}
+                        autoComplete="off"
+                      />
+                    </Grid.Col>
+                    <Grid.Col span={{ base: 12, sm: 6 }}>
+                      <TextInput
+                        {...register('primaryContact.phone')}
+                        label="Phone"
+                        error={errors.primaryContact?.phone?.message}
+                        size={isMobile ? 'sm' : 'md'}
+                        autoComplete="off"
+                      />
+                    </Grid.Col>
+                  </Grid>
+                </Stack>
+              </Card>
+
+              {/* Secondary Contacts */}
+              <Grid gutter="md">
+                <Grid.Col span={{ base: 12, md: 6 }}>
+                  <Card withBorder p="md" radius="md">
+                    <Stack gap="md">
+                      <Text size="lg" fw={600}>
+                        Secondary Contact 1
+                      </Text>
+                      <TextInput
+                        {...register('secondaryContact_1.name')}
+                        label="Name"
+                        error={errors.secondaryContact_1?.name?.message}
+                        size={isMobile ? 'sm' : 'md'}
+                        autoComplete="off"
+                      />
+                      <TextInput
+                        {...register('secondaryContact_1.email')}
+                        label="Email"
+                        error={errors.secondaryContact_1?.email?.message}
+                        size={isMobile ? 'sm' : 'md'}
+                        autoComplete="off"
+                      />
+                      <TextInput
+                        {...register('secondaryContact_1.phone')}
+                        label="Phone"
+                        error={errors.secondaryContact_1?.phone?.message}
+                        size={isMobile ? 'sm' : 'md'}
+                        autoComplete="off"
+                      />
+                    </Stack>
+                  </Card>
+                </Grid.Col>
+
+                <Grid.Col span={{ base: 12, md: 6 }}>
+                  <Card withBorder p="md" radius="md">
+                    <Stack gap="md">
+                      <Text size="lg" fw={600}>
+                        Secondary Contact 2
+                      </Text>
+                      <TextInput
+                        {...register('secondaryContact_2.name')}
+                        label="Name"
+                        error={errors.secondaryContact_2?.name?.message}
+                        size={isMobile ? 'sm' : 'md'}
+                        autoComplete="off"
+                      />
+                      <TextInput
+                        {...register('secondaryContact_2.email')}
+                        label="Email"
+                        error={errors.secondaryContact_2?.email?.message}
+                        size={isMobile ? 'sm' : 'md'}
+                        autoComplete="off"
+                      />
+                      <TextInput
+                        {...register('secondaryContact_2.phone')}
+                        label="Phone"
+                        autoComplete="off"
+                        error={errors.secondaryContact_2?.phone?.message}
+                        size={isMobile ? 'sm' : 'md'}
+                      />
+                    </Stack>
+                  </Card>
+                </Grid.Col>
+              </Grid>
+
+              <Divider />
+
+              {/* Action Buttons */}
+              <Group
+                justify="space-between"
+                wrap={isMobile ? 'wrap' : 'nowrap'}
               >
-                Delete Company
-              </button>
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full sm:w-auto"
-              >
-                {isSubmitting ? 'Loading...' : 'Update Company'}
-              </Button>
-            </div>
-          </div>
-        </form>
-      </BgDiv>
+                <Button
+                  color="red"
+                  variant="filled"
+                  leftSection={<IconTrash size={16} />}
+                  onClick={e => {
+                    e.preventDefault();
+                    open();
+                  }}
+                  fullWidth={isMobile}
+                  size={isMobile ? 'md' : 'sm'}
+                >
+                  Delete Company
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  leftSection={<IconDeviceFloppy size={16} />}
+                  fullWidth={isMobile}
+                  size={isMobile ? 'md' : 'sm'}
+                >
+                  {isSubmitting ? 'Updating...' : 'Update Company'}
+                </Button>
+              </Group>
+            </Stack>
+          </form>
+        </Card>
+
+        {/* Add Comment Section */}
+        <AddCommentPoolCompany
+          comments={comments}
+          setComments={setComments}
+          user={user}
+          companyId={companyId}
+          isMobile={isMobile}
+        />
+
+        {/* Comments Table */}
+        <PoolCompaniesCommentsTable
+          organizationConfig={organizationConfig}
+          comments={comments}
+          currentThemeConfig={currentThemeConfig}
+          isMobile={isMobile}
+        />
+      </Stack>
+
+      {/* Delete Confirmation Modal */}
       <StandardModal
         title={
-          <Title order={3} c="red">
-            Delete Action
-          </Title>
+          <Group gap="xs">
+            <IconAlertTriangle size={24} color="red" />
+            <Title order={3} c="red">
+              Delete Action
+            </Title>
+          </Group>
         }
         size="md"
         opened={opened}
         onClose={close}
       >
-        <div>
-          <h2 className="font-bold text-lg">
-            Sure want to delete this Company?{' '}
-          </h2>
-          <p className="mt-4 font-bold">
+        <Stack gap="md">
+          <Text size="lg" fw={600}>
+            Sure want to delete this Company?
+          </Text>
+          <Text c="dimmed">
             Please be aware of doing this action! Deleting company is an
             un-reversible action and you should be aware while doing this.
-          </p>
-          <div className="mt-4">
+          </Text>
+
+          <Stack gap="sm" mt="md">
             <Checkbox
               label="I understand what are the consequences of doing this action!"
               checked={confirmDelete}
@@ -269,32 +392,24 @@ const UpdateCompany = () => {
               checked={agreeTerms}
               onChange={e => setAgreeTerms(e.currentTarget.checked)}
             />
-          </div>
-          <div className=" flex flex-wrap justify-between mt-8">
-            <button
-              className="bg-red-500 text-white py-2 px-4 rounded"
+          </Stack>
+
+          <Group justify="space-between" mt="xl">
+            <Button
+              color="red"
               onClick={() => handleDeleteCompany(companyId!, agreeTerms)}
               disabled={!confirmDelete}
+              leftSection={<IconTrash size={16} />}
             >
               Delete
-            </button>
-            <Button onClick={close}>Cancel</Button>
-          </div>
-        </div>
+            </Button>
+            <Button variant="default" onClick={close}>
+              Cancel
+            </Button>
+          </Group>
+        </Stack>
       </StandardModal>
-
-      <AddCommentPoolCompany
-        organizationConfig={organizationConfig}
-        comments={comments}
-        setComments={setComments}
-        user={user}
-        companyId={companyId}
-      />
-      <PoolCompaniesCommentsTable
-        organizationConfig={organizationConfig}
-        comments={comments}
-      />
-    </div>
+    </Container>
   );
 };
 
