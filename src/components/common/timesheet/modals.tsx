@@ -1,12 +1,15 @@
 import {
-  Box,
   Button,
   Group,
   Textarea,
   TextInput,
   Text,
   Table,
-  Badge
+  Badge,
+  Stack,
+  ScrollArea,
+  Divider,
+  Card
 } from '@mantine/core';
 import { StandardModal } from '../../UI/Models/base-model';
 import moment from 'moment';
@@ -20,8 +23,14 @@ import { toast } from 'react-toastify';
 import { prepareSubmitData } from './helper';
 import { submitTimeSheet } from '../../../services/common-services';
 import { useCustomToast } from '../../../utils/common/toast';
-import { IconCheck, IconX } from '@tabler/icons-react';
+import {
+  IconCheck,
+  IconX,
+  IconCalendarOff,
+  IconClock
+} from '@tabler/icons-react';
 import React from 'react';
+import { useMediaQuery } from '@mantine/hooks';
 
 export const EditTimeEntryModal = React.memo(
   ({
@@ -39,6 +48,8 @@ export const EditTimeEntryModal = React.memo(
     >;
     handleEntrySubmit: () => void;
   }) => {
+    const isMobile = useMediaQuery('(max-width: 768px)');
+
     const handleHoursChange = useCallback(
       (e: React.ChangeEvent<HTMLInputElement>) => {
         const rawValue = e.currentTarget.value;
@@ -78,54 +89,105 @@ export const EditTimeEntryModal = React.memo(
       () => moment(currentEntry.date).format('DD MMM YYYY'),
       [currentEntry.date]
     );
+
     return (
       <StandardModal
         opened={openedEntryModal}
         onClose={closeEntryModal}
-        title="Edit Time Entry"
+        title={
+          <Group gap="xs">
+            <IconClock size={20} />
+            <Text fw={600} size="lg">
+              Edit Time Entry
+            </Text>
+          </Group>
+        }
         size="lg"
       >
-        <Box p="sm">
-          <Text fw={500} mb="xs">
-            Project: {currentEntry.project_name}
-          </Text>
-          <Text fw={500} mb="xs">
-            Task: {currentEntry.task_name}
-          </Text>
-          <Text fw={500} mb="xs">
-            Date: {formattedDate}
-          </Text>
+        <Stack gap="md" p={isMobile ? 'sm' : 'md'}>
+          {/* Entry Details */}
+          <Card withBorder p="sm" radius="md">
+            <Stack gap="xs">
+              <Group gap="xs">
+                <Text size="sm" c="dimmed" fw={500}>
+                  Project:
+                </Text>
+                <Text size="sm" fw={600}>
+                  {currentEntry.project_name}
+                </Text>
+              </Group>
+              <Group gap="xs">
+                <Text size="sm" c="dimmed" fw={500}>
+                  Task:
+                </Text>
+                <Text size="sm" fw={600}>
+                  {currentEntry.task_name}
+                </Text>
+              </Group>
+              <Group gap="xs">
+                <Text size="sm" c="dimmed" fw={500}>
+                  Date:
+                </Text>
+                <Badge variant="light" color="blue">
+                  {formattedDate}
+                </Badge>
+              </Group>
+            </Stack>
+          </Card>
 
+          <Divider />
+
+          {/* Input Fields */}
           <TextInput
             label="Hours"
+            description="Enter hours worked (0-24)"
             type="number"
             min={0}
             max={24}
+            step={0.5}
             value={currentEntry.hours.toString()}
             onChange={handleHoursChange}
-            mb="sm"
+            size={isMobile ? 'sm' : 'md'}
+            required
           />
 
           <Textarea
             label="Comments"
+            description="Please provide details about your work"
             placeholder="Enter comments (required)"
             value={currentEntry.comments}
             onChange={handleCommentsChange}
             autosize
             minRows={3}
-            mb="sm"
+            maxRows={6}
+            size={isMobile ? 'sm' : 'md'}
             required
           />
 
-          <Group justify="flex-end">
-            <Button variant="outline" onClick={closeEntryModal}>
+          <Divider />
+
+          {/* Action Buttons */}
+          <Group justify="flex-end" gap="xs">
+            <Button
+              variant="default"
+              onClick={closeEntryModal}
+              leftSection={<IconX size={16} />}
+              size={isMobile ? 'sm' : 'md'}
+            >
               Cancel
             </Button>
-            <Button color="blue" onClick={handleEntrySubmit}>
-              Save
+            <Button
+              onClick={handleEntrySubmit}
+              leftSection={<IconCheck size={16} />}
+              disabled={
+                !currentEntry.comments.trim() || currentEntry.hours === 0
+              }
+              size={isMobile ? 'sm' : 'md'}
+            >
+              Save Entry
             </Button>
           </Group>
-        </Box>
+        </Stack>
       </StandardModal>
     );
   }
@@ -143,6 +205,7 @@ export const ApplyLeaveTimesheetModal = React.memo(
     timeEntries: EmployeeTimesheet[];
     fetchTimesheetData: () => Promise<void>;
   }) => {
+    const isMobile = useMediaQuery('(max-width: 768px)');
     const [leaveReason, setLeaveReason] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [leaveDate, setLeaveDate] = useState<DateValue>();
@@ -255,6 +318,7 @@ export const ApplyLeaveTimesheetModal = React.memo(
       (date: DateValue) => setLeaveDate(date),
       []
     );
+
     const handleReasonChange = useCallback(
       (e: React.ChangeEvent<HTMLTextAreaElement>) =>
         setLeaveReason(e.currentTarget.value),
@@ -265,45 +329,68 @@ export const ApplyLeaveTimesheetModal = React.memo(
       <StandardModal
         opened={openedLeaveModal}
         onClose={closeLeaveModal}
-        title="Apply for Leave"
+        title={
+          <Group gap="xs">
+            <IconCalendarOff size={20} />
+            <Text fw={600} size="lg">
+              Apply for Leave
+            </Text>
+          </Group>
+        }
         size="lg"
       >
-        <Box p="sm">
+        <Stack gap="md" p={isMobile ? 'sm' : 'md'}>
           <DatePickerInput
             label="Leave Date"
-            placeholder="Select leave period"
+            description="Select the date for your leave"
+            placeholder="Select leave date"
             value={leaveDate}
             onChange={handleDateChange}
-            mb="sm"
             minDate={new Date()}
             maxDate={moment().add(3, 'months').toDate()}
             clearable
             required
+            size={isMobile ? 'sm' : 'md'}
+            leftSection={<IconCalendarOff size={16} />}
           />
+
           <Textarea
-            label="Reason"
+            label="Leave Reason"
+            description="Please provide a reason for your leave"
             placeholder="Enter leave reason"
             value={leaveReason}
             onChange={handleReasonChange}
-            mb="sm"
             required
             autosize
             minRows={3}
+            maxRows={6}
+            size={isMobile ? 'sm' : 'md'}
           />
 
-          <Group justify="flex-end" mt="md">
-            <Button variant="outline" onClick={closeLeaveModal}>
+          <Divider />
+
+          <Group justify="flex-end" gap="xs">
+            <Button
+              variant="default"
+              onClick={closeLeaveModal}
+              disabled={isLoading}
+              leftSection={<IconX size={16} />}
+              size={isMobile ? 'sm' : 'md'}
+            >
               Cancel
             </Button>
             <Button
               color="green"
               onClick={handleLeaveSubmit}
               loading={isLoading}
+              disabled={!leaveDate || !leaveReason.trim()}
+              leftSection={<IconCheck size={16} />}
+              size={isMobile ? 'sm' : 'md'}
             >
-              Submit
+              Submit Leave
             </Button>
           </Group>
-        </Box>
+        </Stack>
       </StandardModal>
     );
   }
@@ -311,41 +398,52 @@ export const ApplyLeaveTimesheetModal = React.memo(
 
 interface ChangeRowProps {
   change: EmployeeTimesheet;
+  isMobile?: boolean;
 }
 
-const ChangeRow = React.memo(({ change }: ChangeRowProps) => {
+const ChangeRow = React.memo(({ change, isMobile = false }: ChangeRowProps) => {
   const formattedDate = useMemo(
     () => moment(change.date).format('ddd, DD MMM'),
     [change.date]
   );
 
   return (
-    <tr className="m-2 p-2">
-      <td className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis">
-        <Badge variant="light" color="blue" fullWidth>
+    <Table.Tr>
+      <Table.Td className="p-2 border">
+        <Badge
+          variant="light"
+          color="blue"
+          fullWidth
+          size={isMobile ? 'sm' : 'md'}
+        >
           {formattedDate}
         </Badge>
-      </td>
-      <td className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis">
-        <Text fw={500} lineClamp={2}>
-          {change.project_name}
-        </Text>
-      </td>
-      <td className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis">
-        <Text lineClamp={2}>{change.task_name}</Text>
-      </td>
-      <td
-        className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis"
-        style={{ textAlign: 'center' }}
-      >
-        <Text fw={600}>{change.hours}</Text>
-      </td>
-      <td className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis">
-        <Text lineClamp={2} style={{ flex: 1 }}>
+      </Table.Td>
+      {!isMobile && (
+        <>
+          <Table.Td className="p-2 border">
+            <Text fw={500} size="sm" lineClamp={2}>
+              {change.project_name}
+            </Text>
+          </Table.Td>
+          <Table.Td className="p-2 border">
+            <Text size="sm" lineClamp={2}>
+              {change.task_name}
+            </Text>
+          </Table.Td>
+        </>
+      )}
+      <Table.Td className="p-2 border text-center">
+        <Badge variant="filled" color="blue" size="lg">
+          {change.hours}h
+        </Badge>
+      </Table.Td>
+      <Table.Td className="p-2 border">
+        <Text size="sm" lineClamp={isMobile ? 1 : 2}>
           {change.comments}
         </Text>
-      </td>
-    </tr>
+      </Table.Td>
+    </Table.Tr>
   );
 });
 
@@ -361,11 +459,18 @@ export const ConfirmTimesheetSubmitModal = React.memo(
     changesMade: EmployeeTimesheet[];
     setChangesMade: React.Dispatch<React.SetStateAction<EmployeeTimesheet[]>>;
   }) => {
+    const isMobile = useMediaQuery('(max-width: 768px)');
     const { showSuccessToast } = useCustomToast();
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const changesCount = changesMade.length;
+
+    const totalHours = useMemo(() => {
+      return changesMade.reduce((sum, change) => sum + change.hours, 0);
+    }, [changesMade]);
 
     const handleSubmit = useCallback(async () => {
       try {
+        setIsSubmitting(true);
         const submitData = prepareSubmitData(changesMade);
         await submitTimeSheet(submitData);
         showSuccessToast('Timesheet submitted successfully');
@@ -373,14 +478,19 @@ export const ConfirmTimesheetSubmitModal = React.memo(
         closeSubmitModal();
       } catch {
         toast.error('Failed to submit timesheet');
+      } finally {
+        setIsSubmitting(false);
       }
     }, [changesMade, showSuccessToast, setChangesMade, closeSubmitModal]);
 
     const modalTitle = useMemo(
       () => (
-        <Text fw={600} size="lg">
-          Confirm Timesheet Submission
-        </Text>
+        <Group gap="xs">
+          <IconCheck size={20} />
+          <Text fw={600} size="lg">
+            Confirm Timesheet Submission
+          </Text>
+        </Group>
       ),
       []
     );
@@ -391,77 +501,137 @@ export const ConfirmTimesheetSubmitModal = React.memo(
         onClose={closeSubmitModal}
         title={modalTitle}
         size="xl"
-        radius="md"
-        padding="lg"
       >
-        <Box p="sm">
-          <Text mb="lg" c="dimmed">
-            Please review your changes before submission. You're about to update{' '}
-            {changesCount} time entries.
+        <Stack gap="md" p={isMobile ? 'sm' : 'md'}>
+          {/* Summary Card */}
+          <Card withBorder p="md" radius="md">
+            <Stack gap="xs">
+              <Group justify="space-between">
+                <Text size="sm" c="dimmed">
+                  Total Entries:
+                </Text>
+                <Badge size="lg" variant="light" color="blue">
+                  {changesCount} {changesCount === 1 ? 'entry' : 'entries'}
+                </Badge>
+              </Group>
+              <Group justify="space-between">
+                <Text size="sm" c="dimmed">
+                  Total Hours:
+                </Text>
+                <Badge size="lg" variant="filled" color="green">
+                  {totalHours}h
+                </Badge>
+              </Group>
+            </Stack>
+          </Card>
+
+          <Text size="sm" c="dimmed">
+            Please review your time entries before submission. Once submitted,
+            they will be sent for approval.
           </Text>
 
-          <Box style={{ maxHeight: '60vh', overflowY: 'auto' }}>
+          <Divider />
+
+          {/* Changes Table */}
+          <ScrollArea style={{ maxHeight: '50vh' }}>
             <Table
               striped
               highlightOnHover
-              verticalSpacing="sm"
-              horizontalSpacing="md"
+              withTableBorder
               withColumnBorders
+              verticalSpacing={isMobile ? 'xs' : 'sm'}
+              horizontalSpacing={isMobile ? 'xs' : 'md'}
             >
-              <thead
+              <Table.Thead
                 style={{
                   position: 'sticky',
                   top: 0,
-                  background: 'white',
                   zIndex: 1
                 }}
               >
-                <tr>
-                  <th style={{ minWidth: '120px' }}>Date</th>
-                  <th style={{ minWidth: '180px' }}>Project</th>
-                  <th style={{ minWidth: '180px' }}>Task</th>
-                  <th style={{ width: '80px', textAlign: 'center' }}>Hours</th>
-                  <th style={{ minWidth: '200px' }}>Comments</th>
-                </tr>
-              </thead>
-              <tbody>
+                <Table.Tr>
+                  <Table.Th
+                    className="p-2 border"
+                    style={{ minWidth: '100px' }}
+                  >
+                    <Text size="sm" fw={500}>
+                      Date
+                    </Text>
+                  </Table.Th>
+                  {!isMobile && (
+                    <>
+                      <Table.Th
+                        className="p-2 border"
+                        style={{ minWidth: '150px' }}
+                      >
+                        <Text size="sm" fw={500}>
+                          Project
+                        </Text>
+                      </Table.Th>
+                      <Table.Th
+                        className="p-2 border"
+                        style={{ minWidth: '150px' }}
+                      >
+                        <Text size="sm" fw={500}>
+                          Task
+                        </Text>
+                      </Table.Th>
+                    </>
+                  )}
+                  <Table.Th
+                    className="p-2 border text-center"
+                    style={{ width: isMobile ? '80px' : '100px' }}
+                  >
+                    <Text size="sm" fw={500}>
+                      Hours
+                    </Text>
+                  </Table.Th>
+                  <Table.Th
+                    className="p-2 border"
+                    style={{ minWidth: '180px' }}
+                  >
+                    <Text size="sm" fw={500}>
+                      Comments
+                    </Text>
+                  </Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>
                 {changesMade.map(change => (
                   <ChangeRow
                     key={`${change.date}-${change.project_id}-${change.task_id}`}
                     change={change}
+                    isMobile={isMobile}
                   />
                 ))}
-              </tbody>
+              </Table.Tbody>
             </Table>
-          </Box>
+          </ScrollArea>
 
-          <Group justify="space-between" mt="xl">
-            <Text size="sm" c="dimmed">
-              Total changes:{' '}
-              <Badge color="blue" variant="light">
-                {changesCount}
-              </Badge>
-            </Text>
-            <Group>
-              <Button
-                variant="outline"
-                onClick={closeSubmitModal}
-                radius="md"
-                leftSection={<IconX size={16} />}
-              >
-                Cancel
-              </Button>
-              <Button
-                color="green"
-                onClick={handleSubmit}
-                radius="md"
-                leftSection={<IconCheck size={16} />}
-              >
-                Confirm Submission
-              </Button>
-            </Group>
+          <Divider />
+
+          {/* Action Buttons */}
+          <Group justify="flex-end" gap="xs">
+            <Button
+              variant="default"
+              onClick={closeSubmitModal}
+              disabled={isSubmitting}
+              leftSection={<IconX size={16} />}
+              size={isMobile ? 'sm' : 'md'}
+            >
+              Cancel
+            </Button>
+            <Button
+              color="green"
+              onClick={handleSubmit}
+              loading={isSubmitting}
+              leftSection={<IconCheck size={16} />}
+              size={isMobile ? 'sm' : 'md'}
+            >
+              Confirm & Submit
+            </Button>
           </Group>
-        </Box>
+        </Stack>
       </StandardModal>
     );
   }

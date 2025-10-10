@@ -1,11 +1,11 @@
-import { useDisclosure } from '@mantine/hooks';
-import { Popover, Text, Box, Group, Badge } from '@mantine/core';
+import { useDisclosure, useMediaQuery } from '@mantine/hooks';
+import { Popover, Text, Box, Badge, Stack } from '@mantine/core';
 
 export const TaskPopover = ({
   short,
   full,
   bgColor,
-  status,
+  status
 }: {
   short: string;
   full: string;
@@ -13,24 +13,37 @@ export const TaskPopover = ({
   status?: string;
 }) => {
   const [opened, { close, open }] = useDisclosure(false);
+  const isMobile = useMediaQuery('(max-width: 768px)');
 
   // Define color based on status
   const getStatusColor = (status: string) => {
-    switch (status) {
+    switch (status.toLowerCase()) {
+      case 'approved':
       case 'accepted':
         return 'green';
       case 'rejected':
         return 'red';
       case 'pending':
-        return 'yellow';
+      case 'waiting for approval':
+        return 'orange';
+      case 'not submitted':
+        return 'gray';
       default:
-        return 'grey';
+        return 'blue';
     }
   };
+
+  const getStatusLabel = (status: string) => {
+    return status
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  };
+
   return (
     <Popover
       opened={opened}
-      width={280}
+      width={isMobile ? 260 : 300}
       position="bottom"
       withArrow
       shadow="md"
@@ -38,11 +51,15 @@ export const TaskPopover = ({
     >
       <Popover.Target>
         <Text
-          size="sm"
+          size={isMobile ? 'xs' : 'sm'}
           fw={500}
           onMouseEnter={open}
           onMouseLeave={close}
-          style={{ cursor: 'pointer' }}
+          onClick={isMobile ? (opened ? close : open) : undefined}
+          style={{
+            cursor: 'pointer',
+            userSelect: 'none'
+          }}
         >
           {short}
         </Text>
@@ -51,27 +68,37 @@ export const TaskPopover = ({
       {full && (
         <Popover.Dropdown
           style={{
-            pointerEvents: 'none',
+            pointerEvents: isMobile ? 'auto' : 'none',
             backgroundColor: bgColor[0],
             color: bgColor[1],
             borderRadius: '8px',
-            padding: '12px',
+            padding: '12px'
           }}
         >
-          <Box>
-            <Text size="sm" mb="xs">
-              <strong>Comment:</strong> {full}
-            </Text>
+          <Stack gap="xs">
+            <Box>
+              <Text size="xs" c="dimmed" fw={600} mb={4}>
+                Details:
+              </Text>
+              <Text size="sm">{full}</Text>
+            </Box>
 
             {status && (
-              <Group gap="xs" align="center">
-                <Text size="sm">Status:</Text>
-                <Badge color={getStatusColor(status)} variant="light">
-                  {status}
+              <Box>
+                <Text size="xs" c="dimmed" fw={600} mb={4}>
+                  Status:
+                </Text>
+                <Badge
+                  color={getStatusColor(status)}
+                  variant="light"
+                  size="md"
+                  fullWidth
+                >
+                  {getStatusLabel(status)}
                 </Badge>
-              </Group>
+              </Box>
             )}
-          </Box>
+          </Stack>
         </Popover.Dropdown>
       )}
     </Popover>

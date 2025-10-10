@@ -1,7 +1,20 @@
-import { Badge, Box, Table, Text } from '@mantine/core';
+import {
+  Badge,
+  Table,
+  Text,
+  Card,
+  Stack,
+  ScrollArea,
+  Group
+} from '@mantine/core';
 import { EmployeeTimesheet } from '../../../interfaces/timesheet';
 import moment from 'moment';
 import { OrganizationConfig } from '../../../interfaces/organization';
+import { useRecoilValue } from 'recoil';
+import { themeAtom } from '../../../atoms/theme';
+import { useMemo } from 'react';
+import { IconClock } from '@tabler/icons-react';
+import { useMediaQuery } from '@mantine/hooks';
 
 export const TimeEntriesTable = ({
   changesMade,
@@ -12,124 +25,147 @@ export const TimeEntriesTable = ({
   pendingChanges?: number;
   organizationConfig: OrganizationConfig;
 }) => {
+  const isDarkTheme = useRecoilValue(themeAtom);
+  const isMobile = useMediaQuery('(max-width: 768px)');
+
+  // Get the current theme configuration
+  const currentThemeConfig = useMemo(() => {
+    const orgTheme = organizationConfig.organization_theme;
+    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+  }, [organizationConfig, isDarkTheme]);
+
+  const groupedEntries = useMemo(() => {
+    return Object.entries(
+      changesMade.reduce(
+        (acc, change) => {
+          const dateKey = moment(change.date).format('YYYY-MM-DD');
+          if (!acc[dateKey]) acc[dateKey] = [];
+          acc[dateKey].push(change);
+          return acc;
+        },
+        {} as Record<string, typeof changesMade>
+      )
+    );
+  }, [changesMade]);
+
+  if (!changesMade.length) {
+    return null;
+  }
+
   return (
-    <Box className="my-12">
-      {changesMade.length ? (
-        <Table
-          striped
-          highlightOnHover
-          verticalSpacing="sm"
-          horizontalSpacing="md"
-          withColumnBorders
-        >
-          <thead
-            style={{
-              position: 'sticky',
-              backgroundColor:
-                organizationConfig.organization_theme.theme.backgroundColor,
-              color: organizationConfig.organization_theme.theme.color
-            }}
+    <Card shadow="sm" p={isMobile ? 'sm' : 'md'} radius="md" withBorder>
+      <Stack gap="md">
+        <Group justify="space-between" align="center">
+          <Group gap="xs">
+            <IconClock size={20} />
+            <Text size="lg" fw={600}>
+              Time Entries Summary
+            </Text>
+          </Group>
+          <Badge size="lg" variant="light" color="blue">
+            {changesMade.length}{' '}
+            {changesMade.length === 1 ? 'entry' : 'entries'}
+          </Badge>
+        </Group>
+
+        <ScrollArea>
+          <Table
+            striped
+            highlightOnHover
+            withTableBorder
+            withColumnBorders
+            verticalSpacing={isMobile ? 'xs' : 'sm'}
+            horizontalSpacing={isMobile ? 'xs' : 'md'}
           >
-            <tr
+            <Table.Thead
               style={{
-                backgroundColor:
-                  organizationConfig.organization_theme.theme.backgroundColor,
-                color: organizationConfig.organization_theme.theme.color
+                backgroundColor: currentThemeConfig.backgroundColor,
+                color: currentThemeConfig.color
               }}
             >
-              <th
-                className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis"
-                style={{ minWidth: '120px' }}
-              >
-                Date
-              </th>
-              <th
-                className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis"
-                style={{ minWidth: '180px' }}
-              >
-                Hours
-              </th>
-              <th
-                className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis"
-                style={{ minWidth: '180px' }}
-              >
-                Comment
-              </th>
-              <th
-                className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis"
-                style={{ width: '80px', textAlign: 'center' }}
-              >
-                Status
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {Object.entries(
-              changesMade.reduce(
-                (acc, change) => {
-                  const dateKey = moment(change.date).format('YYYY-MM-DD');
-                  if (!acc[dateKey]) acc[dateKey] = [];
-                  acc[dateKey].push(change);
-                  return acc;
-                },
-                {} as Record<string, typeof changesMade>
-              )
-            ).map(([dateKey, entries]) => {
-              return entries.map((entry, idx) => (
-                <tr key={`${dateKey}-${idx}`} className="m-2 p-2">
-                  {idx === 0 && (
-                    <td
-                      rowSpan={entries.length}
-                      className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis"
-                    >
-                      <Badge variant="light" color="blue" fullWidth>
-                        {moment(entry.date).format('ddd, DD MMM')}
+              <Table.Tr>
+                <Table.Th className="p-2 border" style={{ minWidth: '120px' }}>
+                  <Text size="sm" fw={500}>
+                    Date
+                  </Text>
+                </Table.Th>
+                <Table.Th
+                  className="p-2 border"
+                  style={{ minWidth: isMobile ? '80px' : '120px' }}
+                >
+                  <Text size="sm" fw={500}>
+                    Hours
+                  </Text>
+                </Table.Th>
+                {!isMobile && (
+                  <Table.Th
+                    className="p-2 border"
+                    style={{ minWidth: '180px' }}
+                  >
+                    <Text size="sm" fw={500}>
+                      Comment
+                    </Text>
+                  </Table.Th>
+                )}
+                <Table.Th
+                  className="p-2 border text-center"
+                  style={{ width: isMobile ? '100px' : '120px' }}
+                >
+                  <Text size="sm" fw={500}>
+                    Status
+                  </Text>
+                </Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {groupedEntries.map(([dateKey, entries]) => {
+                return entries.map((entry, idx) => (
+                  <Table.Tr key={`${dateKey}-${idx}`}>
+                    {idx === 0 && (
+                      <Table.Td rowSpan={entries.length} className="p-2 border">
+                        <Badge variant="light" color="blue" fullWidth>
+                          {moment(entry.date).format('ddd, DD MMM')}
+                        </Badge>
+                      </Table.Td>
+                    )}
+                    <Table.Td className="p-2 border text-center">
+                      <Text fw={500} size="sm">
+                        {entry.hours}
+                      </Text>
+                    </Table.Td>
+                    {!isMobile && (
+                      <Table.Td className="p-2 border">
+                        <Text size="sm" lineClamp={2}>
+                          {entry.comments}
+                        </Text>
+                      </Table.Td>
+                    )}
+                    <Table.Td className="p-2 border text-center">
+                      <Badge
+                        size="sm"
+                        color={
+                          entry.status === 'Approved'
+                            ? 'green'
+                            : entry.status === 'Rejected'
+                              ? 'red'
+                              : entry.status === 'Waiting For Approval'
+                                ? 'orange'
+                                : 'gray'
+                        }
+                        variant="light"
+                      >
+                        {!pendingChanges && entry.status === 'Not Submitted'
+                          ? 'Waiting For Approval'
+                          : entry.status}
                       </Badge>
-                    </td>
-                  )}
-                  <td
-                    className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis"
-                    style={{ textAlign: 'center' }}
-                  >
-                    <Text fw={500} lineClamp={2}>
-                      {entry.hours}
-                    </Text>
-                  </td>
-                  <td
-                    className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis"
-                    style={{ textAlign: 'center' }}
-                  >
-                    <Text lineClamp={2}>{entry.comments}</Text>
-                  </td>
-                  <td
-                    className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis"
-                    style={{ textAlign: 'center' }}
-                  >
-                    <Text
-                      fw={600}
-                      c={
-                        entry.status === 'Approved'
-                          ? 'green'
-                          : entry.status === 'Rejected'
-                            ? 'red'
-                            : entry.status === 'Waiting For Approval'
-                              ? 'orange'
-                              : 'orange'
-                      }
-                    >
-                      {!pendingChanges && entry.status === 'Not Submitted'
-                        ? 'Waiting For Approval'
-                        : entry.status}
-                    </Text>
-                  </td>
-                </tr>
-              ));
-            })}
-          </tbody>
-        </Table>
-      ) : (
-        <></>
-      )}
-    </Box>
+                    </Table.Td>
+                  </Table.Tr>
+                ));
+              })}
+            </Table.Tbody>
+          </Table>
+        </ScrollArea>
+      </Stack>
+    </Card>
   );
 };

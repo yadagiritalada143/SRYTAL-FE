@@ -1,8 +1,8 @@
 import {
   IconBuildings,
   IconCalendarTime,
-  IconCheckbox,
-  IconCurrencyDollar,
+  // IconCheckbox,
+  // IconCurrencyDollar,
   IconLayoutDashboard,
   // IconCurrencyDollar,
   // IconMessageCircle,
@@ -53,53 +53,53 @@ export const NavLinks = [
     url: 'employee/dashboard/timesheet',
     icon: IconCalendarTime,
     name: 'Timesheet'
-  },
-  {
-    role: 'recruiter',
-    url: 'employee/dashboard/employee',
-    icon: IconCurrencyDollar,
-    name: 'Payslip'
-  },
-  {
-    role: 'employee',
-    url: 'employee/dashboard/payslip',
-    icon: IconCurrencyDollar,
-    name: 'Payslip'
-  },
-  // {
-  //   role: 'employee',
-  //   url: 'employee/dashboard/announcements',
-  //   icon: IconMessageCircle,
-  //   name: 'Announcements'
-  // },
-  // {
-  //   role: 'recruiter',
-  //   url: 'employee/dashboard/announcements',
-  //   icon: IconMessageCircle,
-  //   name: 'Announcements'
-  // },
-  {
-    role: 'employee',
-    url: 'employee/dashboard/mytasks',
-    icon: IconCheckbox,
-    name: 'My Tasks'
-  },
-  // {
-  //   role: 'employee',
-  //   url: 'employee/dashboard/support',
-  //   icon: IconTool,
-  //   name: 'Support'
-  // },
-  // {
-  //   role: 'recruiter',
-  //   url: 'employee/dashboard/support',
-  //   icon: IconTool,
-  //   name: 'Support'
-  // },
-  {
-    role: 'employee',
-    url: 'employee/dashboard/mentees',
-    icon: IconUsersGroup,
-    name: 'Mentees'
   }
+  // {
+  //   role: 'recruiter',
+  //   url: 'employee/dashboard/employee',
+  //   icon: IconCurrencyDollar,
+  //   name: 'Payslip'
+  // },
+  // {
+  //   role: 'employee',
+  //   url: 'employee/dashboard/payslip',
+  //   icon: IconCurrencyDollar,
+  //   name: 'Payslip'
+  // },
+  // {
+  //   role: 'employee',
+  //   url: 'employee/dashboard/announcements',
+  //   icon: IconMessageCircle,
+  //   name: 'Announcements'
+  // },
+  // {
+  //   role: 'recruiter',
+  //   url: 'employee/dashboard/announcements',
+  //   icon: IconMessageCircle,
+  //   name: 'Announcements'
+  // },
+  // {
+  //   role: 'employee',
+  //   url: 'employee/dashboard/mytasks',
+  //   icon: IconCheckbox,
+  //   name: 'My Tasks'
+  // }
+  // {
+  //   role: 'employee',
+  //   url: 'employee/dashboard/support',
+  //   icon: IconTool,
+  //   name: 'Support'
+  // },
+  // {
+  //   role: 'recruiter',
+  //   url: 'employee/dashboard/support',
+  //   icon: IconTool,
+  //   name: 'Support'
+  // },
+  // {
+  //   role: 'employee',
+  //   url: 'employee/dashboard/mentees',
+  //   icon: IconUsersGroup,
+  //   name: 'Mentees'
+  // }
 ].sort((a, b) => a.name.length - b.name.length);
