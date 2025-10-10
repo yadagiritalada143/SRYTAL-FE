@@ -1,18 +1,36 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Button,
   Group,
   Text,
   Loader,
   Pagination,
-  Box,
+  Modal,
   TextInput,
-  Title,
-  Center
+  Center,
+  Container,
+  Card,
+  Stack,
+  Table,
+  Badge,
+  ActionIcon,
+  Tooltip,
+  Select,
+  ScrollArea,
+  Flex,
+  Divider
 } from '@mantine/core';
 import { toast } from 'react-toastify';
-import { useDisclosure } from '@mantine/hooks';
-import { IconEdit } from '@tabler/icons-react';
+import { useDisclosure, useMediaQuery } from '@mantine/hooks';
+import {
+  IconEdit,
+  IconPlus,
+  IconTrash,
+  IconSearch,
+  IconAlertTriangle,
+  IconDeviceFloppy,
+  IconDroplet
+} from '@tabler/icons-react';
 import {
   getAllBloodGroupByAdmin,
   addBloodGroupByAdmin,
@@ -21,26 +39,134 @@ import {
 } from '../../../../services/admin-services';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { organizationThemeAtom } from '../../../../atoms/organization-atom';
-import { useMantineTheme } from '@mantine/core';
-import { SearchBarFullWidht } from '../../../common/search-bar/search-bar';
+import { themeAtom } from '../../../../atoms/theme';
 import { bloodGroupAtom } from '../../../../atoms/bloodgroup-atom';
-import { StandardModal } from '../../../UI/Models/base-model';
-import { useCustomToast } from '../../../../utils/common/toast';
+import { debounce } from '../../../../utils/common/debounce';
+
+const ITEMS_PER_PAGE_OPTIONS = ['5', '10', '20', '50'];
+const DEFAULT_ITEMS_PER_PAGE = 10;
 
 const isValidBloodGroup = (group: string) =>
   /^(A|B|AB|O)\s*(\+|-)(ve)?$/i.test(group.trim());
+
+// Blood Group Actions Component
+const BloodGroupActions: React.FC<{
+  group: any;
+  onEdit: (group: any) => void;
+  isMobile?: boolean;
+}> = ({ group, onEdit, isMobile = false }) => (
+  <Group gap="xs" justify="center">
+    <Tooltip label="Edit Blood Group">
+      <ActionIcon
+        variant="subtle"
+        color="blue"
+        onClick={() => onEdit(group)}
+        size={isMobile ? 'md' : 'sm'}
+      >
+        <IconEdit size={isMobile ? 18 : 16} />
+      </ActionIcon>
+    </Tooltip>
+  </Group>
+);
+
+// Mobile Blood Group Card Component
+const MobileBloodGroupCard: React.FC<{
+  group: any;
+  index: number;
+  activePage: number;
+  itemsPerPage: number;
+  onEdit: (group: any) => void;
+}> = ({ group, index, activePage, itemsPerPage, onEdit }) => {
+  return (
+    <Card shadow="sm" p="md" mb="sm" withBorder>
+      <Stack gap="sm">
+        <Group justify="space-between" align="center">
+          <Badge variant="filled" color="red">
+            #{index + 1 + (activePage - 1) * itemsPerPage}
+          </Badge>
+          <ActionIcon
+            variant="subtle"
+            color="blue"
+            onClick={() => onEdit(group)}
+            size="md"
+          >
+            <IconEdit size={18} />
+          </ActionIcon>
+        </Group>
+
+        <Divider />
+
+        <Stack gap={2}>
+          <Text size="xs" fw={600} c="dimmed">
+            Blood Group
+          </Text>
+          <Group gap="xs">
+            <IconDroplet size={20} color="red" />
+            <Text size="lg" fw={600}>
+              {group.type}
+            </Text>
+          </Group>
+        </Stack>
+      </Stack>
+    </Card>
+  );
+};
+
+// Header Component
+const HeadingComponent: React.FC<{
+  filteredCount: number;
+  onAdd: () => void;
+  isMobile?: boolean;
+}> = ({ filteredCount, onAdd, isMobile = false }) => (
+  <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder>
+    <Flex
+      direction={isMobile ? 'column' : 'row'}
+      justify="space-between"
+      align="center"
+      gap="md"
+    >
+      <Text
+        size={isMobile ? 'lg' : 'xl'}
+        fw={700}
+        ta={isMobile ? 'center' : 'left'}
+      >
+        Manage Blood Groups ({filteredCount} groups)
+      </Text>
+      <Button
+        leftSection={<IconPlus size={16} />}
+        onClick={onAdd}
+        variant="filled"
+        fullWidth={isMobile}
+        size={isMobile ? 'md' : 'sm'}
+      >
+        Add Blood Group
+      </Button>
+    </Flex>
+  </Card>
+);
 
 const BloodGroupTable = () => {
   const [bloodGroups, setBloodGroups] = useRecoilState(bloodGroupAtom);
   const [filteredBloodGroups, setFilteredBloodGroups] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activePage, setActivePage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(DEFAULT_ITEMS_PER_PAGE);
   const [selectedGroup, setSelectedGroup] = useState<any | null>(null);
   const [newGroupName, setNewGroupName] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+
   const organizationConfig = useRecoilValue(organizationThemeAtom);
-  const [search, setSearch] = useState('');
-  const theme = useMantineTheme();
-  const { showSuccessToast } = useCustomToast();
+  const isDarkTheme = useRecoilValue(themeAtom);
+
+  // Responsive breakpoints
+  const isMobile = useMediaQuery('(max-width: 768px)');
+  const isSmallMobile = useMediaQuery('(max-width: 500px)');
+
+  // Get the current theme configuration
+  const currentThemeConfig = useMemo(() => {
+    const orgTheme = organizationConfig.organization_theme;
+    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+  }, [organizationConfig, isDarkTheme]);
 
   const [editModalOpened, { open: openEditModal, close: closeEditModal }] =
     useDisclosure(false);
@@ -73,6 +199,25 @@ const BloodGroupTable = () => {
     }
   }, [bloodGroups, fetchBloodGroups]);
 
+  // Debounced search
+  const debouncedSearch = useMemo(
+    () =>
+      debounce((query: string) => {
+        const filtered = bloodGroups.filter(group =>
+          group.type.toLowerCase().includes(query.toLowerCase())
+        );
+        setFilteredBloodGroups(filtered);
+        setActivePage(1);
+      }, 300),
+    [bloodGroups]
+  );
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    debouncedSearch(query);
+  };
+
   const handleEdit = (group: any) => {
     setSelectedGroup(group);
     openEditModal();
@@ -84,296 +229,442 @@ const BloodGroupTable = () => {
   };
 
   const confirmEdit = async () => {
-    const trimmedGroup = selectedGroup.type.trim();
+    const trimmedGroup = selectedGroup?.type.trim();
     if (!isValidBloodGroup(trimmedGroup)) {
-      toast.error('Invalid blood group format');
+      toast.error('Invalid blood group format (e.g., A+, B-, AB+, O-)');
       return;
     }
 
-    const exists = bloodGroups.some(
-      bg =>
-        bg.type.toLowerCase() === trimmedGroup.toLowerCase() &&
-        bg.id !== selectedGroup.id
-    );
-
-    if (exists) {
-      toast.error('Blood group already exists');
+    if (
+      bloodGroups.some(
+        group =>
+          group.type.toLowerCase() === trimmedGroup.toLowerCase() &&
+          group.id !== selectedGroup.id
+      )
+    ) {
+      toast.error('This blood group already exists');
       return;
     }
+
     setIsLoading(true);
     try {
-      await updateBloodGroupByAdmin(selectedGroup.id, selectedGroup.type);
-      showSuccessToast('Blood group updated successfully');
+      await updateBloodGroupByAdmin(selectedGroup.id, trimmedGroup);
+      toast.success('Updated successfully');
       fetchBloodGroups();
       closeEditModal();
     } catch {
-      toast.error('Failed to update blood group');
+      toast.error('Failed to update');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Confirm delete
   const confirmDelete = async () => {
     setIsLoading(true);
     try {
       await deleteBloodGroupByAdmin(selectedGroup.id);
-      showSuccessToast('Blood group deleted successfully');
+      toast.success('Deleted successfully');
       fetchBloodGroups();
       closeDeleteModal();
       closeEditModal();
     } catch {
-      toast.error('Failed to delete blood group');
+      toast.error('Failed to delete');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Handle add blood group
   const handleAdd = async () => {
     const trimmedGroup = newGroupName.trim();
     if (!isValidBloodGroup(trimmedGroup)) {
-      toast.error('Invalid blood group format');
+      toast.error('Invalid blood group format (e.g., A+, B-, AB+, O-)');
       return;
     }
 
-    const exists = bloodGroups.some(
-      bg => bg.type.toLowerCase() === trimmedGroup.toLowerCase()
-    );
-
-    if (exists) {
-      toast.error('Blood group already exists');
+    if (
+      bloodGroups.some(
+        group => group.type.toLowerCase() === trimmedGroup.toLowerCase()
+      )
+    ) {
+      toast.error('This blood group already exists');
       return;
     }
+
     setIsLoading(true);
     try {
-      await addBloodGroupByAdmin({ type: newGroupName });
-      showSuccessToast('Blood group added successfully');
+      await addBloodGroupByAdmin({ type: trimmedGroup });
+      toast.success('Added successfully');
       fetchBloodGroups();
       closeAddModal();
       setNewGroupName('');
     } catch {
-      toast.error('Failed to add blood group');
+      toast.error('Failed to add');
     } finally {
       setIsLoading(false);
     }
   };
 
   // Pagination logic
-  const itemsPerPage = 10;
-  const totalPages = useMemo(() => {
-    return Math.ceil(filteredBloodGroups.length / itemsPerPage);
-  }, [filteredBloodGroups.length]);
+  const { paginatedData, totalPages } = useMemo(() => {
+    const start = (activePage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    const paginated = filteredBloodGroups.slice(start, end);
+    const pages = Math.ceil(filteredBloodGroups.length / itemsPerPage);
 
-  const paginatedData = useMemo(() => {
-    return filteredBloodGroups.slice(
-      (activePage - 1) * itemsPerPage,
-      activePage * itemsPerPage
-    );
-  }, [filteredBloodGroups, activePage]);
+    return { paginatedData: paginated, totalPages: pages };
+  }, [filteredBloodGroups, activePage, itemsPerPage]);
 
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const query = e.target.value;
-    setSearch(query);
-
-    const filtered = bloodGroups.filter(blood => {
-      blood.type.toString().toLowerCase();
-      blood.type.toString().trim();
-      return (
-        blood.type.toString().toLowerCase().includes(query.toLowerCase()) ||
-        blood.id.toString().toLowerCase().includes(query.toLowerCase())
-      );
-    });
-    setFilteredBloodGroups(filtered);
-  };
+  // Reset page when filters change
+  useEffect(() => {
+    setActivePage(1);
+  }, [itemsPerPage]);
 
   return (
-    <div
-      style={{
-        color: organizationConfig.organization_theme.theme.button.textColor,
-        fontFamily: theme.fontFamily
-      }}
-      className="h-auto"
-    >
-      <div>
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold underline text-center px-2 py-4">
-          Manage Blood Groups
-        </h1>
-        <div className="text-right">
-          <Button onClick={openAddModal}>Add Blood Group</Button>
-        </div>
-
-        <SearchBarFullWidht
-          search={search}
-          handleSearch={handleSearch}
-          placeHolder="Search by blood group"
+    <Container size="xl" py="md" my="xl" px={isSmallMobile ? 'xs' : 'md'}>
+      <Stack gap="md">
+        {/* Header */}
+        <HeadingComponent
+          filteredCount={filteredBloodGroups.length}
+          onAdd={openAddModal}
+          isMobile={isMobile}
         />
 
-        {isLoading ? (
-          <div className="flex justify-center items-center h-48">
-            <Loader
-              size="xl"
-              color={organizationConfig.organization_theme.theme.button.color}
+        {/* Filters */}
+        <Card shadow="sm" p={isMobile ? 'sm' : 'md'} radius="md" withBorder>
+          <Stack gap="md">
+            <TextInput
+              placeholder="Search by blood group..."
+              leftSection={<IconSearch size={16} />}
+              value={searchQuery}
+              onChange={handleSearch}
+              radius="md"
+              size={isMobile ? 'sm' : 'md'}
             />
-          </div>
-        ) : (
-          <div className="overflow-auto max-w-full shadow-lg rounded-lg">
-            <table className="w-full text-center shadow-md border table-auto">
-              <colgroup>
-                <col className="w-16" />
-                <col className="w-32" />
-                <col className="w-32" />
-              </colgroup>
-              <thead
-                className="text-xs"
-                style={{
-                  backgroundColor:
-                    organizationConfig.organization_theme.theme.backgroundColor,
-                  color: organizationConfig.organization_theme.theme.color
-                }}
-              >
-                <tr>
-                  <th className="p-2 border">Id</th>
-                  <th className="p-2 border">Blood Group</th>
-                  <th className="p-2 border">Action</th>
-                </tr>
-              </thead>
-              <tbody className="text-sm">
-                {paginatedData.map((bloodGroup, index) => (
-                  <tr key={bloodGroup._id}>
-                    <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                      {index + 1 + (activePage - 1) * itemsPerPage}{' '}
-                    </td>
-                    <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                      {bloodGroup.type}
-                    </td>
-                    <td className="px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis">
-                      <Button onClick={() => handleEdit(bloodGroup)}>
-                        <IconEdit />
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+
+            <Group justify="space-between" wrap={isMobile ? 'wrap' : 'nowrap'}>
+              <Group gap="xs">
+                <Text size="sm">Items per page:</Text>
+                <Select
+                  data={ITEMS_PER_PAGE_OPTIONS}
+                  value={itemsPerPage.toString()}
+                  onChange={value =>
+                    setItemsPerPage(Number(value) || DEFAULT_ITEMS_PER_PAGE)
+                  }
+                  w={80}
+                  size="sm"
+                />
+              </Group>
+
+              {filteredBloodGroups.length !== bloodGroups.length && (
+                <Badge variant="light" color="red">
+                  {filteredBloodGroups.length} of {bloodGroups.length} groups
+                </Badge>
+              )}
+            </Group>
+          </Stack>
+        </Card>
+
+        {/* Table or Cards */}
+        <Card shadow="sm" p={0} radius="md" withBorder>
+          {isLoading ? (
+            <Center p="xl">
+              <Stack align="center" gap="md">
+                <Loader size="xl" />
+                <Text>Loading blood groups...</Text>
+              </Stack>
+            </Center>
+          ) : isMobile ? (
+            // Mobile Card View
+            <ScrollArea p="md">
+              <Stack gap="sm">
+                {paginatedData.length > 0 ? (
+                  paginatedData.map((group, index) => (
+                    <MobileBloodGroupCard
+                      key={group.id}
+                      group={group}
+                      index={index}
+                      activePage={activePage}
+                      itemsPerPage={itemsPerPage}
+                      onEdit={handleEdit}
+                    />
+                  ))
+                ) : (
+                  <Card p="xl" withBorder>
+                    <Stack align="center" gap="md">
+                      <IconDroplet size={48} opacity={0.5} color="red" />
+                      <Text size="lg" ta="center">
+                        No blood groups found
+                      </Text>
+                      <Text size="sm" ta="center">
+                        {searchQuery
+                          ? 'Try adjusting your search'
+                          : 'Start by adding your first blood group'}
+                      </Text>
+                      {!searchQuery && (
+                        <Button
+                          variant="light"
+                          leftSection={<IconPlus size={16} />}
+                          onClick={openAddModal}
+                          fullWidth={isSmallMobile}
+                        >
+                          Add Blood Group
+                        </Button>
+                      )}
+                    </Stack>
+                  </Card>
+                )}
+              </Stack>
+            </ScrollArea>
+          ) : (
+            // Desktop Table View
+            <ScrollArea>
+              <Table stickyHeader withTableBorder withColumnBorders>
+                <Table.Thead
+                  style={{
+                    backgroundColor: currentThemeConfig.backgroundColor,
+                    color: currentThemeConfig.color
+                  }}
+                >
+                  <Table.Tr>
+                    <Table.Th
+                      className="p-3 border text-center"
+                      style={{ width: '100px' }}
+                    >
+                      <Text size="sm" fw={500}>
+                        S.No
+                      </Text>
+                    </Table.Th>
+                    <Table.Th className="p-3 border">
+                      <Text size="sm" fw={500}>
+                        Blood Group
+                      </Text>
+                    </Table.Th>
+                    <Table.Th
+                      className="p-3 border text-center"
+                      style={{ width: '120px' }}
+                    >
+                      <Text size="sm" fw={500}>
+                        Actions
+                      </Text>
+                    </Table.Th>
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>
+                  {paginatedData.length > 0 ? (
+                    paginatedData.map((group, index) => (
+                      <Table.Tr key={group.id} className="transition-colors">
+                        <Table.Td className="text-center p-3">
+                          <Text size="sm">
+                            {index + 1 + (activePage - 1) * itemsPerPage}
+                          </Text>
+                        </Table.Td>
+                        <Table.Td className="p-3">
+                          <Group gap="xs">
+                            <IconDroplet size={18} color="red" />
+                            <Text size="sm" fw={500}>
+                              {group.type}
+                            </Text>
+                          </Group>
+                        </Table.Td>
+                        <Table.Td className="p-3">
+                          <BloodGroupActions
+                            group={group}
+                            onEdit={handleEdit}
+                          />
+                        </Table.Td>
+                      </Table.Tr>
+                    ))
+                  ) : (
+                    <Table.Tr>
+                      <Table.Td colSpan={3} className="text-center p-8">
+                        <Stack align="center" gap="md">
+                          <IconDroplet size={48} opacity={0.5} color="red" />
+                          <Text size="lg">No blood groups found</Text>
+                          <Text size="sm">
+                            {searchQuery
+                              ? 'Try adjusting your search'
+                              : 'Start by adding your first blood group'}
+                          </Text>
+                          {!searchQuery && (
+                            <Button
+                              variant="light"
+                              leftSection={<IconPlus size={16} />}
+                              onClick={openAddModal}
+                            >
+                              Add Blood Group
+                            </Button>
+                          )}
+                        </Stack>
+                      </Table.Td>
+                    </Table.Tr>
+                  )}
+                </Table.Tbody>
+              </Table>
+            </ScrollArea>
+          )}
+        </Card>
+
+        {/* Pagination */}
         {totalPages > 1 && (
-          <Center className="my-8">
+          <Center>
             <Pagination
-              total={totalPages}
               value={activePage}
               onChange={setActivePage}
-              mt="md"
+              total={totalPages}
+              size={isMobile ? 'sm' : 'md'}
+              radius="md"
+              withEdges
             />
           </Center>
         )}
-      </div>
+      </Stack>
 
-      <StandardModal
+      {/* Add Modal */}
+      <Modal
         opened={addModalOpened}
         onClose={closeAddModal}
-        forceAction={false}
-        title={<Title order={3}>Add New Blood Group</Title>}
+        title={
+          <Group gap="xs">
+            <IconPlus size={20} />
+            <Text fw={600} size="lg">
+              Add New Blood Group
+            </Text>
+          </Group>
+        }
+        centered
+        size="md"
       >
-        <Box>
+        <Stack gap="md">
           <TextInput
-            label="Blood Group Name"
+            label="Blood Group"
             value={newGroupName}
-            onChange={e => setNewGroupName(e.target.value)}
-            placeholder="Enter blood group name"
+            onChange={e => {
+              const value = e.target.value;
+              if (
+                value === '' ||
+                isValidBloodGroup(value) ||
+                value.length < 5
+              ) {
+                setNewGroupName(value);
+              }
+            }}
+            placeholder="e.g., A+, B-, AB+, O-"
             required
-            mb="md"
+            size="md"
+            description="Valid formats: A+, B-, AB+, O-, etc."
           />
-          <Group justify="flex-end">
-            <Button
-              bg={organizationConfig.organization_theme.theme.backgroundColor}
-              c={organizationConfig.organization_theme.theme.color}
-              variant="outline"
-              onClick={closeAddModal}
-            >
+          <Group justify="flex-end" mt="md">
+            <Button variant="default" onClick={closeAddModal}>
               Cancel
             </Button>
             <Button
-              bg={organizationConfig.organization_theme.theme.backgroundColor}
               onClick={handleAdd}
-              c={organizationConfig.organization_theme.theme.color}
-              disabled={isLoading}
+              disabled={isLoading || !newGroupName.trim()}
+              leftSection={<IconDeviceFloppy size={16} />}
             >
-              Add
+              {isLoading ? 'Adding...' : 'Add Blood Group'}
             </Button>
           </Group>
-        </Box>
-      </StandardModal>
-      <StandardModal
+        </Stack>
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal
         opened={editModalOpened}
         onClose={closeEditModal}
         title={
-          <Text className="text-center font-bold text-xl">
-            Edit Blood Group
-          </Text>
+          <Group gap="xs">
+            <IconEdit size={20} />
+            <Text fw={600} size="lg">
+              Edit Blood Group
+            </Text>
+          </Group>
         }
         centered
+        size="md"
       >
-        <Box>
+        <Stack gap="md">
           <TextInput
-            label="Blood Group Name"
+            label="Blood Group"
             value={selectedGroup?.type || ''}
-            onChange={e =>
-              setSelectedGroup({ ...selectedGroup, type: e.target.value })
-            }
+            onChange={e => {
+              const value = e.target.value;
+              if (
+                value === '' ||
+                isValidBloodGroup(value) ||
+                value.length < 5
+              ) {
+                setSelectedGroup({
+                  ...selectedGroup,
+                  type: value
+                });
+              }
+            }}
             required
-            mb="md"
+            size="md"
+            description="Valid formats: A+, B-, AB+, O-, etc."
           />
-          <Group justify="flex-end">
+          <Group justify="space-between" mt="md">
             <Button
-              bg={organizationConfig.organization_theme.theme.backgroundColor}
-              c={organizationConfig.organization_theme.theme.color}
+              color="red"
               variant="outline"
-              onClick={closeEditModal}
+              leftSection={<IconTrash size={16} />}
+              onClick={() => handleDelete(selectedGroup.id)}
             >
-              Cancel
-            </Button>
-            <Button
-              bg={organizationConfig.organization_theme.theme.backgroundColor}
-              c={organizationConfig.organization_theme.theme.color}
-              variant="outline"
-              onClick={confirmEdit}
-            >
-              Save Changes
-            </Button>
-            <Button bg="red" onClick={() => handleDelete(selectedGroup.id)}>
               Delete
             </Button>
+            <Group>
+              <Button variant="default" onClick={closeEditModal}>
+                Cancel
+              </Button>
+              <Button
+                onClick={confirmEdit}
+                disabled={isLoading}
+                leftSection={<IconDeviceFloppy size={16} />}
+              >
+                {isLoading ? 'Saving...' : 'Save Changes'}
+              </Button>
+            </Group>
           </Group>
-        </Box>
-      </StandardModal>
-      <StandardModal
+        </Stack>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
         opened={deleteModalOpened}
         onClose={closeDeleteModal}
         title={
-          <Title order={3} c="red">
-            Delete Action
-          </Title>
+          <Group gap="xs">
+            <IconAlertTriangle size={24} color="red" />
+            <Text fw={600} size="lg" c="red">
+              Delete Blood Group
+            </Text>
+          </Group>
         }
         centered
+        size="md"
       >
-        <Text size="sm">Are you sure you want to delete this blood group?</Text>
-        <Group justify="flex-end" mt="md">
-          <Button
-            bg={organizationConfig.organization_theme.theme.backgroundColor}
-            c={organizationConfig.organization_theme.theme.color}
-            variant="outline"
-            onClick={closeDeleteModal}
-          >
-            Cancel
-          </Button>
-          <Button bg="red" onClick={confirmDelete}>
-            Delete
-          </Button>
-        </Group>
-      </StandardModal>
-    </div>
+        <Stack gap="md">
+          <Text size="sm">
+            Are you sure you want to delete this blood group? This action cannot
+            be undone.
+          </Text>
+          <Group justify="flex-end" mt="md">
+            <Button variant="default" onClick={closeDeleteModal}>
+              Cancel
+            </Button>
+            <Button
+              color="red"
+              onClick={confirmDelete}
+              disabled={isLoading}
+              leftSection={<IconTrash size={16} />}
+            >
+              {isLoading ? 'Deleting...' : 'Delete'}
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
+    </Container>
   );
 };
 

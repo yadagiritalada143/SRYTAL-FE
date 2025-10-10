@@ -4,8 +4,9 @@ import {
   IconCheckbox,
   IconCurrencyDollar,
   IconLayoutDashboard,
-  IconMessageCircle,
-  IconTool,
+  // IconCurrencyDollar,
+  // IconMessageCircle,
+  // IconTool,
   IconUserEdit,
   IconUsersGroup
 } from '@tabler/icons-react';
@@ -65,36 +66,36 @@ export const NavLinks = [
     icon: IconCurrencyDollar,
     name: 'Payslip'
   },
-  {
-    role: 'employee',
-    url: 'employee/dashboard/announcements',
-    icon: IconMessageCircle,
-    name: 'Announcements'
-  },
-  {
-    role: 'recruiter',
-    url: 'employee/dashboard/announcements',
-    icon: IconMessageCircle,
-    name: 'Announcements'
-  },
+  // {
+  //   role: 'employee',
+  //   url: 'employee/dashboard/announcements',
+  //   icon: IconMessageCircle,
+  //   name: 'Announcements'
+  // },
+  // {
+  //   role: 'recruiter',
+  //   url: 'employee/dashboard/announcements',
+  //   icon: IconMessageCircle,
+  //   name: 'Announcements'
+  // },
   {
     role: 'employee',
     url: 'employee/dashboard/mytasks',
     icon: IconCheckbox,
     name: 'My Tasks'
   },
-  {
-    role: 'employee',
-    url: 'employee/dashboard/support',
-    icon: IconTool,
-    name: 'Support'
-  },
-  {
-    role: 'recruiter',
-    url: 'employee/dashboard/support',
-    icon: IconTool,
-    name: 'Support'
-  },
+  // {
+  //   role: 'employee',
+  //   url: 'employee/dashboard/support',
+  //   icon: IconTool,
+  //   name: 'Support'
+  // },
+  // {
+  //   role: 'recruiter',
+  //   url: 'employee/dashboard/support',
+  //   icon: IconTool,
+  //   name: 'Support'
+  // },
   {
     role: 'employee',
     url: 'employee/dashboard/mentees',

@@ -12,7 +12,7 @@ import Companies from '../components/user/dashboard/companies/companies';
 import AddCompany from '../components/user/dashboard/add-company/add-company';
 import UpdateCompany from '../components/user/dashboard/update-company/update-company';
 import { toast } from 'react-toastify';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { getOrganizationConfig } from '../services/common-services';
 import { MantineProvider } from '@mantine/core';
 import '@mantine/core/styles.css';
@@ -36,12 +36,16 @@ import Announcements from '../components/common/announcements/announcements';
 import Mentees from '../components/common/mentees/mentees';
 import UpdateMenteeTasks from '../components/common/update-mentee-task/UpdateMenteeTasks';
 import TaskDetail from '../components/common/mytasks/taskdetails';
+import { themeAtom } from '../atoms/theme';
+import { ThemeToggleButton } from '../components/UI/Theme-toggle-button/button';
 
 const EmployeeRoutes = () => {
   const { organization } = useParams<{ organization: string }>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const organizationConfig = useRecoilValue(organizationThemeAtom);
   const setOrganizationConfig = useSetRecoilState(organizationThemeAtom);
+  const isDarkTheme = useRecoilValue(themeAtom);
+  const setTheme = useSetRecoilState(themeAtom);
 
   useEffect(() => {
     if (organization) {
@@ -55,103 +59,385 @@ const EmployeeRoutes = () => {
     }
   }, [organization, setOrganizationConfig]);
 
-  const theme = {
-    colorScheme: organizationConfig.organization_theme.theme.colorScheme,
-    primaryColor: organizationConfig.organization_theme.theme.primaryColor,
-    fontFamily: organizationConfig.organization_theme.theme.fontFamily,
-    colors: {
-      primary: organizationConfig.organization_theme.theme.colors
-        .primary as any,
-      secondary: organizationConfig.organization_theme.theme.colors
-        .secondary as any
-    },
-    headings: {
-      fontFamily: organizationConfig.organization_theme.theme.fontFamily
-    },
-    components: {
-      Avatar: {
-        styles: () => ({
-          root: {
-            color: organizationConfig.organization_theme.theme.color
-          }
-        })
+  // Get the current theme configuration based on theme mode
+  const currentThemeConfig = useMemo(() => {
+    const orgTheme = organizationConfig.organization_theme;
+
+    // Check if new dual themes structure exists
+    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+  }, [organizationConfig, isDarkTheme]);
+
+  const mantineTheme = useMemo(() => {
+    return {
+      colorScheme: currentThemeConfig.colorScheme,
+      primaryColor: currentThemeConfig.primaryColor,
+      fontFamily: currentThemeConfig.fontFamily,
+      colors: {
+        primary: currentThemeConfig.colors.primary as any,
+        secondary: currentThemeConfig.colors.secondary as any
       },
-      Modal: {
-        styles: () => ({
-          title: {
-            fontWeight: 600,
-            fontSize: '1.25rem',
-            color: organizationConfig.organization_theme.theme.color
-          },
-          header: {
-            backgroundColor:
-              organizationConfig.organization_theme.theme.headerBackgroundColor,
-            borderBottom: `1px solid ${organizationConfig.organization_theme.theme.borderColor}`
-          },
-          content: {
-            backgroundColor:
-              organizationConfig.organization_theme.theme.backgroundColor,
-            color: organizationConfig.organization_theme.theme.color
-          },
-          close: {
-            color: organizationConfig.organization_theme.theme.color,
-            '&:hover': {
-              backgroundColor: 'transparent',
-              color: organizationConfig.organization_theme.theme.linkColor
-            }
-          }
-        }),
-        defaultProps: {
-          radius: 'md',
-          shadow: 'xl',
-          padding: 'xl',
-          size: '600px',
-          overlayblur: 3,
-          overlayopacity: 0.7
-        }
+      headings: {
+        fontFamily: currentThemeConfig.fontFamily
       },
 
-      Menu: {
-        styles: () => ({
-          dropdown: {
-            backgroundColor:
-              organizationConfig.organization_theme.theme.colors.primary[5]
-          },
-          label: {
-            color: organizationConfig.organization_theme.theme.button.textColor
-          },
-          item: {
-            color: organizationConfig.organization_theme.theme.button.textColor
+      components: {
+        Title: {
+          styles: () => ({
+            root: {
+              color: currentThemeConfig.color,
+              transition: 'color 0.3s ease-in-out'
+            }
+          })
+        },
+        Tabs: {
+          styles: () => ({
+            root: {
+              transition: 'all 0.3s ease-in-out'
+            },
+            list: {
+              borderColor: currentThemeConfig.headerBackgroundColor,
+              borderRadius: '8px',
+              padding: '4px'
+            },
+            tab: {
+              color: currentThemeConfig.button.color,
+              fontWeight: 500
+            }
+          }),
+          defaultProps: {
+            variant: 'default',
+            radius: 'md'
           }
-        })
-      },
-      Loader: {
-        styles: () => ({
-          root: {
-            color: organizationConfig.organization_theme.theme.button.textColor
+        },
+        Text: {
+          styles: () => ({
+            root: {
+              color: currentThemeConfig.color,
+              transition: 'color 0.3s ease-in-out'
+            }
+          })
+        },
+        Avatar: {
+          styles: () => ({
+            root: {
+              color: currentThemeConfig.color,
+              transition: 'color 0.3s ease-in-out'
+            }
+          })
+        },
+        Modal: {
+          styles: () => ({
+            title: {
+              fontWeight: 600,
+              fontSize: '1.25rem',
+              color: currentThemeConfig.color,
+              transition: 'color 0.3s ease-in-out'
+            },
+            header: {
+              backgroundColor: currentThemeConfig.headerBackgroundColor,
+              borderBottom: `1px solid ${currentThemeConfig.borderColor}`,
+              transition:
+                'background-color 0.3s ease-in-out, border-color 0.3s ease-in-out'
+            },
+            content: {
+              backgroundColor: currentThemeConfig.backgroundColor,
+              color: currentThemeConfig.color,
+              transition:
+                'background-color 0.3s ease-in-out, color 0.3s ease-in-out'
+            },
+            close: {
+              color: currentThemeConfig.color,
+              transition:
+                'color 0.3s ease-in-out, background-color 0.3s ease-in-out',
+              '&:hover': {
+                backgroundColor: 'transparent',
+                color: currentThemeConfig.linkColor
+              }
+            }
+          }),
+          defaultProps: {
+            radius: 'md',
+            shadow: 'xl',
+            padding: 'xl',
+            size: '600px',
+            overlayblur: 3,
+            overlayopacity: 0.7
           }
-        })
-      },
-      Button: {
-        styles: () => ({
-          root: {
-            backgroundColor:
-              organizationConfig.organization_theme.theme.button.color,
-            color: organizationConfig.organization_theme.theme.button.textColor,
-            borderColor: organizationConfig.organization_theme.theme.borderColor
-          }
-        })
+        },
+        Menu: {
+          styles: () => ({
+            dropdown: {
+              backgroundColor: currentThemeConfig.colors.primary[5],
+              transition: 'background-color 0.3s ease-in-out'
+            },
+            label: {
+              color: currentThemeConfig.button.textColor,
+              transition: 'color 0.3s ease-in-out'
+            },
+            item: {
+              color: currentThemeConfig.button.textColor,
+              transition: 'color 0.3s ease-in-out'
+            }
+          })
+        },
+        Paper: {
+          styles: () => ({
+            root: {
+              backgroundColor: currentThemeConfig.headerBackgroundColor,
+              borderBottom: `1px solid ${currentThemeConfig.borderColor}`,
+              color: currentThemeConfig.color,
+              transition:
+                'background-color 0.3s ease-in-out, border-color 0.3s ease-in-out'
+            }
+          })
+        },
+        Loader: {
+          styles: () => ({
+            root: {
+              color: currentThemeConfig.button.textColor,
+              transition: 'color 0.3s ease-in-out'
+            }
+          })
+        },
+        Button: {
+          styles: () => ({
+            root: {
+              backgroundColor: currentThemeConfig.button.color,
+              color: currentThemeConfig.button.textColor,
+              borderColor: currentThemeConfig.borderColor,
+              transition:
+                'background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out',
+              '&:hover': {
+                backgroundColor:
+                  currentThemeConfig.button.hoverColor ||
+                  currentThemeConfig.button.color,
+                transform: 'translateY(-1px)',
+                transition: 'all 0.2s ease-in-out'
+              }
+            }
+          })
+        },
+        TextInput: {
+          styles: () => ({
+            input: {
+              backgroundColor: currentThemeConfig.headerBackgroundColor,
+              color: currentThemeConfig.color,
+              borderColor: currentThemeConfig.borderColor,
+              transition:
+                'background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out',
+              '&:focus': {
+                borderColor: currentThemeConfig.button.color
+              }
+            },
+            label: {
+              color: currentThemeConfig.color,
+              transition: 'color 0.3s ease-in-out'
+            }
+          })
+        },
+        NumberInput: {
+          styles: () => ({
+            input: {
+              backgroundColor: currentThemeConfig.headerBackgroundColor,
+              color: currentThemeConfig.color,
+              borderColor: currentThemeConfig.borderColor,
+              transition:
+                'background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out',
+              '&:focus': {
+                borderColor: currentThemeConfig.button.color
+              }
+            },
+            label: {
+              color: currentThemeConfig.color,
+              transition: 'color 0.3s ease-in-out'
+            }
+          })
+        },
+        DateInput: {
+          styles: () => ({
+            input: {
+              backgroundColor: currentThemeConfig.headerBackgroundColor,
+              color: currentThemeConfig.color,
+              borderColor: currentThemeConfig.borderColor,
+              transition:
+                'background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out',
+              '&:focus': {
+                borderColor: currentThemeConfig.button.color
+              }
+            },
+            label: {
+              color: currentThemeConfig.color,
+              transition: 'color 0.3s ease-in-out'
+            }
+          })
+        },
+        DateTimePicker: {
+          styles: () => ({
+            input: {
+              backgroundColor: currentThemeConfig.headerBackgroundColor,
+              color: currentThemeConfig.color,
+              borderColor: currentThemeConfig.borderColor,
+              transition:
+                'background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out',
+              '&:focus': {
+                borderColor: currentThemeConfig.button.color
+              }
+            },
+            label: {
+              color: currentThemeConfig.color,
+              transition: 'color 0.3s ease-in-out'
+            }
+          })
+        },
+        DatePickerInput: {
+          styles: () => ({
+            input: {
+              backgroundColor: currentThemeConfig.headerBackgroundColor,
+              color: currentThemeConfig.color,
+              borderColor: currentThemeConfig.borderColor,
+              transition:
+                'background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out',
+              '&:focus': {
+                borderColor: currentThemeConfig.button.color
+              }
+            },
+            label: {
+              color: currentThemeConfig.color,
+              transition: 'color 0.3s ease-in-out'
+            }
+          })
+        },
+        Textarea: {
+          styles: () => ({
+            input: {
+              backgroundColor: currentThemeConfig.headerBackgroundColor,
+              color: currentThemeConfig.color,
+              borderColor: currentThemeConfig.borderColor,
+              transition:
+                'background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out',
+              '&:focus': {
+                borderColor: currentThemeConfig.button.color
+              }
+            },
+            label: {
+              color: currentThemeConfig.color,
+              transition: 'color 0.3s ease-in-out'
+            }
+          })
+        },
+        MultiSelect: {
+          styles: () => ({
+            input: {
+              backgroundColor: currentThemeConfig.headerBackgroundColor,
+              color: currentThemeConfig.color,
+              borderColor: currentThemeConfig.borderColor,
+              transition:
+                'background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out',
+              '&:focus': {
+                borderColor: currentThemeConfig.button.color
+              }
+            },
+            label: {
+              color: currentThemeConfig.color,
+              transition: 'color 0.3s ease-in-out'
+            }
+          })
+        },
+        PasswordInput: {
+          styles: () => ({
+            input: {
+              backgroundColor: currentThemeConfig.headerBackgroundColor,
+              color: currentThemeConfig.color,
+              borderColor: currentThemeConfig.borderColor,
+              transition:
+                'background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out',
+              '&:focus': {
+                borderColor: currentThemeConfig.button.color
+              }
+            },
+            label: {
+              color: currentThemeConfig.color,
+              transition: 'color 0.3s ease-in-out'
+            },
+            innerInput: {
+              backgroundColor: currentThemeConfig.headerBackgroundColor,
+              color: currentThemeConfig.color,
+              transition:
+                'background-color 0.3s ease-in-out, color 0.3s ease-in-out'
+            }
+          })
+        },
+        Select: {
+          styles: () => ({
+            input: {
+              backgroundColor: currentThemeConfig.headerBackgroundColor,
+              color: currentThemeConfig.color,
+              borderColor: currentThemeConfig.borderColor,
+              transition:
+                'background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out',
+              '&:focus': {
+                borderColor: currentThemeConfig.button.color
+              }
+            },
+            label: {
+              color: currentThemeConfig.color,
+              transition: 'color 0.3s ease-in-out'
+            }
+          })
+        },
+        Table: {
+          styles: () => ({
+            table: {
+              backgroundColor: currentThemeConfig.backgroundColor,
+              color: currentThemeConfig.color,
+              transition:
+                'background-color 0.3s ease-in-out, color 0.3s ease-in-out'
+            },
+            th: {
+              backgroundColor: currentThemeConfig.headerBackgroundColor,
+              color: currentThemeConfig.color,
+              borderColor: currentThemeConfig.borderColor,
+              transition:
+                'background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out'
+            },
+            td: {
+              borderColor: currentThemeConfig.borderColor,
+              color: currentThemeConfig.color,
+              transition:
+                'border-color 0.3s ease-in-out, color 0.3s ease-in-out'
+            }
+          })
+        },
+        Card: {
+          styles: () => ({
+            root: {
+              backgroundColor: currentThemeConfig.headerBackgroundColor,
+              color: currentThemeConfig.color,
+              borderColor: currentThemeConfig.borderColor,
+              transition:
+                'background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out'
+            }
+          })
+        }
       }
-    }
-  };
+    };
+  }, [currentThemeConfig]);
 
   return (
-    <MantineProvider theme={theme}>
+    <MantineProvider theme={mantineTheme}>
       <LoadingOverlay
         visible={isLoading}
-        bg="cyan"
         loaderProps={{ children: <Loader /> }}
       />
+      <div
+        className="d-flex justify-end p-4 absolute right-0 transition-colors duration-300 ease-in-out"
+        style={{
+          backgroundColor: 'transparent',
+          zIndex: 1000
+        }}
+      >
+        <ThemeToggleButton isDarkTheme={isDarkTheme} setTheme={setTheme} />
+      </div>
       <Routes>
         <Route path="/login" element={<EmployeeLogin />} />
         <Route

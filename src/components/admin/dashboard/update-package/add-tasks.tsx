@@ -1,17 +1,16 @@
-import { BgDiv } from '../../../common/style-components/bg-div';
-import { Button, Grid, Group, Textarea } from '@mantine/core';
+import { useState } from 'react';
+import { Button, Textarea, Card, Stack, Group, Text } from '@mantine/core';
+import { useMediaQuery } from '@mantine/hooks';
+import { IconPlus, IconChecklist } from '@tabler/icons-react';
+import { toast } from 'react-toastify';
 import { OrganizationConfig } from '../../../../interfaces/organization';
-
 import { addTasksByAdmin } from '../../../../services/admin-services';
 import { useCustomToast } from '../../../../utils/common/toast';
-import { toast } from 'react-toastify';
-import { useState } from 'react';
 
 const AddTasksPackage = ({
-  organizationConfig,
   packageId,
   required = false,
-  fetchPackageDetails,
+  fetchPackageDetails
 }: {
   organizationConfig: OrganizationConfig;
   user: any;
@@ -22,51 +21,68 @@ const AddTasksPackage = ({
   const { showSuccessToast } = useCustomToast();
   const [newTasks, setNewTasks] = useState<string>('');
   const [error, setError] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleAddTasks = () => {
-    if (required && !newTasks) {
-      setError('This field is required');
+  const isMobile = useMediaQuery('(max-width: 768px)');
+  const isSmallMobile = useMediaQuery('(max-width: 500px)');
+
+  const handleAddTasks = async () => {
+    if (required && !newTasks.trim()) {
+      setError('Task description is required');
       return;
     }
+
     setError('');
-    addTasksByAdmin(packageId, newTasks)
-      .then(() => {
-        showSuccessToast('Your tasks has been added !');
-        setNewTasks('');
-        fetchPackageDetails();
-      })
-      .catch(error => {
-        toast.error(error.response.data.message || 'Something went wrong');
-      });
+    setIsLoading(true);
+
+    try {
+      await addTasksByAdmin(packageId, newTasks.trim());
+      showSuccessToast('Task added successfully!');
+      setNewTasks('');
+      fetchPackageDetails();
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'Failed to add task');
+    } finally {
+      setIsLoading(false);
+    }
   };
+
   return (
-    <div className="w-full max-w-2xl mx-auto my-6">
-      <BgDiv>
-        <form
-          style={{
-            backgroundColor:
-              organizationConfig.organization_theme.theme.backgroundColor,
+    <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder>
+      <Stack gap="md">
+        <Group gap="xs">
+          <IconChecklist size={20} />
+          <Text size="lg" fw={600}>
+            Add New Task
+          </Text>
+        </Group>
+
+        <Textarea
+          label="Task Description"
+          placeholder="Enter task details..."
+          value={newTasks}
+          onChange={e => {
+            setNewTasks(e.target.value);
+            if (error) setError('');
           }}
-          className="rounded-lg shadow-lg w-full p-8"
-        >
-          <Grid>
-            <Grid.Col span={12}>
-              <Textarea
-                label="Tasks"
-                autosize
-                rows={4}
-                value={newTasks}
-                onChange={e => setNewTasks(e.target.value)}
-              />
-              {error && <p className="text-red-500 mt-1">{error}</p>}
-            </Grid.Col>
-          </Grid>
-          <Group justify="right" mt="lg">
-            <Button onClick={handleAddTasks}>Add Tasks</Button>
-          </Group>
-        </form>
-      </BgDiv>
-    </div>
+          error={error}
+          minRows={4}
+          size="md"
+          required={required}
+        />
+
+        <Group justify="flex-end">
+          <Button
+            onClick={handleAddTasks}
+            disabled={isLoading || (required && !newTasks.trim())}
+            leftSection={<IconPlus size={16} />}
+            fullWidth={isSmallMobile}
+          >
+            {isLoading ? 'Adding...' : 'Add Task'}
+          </Button>
+        </Group>
+      </Stack>
+    </Card>
   );
 };
 

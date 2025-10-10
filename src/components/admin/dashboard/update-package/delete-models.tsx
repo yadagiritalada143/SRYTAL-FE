@@ -1,4 +1,5 @@
-import { Button, Checkbox, Title } from '@mantine/core';
+import { Button, Checkbox, Stack, Text, Group } from '@mantine/core';
+import { IconAlertTriangle, IconTrash } from '@tabler/icons-react';
 import { StandardModal } from '../../../UI/Models/base-model';
 
 interface DeletePackageModalProps {
@@ -18,51 +19,60 @@ export const DeletePackageModel: React.FC<DeletePackageModalProps> = ({
   setConfirmDelete,
   agreeTerms,
   setAgreeTerms,
-  handleDeletePackage,
+  handleDeletePackage
 }) => {
   return (
     <StandardModal
       title={
-        <Title order={3} c="red">
-          Delete Action
-        </Title>
+        <Group gap="xs">
+          <IconAlertTriangle size={24} color="red" />
+          <Text fw={600} size="lg" c="red">
+            Delete Package
+          </Text>
+        </Group>
       }
       size="md"
       opened={opened}
       onClose={close}
     >
-      <div>
-        <h2 className="font-bold text-lg">
-          Are you sure you want to delete this Package?
-        </h2>
-        <p className="mt-4 font-bold text-gray-600">
-          This action is irreversible. Deleting an Package will permanently
-          remove their details from the system.
-        </p>
-        <div className="mt-4 space-y-2">
+      <Stack gap="md">
+        <Text size="md" fw={600}>
+          Are you sure you want to delete this package?
+        </Text>
+
+        <Text size="sm" c="dimmed">
+          This action is irreversible. Deleting this package will permanently
+          remove all its details and associated tasks from the system.
+        </Text>
+
+        <Stack gap="xs" mt="sm">
           <Checkbox
-            label="I understand the consequences of this action."
+            label="I understand the consequences of this action"
             checked={confirmDelete}
             onChange={e => setConfirmDelete(e.currentTarget.checked)}
             required
           />
           <Checkbox
-            label="I agree that this package's details will be permanently deleted."
+            label="I agree that this package's details will be permanently deleted"
             checked={agreeTerms}
             onChange={e => setAgreeTerms(e.currentTarget.checked)}
           />
-        </div>
-        <div className="flex justify-between mt-8">
-          <button
-            className="bg-red-500 text-white py-2 px-4 rounded disabled:opacity-50"
+        </Stack>
+
+        <Group justify="flex-end" mt="lg">
+          <Button variant="default" onClick={close}>
+            Cancel
+          </Button>
+          <Button
+            color="red"
             onClick={() => handleDeletePackage(agreeTerms)}
             disabled={!confirmDelete}
+            leftSection={<IconTrash size={16} />}
           >
-            Delete
-          </button>
-          <Button onClick={close}>Cancel</Button>
-        </div>
-      </div>
+            Delete Package
+          </Button>
+        </Group>
+      </Stack>
     </StandardModal>
   );
 };

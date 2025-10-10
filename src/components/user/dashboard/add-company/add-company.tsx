@@ -1,164 +1,285 @@
-import { zodResolver } from "@hookform/resolvers/zod";
+import { zodResolver } from '@hookform/resolvers/zod';
 import {
   AddCompanyForm,
-  addCompanySchema,
-} from "../../../../forms/add-company";
-import { useForm } from "react-hook-form";
-import { Button, TextInput } from "@mantine/core";
-import { addCompanyByRecruiter } from "../../../../services/user-services";
-import { toast } from "react-toastify";
-import { IconCircleDashedCheck } from "@tabler/icons-react";
-import { useMantineTheme } from "@mantine/core";
-import { useNavigate, useParams } from "react-router-dom";
-import { useRecoilValue } from "recoil";
-import { organizationThemeAtom } from "../../../../atoms/organization-atom";
-import { BgDiv } from "../../../common/style-components/bg-div";
-import { BackButton } from "../../../common/style-components/buttons";
+  addCompanySchema
+} from '../../../../forms/add-company';
+import { useForm } from 'react-hook-form';
+import {
+  Button,
+  TextInput,
+  Container,
+  Card,
+  Stack,
+  Text,
+  Group,
+  Divider,
+  Loader
+} from '@mantine/core';
+import { addCompanyByRecruiter } from '../../../../services/user-services';
+import { toast } from 'react-toastify';
+import {
+  IconCircleDashedCheck,
+  IconArrowLeft,
+  IconBuilding
+} from '@tabler/icons-react';
+import { useNavigate } from 'react-router-dom';
+import { useRecoilValue } from 'recoil';
+import { organizationThemeAtom } from '../../../../atoms/organization-atom';
+import { themeAtom } from '../../../../atoms/theme';
+import { useMediaQuery } from '@mantine/hooks';
+import { useMemo } from 'react';
 
 const AddCompany = () => {
-  const theme = useMantineTheme();
-  const params = useParams();
-  const companyId = params.companyId as string;
   const navigate = useNavigate();
+  const isDarkTheme = useRecoilValue(themeAtom);
+  const organizationConfig = useRecoilValue(organizationThemeAtom);
+
+  // Responsive breakpoints
+  const isMobile = useMediaQuery('(max-width: 768px)');
+  const isSmallMobile = useMediaQuery('(max-width: 500px)');
+
+  // Get the current theme configuration
+  const currentThemeConfig = useMemo(() => {
+    const orgTheme = organizationConfig.organization_theme;
+    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+  }, [organizationConfig, isDarkTheme]);
+
   const {
     register,
     formState: { errors, isSubmitting },
     handleSubmit,
-    reset,
+    reset
   } = useForm<AddCompanyForm>({
-    resolver: zodResolver(addCompanySchema),
+    resolver: zodResolver(addCompanySchema)
   });
-  const organizationConfig = useRecoilValue(organizationThemeAtom);
 
   const onSubmit = async (data: AddCompanyForm) => {
     try {
       await addCompanyByRecruiter(data);
       reset();
-      toast("Company added successfully !", {
-        style: {
-          color: theme.colors.primary[2],
-          backgroundColor:
-            organizationConfig.organization_theme.theme.backgroundColor,
-        },
-        progressStyle: {
-          background: theme.colors.primary[8],
-        },
-        icon: <IconCircleDashedCheck width={32} height={32} />,
+      toast.success('Company added successfully!', {
+        icon: <IconCircleDashedCheck width={24} height={24} />
       });
       navigate(-1);
     } catch (error: any) {
-      toast.error(error.response.data.message || "Something went wrong");
+      toast.error(error?.response?.data?.message || 'Failed to add company');
     }
   };
 
+  const handleGoBack = () => {
+    navigate(-1);
+  };
+
   return (
-    <BgDiv>
-      <form
-        style={{
-          backgroundColor:
-            organizationConfig.organization_theme.theme.backgroundColor,
-        }}
-        onSubmit={handleSubmit(onSubmit)}
-        className="space-y-4 rounded-lg shadow-lg w-full max-w-3xl  mx-auto p-8"
-      >
-        <div className="px-4 flex items-center justify-between gap-4 flex-wrap">
-          <h1 className="text-base sm:text-xl md:text-3xl font-extrabold underline text-center">
-            Add Company
-          </h1>
-          <BackButton id={companyId} />
-        </div>
-        <TextInput
-          {...register("companyName")}
-          label="Company Name"
-          className="m-4 p-4"
-          error={errors.companyName?.message}
-        />
-        <fieldset
-          className="m-4 p-4"
-          style={{
-            border: `1px solid ${organizationConfig.organization_theme.theme.borderColor}`,
-          }}
-        >
-          <legend>
-            <h1 className="px-2">Primary Contact</h1>
-          </legend>
-          <TextInput
-            {...register("primaryContact.name")}
-            label="Name"
-            error={errors.primaryContact?.name?.message}
-          />
-          <TextInput
-            {...register("primaryContact.email")}
-            label="Email"
-            error={errors.primaryContact?.email?.message}
-          />
-          <TextInput
-            {...register("primaryContact.phone")}
-            label="Phone"
-            error={errors.primaryContact?.phone?.message}
-          />
-        </fieldset>
+    <Container
+      size="xl"
+      py="md"
+      my="xl"
+      px={isSmallMobile ? 'xs' : 'md'}
+      style={{
+        backgroundColor: currentThemeConfig.backgroundColor
+      }}
+    >
+      <Stack gap="md">
+        {/* Header Card */}
+        <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder>
+          <Group justify="space-between" wrap={isMobile ? 'wrap' : 'nowrap'}>
+            <Group gap="sm">
+              <IconBuilding size={isMobile ? 24 : 28} />
+              <Text
+                size={isMobile ? 'lg' : 'xl'}
+                fw={700}
+                ta={isMobile ? 'center' : 'left'}
+              >
+                Add New Company
+              </Text>
+            </Group>
+            <Button
+              leftSection={<IconArrowLeft size={16} />}
+              onClick={handleGoBack}
+              variant="light"
+              size={isMobile ? 'sm' : 'md'}
+              fullWidth={isMobile}
+            >
+              Go Back
+            </Button>
+          </Group>
+        </Card>
 
-        <div className="flex flex-wrap">
-          <fieldset
-            className="flex-auto m-4 p-4"
-            style={{
-              border: `1px solid ${organizationConfig.organization_theme.theme.borderColor}`,
-            }}
-          >
-            <legend>
-              <h1 className="px-2">Secondary Contact 1</h1>
-            </legend>
-            <TextInput
-              {...register("secondaryContact_1.name")}
-              label="Name"
-              error={errors.secondaryContact_1?.name?.message}
-            />
-            <TextInput
-              {...register("secondaryContact_1.email")}
-              label="Email"
-              error={errors.secondaryContact_1?.email?.message}
-            />
-            <TextInput
-              {...register("secondaryContact_1.phone")}
-              label="Phone"
-              error={errors.secondaryContact_1?.phone?.message}
-            />
-          </fieldset>
+        {/* Form Card */}
+        <Card shadow="sm" p={isMobile ? 'md' : 'xl'} radius="md" withBorder>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <Stack gap="lg">
+              {/* Company Name Section */}
+              <div>
+                <Text size="lg" fw={600} mb="md">
+                  Company Information
+                </Text>
+                <TextInput
+                  {...register('companyName')}
+                  label="Company Name"
+                  placeholder="Enter company name"
+                  error={errors.companyName?.message}
+                  size={isMobile ? 'sm' : 'md'}
+                  withAsterisk
+                  autoComplete="off"
+                />
+              </div>
 
-          <fieldset
-            className="flex-auto m-4 p-4"
-            style={{
-              border: `1px solid ${organizationConfig.organization_theme.theme.borderColor}`,
-            }}
-          >
-            <legend>
-              <h1 className="px-2">Secondary Contact 2</h1>
-            </legend>
-            <TextInput
-              {...register("secondaryContact_2.name")}
-              label="Name"
-              error={errors.secondaryContact_2?.name?.message}
-            />
-            <TextInput
-              {...register("secondaryContact_2.email")}
-              label="Email"
-              error={errors.secondaryContact_2?.email?.message}
-            />
-            <TextInput
-              {...register("secondaryContact_2.phone")}
-              label="Phone"
-              error={errors.secondaryContact_2?.phone?.message}
-            />
-          </fieldset>
-        </div>
-        <div className="text-right">
-          <Button size="md" type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Loading..." : "Add Company"}
-          </Button>
-        </div>
-      </form>
-    </BgDiv>
+              <Divider />
+
+              {/* Primary Contact Section */}
+              <div>
+                <Text size="lg" fw={600} mb="md">
+                  Primary Contact
+                </Text>
+                <Stack gap="md">
+                  <TextInput
+                    {...register('primaryContact.name')}
+                    label="Name"
+                    placeholder="Enter contact name"
+                    error={errors.primaryContact?.name?.message}
+                    size={isMobile ? 'sm' : 'md'}
+                    withAsterisk
+                    autoComplete="off"
+                  />
+                  <TextInput
+                    {...register('primaryContact.email')}
+                    label="Email"
+                    placeholder="Enter email address"
+                    error={errors.primaryContact?.email?.message}
+                    size={isMobile ? 'sm' : 'md'}
+                    type="email"
+                    withAsterisk
+                    autoComplete="off"
+                  />
+                  <TextInput
+                    {...register('primaryContact.phone')}
+                    label="Phone"
+                    placeholder="Enter phone number"
+                    error={errors.primaryContact?.phone?.message}
+                    size={isMobile ? 'sm' : 'md'}
+                    withAsterisk
+                    autoComplete="off"
+                  />
+                </Stack>
+              </div>
+
+              <Divider />
+
+              {/* Secondary Contacts Section */}
+              <div>
+                <Text size="lg" fw={600} mb="md">
+                  Secondary Contacts (Optional)
+                </Text>
+
+                {/* Responsive Grid for Secondary Contacts */}
+                <Stack gap="lg">
+                  {/* Secondary Contact 1 */}
+                  <Card p="md" withBorder>
+                    <Stack gap="md">
+                      <Text size="md" fw={500} c="dimmed">
+                        Secondary Contact 1
+                      </Text>
+                      <TextInput
+                        {...register('secondaryContact_1.name')}
+                        label="Name"
+                        placeholder="Enter contact name"
+                        error={errors.secondaryContact_1?.name?.message}
+                        size={isMobile ? 'sm' : 'md'}
+                        autoComplete="off"
+                      />
+                      <TextInput
+                        {...register('secondaryContact_1.email')}
+                        label="Email"
+                        placeholder="Enter email address"
+                        error={errors.secondaryContact_1?.email?.message}
+                        size={isMobile ? 'sm' : 'md'}
+                        type="email"
+                        autoComplete="off"
+                      />
+                      <TextInput
+                        {...register('secondaryContact_1.phone')}
+                        label="Phone"
+                        placeholder="Enter phone number"
+                        error={errors.secondaryContact_1?.phone?.message}
+                        size={isMobile ? 'sm' : 'md'}
+                        autoComplete="off"
+                      />
+                    </Stack>
+                  </Card>
+
+                  {/* Secondary Contact 2 */}
+                  <Card p="md" withBorder>
+                    <Stack gap="md">
+                      <Text size="md" fw={500} c="dimmed">
+                        Secondary Contact 2
+                      </Text>
+                      <TextInput
+                        {...register('secondaryContact_2.name')}
+                        label="Name"
+                        placeholder="Enter contact name"
+                        error={errors.secondaryContact_2?.name?.message}
+                        size={isMobile ? 'sm' : 'md'}
+                        autoComplete="off"
+                      />
+                      <TextInput
+                        {...register('secondaryContact_2.email')}
+                        label="Email"
+                        placeholder="Enter email address"
+                        error={errors.secondaryContact_2?.email?.message}
+                        size={isMobile ? 'sm' : 'md'}
+                        type="email"
+                        autoComplete="off"
+                      />
+                      <TextInput
+                        {...register('secondaryContact_2.phone')}
+                        label="Phone"
+                        placeholder="Enter phone number"
+                        error={errors.secondaryContact_2?.phone?.message}
+                        size={isMobile ? 'sm' : 'md'}
+                        autoComplete="off"
+                      />
+                    </Stack>
+                  </Card>
+                </Stack>
+              </div>
+
+              <Divider />
+
+              {/* Submit Button */}
+              <Group justify="flex-end" mt="md">
+                <Button
+                  type="button"
+                  variant="light"
+                  onClick={handleGoBack}
+                  disabled={isSubmitting}
+                  size={isMobile ? 'sm' : 'md'}
+                  fullWidth={isMobile}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  size={isMobile ? 'sm' : 'md'}
+                  fullWidth={isMobile}
+                  leftSection={
+                    isSubmitting ? (
+                      <Loader size="xs" color="white" />
+                    ) : (
+                      <IconBuilding size={16} />
+                    )
+                  }
+                >
+                  {isSubmitting ? 'Adding Company...' : 'Add Company'}
+                </Button>
+              </Group>
+            </Stack>
+          </form>
+        </Card>
+      </Stack>
+    </Container>
   );
 };
 
