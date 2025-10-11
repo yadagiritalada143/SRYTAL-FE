@@ -20,7 +20,6 @@ import {
   Flex,
   Divider
 } from '@mantine/core';
-import { toast } from 'react-toastify';
 import { useDisclosure, useMediaQuery } from '@mantine/hooks';
 import {
   IconEdit,
@@ -42,6 +41,7 @@ import { organizationThemeAtom } from '../../../../atoms/organization-atom';
 import { themeAtom } from '../../../../atoms/theme';
 import { bloodGroupAtom } from '../../../../atoms/bloodgroup-atom';
 import { debounce } from '../../../../utils/common/debounce';
+import { useCustomToast } from '../../../../utils/common/toast';
 
 const ITEMS_PER_PAGE_OPTIONS = ['5', '10', '20', '50'];
 const DEFAULT_ITEMS_PER_PAGE = 10;
@@ -147,6 +147,7 @@ const HeadingComponent: React.FC<{
 
 const BloodGroupTable = () => {
   const [bloodGroups, setBloodGroups] = useRecoilState(bloodGroupAtom);
+  const { showSuccessToast, showErrorToast } = useCustomToast();
   const [filteredBloodGroups, setFilteredBloodGroups] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activePage, setActivePage] = useState(1);
@@ -184,11 +185,11 @@ const BloodGroupTable = () => {
       setBloodGroups(data);
       setFilteredBloodGroups(data);
     } catch {
-      toast.error('Failed to fetch blood groups');
+      showErrorToast('Failed to fetch blood groups');
     } finally {
       setIsLoading(false);
     }
-  }, [setBloodGroups]);
+  }, [setBloodGroups, showErrorToast]);
 
   useEffect(() => {
     if (bloodGroups.length === 0) {
@@ -231,7 +232,7 @@ const BloodGroupTable = () => {
   const confirmEdit = async () => {
     const trimmedGroup = selectedGroup?.type.trim();
     if (!isValidBloodGroup(trimmedGroup)) {
-      toast.error('Invalid blood group format (e.g., A+, B-, AB+, O-)');
+      showErrorToast('Invalid blood group format (e.g., A+, B-, AB+, O-)');
       return;
     }
 
@@ -242,18 +243,18 @@ const BloodGroupTable = () => {
           group.id !== selectedGroup.id
       )
     ) {
-      toast.error('This blood group already exists');
+      showErrorToast('This blood group already exists');
       return;
     }
 
     setIsLoading(true);
     try {
       await updateBloodGroupByAdmin(selectedGroup.id, trimmedGroup);
-      toast.success('Updated successfully');
+      showSuccessToast('Updated successfully');
       fetchBloodGroups();
       closeEditModal();
     } catch {
-      toast.error('Failed to update');
+      showErrorToast('Failed to update');
     } finally {
       setIsLoading(false);
     }
@@ -263,12 +264,12 @@ const BloodGroupTable = () => {
     setIsLoading(true);
     try {
       await deleteBloodGroupByAdmin(selectedGroup.id);
-      toast.success('Deleted successfully');
+      showSuccessToast('Deleted successfully');
       fetchBloodGroups();
       closeDeleteModal();
       closeEditModal();
     } catch {
-      toast.error('Failed to delete');
+      showErrorToast('Failed to delete');
     } finally {
       setIsLoading(false);
     }
@@ -277,7 +278,7 @@ const BloodGroupTable = () => {
   const handleAdd = async () => {
     const trimmedGroup = newGroupName.trim();
     if (!isValidBloodGroup(trimmedGroup)) {
-      toast.error('Invalid blood group format (e.g., A+, B-, AB+, O-)');
+      showErrorToast('Invalid blood group format (e.g., A+, B-, AB+, O-)');
       return;
     }
 
@@ -286,19 +287,19 @@ const BloodGroupTable = () => {
         group => group.type.toLowerCase() === trimmedGroup.toLowerCase()
       )
     ) {
-      toast.error('This blood group already exists');
+      showErrorToast('This blood group already exists');
       return;
     }
 
     setIsLoading(true);
     try {
       await addBloodGroupByAdmin({ type: trimmedGroup });
-      toast.success('Added successfully');
+      showSuccessToast('Added successfully');
       fetchBloodGroups();
       closeAddModal();
       setNewGroupName('');
     } catch {
-      toast.error('Failed to add');
+      showErrorToast('Failed to add');
     } finally {
       setIsLoading(false);
     }
@@ -525,7 +526,6 @@ const BloodGroupTable = () => {
         onClose={closeAddModal}
         title={
           <Group gap="xs">
-            <IconPlus size={20} />
             <Text fw={600} size="lg">
               Add New Blood Group
             </Text>

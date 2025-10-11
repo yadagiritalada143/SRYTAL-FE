@@ -1,5 +1,4 @@
 import { organizationAdminUrls } from '../../../utils/common/constants';
-import { toast } from 'react-toastify';
 import { login } from '../../../services/common-services';
 import axios from 'axios';
 import { useCustomToast } from '../../../utils/common/toast';
@@ -7,7 +6,7 @@ import { LoginForm } from '../../../forms/login';
 import { useNavigate } from 'react-router-dom';
 
 export const useSubmitAdminLogin = () => {
-  const { showSuccessToast } = useCustomToast();
+  const { showSuccessToast, showErrorToast } = useCustomToast();
   const navigate = useNavigate();
 
   const submit = async (formData: LoginForm, name: string) => {
@@ -18,15 +17,15 @@ export const useSubmitAdminLogin = () => {
         showSuccessToast('Login successfully!');
         navigate(`${organizationAdminUrls(name)}/dashboard`);
       } else {
-        toast.error('Not authorized to access');
+        showErrorToast('Not authorized to access');
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        toast.error(
+        showErrorToast(
           'Login failed: ' + (error.response?.data?.message ?? 'Unknown error')
         );
       } else {
-        toast.error('An unexpected error occurred.');
+        showErrorToast('An unexpected error occurred.');
       }
     }
   };

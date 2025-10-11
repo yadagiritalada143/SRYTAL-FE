@@ -9,7 +9,6 @@ import {
   Stack,
   Group,
   Text,
-  ActionIcon,
   Grid,
   Alert,
   Progress
@@ -26,7 +25,6 @@ import {
 import axios from 'axios';
 import {
   IconCircleDashedCheck,
-  IconX,
   IconUser,
   IconMail,
   IconPhone,
@@ -182,15 +180,6 @@ const AddEmployee = () => {
                   Fill in the details below to create a new employee account
                 </Text>
               </Stack>
-
-              <ActionIcon
-                variant="subtle"
-                color="gray"
-                onClick={handleCancel}
-                size="lg"
-              >
-                <IconX size={20} />
-              </ActionIcon>
             </Group>
 
             {/* Progress Indicator */}

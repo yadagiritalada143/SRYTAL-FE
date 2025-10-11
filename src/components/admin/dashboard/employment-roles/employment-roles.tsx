@@ -20,7 +20,6 @@ import {
   Flex,
   Divider
 } from '@mantine/core';
-import { toast } from 'react-toastify';
 import { useDisclosure, useMediaQuery } from '@mantine/hooks';
 import {
   IconEdit,
@@ -41,6 +40,7 @@ import { useRecoilValue } from 'recoil';
 import { organizationThemeAtom } from '../../../../atoms/organization-atom';
 import { themeAtom } from '../../../../atoms/theme';
 import { debounce } from '../../../../utils/common/debounce';
+import { useCustomToast } from '../../../../utils/common/toast';
 
 const ITEMS_PER_PAGE_OPTIONS = ['5', '10', '20', '50'];
 const DEFAULT_ITEMS_PER_PAGE = 10;
@@ -142,6 +142,8 @@ const HeadingComponent: React.FC<{
 );
 
 const EmploymentRoles = () => {
+  const { showErrorToast, showSuccessToast } = useCustomToast();
+
   const [employmentRoles, setEmploymentRoles] = useState<
     { id: string; designation: string }[]
   >([]);
@@ -184,15 +186,20 @@ const EmploymentRoles = () => {
       setEmploymentRoles(data);
       setFilteredEmploymentRole(data);
     } catch {
-      toast.error('Failed to fetch employment roles');
+      showErrorToast('Failed to fetch employment roles');
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [setEmploymentRoles, showErrorToast]);
 
   useEffect(() => {
-    fetchEmploymentRoles();
-  }, [fetchEmploymentRoles]);
+    if (employmentRoles.length === 0) {
+      fetchEmploymentRoles();
+    } else {
+      setFilteredEmploymentRole(employmentRoles);
+      setIsLoading(false);
+    }
+  }, [employmentRoles, fetchEmploymentRoles]);
 
   // Debounced search
   const debouncedSearch = useMemo(
@@ -225,7 +232,7 @@ const EmploymentRoles = () => {
 
   const confirmEdit = async () => {
     if (!isValidDesignation(selectedRole.designation)) {
-      toast.error(
+      showErrorToast(
         'Only letters, numbers, spaces, underscores, hyphens, and parentheses are allowed. No two or more consecutive digits.'
       );
       return;
@@ -239,7 +246,7 @@ const EmploymentRoles = () => {
           role.id !== selectedRole.id
       )
     ) {
-      toast.error('This role already exists');
+      showErrorToast('This role already exists');
       return;
     }
     setIsLoading(true);
@@ -248,11 +255,11 @@ const EmploymentRoles = () => {
         selectedRole.id,
         selectedRole.designation
       );
-      toast.success('Updated successfully');
+      showSuccessToast('Updated successfully');
       fetchEmploymentRoles();
       closeEditModal();
     } catch {
-      toast.error('Failed to update');
+      showErrorToast('Failed to update');
     } finally {
       setIsLoading(false);
     }
@@ -262,12 +269,12 @@ const EmploymentRoles = () => {
     setIsLoading(true);
     try {
       await deleteEmployeeRoleByAdmin(selectedRole.id);
-      toast.success('Deleted successfully');
+      showSuccessToast('Deleted successfully');
       fetchEmploymentRoles();
       closeDeleteModal();
       closeEditModal();
     } catch {
-      toast.error('Failed to delete');
+      showErrorToast('Failed to delete');
     } finally {
       setIsLoading(false);
     }
@@ -275,7 +282,7 @@ const EmploymentRoles = () => {
 
   const handleAdd = async () => {
     if (!isValidDesignation(newRoleName)) {
-      toast.error(
+      showErrorToast(
         'Only letters, numbers, spaces, underscores, hyphens, and parentheses are allowed. No two or more consecutive digits.'
       );
       return;
@@ -286,18 +293,18 @@ const EmploymentRoles = () => {
         role => role.designation.toLowerCase() === newRoleName.toLowerCase()
       )
     ) {
-      toast.error('This role already exists');
+      showErrorToast('This role already exists');
       return;
     }
     setIsLoading(true);
     try {
       await addEmployeeRoleByAdmin({ designation: newRoleName });
-      toast.success('Added successfully');
+      showSuccessToast('Added successfully');
       fetchEmploymentRoles();
       closeAddModal();
       setNewRoleName('');
     } catch {
-      toast.error('Failed to add');
+      showErrorToast('Failed to add');
     } finally {
       setIsLoading(false);
     }
@@ -519,7 +526,6 @@ const EmploymentRoles = () => {
         onClose={closeAddModal}
         title={
           <Group gap="xs">
-            <IconPlus size={20} />
             <Text fw={600} size="lg">
               Add New Employment Role
             </Text>

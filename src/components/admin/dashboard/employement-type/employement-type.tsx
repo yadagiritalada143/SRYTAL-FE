@@ -20,7 +20,6 @@ import {
   Flex,
   Divider
 } from '@mantine/core';
-import { toast } from 'react-toastify';
 import { useDisclosure, useMediaQuery } from '@mantine/hooks';
 import {
   IconEdit,
@@ -42,6 +41,7 @@ import { organizationThemeAtom } from '../../../../atoms/organization-atom';
 import { themeAtom } from '../../../../atoms/theme';
 import { employeeTypeAtom } from '../../../../atoms/employeetypes-atom';
 import { debounce } from '../../../../utils/common/debounce';
+import { useCustomToast } from '../../../../utils/common/toast';
 
 const ITEMS_PER_PAGE_OPTIONS = ['5', '10', '20', '50'];
 const DEFAULT_ITEMS_PER_PAGE = 10;
@@ -143,6 +143,7 @@ const HeadingComponent: React.FC<{
 );
 
 const EmploymentTypes = () => {
+  const { showErrorToast, showSuccessToast } = useCustomToast();
   const [employmentTypes, setEmploymentTypes] =
     useRecoilState(employeeTypeAtom);
   const [filteredEmploymentType, setFilteredEmploymentType] = useState<any[]>(
@@ -184,11 +185,11 @@ const EmploymentTypes = () => {
       setEmploymentTypes(data);
       setFilteredEmploymentType(data);
     } catch {
-      toast.error('Failed to fetch employment types');
+      showErrorToast('Failed to fetch employment types');
     } finally {
       setIsLoading(false);
     }
-  }, [setEmploymentTypes]);
+  }, [setEmploymentTypes, showErrorToast]);
 
   useEffect(() => {
     if (employmentTypes.length === 0) {
@@ -229,7 +230,7 @@ const EmploymentTypes = () => {
 
   const confirmEdit = async () => {
     if (!isValidEmploymentType(selectedType?.employmentType)) {
-      toast.error(
+      showErrorToast(
         'Only letters, numbers, spaces, underscores, hyphens, and parentheses are allowed. No two or more consecutive digits.'
       );
       return;
@@ -243,7 +244,7 @@ const EmploymentTypes = () => {
           type.id !== selectedType.id
       )
     ) {
-      toast.error('This employment type already exists');
+      showErrorToast('This employment type already exists');
       return;
     }
 
@@ -253,11 +254,11 @@ const EmploymentTypes = () => {
         selectedType.id,
         selectedType.employmentType.trim()
       );
-      toast.success('Updated successfully');
+      showSuccessToast('Updated successfully');
       fetchEmploymentTypes();
       closeEditModal();
     } catch {
-      toast.error('Failed to update');
+      showErrorToast('Failed to update');
     } finally {
       setIsLoading(false);
     }
@@ -267,12 +268,12 @@ const EmploymentTypes = () => {
     setIsLoading(true);
     try {
       await deleteEmploymentTypeByAdmin(selectedType.id);
-      toast.success('Deleted successfully');
+      showSuccessToast('Deleted successfully');
       fetchEmploymentTypes();
       closeDeleteModal();
       closeEditModal();
     } catch {
-      toast.error('Failed to delete');
+      showErrorToast('Failed to delete');
     } finally {
       setIsLoading(false);
     }
@@ -280,7 +281,7 @@ const EmploymentTypes = () => {
 
   const handleAdd = async () => {
     if (!isValidEmploymentType(newTypeName)) {
-      toast.error(
+      showErrorToast(
         'Only letters, numbers, spaces, underscores, hyphens, and parentheses are allowed. No two or more consecutive digits.'
       );
       return;
@@ -291,19 +292,19 @@ const EmploymentTypes = () => {
         type => type.employmentType.toLowerCase() === newTypeName.toLowerCase()
       )
     ) {
-      toast.error('This employment type already exists');
+      showErrorToast('This employment type already exists');
       return;
     }
 
     setIsLoading(true);
     try {
       await addEmploymentTypeByAdmin({ employmentType: newTypeName.trim() });
-      toast.success('Added successfully');
+      showSuccessToast('Added successfully');
       fetchEmploymentTypes();
       closeAddModal();
       setNewTypeName('');
     } catch {
-      toast.error('Failed to add');
+      showErrorToast('Failed to add');
     } finally {
       setIsLoading(false);
     }
@@ -525,7 +526,6 @@ const EmploymentTypes = () => {
         onClose={closeAddModal}
         title={
           <Group gap="xs">
-            <IconPlus size={20} />
             <Text fw={600} size="lg">
               Add New Employment Type
             </Text>

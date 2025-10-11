@@ -697,7 +697,7 @@ const UpdateEmployee = () => {
             icon={<IconAlertTriangle size={16} />}
             color="red"
             title="Warning"
-            variant="light"
+            variant="filled"
           >
             This action cannot be undone. The employee and all associated data
             will be permanently deleted.

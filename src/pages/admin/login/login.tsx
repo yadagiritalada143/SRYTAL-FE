@@ -9,12 +9,13 @@ import { useRecoilValue } from 'recoil';
 import ForgotPassword from '../../../components/common/forgetPassword/forgetPassword';
 import { themeAtom } from '../../../atoms/theme';
 import { useSubmitAdminLogin } from './methods';
-import { toast } from 'react-toastify';
 import { ThemeBackground } from '../../../components/UI/Theme-background/background';
 import { ThemeForm } from '../../../components/UI/Form/form';
+import { useCustomToast } from '../../../utils/common/toast';
 
 const AdminLogin = () => {
   const navigate = useNavigate();
+  const { showErrorToast } = useCustomToast();
   const { organization = '' } = useParams<{ organization: string }>();
   const organizationConfig = useRecoilValue(organizationThemeAtom);
   const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
@@ -55,10 +56,10 @@ const AdminLogin = () => {
       } else {
         localStorage.removeItem('token');
         localStorage.removeItem('createdAt');
-        toast.error('Session expired. Please login again.');
+        showErrorToast('Session expired. Please login again.');
       }
     }
-  }, [navigate, organization]);
+  }, [navigate, organization, showErrorToast]);
 
   return (
     <ThemeBackground className="flex justify-center items-center h-screen px-4">
