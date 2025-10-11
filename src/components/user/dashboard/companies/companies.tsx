@@ -839,8 +839,9 @@ const Companies = () => {
                           </>
                         )}
                         <Table.Td className="p-3 text-center">
-                          <Badge size="sm">{company.status || 'N/A'}</Badge>
+                          <Text size="sm">{company.status || 'N/A'}</Text>
                         </Table.Td>
+
                         <Table.Td className="p-3 text-center">
                           <Text size="sm">
                             {moment(company.lastUpdatedAt).format(

@@ -405,6 +405,7 @@ const DateTableComponent = () => {
                     onClick={() =>
                       navigateDateRange('previous', dateRange, setDateRange)
                     }
+                    bg={currentThemeConfig.color}
                   >
                     <IconChevronLeft size={isMobile ? 16 : 18} />
                   </ActionIcon>
@@ -423,7 +424,6 @@ const DateTableComponent = () => {
                     value={dateRange}
                     placeholder="Pick date range"
                     allowSingleDateInRange={false}
-                    style={{ flex: 1 }}
                   />
 
                   <ActionIcon
@@ -433,6 +433,7 @@ const DateTableComponent = () => {
                     onClick={() =>
                       navigateDateRange('next', dateRange, setDateRange)
                     }
+                    bg={currentThemeConfig.color}
                   >
                     <IconChevronRight size={isMobile ? 16 : 18} />
                   </ActionIcon>

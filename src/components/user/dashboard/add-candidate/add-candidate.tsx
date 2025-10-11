@@ -5,7 +5,6 @@ import {
   NumberInput,
   TextInput,
   Group,
-  Chip,
   Input,
   Textarea,
   Container,
@@ -337,17 +336,24 @@ const AddPoolCandidate = () => {
                         </Group>
                         <Group gap="xs">
                           {skills.map(skill => (
-                            <Chip
+                            <Badge
                               key={skill}
-                              checked={false}
                               color="blue"
+                              size="md"
                               variant="filled"
                               onClick={() => handleSkillRemove(skill)}
-                              style={{ cursor: 'pointer' }}
+                              style={{
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}
                             >
-                              {skill}{' '}
-                              <IconX size={14} style={{ marginLeft: 4 }} />
-                            </Chip>
+                              <Group gap={4} align="center">
+                                <Text size="xs">{skill}</Text>
+                                <IconX size={14} style={{ marginTop: 1 }} />
+                              </Group>
+                            </Badge>
                           ))}
                         </Group>
                       </Stack>

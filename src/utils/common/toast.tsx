@@ -1,5 +1,9 @@
 import { toast } from 'react-toastify';
-import { IconCircleDashedCheck, IconX } from '@tabler/icons-react';
+import {
+  IconCircleDashedCheck,
+  IconExclamationCircleFilled,
+  IconX
+} from '@tabler/icons-react';
 import { useRecoilValue } from 'recoil';
 import { organizationThemeAtom } from '../../atoms/organization-atom';
 import { themeAtom } from '../../atoms/theme';
@@ -41,5 +45,30 @@ export const useCustomToast = () => {
     });
   };
 
-  return { showSuccessToast };
+  const showErrorToast = (
+    message: string,
+    icon = <IconExclamationCircleFilled width={32} height={32} color="red" />
+  ) => {
+    toast(message, {
+      style: {
+        color: currentThemeConfig.color,
+        backgroundColor: currentThemeConfig.headerBackgroundColor
+      },
+      progressStyle: {
+        background: 'red',
+        accentColor: 'red',
+        borderColor: 'red'
+      },
+      icon,
+      closeButton: (
+        <IconX
+          style={{ cursor: 'pointer' }}
+          width={20}
+          height={20}
+          onClick={() => toast.dismiss()}
+        />
+      )
+    });
+  };
+  return { showSuccessToast, showErrorToast };
 };

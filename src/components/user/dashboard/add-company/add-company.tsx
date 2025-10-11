@@ -16,21 +16,18 @@ import {
   Loader
 } from '@mantine/core';
 import { addCompanyByRecruiter } from '../../../../services/user-services';
-import { toast } from 'react-toastify';
-import {
-  IconCircleDashedCheck,
-  IconArrowLeft,
-  IconBuilding
-} from '@tabler/icons-react';
+import { IconArrowLeft, IconBuilding } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom';
 import { useRecoilValue } from 'recoil';
 import { organizationThemeAtom } from '../../../../atoms/organization-atom';
 import { themeAtom } from '../../../../atoms/theme';
 import { useMediaQuery } from '@mantine/hooks';
 import { useMemo } from 'react';
+import { useCustomToast } from '../../../../utils/common/toast';
 
 const AddCompany = () => {
   const navigate = useNavigate();
+  const { showSuccessToast, showErrorToast } = useCustomToast();
   const isDarkTheme = useRecoilValue(themeAtom);
   const organizationConfig = useRecoilValue(organizationThemeAtom);
 
@@ -57,12 +54,10 @@ const AddCompany = () => {
     try {
       await addCompanyByRecruiter(data);
       reset();
-      toast.success('Company added successfully!', {
-        icon: <IconCircleDashedCheck width={24} height={24} />
-      });
+      showSuccessToast('Company added successfully!');
       navigate(-1);
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to add company');
+      showErrorToast(error?.response?.data?.message || 'Failed to add company');
     }
   };
 

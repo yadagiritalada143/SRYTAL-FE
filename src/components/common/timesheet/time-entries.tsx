@@ -70,8 +70,6 @@ export const TimeEntriesTable = ({
 
         <ScrollArea>
           <Table
-            striped
-            highlightOnHover
             withTableBorder
             withColumnBorders
             verticalSpacing={isMobile ? 'xs' : 'sm'}

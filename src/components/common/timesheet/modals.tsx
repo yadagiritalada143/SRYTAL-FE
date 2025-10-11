@@ -535,8 +535,6 @@ export const ConfirmTimesheetSubmitModal = React.memo(
           {/* Changes Table */}
           <ScrollArea style={{ maxHeight: '50vh' }}>
             <Table
-              striped
-              highlightOnHover
               withTableBorder
               withColumnBorders
               verticalSpacing={isMobile ? 'xs' : 'sm'}
