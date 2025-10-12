@@ -14,7 +14,9 @@ import {
   Container,
   Card,
   Flex,
-  Select
+  Select,
+  ScrollArea,
+  Divider
 } from '@mantine/core';
 import {
   IconCalendarTime,
@@ -26,7 +28,13 @@ import {
   IconSortDescending,
   IconFilter
 } from '@tabler/icons-react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAllEmployeeDetailsByAdmin } from '../../../../services/admin-services';
 import { toast } from 'react-toastify';
@@ -40,6 +48,7 @@ import useHorizontalScroll from '../../../../hooks/horizontal-scroll';
 import { debounce } from '../../../../utils/common/debounce';
 import { EmployeeInterface } from '../../../../interfaces/employee';
 import { themeAtom } from '../../../../atoms/theme';
+import { useMediaQuery } from '@mantine/hooks';
 
 // Constants
 const ITEMS_PER_PAGE_OPTIONS = ['5', '10', '20', '50'];
@@ -124,16 +133,17 @@ const EmployeeActions: React.FC<{
   onEdit: (id: string) => void;
   onPackage: (id: string) => void;
   onTimesheet: (id: string) => void;
-}> = ({ employeeId, onEdit, onPackage, onTimesheet }) => (
+  isMobile?: boolean;
+}> = ({ employeeId, onEdit, onPackage, onTimesheet, isMobile = false }) => (
   <Group gap="xs" justify="center">
     <Tooltip label="Edit Employee Details">
       <ActionIcon
         variant="subtle"
         color="blue"
         onClick={() => onEdit(employeeId)}
-        size="sm"
+        size={isMobile ? 'md' : 'sm'}
       >
-        <IconUser size={16} />
+        <IconUser size={isMobile ? 18 : 16} />
       </ActionIcon>
     </Tooltip>
     <Tooltip label="Update Package">
@@ -141,9 +151,9 @@ const EmployeeActions: React.FC<{
         variant="subtle"
         color="green"
         onClick={() => onPackage(employeeId)}
-        size="sm"
+        size={isMobile ? 'md' : 'sm'}
       >
-        <IconPackage size={16} />
+        <IconPackage size={isMobile ? 18 : 16} />
       </ActionIcon>
     </Tooltip>
     <Tooltip label="View Timesheet">
@@ -151,20 +161,157 @@ const EmployeeActions: React.FC<{
         variant="subtle"
         color="orange"
         onClick={() => onTimesheet(employeeId)}
-        size="sm"
+        size={isMobile ? 'md' : 'sm'}
       >
-        <IconCalendarTime size={16} />
+        <IconCalendarTime size={isMobile ? 18 : 16} />
       </ActionIcon>
     </Tooltip>
   </Group>
 );
+
+// Mobile Employee Card Component
+const MobileEmployeeCard: React.FC<{
+  employee: EmployeeInterface;
+  index: number;
+  activePage: number;
+  itemsPerPage: number;
+  onEdit: (id: string) => void;
+  onPackage: (id: string) => void;
+  onTimesheet: (id: string) => void;
+}> = ({
+  employee,
+  index,
+  activePage,
+  itemsPerPage,
+  onEdit,
+  onPackage,
+  onTimesheet
+}) => {
+  return (
+    <Card
+      key={employee._id}
+      id={`employee-${employee._id}`}
+      shadow="sm"
+      p="md"
+      mb="sm"
+      withBorder
+    >
+      <Stack gap="sm">
+        {/* Header Section */}
+        <Group justify="space-between" align="center">
+          <Badge variant="filled" color="blue">
+            #{index + 1 + (activePage - 1) * itemsPerPage}
+          </Badge>
+          <Badge size="sm" color="teal" variant="light">
+            {employee.userRole || 'N/A'}
+          </Badge>
+        </Group>
+
+        <Divider />
+
+        {/* Basic Info Section */}
+        <Group grow align="start">
+          <Stack gap={2}>
+            <Text size="xs" fw={600} c="dimmed">
+              Employee ID
+            </Text>
+            <Text size="sm">{employee.employeeId || 'N/A'}</Text>
+          </Stack>
+
+          <Stack gap={2}>
+            <Text size="xs" fw={600} c="dimmed">
+              Name
+            </Text>
+            <Text size="sm">
+              {employee.firstName} {employee.lastName}
+            </Text>
+          </Stack>
+        </Group>
+
+        <Divider />
+
+        {/* Contact Section */}
+        <Stack gap={4}>
+          <Text size="xs" fw={600} c="dimmed">
+            Email
+          </Text>
+          <Text size="sm" lineClamp={1}>
+            {employee.email}
+          </Text>
+        </Stack>
+
+        <Group grow>
+          <Stack gap={2}>
+            <Text size="xs" fw={600} c="dimmed">
+              Mobile
+            </Text>
+            <Text size="sm">{employee.mobileNumber || 'N/A'}</Text>
+          </Stack>
+          <Stack gap={2}>
+            <Text size="xs" fw={600} c="dimmed">
+              Blood Group
+            </Text>
+            <Badge size="sm" variant="light" color="red">
+              {employee.bloodGroup?.type || 'N/A'}
+            </Badge>
+          </Stack>
+        </Group>
+
+        <Divider />
+
+        {/* Employment Info */}
+        <Stack gap={2}>
+          <Text size="xs" fw={600} c="dimmed">
+            Employment Type
+          </Text>
+          <Text size="sm">
+            {employee.employmentType?.employmentType || 'N/A'}
+          </Text>
+        </Stack>
+
+        <Stack gap={4}>
+          <Text size="xs" fw={600} c="dimmed">
+            Designations
+          </Text>
+          <Group gap={6} wrap="wrap">
+            {employee.employeeRole?.length ? (
+              employee.employeeRole.map(role => (
+                <Badge key={role._id} size="xs" variant="outline" color="gray">
+                  {role.designation}
+                </Badge>
+              ))
+            ) : (
+              <Text size="xs" c="dimmed">
+                None
+              </Text>
+            )}
+          </Group>
+        </Stack>
+
+        <Divider />
+
+        {/* Actions */}
+        <Card.Section withBorder mt="sm" p="md" style={{ borderRadius: '8px' }}>
+          <EmployeeActions
+            employeeId={employee._id}
+            onEdit={onEdit}
+            onPackage={onPackage}
+            onTimesheet={onTimesheet}
+            isMobile
+          />
+        </Card.Section>
+      </Stack>
+    </Card>
+  );
+};
 
 // Table Header Component
 const TableHeader: React.FC<{
   sortConfig: SortConfig;
   onSort: (field: SortField) => void;
   themeConfig: any;
-}> = ({ sortConfig, onSort, themeConfig }) => {
+  isTablet?: boolean;
+}> = ({ sortConfig, onSort, themeConfig, isTablet = false }) => {
   const SortableHeader: React.FC<{
     field: SortField;
     children: React.ReactNode;
@@ -172,6 +319,7 @@ const TableHeader: React.FC<{
     <Table.Th
       className="border cursor-pointer select-none hover:bg-opacity-80 transition-colors"
       onClick={() => onSort(field)}
+      style={{ minWidth: isTablet ? '120px' : 'auto' }}
     >
       <Group justify="center">
         <Text size="sm" fw={500}>
@@ -195,35 +343,46 @@ const TableHeader: React.FC<{
       }}
     >
       <Table.Tr>
-        <Table.Th className="p-3 border text-center">
+        <Table.Th
+          className="p-3 border text-center"
+          style={{ minWidth: '60px' }}
+        >
           <Text size="sm" fw={500}>
             S.No
           </Text>
         </Table.Th>
         <SortableHeader field="employeeId">Employee ID</SortableHeader>
         <SortableHeader field="firstName">First Name</SortableHeader>
-        <SortableHeader field="lastName">Last Name</SortableHeader>
+        {!isTablet && (
+          <SortableHeader field="lastName">Last Name</SortableHeader>
+        )}
         <SortableHeader field="email">Email</SortableHeader>
-        <Table.Th className="p-3 border text-center">
-          <Text size="sm" fw={500}>
-            Mobile
-          </Text>
-        </Table.Th>
+        {!isTablet && (
+          <Table.Th className="p-3 border text-center">
+            <Text size="sm" fw={500}>
+              Mobile
+            </Text>
+          </Table.Th>
+        )}
         <Table.Th className="p-3 border text-center">
           <Text size="sm" fw={500}>
             Role
           </Text>
         </Table.Th>
-        <Table.Th className="p-3 border text-center">
-          <Text size="sm" fw={500}>
-            Employment
-          </Text>
-        </Table.Th>
-        <Table.Th className="p-3 border text-center">
-          <Text size="sm" fw={500}>
-            Blood Group
-          </Text>
-        </Table.Th>
+        {!isTablet && (
+          <>
+            <Table.Th className="p-3 border text-center">
+              <Text size="sm" fw={500}>
+                Employment
+              </Text>
+            </Table.Th>
+            <Table.Th className="p-3 border text-center">
+              <Text size="sm" fw={500}>
+                Blood Group
+              </Text>
+            </Table.Th>
+          </>
+        )}
         <Table.Th className="p-3 border text-center">
           <Text size="sm" fw={500}>
             Designations
@@ -239,6 +398,38 @@ const TableHeader: React.FC<{
   );
 };
 
+const HeadingComponent: React.FC<{
+  filteredEmployees: number;
+  handleAddEmployee: () => void;
+  isMobile?: boolean;
+}> = ({ filteredEmployees = 0, handleAddEmployee, isMobile = false }) => (
+  <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder>
+    <Flex
+      direction={isMobile ? 'column' : 'row'}
+      justify="space-between"
+      align="center"
+      gap="md"
+    >
+      <Text
+        size={isMobile ? 'lg' : 'xl'}
+        fw={700}
+        ta={isMobile ? 'center' : 'left'}
+      >
+        Employee Management ({filteredEmployees} employees)
+      </Text>
+      <Button
+        leftSection={<IconPlus size={16} />}
+        onClick={handleAddEmployee}
+        variant="filled"
+        fullWidth={isMobile}
+        size={isMobile ? 'md' : 'sm'}
+      >
+        Add Employee
+      </Button>
+    </Flex>
+  </Card>
+);
+
 const Employees = () => {
   const [employees, setEmployees] = useRecoilState(organizationEmployeeAtom);
   const [activePage, setActivePage] = useState(1);
@@ -248,13 +439,18 @@ const Employees = () => {
   const isDarkTheme = useRecoilValue(themeAtom);
   const navigate = useNavigate();
   const organizationConfig = useRecoilValue(organizationThemeAtom);
+
+  // Responsive breakpoints
+  const isMobile = useMediaQuery('(max-width: 768px)');
+  const isTablet = useMediaQuery('(max-width: 1024px)');
+  const isSmallMobile = useMediaQuery('(max-width: 500px)');
+
   // Get the current theme configuration based on theme mode
   const currentThemeConfig = useMemo(() => {
     const orgTheme = organizationConfig.organization_theme;
-
-    // Check if new dual themes structure exists
     return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
   }, [organizationConfig, isDarkTheme]);
+
   const highlightEmployeeId = useRef<string | null>(null);
 
   const {
@@ -354,8 +550,9 @@ const Employees = () => {
 
         setTimeout(() => {
           localStorage.removeItem('id');
-          element.style.backgroundColor = '';
-          element.style.color = '';
+          element.style.backgroundColor =
+            currentThemeConfig.headerBackgroundColor;
+          element.style.color = currentThemeConfig.color;
           highlightEmployeeId.current = null;
         }, 2000);
       }
@@ -365,6 +562,8 @@ const Employees = () => {
   }, [
     filteredEmployees,
     itemsPerPage,
+    currentThemeConfig.headerBackgroundColor,
+    currentThemeConfig.color,
     currentThemeConfig.button.color,
     currentThemeConfig.button.textColor
   ]);
@@ -372,6 +571,7 @@ const Employees = () => {
   // Navigation handlers
   const handleEmployeeEdit = useCallback(
     (employeeId: string) => {
+      localStorage.setItem('id', employeeId);
       navigate(
         `${organizationAdminUrls(organizationConfig.organization_name)}/dashboard/update/${employeeId}`
       );
@@ -381,6 +581,7 @@ const Employees = () => {
 
   const handlePackageUpdate = useCallback(
     (employeeId: string) => {
+      localStorage.setItem('id', employeeId);
       navigate(
         `${organizationAdminUrls(organizationConfig.organization_name)}/dashboard/package/${employeeId}`
       );
@@ -390,6 +591,7 @@ const Employees = () => {
 
   const handleTimesheet = useCallback(
     (employeeId: string) => {
+      localStorage.setItem('id', employeeId);
       navigate(
         `${organizationAdminUrls(organizationConfig.organization_name)}/dashboard/timesheet/${employeeId}`
       );
@@ -405,7 +607,7 @@ const Employees = () => {
 
   if (error) {
     return (
-      <Container size="lg" py="xl">
+      <Container size={isMobile ? 'sm' : 'lg'} py="xl">
         <Card shadow="sm" p="lg" radius="md" withBorder>
           <Text ta="center" size="lg">
             {error}
@@ -419,33 +621,25 @@ const Employees = () => {
   }
 
   return (
-    <Container size="xl" py="md" my="xl">
+    <Container size="xl" py="md" my="xl" px={isSmallMobile ? 'xs' : 'md'}>
       <Stack gap="md">
         {/* Header */}
-        <Card shadow="sm" p="lg" radius="md" withBorder>
-          <Flex justify="space-between" align="center" wrap="wrap" gap="md">
-            <Text size="xl" fw={700}>
-              Employee Management ({filteredEmployees.length} employees)
-            </Text>
-            <Button
-              leftSection={<IconPlus size={16} />}
-              onClick={handleAddEmployee}
-              variant="filled"
-            >
-              Add Employee
-            </Button>
-          </Flex>
-        </Card>
+        <HeadingComponent
+          filteredEmployees={filteredEmployees.length}
+          handleAddEmployee={handleAddEmployee}
+          isMobile={isMobile}
+        />
 
         {/* Filters */}
-        <Card shadow="sm" p="md" radius="md" withBorder>
+        <Card shadow="sm" p={isMobile ? 'sm' : 'md'} radius="md" withBorder>
           <Stack gap="md">
-            <Group grow>
+            <Group grow={!isMobile}>
               <TextInput
                 placeholder="Search by name, email, phone, or employee ID..."
                 leftSection={<IconSearch size={16} />}
                 onChange={e => debouncedSearch(e.target.value)}
                 radius="md"
+                size={isMobile ? 'sm' : 'md'}
               />
               <Select
                 placeholder="Filter by role"
@@ -455,10 +649,11 @@ const Employees = () => {
                 clearable
                 leftSection={<IconFilter size={16} />}
                 radius="md"
+                size={isMobile ? 'sm' : 'md'}
               />
             </Group>
 
-            <Group justify="space-between">
+            <Group justify="space-between" wrap={isMobile ? 'wrap' : 'nowrap'}>
               <Group gap="xs">
                 <Text size="sm">Items per page:</Text>
                 <Select
@@ -481,7 +676,7 @@ const Employees = () => {
           </Stack>
         </Card>
 
-        {/* Table */}
+        {/* Table or Cards based on screen size */}
         <Card shadow="sm" p={0} radius="md" withBorder>
           {isLoading ? (
             <Center p="xl">
@@ -490,7 +685,51 @@ const Employees = () => {
                 <Text>Loading employees...</Text>
               </Stack>
             </Center>
+          ) : isMobile ? (
+            // Mobile Card View
+            <ScrollArea p="md">
+              <Stack gap="sm">
+                {paginatedEmployees.length > 0 ? (
+                  paginatedEmployees.map((employee, index) => (
+                    <MobileEmployeeCard
+                      key={employee._id}
+                      employee={employee}
+                      index={index}
+                      activePage={activePage}
+                      itemsPerPage={itemsPerPage}
+                      onEdit={handleEmployeeEdit}
+                      onPackage={handlePackageUpdate}
+                      onTimesheet={handleTimesheet}
+                    />
+                  ))
+                ) : (
+                  <Card p="xl" withBorder>
+                    <Stack align="center" gap="md">
+                      <Text size="lg" ta="center">
+                        No employees found
+                      </Text>
+                      <Text size="sm" ta="center">
+                        {searchQuery || roleFilter
+                          ? 'Try adjusting your search or filters'
+                          : 'Start by adding your first employee'}
+                      </Text>
+                      {!searchQuery && !roleFilter && (
+                        <Button
+                          variant="light"
+                          leftSection={<IconPlus size={16} />}
+                          onClick={handleAddEmployee}
+                          fullWidth={isSmallMobile}
+                        >
+                          Add Employee
+                        </Button>
+                      )}
+                    </Stack>
+                  </Card>
+                )}
+              </Stack>
+            </ScrollArea>
           ) : (
+            // Desktop/Tablet Table View
             <div
               ref={scrollRef}
               onMouseDown={handleMouseDown}
@@ -509,6 +748,7 @@ const Employees = () => {
                   sortConfig={sortConfig}
                   onSort={handleSort}
                   themeConfig={currentThemeConfig}
+                  isTablet={isTablet}
                 />
                 <Table.Tbody>
                   {paginatedEmployees.length > 0 ? (
@@ -531,35 +771,62 @@ const Employees = () => {
                         <Table.Td className="p-3">
                           <Text size="sm">{employee.firstName}</Text>
                         </Table.Td>
+                        {!isTablet && (
+                          <Table.Td className="p-3">
+                            <Text size="sm">{employee.lastName}</Text>
+                          </Table.Td>
+                        )}
                         <Table.Td className="p-3">
-                          <Text size="sm">{employee.lastName}</Text>
+                          <Text size="sm" truncate>
+                            {isTablet
+                              ? employee.email.slice(0, 15) + '...'
+                              : employee.email.slice(0, 20)}
+                          </Text>
                         </Table.Td>
-                        <Table.Td className="p-3">
-                          <Text size="sm">{employee.email.slice(0, 20)}</Text>
-                        </Table.Td>
-                        <Table.Td className="p-3 text-center">
-                          <Text size="sm">{employee.mobileNumber}</Text>
-                        </Table.Td>
+                        {!isTablet && (
+                          <Table.Td className="p-3 text-center">
+                            <Text size="sm">{employee.mobileNumber}</Text>
+                          </Table.Td>
+                        )}
                         <Table.Td className="p-3 text-center">
                           <Badge size="sm">{employee.userRole || 'N/A'}</Badge>
                         </Table.Td>
-                        <Table.Td className="p-3 text-center">
-                          <Text size="sm">
-                            {employee.employmentType?.employmentType || 'N/A'}
-                          </Text>
-                        </Table.Td>
-                        <Table.Td className="p-3 text-center">
-                          <Badge size="sm">
-                            {employee.bloodGroup?.type || 'N/A'}
-                          </Badge>
-                        </Table.Td>
+                        {!isTablet && (
+                          <>
+                            <Table.Td className="p-3 text-center">
+                              <Text size="sm">
+                                {employee.employmentType?.employmentType ||
+                                  'N/A'}
+                              </Text>
+                            </Table.Td>
+                            <Table.Td className="p-3 text-center">
+                              <Badge size="sm">
+                                {employee.bloodGroup?.type || 'N/A'}
+                              </Badge>
+                            </Table.Td>
+                          </>
+                        )}
                         <Table.Td className="p-3">
                           <Stack gap={4}>
-                            {employee.employeeRole?.map(role => (
-                              <Badge key={role._id} size="xs">
-                                {role.designation}
-                              </Badge>
-                            )) || <Text size="xs">None</Text>}
+                            {employee.employeeRole
+                              ?.slice(0, isTablet ? 1 : 3)
+                              .map(role => (
+                                <Badge key={role._id} size="xs">
+                                  {isTablet
+                                    ? role.designation.slice(0, 10) + '...'
+                                    : role.designation}
+                                </Badge>
+                              ))}
+                            {employee.employeeRole &&
+                              employee.employeeRole.length >
+                                (isTablet ? 1 : 3) && (
+                                <Badge size="xs" variant="light">
+                                  +
+                                  {employee.employeeRole.length -
+                                    (isTablet ? 1 : 3)}{' '}
+                                  more
+                                </Badge>
+                              )}
                           </Stack>
                         </Table.Td>
                         <Table.Td className="p-3">
@@ -574,7 +841,10 @@ const Employees = () => {
                     ))
                   ) : (
                     <Table.Tr>
-                      <Table.Td colSpan={11} className="text-center p-8">
+                      <Table.Td
+                        colSpan={isTablet ? 8 : 11}
+                        className="text-center p-8"
+                      >
                         <Stack align="center" gap="md">
                           <Text size="lg">No employees found</Text>
                           <Text size="sm">
@@ -608,7 +878,7 @@ const Employees = () => {
               value={activePage}
               onChange={setActivePage}
               total={totalPages}
-              size="sm"
+              size={isMobile ? 'sm' : 'md'}
               radius="md"
               withEdges
             />

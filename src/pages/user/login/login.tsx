@@ -5,7 +5,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { login } from '../../../services/common-services';
-import { toast } from 'react-toastify';
 import axios from 'axios';
 import { useCustomToast } from '../../../utils/common/toast';
 import { organizationThemeAtom } from '../../../atoms/organization-atom';
@@ -20,7 +19,7 @@ import { ThemeBackground } from '../../../components/UI/Theme-background/backgro
 import { ThemeForm } from '../../../components/UI/Form/form';
 
 const EmployeeLogin = () => {
-  const { showSuccessToast } = useCustomToast();
+  const { showSuccessToast, showErrorToast } = useCustomToast();
   const { organization } = useParams<{ organization: string }>();
   const organizationConfig = useRecoilValue(organizationThemeAtom);
   const setUser = useSetRecoilState(userDetailsAtom);
@@ -81,11 +80,11 @@ const EmployeeLogin = () => {
       showSuccessToast('Login successfully !');
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        toast.error(
+        showErrorToast(
           'Login failed: ' + (error.response?.data?.message || 'Unknown error')
         );
       } else {
-        toast.error('An unexpected error occurred.');
+        showErrorToast('An unexpected error occurred.');
       }
     }
   };

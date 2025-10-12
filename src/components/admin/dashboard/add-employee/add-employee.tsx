@@ -9,7 +9,6 @@ import {
   Stack,
   Group,
   Text,
-  ActionIcon,
   Grid,
   Alert,
   Progress
@@ -26,7 +25,6 @@ import {
 import axios from 'axios';
 import {
   IconCircleDashedCheck,
-  IconX,
   IconUser,
   IconMail,
   IconPhone,
@@ -182,15 +180,6 @@ const AddEmployee = () => {
                   Fill in the details below to create a new employee account
                 </Text>
               </Stack>
-
-              <ActionIcon
-                variant="subtle"
-                color="gray"
-                onClick={handleCancel}
-                size="lg"
-              >
-                <IconX size={20} />
-              </ActionIcon>
             </Group>
 
             {/* Progress Indicator */}
@@ -235,6 +224,7 @@ const AddEmployee = () => {
                       placeholder="Enter first name"
                       leftSection={<IconUser size={16} />}
                       {...register('firstName')}
+                      autoComplete="off"
                       error={errors.firstName?.message}
                       required
                     />
@@ -246,6 +236,7 @@ const AddEmployee = () => {
                       placeholder="Enter last name"
                       leftSection={<IconUser size={16} />}
                       {...register('lastName')}
+                      autoComplete="off"
                       error={errors.lastName?.message}
                       required
                     />
@@ -258,6 +249,7 @@ const AddEmployee = () => {
                       type="email"
                       leftSection={<IconMail size={16} />}
                       {...register('email')}
+                      autoComplete="off"
                       error={errors.email?.message}
                       required
                     />
@@ -268,6 +260,7 @@ const AddEmployee = () => {
                       label="Phone Number"
                       placeholder="Enter phone number"
                       type="tel"
+                      autoComplete="off"
                       leftSection={<IconPhone size={16} />}
                       {...register('mobileNumber')}
                       error={errors.mobileNumber?.message}
@@ -288,6 +281,7 @@ const AddEmployee = () => {
                           {...field}
                           error={errors.userRole?.message}
                           required
+                          autoComplete="off"
                           searchable
                           clearable
                         />

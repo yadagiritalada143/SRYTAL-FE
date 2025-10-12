@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useDisclosure } from '@mantine/hooks';
+import { useDisclosure, useMediaQuery } from '@mantine/hooks';
 import { toast } from 'react-toastify';
 import {
   MultiSelect,
@@ -19,8 +19,7 @@ import {
   Alert,
   Badge,
   Divider,
-  Box,
-  ActionIcon
+  Box
 } from '@mantine/core';
 import {
   IconPackage,
@@ -34,8 +33,7 @@ import {
   IconX,
   IconArrowRight,
   IconPackages,
-  IconSubtask,
-  IconArrowLeft
+  IconSubtask
 } from '@tabler/icons-react';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { employeeDetailsAtom } from '../../../../atoms/employee-atom';
@@ -65,7 +63,7 @@ import {
 import { PackagesList, Task } from '../../../../interfaces/package';
 import { StandardModal } from '../../../UI/Models/base-model';
 import { ThemeBackground } from '../../../UI/Theme-background/background';
-import { useNavigate } from 'react-router-dom';
+import { BackButton } from '../../../common/style-components/buttons';
 
 const PackagesFormComponent = ({
   organizationConfig,
@@ -82,8 +80,10 @@ const PackagesFormComponent = ({
   const [tasks] = useState<Task[]>([]);
   const [selectedPackagesData, setSelectedPackagesData] =
     useState<FormattedPackageData>();
-  const [selectedTasks, setSelectedTasks] = useState<SelectedTasks>({});
-  const navigate = useNavigate();
+  const [selectedTasks, setSelectedTasks] = useState<SelectedTasks>({}); // Responsive breakpoints
+  const isMobile = useMediaQuery('(max-width: 768px)');
+  const isTablet = useMediaQuery('(max-width: 1024px)');
+  const isSmallMobile = useMediaQuery('(max-width: 500px)');
 
   // Get current theme configuration
   const currentThemeConfig = useMemo(() => {
@@ -282,13 +282,17 @@ const PackagesFormComponent = ({
 
   if (isLoading) {
     return (
-      <Container size="lg" py="xl">
+      <Container
+        size="lg"
+        py={isMobile ? 'md' : 'xl'}
+        px={isMobile ? 'xs' : undefined}
+      >
         <ThemeBackground>
           <Card
             shadow="lg"
             radius="md"
             withBorder
-            p="xl"
+            p={isMobile ? 'md' : 'xl'}
             style={{
               backgroundColor: currentThemeConfig.backgroundColor,
               borderColor: currentThemeConfig.borderColor
@@ -296,8 +300,14 @@ const PackagesFormComponent = ({
           >
             <div className="flex justify-center items-center h-64">
               <Stack align="center" gap="md">
-                <Loader size="xl" color={currentThemeConfig.button.color} />
-                <Text size="lg" c={currentThemeConfig.color}>
+                <Loader
+                  size={isMobile ? 'lg' : 'xl'}
+                  color={currentThemeConfig.button.color}
+                />
+                <Text
+                  size={isMobile ? 'md' : 'lg'}
+                  c={currentThemeConfig.color}
+                >
                   Loading employee data...
                 </Text>
               </Stack>
@@ -311,87 +321,98 @@ const PackagesFormComponent = ({
   const employeeInfoItems = getEmployeeInfoItems(employeeDetails);
 
   const getInfoIcon = (label: string) => {
+    const iconSize = isMobile ? 14 : 16;
     switch (label) {
       case 'Name':
-        return <IconUser size={16} />;
+        return <IconUser size={iconSize} />;
       case 'Email':
-        return <IconMail size={16} />;
+        return <IconMail size={iconSize} />;
       case 'Phone':
-        return <IconPhone size={16} />;
+        return <IconPhone size={iconSize} />;
       case 'Join Date':
-        return <IconCalendar size={16} />;
+        return <IconCalendar size={iconSize} />;
       case 'Role':
-        return <IconBriefcase size={16} />;
+        return <IconBriefcase size={iconSize} />;
       default:
-        return <IconUser size={16} />;
+        return <IconUser size={iconSize} />;
     }
-  };
-
-  const handleBack = () => {
-    if (isDirty) {
-      const confirmLeave = window.confirm(
-        'You have unsaved changes. Are you sure you want to leave?'
-      );
-      if (!confirmLeave) return;
-    }
-    navigate(-1);
   };
 
   return (
-    <Container size="lg" py="xl">
+    <Container
+      size="lg"
+      py={isMobile ? 'md' : 'xl'}
+      px={isMobile ? 'xs' : 'md'}
+    >
       <ThemeBackground>
-        <Stack gap="xl">
+        <Stack gap={isMobile ? 'md' : 'xl'}>
           {/* Header */}
-          <Group justify="space-between" align="flex-start">
-            <Stack gap="xs">
-              <Group gap="sm">
-                <IconPackages
-                  size={24}
-                  color={currentThemeConfig.button.color}
-                />
-                <Text size="xl" fw={700} c={currentThemeConfig.color}>
-                  Package Assignment
-                </Text>
-              </Group>
-              <Text size="sm" c="dimmed">
-                Assign packages and tasks to the employee
-              </Text>
-            </Stack>
-
-            <Box>
-              {progressStats.packages > 0 && (
-                <Group gap="xs" justify="flex-end">
-                  <Badge
-                    variant="light"
+          <Card shadow="sm" p="lg" radius="md" withBorder>
+            <Group
+              justify="space-between"
+              align="flex-start"
+              wrap={isMobile ? 'wrap' : 'nowrap'}
+            >
+              <Stack gap="xs" style={{ flex: isMobile ? '1 1 100%' : 'auto' }}>
+                <Group gap="sm">
+                  <IconPackages
+                    size={isMobile ? 20 : 24}
                     color={currentThemeConfig.button.color}
+                  />
+                  <Text
+                    size={isMobile ? 'lg' : 'xl'}
+                    fw={700}
+                    c={currentThemeConfig.color}
                   >
-                    {progressStats.packages} Package
-                    {progressStats.packages !== 1 ? 's' : ''}
-                  </Badge>
-                  <Badge variant="light" color="blue">
-                    {progressStats.selectedTasksCount}/
-                    {progressStats.totalTasks} Tasks
-                  </Badge>
+                    Package Assignment
+                  </Text>
                 </Group>
-              )}
-              <Group mt="md" gap="xs" justify="center">
-                <ActionIcon
-                  variant="subtle"
-                  color={currentThemeConfig.button.color}
-                  size="lg"
-                  onClick={handleBack}
+                <Text size={isMobile ? 'xs' : 'sm'} c="dimmed">
+                  Assign packages and tasks to the employee
+                </Text>
+              </Stack>
+
+              <Box style={{ marginTop: isMobile ? '1rem' : 0 }}>
+                {progressStats.packages > 0 && (
+                  <Group
+                    gap="xs"
+                    justify={isMobile ? 'flex-start' : 'flex-end'}
+                    wrap="wrap"
+                  >
+                    <Badge
+                      variant="light"
+                      color={currentThemeConfig.button.color}
+                      size={isMobile ? 'sm' : 'md'}
+                    >
+                      {progressStats.packages} Package
+                      {progressStats.packages !== 1 ? 's' : ''}
+                    </Badge>
+                    <Badge
+                      variant="light"
+                      color="blue"
+                      size={isMobile ? 'sm' : 'md'}
+                    >
+                      {progressStats.selectedTasksCount}/
+                      {progressStats.totalTasks} Tasks
+                    </Badge>
+                  </Group>
+                )}
+                <Group
+                  mt="md"
+                  gap="xs"
+                  justify={isMobile ? 'flex-start' : 'center'}
                 >
-                  <IconArrowLeft size={20} />
-                </ActionIcon>
-              </Group>
-            </Box>
-          </Group>
+                  <BackButton id={employeeId} />
+                </Group>
+              </Box>
+            </Group>
+          </Card>
 
           {/* Progress Indicator */}
           {isDirty && progressStats.totalTasks > 0 && (
             <Card
               radius="md"
-              p="md"
+              p={isMobile ? 'sm' : 'md'}
               style={{
                 backgroundColor: currentThemeConfig.backgroundColor,
                 borderColor: currentThemeConfig.borderColor,
@@ -400,10 +421,10 @@ const PackagesFormComponent = ({
             >
               <Stack gap="xs">
                 <Group justify="space-between">
-                  <Text size="sm" c="dimmed">
+                  <Text size={isMobile ? 'xs' : 'sm'} c="dimmed">
                     Task Selection Progress
                   </Text>
-                  <Text size="sm" c="dimmed">
+                  <Text size={isMobile ? 'xs' : 'sm'} c="dimmed">
                     {progressStats.progress}%
                   </Text>
                 </Group>
@@ -436,41 +457,49 @@ const PackagesFormComponent = ({
             shadow="lg"
             radius="md"
             withBorder
-            p="xl"
+            p={isMobile ? 'md' : 'lg'}
             style={{
               backgroundColor: currentThemeConfig.backgroundColor,
               borderColor: currentThemeConfig.borderColor
             }}
           >
-            <Stack gap="lg">
+            <Stack gap={isMobile ? 'md' : 'lg'}>
               <Group gap="sm">
-                <IconUser size={20} color={currentThemeConfig.button.color} />
-                <Text size="lg" fw={600} c={currentThemeConfig.color}>
+                <IconUser
+                  size={isMobile ? 18 : 20}
+                  color={currentThemeConfig.button.color}
+                />
+                <Text
+                  size={isMobile ? 'md' : 'lg'}
+                  fw={600}
+                  c={currentThemeConfig.color}
+                >
                   Employee Information
                 </Text>
               </Group>
 
-              <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="lg">
+              <SimpleGrid
+                cols={{ base: 1, xs: 1, sm: 2, md: 2, lg: 3 }}
+                spacing={isMobile ? 'md' : 'lg'}
+              >
                 {employeeInfoItems.map((item, index) => (
                   <Card
                     key={index}
                     radius="md"
-                    p="md"
+                    p={isMobile ? 'sm' : 'md'}
                     style={{
-                      backgroundColor: isDarkTheme
-                        ? 'rgba(255,255,255,0.05)'
-                        : 'rgba(0,0,0,0.02)',
                       border: `1px solid ${currentThemeConfig.borderColor}`
                     }}
                   >
                     <Stack gap="xs">
                       <Group gap="xs">
                         {getInfoIcon(item.label)}
-                        <Text size="sm" c="dimmed">
+                        <Text size={isMobile ? 'xs' : 'sm'} c="dimmed">
                           {item.label}
                         </Text>
                       </Group>
                       <Text
+                        size={isMobile ? 'sm' : 'md'}
                         fw={500}
                         c={currentThemeConfig.color}
                         className="break-words"
@@ -489,19 +518,23 @@ const PackagesFormComponent = ({
             shadow="lg"
             radius="md"
             withBorder
-            p="xl"
+            p={isMobile ? 'md' : 'lg'}
             style={{
               backgroundColor: currentThemeConfig.backgroundColor,
               borderColor: currentThemeConfig.borderColor
             }}
           >
-            <Stack gap="lg">
+            <Stack gap={isMobile ? 'md' : 'lg'}>
               <Group gap="sm">
                 <IconPackage
-                  size={20}
+                  size={isMobile ? 18 : 20}
                   color={currentThemeConfig.button.color}
                 />
-                <Text size="lg" fw={600} c={currentThemeConfig.color}>
+                <Text
+                  size={isMobile ? 'md' : 'lg'}
+                  fw={600}
+                  c={currentThemeConfig.color}
+                >
                   Assign Packages
                 </Text>
               </Group>
@@ -533,8 +566,8 @@ const PackagesFormComponent = ({
                     error={errors.packagesInfo?.message}
                     clearable
                     searchable
-                    size="md"
-                    leftSection={<IconPackage size={16} />}
+                    size={isMobile ? 'sm' : 'md'}
+                    leftSection={<IconPackage size={isMobile ? 14 : 16} />}
                   />
                 )}
               />
@@ -543,8 +576,9 @@ const PackagesFormComponent = ({
                 <Button
                   onClick={proceedToTaskSelection}
                   disabled={selectedPackages.length === 0}
-                  size="md"
-                  rightSection={<IconArrowRight size={16} />}
+                  size={isMobile ? 'sm' : 'md'}
+                  fullWidth={isSmallMobile}
+                  rightSection={<IconArrowRight size={isMobile ? 14 : 16} />}
                   style={{
                     backgroundColor: currentThemeConfig.button.color,
                     color: currentThemeConfig.button.textColor
@@ -560,29 +594,34 @@ const PackagesFormComponent = ({
           <StandardModal
             opened={opened}
             onClose={close}
-            size="xl"
+            size={isMobile ? 'full' : isTablet ? 'lg' : 'xl'}
             title={
               <Group gap="sm">
                 <IconSubtask
-                  size={20}
+                  size={isMobile ? 18 : 20}
                   color={currentThemeConfig.button.color}
                 />
-                <Text fw={600} c={currentThemeConfig.color}>
+                <Text
+                  size={isMobile ? 'sm' : 'md'}
+                  fw={600}
+                  c={currentThemeConfig.color}
+                >
                   Select Tasks for Packages
                 </Text>
               </Group>
             }
             centered
+            fullScreen={isSmallMobile}
           >
-            <Stack gap="lg">
+            <Stack gap={isMobile ? 'md' : 'lg'}>
               {/* Modal Progress */}
               {progressStats.totalTasks > 0 && (
                 <Stack gap="xs">
                   <Group justify="space-between">
-                    <Text size="sm" c="dimmed">
+                    <Text size={isMobile ? 'xs' : 'sm'} c="dimmed">
                       Overall Progress
                     </Text>
-                    <Text size="sm" c="dimmed">
+                    <Text size={isMobile ? 'xs' : 'sm'} c="dimmed">
                       {progressStats.selectedTasksCount} of{' '}
                       {progressStats.totalTasks} tasks selected
                     </Text>
@@ -598,8 +637,11 @@ const PackagesFormComponent = ({
 
               <Divider />
 
-              <ScrollArea.Autosize mah={500} className="pr-4">
-                <Stack gap="lg">
+              <ScrollArea.Autosize
+                mah={isMobile ? 400 : 500}
+                className={isMobile ? 'pr-2' : 'pr-4'}
+              >
+                <Stack gap={isMobile ? 'md' : 'lg'}>
                   {selectedPackages.map((packageId: string) => {
                     const pkg = employmentPackagesOptions?.find(
                       p => p._id === packageId
@@ -613,29 +655,35 @@ const PackagesFormComponent = ({
                       <Card
                         key={packageId}
                         radius="md"
-                        p="lg"
+                        p={isMobile ? 'md' : 'lg'}
                         style={{
-                          backgroundColor: isDarkTheme
-                            ? 'rgba(255,255,255,0.05)'
-                            : 'rgba(0,0,0,0.02)',
                           border: `1px solid ${currentThemeConfig.borderColor}`
                         }}
                       >
-                        <Stack gap="md">
-                          <Group justify="space-between" align="flex-start">
-                            <Stack gap="xs">
+                        <Stack gap={isMobile ? 'sm' : 'md'}>
+                          <Group
+                            justify="space-between"
+                            align="flex-start"
+                            wrap="wrap"
+                          >
+                            <Stack gap="xs" style={{ flex: 1 }}>
                               <Group gap="sm">
                                 <IconPackage
-                                  size={16}
+                                  size={isMobile ? 14 : 16}
                                   color={currentThemeConfig.button.color}
                                 />
-                                <Text fw={500} c={currentThemeConfig.color}>
+                                <Text
+                                  size={isMobile ? 'sm' : 'md'}
+                                  fw={500}
+                                  c={currentThemeConfig.color}
+                                >
                                   {pkg.title}
                                 </Text>
                               </Group>
-                              <Group gap="xs">
+                              <Group gap="xs" wrap="wrap">
                                 <Badge
                                   variant="light"
+                                  size={isMobile ? 'sm' : 'md'}
                                   color={
                                     selectedCount === taskCount && taskCount > 0
                                       ? 'green'
@@ -645,7 +693,11 @@ const PackagesFormComponent = ({
                                   {selectedCount} of {taskCount} selected
                                 </Badge>
                                 {taskCount === 0 && (
-                                  <Badge variant="light" color="gray">
+                                  <Badge
+                                    variant="light"
+                                    color="gray"
+                                    size={isMobile ? 'sm' : 'md'}
+                                  >
                                     No tasks available
                                   </Badge>
                                 )}
@@ -659,7 +711,7 @@ const PackagesFormComponent = ({
                                 <Card
                                   key={task._id}
                                   radius="sm"
-                                  p="sm"
+                                  p={isMobile ? 'xs' : 'sm'}
                                   style={{
                                     backgroundColor: selectedTasks[
                                       packageId
@@ -683,12 +735,25 @@ const PackagesFormComponent = ({
                                       handleTaskToggle(packageId, task._id)
                                     }
                                     color={currentThemeConfig.button.color}
+                                    size={isMobile ? 'sm' : 'md'}
+                                    styles={{
+                                      label: {
+                                        fontSize: isMobile
+                                          ? '0.875rem'
+                                          : undefined
+                                      }
+                                    }}
                                   />
                                 </Card>
                               ))}
                             </Stack>
                           ) : (
-                            <Text size="sm" c="dimmed" ta="center" py="md">
+                            <Text
+                              size={isMobile ? 'xs' : 'sm'}
+                              c="dimmed"
+                              ta="center"
+                              py="md"
+                            >
                               No tasks available in this package
                             </Text>
                           )}
@@ -699,11 +764,20 @@ const PackagesFormComponent = ({
                 </Stack>
               </ScrollArea.Autosize>
 
-              <Group justify="space-between" mt="lg">
+              <Group
+                justify="space-between"
+                mt="lg"
+                style={{
+                  flexDirection: isSmallMobile ? 'column-reverse' : 'row',
+                  gap: isSmallMobile ? '0.5rem' : undefined
+                }}
+              >
                 <Button
                   variant="subtle"
-                  leftSection={<IconX size={16} />}
+                  leftSection={<IconX size={isMobile ? 14 : 16} />}
                   onClick={close}
+                  size={isMobile ? 'sm' : 'md'}
+                  fullWidth={isSmallMobile}
                 >
                   Cancel
                 </Button>
@@ -714,11 +788,15 @@ const PackagesFormComponent = ({
                   disabled={
                     isSubmitting || progressStats.selectedTasksCount === 0
                   }
-                  leftSection={!isSubmitting && <IconCheck size={16} />}
+                  leftSection={
+                    !isSubmitting && <IconCheck size={isMobile ? 14 : 16} />
+                  }
                   loaderProps={{
                     size: 'sm',
                     color: currentThemeConfig.button.textColor
                   }}
+                  size={isMobile ? 'sm' : 'md'}
+                  fullWidth={isSmallMobile}
                   style={{
                     backgroundColor: currentThemeConfig.button.color,
                     color: currentThemeConfig.button.textColor
@@ -736,19 +814,23 @@ const PackagesFormComponent = ({
               shadow="lg"
               radius="md"
               withBorder
-              p="xl"
+              p={isMobile ? 'md' : 'lg'}
               style={{
                 backgroundColor: currentThemeConfig.backgroundColor,
                 borderColor: currentThemeConfig.borderColor
               }}
             >
-              <Stack gap="lg">
+              <Stack gap={isMobile ? 'md' : 'lg'}>
                 <Group gap="sm">
                   <IconSubtask
-                    size={20}
+                    size={isMobile ? 18 : 20}
                     color={currentThemeConfig.button.color}
                   />
-                  <Text size="lg" fw={600} c={currentThemeConfig.color}>
+                  <Text
+                    size={isMobile ? 'md' : 'lg'}
+                    fw={600}
+                    c={currentThemeConfig.color}
+                  >
                     Assigned Packages & Tasks
                   </Text>
                 </Group>

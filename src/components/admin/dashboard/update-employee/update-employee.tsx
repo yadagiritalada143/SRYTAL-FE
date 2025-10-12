@@ -14,7 +14,6 @@ import {
   Grid,
   Divider,
   Alert,
-  ActionIcon,
   Tabs,
   Progress,
   Modal,
@@ -63,12 +62,12 @@ import {
   IconKey,
   IconTrash,
   IconDeviceFloppy,
-  IconArrowLeft,
   IconAlertTriangle,
   IconBriefcase,
   IconDroplet
 } from '@tabler/icons-react';
 import { themeAtom } from '../../../../atoms/theme';
+import { BackButton } from '../../../common/style-components/buttons';
 
 const UpdateEmployee = () => {
   const navigate = useNavigate();
@@ -293,9 +292,6 @@ const UpdateEmployee = () => {
         <Card shadow="sm" p="lg" radius="md" withBorder>
           <Group justify="space-between" align="center">
             <Group gap="md">
-              <ActionIcon variant="subtle" size="lg" onClick={handleBack}>
-                <IconArrowLeft size={20} />
-              </ActionIcon>
               <div>
                 <Text size="xl" fw={700} c={currentThemeConfig.color}>
                   Update Employee Profile
@@ -305,6 +301,7 @@ const UpdateEmployee = () => {
                 </Text>
               </div>
             </Group>
+            <BackButton id={employeeId} />
           </Group>
         </Card>
 
@@ -387,6 +384,7 @@ const UpdateEmployee = () => {
                           placeholder="Enter employee ID"
                           leftSection={<IconUser size={16} />}
                           {...register('employeeId')}
+                          autoComplete="off"
                           error={errors.employeeId?.message}
                         />
                       </Grid.Col>
@@ -398,6 +396,7 @@ const UpdateEmployee = () => {
                           leftSection={<IconUser size={16} />}
                           {...register('firstName')}
                           error={errors.firstName?.message}
+                          autoComplete="off"
                           required
                         />
                       </Grid.Col>
@@ -409,6 +408,7 @@ const UpdateEmployee = () => {
                           leftSection={<IconUser size={16} />}
                           {...register('lastName')}
                           error={errors.lastName?.message}
+                          autoComplete="off"
                           required
                         />
                       </Grid.Col>
@@ -421,6 +421,7 @@ const UpdateEmployee = () => {
                           leftSection={<IconMail size={16} />}
                           {...register('email')}
                           error={errors.email?.message}
+                          autoComplete="off"
                           required
                         />
                       </Grid.Col>
@@ -455,12 +456,14 @@ const UpdateEmployee = () => {
                             <Select
                               label="Blood Group"
                               placeholder="Select blood group"
+                              required
                               leftSection={<IconDroplet size={16} />}
                               data={bloodGroupOptions || []}
                               {...field}
                               error={errors.bloodGroup?.message}
                               searchable
                               clearable
+                              autoComplete="off"
                             />
                           )}
                         />
@@ -476,6 +479,7 @@ const UpdateEmployee = () => {
                               placeholder="Select date of birth"
                               leftSection={<IconCalendar size={16} />}
                               value={field.value ? new Date(field.value) : null}
+                              required
                               onChange={date => {
                                 if (date) {
                                   const adjustedDate = new Date(
@@ -503,6 +507,8 @@ const UpdateEmployee = () => {
                           {...register('presentAddress')}
                           error={errors.presentAddress?.message}
                           minRows={3}
+                          required
+                          autoComplete="off"
                         />
                       </Grid.Col>
 
@@ -514,6 +520,8 @@ const UpdateEmployee = () => {
                           {...register('permanentAddress')}
                           error={errors.permanentAddress?.message}
                           minRows={3}
+                          required
+                          autoComplete="off"
                         />
                       </Grid.Col>
                     </Grid>
@@ -540,6 +548,7 @@ const UpdateEmployee = () => {
                               {...field}
                               error={errors.employmentType?.message}
                               searchable
+                              autoComplete="off"
                               clearable
                             />
                           )}
@@ -563,6 +572,7 @@ const UpdateEmployee = () => {
                               }
                               onChange={field.onChange}
                               onBlur={field.onBlur}
+                              autoComplete="off"
                               error={errors.employeeRole?.message}
                               searchable
                               clearable
@@ -592,6 +602,7 @@ const UpdateEmployee = () => {
                           placeholder="Enter account number"
                           leftSection={<IconBuildingBank size={16} />}
                           {...register('bankDetailsInfo.accountNumber')}
+                          autoComplete="off"
                           error={errors.bankDetailsInfo?.accountNumber?.message}
                         />
                       </Grid.Col>
@@ -601,6 +612,7 @@ const UpdateEmployee = () => {
                           label="Account Holder Name"
                           placeholder="Enter account holder name"
                           leftSection={<IconUser size={16} />}
+                          autoComplete="off"
                           {...register('bankDetailsInfo.accountHolderName')}
                           error={
                             errors.bankDetailsInfo?.accountHolderName?.message
@@ -615,6 +627,7 @@ const UpdateEmployee = () => {
                           leftSection={<IconBuildingBank size={16} />}
                           {...register('bankDetailsInfo.ifscCode')}
                           error={errors.bankDetailsInfo?.ifscCode?.message}
+                          autoComplete="off"
                         />
                       </Grid.Col>
                     </Grid>
@@ -684,7 +697,7 @@ const UpdateEmployee = () => {
             icon={<IconAlertTriangle size={16} />}
             color="red"
             title="Warning"
-            variant="light"
+            variant="filled"
           >
             This action cannot be undone. The employee and all associated data
             will be permanently deleted.

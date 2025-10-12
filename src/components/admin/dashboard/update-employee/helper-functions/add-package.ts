@@ -1,7 +1,7 @@
 import { PackagesList } from '../../../../../interfaces/package';
 import {
   getEmployeeDetailsByAdmin,
-  getEmployeePackagesByAdmin,
+  getEmployeePackagesByAdmin
 } from '../../../../../services/admin-services';
 import { EmployeeInfoItem } from '../interfaces/add-package';
 import { FormattedPackageData, SelectedTasks } from '../interfaces/add-package';
@@ -53,22 +53,23 @@ export const loadEmployeePackages = async (
                 });
                 return {
                   taskId: task.taskId._id,
-                  title: task.taskId.title,
+                  title: task.taskId.title
                 };
-              }),
+              })
           };
         }
-      ),
+      )
     };
 
     reset({
       packagesInfo: data.map(
         (pkg: { packageId: { _id: string } }) => pkg.packageId._id
-      ),
+      )
     });
 
     setSelectedPackagesData(formattedData);
-  } catch {
+  } catch (e) {
+    console.log(e);
     throw new Error('Failed to fetch employee packages');
   }
 };
@@ -95,11 +96,11 @@ export const formatSubmitData = (
             .filter(task => selectedTaskIds.has(task._id))
             .map(task => ({
               taskId: task._id,
-              title: task.title,
-            })),
+              title: task.title
+            }))
         };
       })
-      .filter(pkg => pkg.tasks.length > 0),
+      .filter(pkg => pkg.tasks.length > 0)
   };
 };
 
@@ -109,5 +110,5 @@ export const getEmployeeInfoItems = (
   { label: 'First Name', value: employeeDetails?.firstName },
   { label: 'Last Name', value: employeeDetails?.lastName },
   { label: 'Email', value: employeeDetails?.email },
-  { label: 'Employee ID', value: employeeDetails?.employeeId },
+  { label: 'Employee ID', value: employeeDetails?.employeeId }
 ];

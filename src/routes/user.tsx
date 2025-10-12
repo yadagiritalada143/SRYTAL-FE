@@ -36,8 +36,8 @@ import Announcements from '../components/common/announcements/announcements';
 import Mentees from '../components/common/mentees/mentees';
 import UpdateMenteeTasks from '../components/common/update-mentee-task/UpdateMenteeTasks';
 import TaskDetail from '../components/common/mytasks/taskdetails';
-import { ThemeToggleButton } from '../components/UI/Theme-toggle-button/button';
 import { themeAtom } from '../atoms/theme';
+import { ThemeToggleButton } from '../components/UI/Theme-toggle-button/button';
 
 const EmployeeRoutes = () => {
   const { organization } = useParams<{ organization: string }>();
@@ -79,7 +79,44 @@ const EmployeeRoutes = () => {
       headings: {
         fontFamily: currentThemeConfig.fontFamily
       },
+
       components: {
+        Title: {
+          styles: () => ({
+            root: {
+              color: currentThemeConfig.color,
+              transition: 'color 0.3s ease-in-out'
+            }
+          })
+        },
+        Tabs: {
+          styles: () => ({
+            root: {
+              transition: 'all 0.3s ease-in-out'
+            },
+            list: {
+              borderColor: currentThemeConfig.headerBackgroundColor,
+              borderRadius: '8px',
+              padding: '4px'
+            },
+            tab: {
+              color: currentThemeConfig.button.color,
+              fontWeight: 500
+            }
+          }),
+          defaultProps: {
+            variant: 'default',
+            radius: 'md'
+          }
+        },
+        Text: {
+          styles: () => ({
+            root: {
+              color: currentThemeConfig.color,
+              transition: 'color 0.3s ease-in-out'
+            }
+          })
+        },
         Avatar: {
           styles: () => ({
             root: {
@@ -143,6 +180,17 @@ const EmployeeRoutes = () => {
             }
           })
         },
+        Paper: {
+          styles: () => ({
+            root: {
+              backgroundColor: currentThemeConfig.headerBackgroundColor,
+              borderBottom: `1px solid ${currentThemeConfig.borderColor}`,
+              color: currentThemeConfig.color,
+              transition:
+                'background-color 0.3s ease-in-out, border-color 0.3s ease-in-out'
+            }
+          })
+        },
         Loader: {
           styles: () => ({
             root: {
@@ -170,6 +218,114 @@ const EmployeeRoutes = () => {
           })
         },
         TextInput: {
+          styles: () => ({
+            input: {
+              backgroundColor: currentThemeConfig.headerBackgroundColor,
+              color: currentThemeConfig.color,
+              borderColor: currentThemeConfig.borderColor,
+              transition:
+                'background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out',
+              '&:focus': {
+                borderColor: currentThemeConfig.button.color
+              }
+            },
+            label: {
+              color: currentThemeConfig.color,
+              transition: 'color 0.3s ease-in-out'
+            }
+          })
+        },
+        NumberInput: {
+          styles: () => ({
+            input: {
+              backgroundColor: currentThemeConfig.headerBackgroundColor,
+              color: currentThemeConfig.color,
+              borderColor: currentThemeConfig.borderColor,
+              transition:
+                'background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out',
+              '&:focus': {
+                borderColor: currentThemeConfig.button.color
+              }
+            },
+            label: {
+              color: currentThemeConfig.color,
+              transition: 'color 0.3s ease-in-out'
+            }
+          })
+        },
+        DateInput: {
+          styles: () => ({
+            input: {
+              backgroundColor: currentThemeConfig.headerBackgroundColor,
+              color: currentThemeConfig.color,
+              borderColor: currentThemeConfig.borderColor,
+              transition:
+                'background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out',
+              '&:focus': {
+                borderColor: currentThemeConfig.button.color
+              }
+            },
+            label: {
+              color: currentThemeConfig.color,
+              transition: 'color 0.3s ease-in-out'
+            }
+          })
+        },
+        DateTimePicker: {
+          styles: () => ({
+            input: {
+              backgroundColor: currentThemeConfig.headerBackgroundColor,
+              color: currentThemeConfig.color,
+              borderColor: currentThemeConfig.borderColor,
+              transition:
+                'background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out',
+              '&:focus': {
+                borderColor: currentThemeConfig.button.color
+              }
+            },
+            label: {
+              color: currentThemeConfig.color,
+              transition: 'color 0.3s ease-in-out'
+            }
+          })
+        },
+        DatePickerInput: {
+          styles: () => ({
+            input: {
+              backgroundColor: currentThemeConfig.headerBackgroundColor,
+              color: currentThemeConfig.color,
+              borderColor: currentThemeConfig.borderColor,
+              transition:
+                'background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out',
+              '&:focus': {
+                borderColor: currentThemeConfig.button.color
+              }
+            },
+            label: {
+              color: currentThemeConfig.color,
+              transition: 'color 0.3s ease-in-out'
+            }
+          })
+        },
+        Textarea: {
+          styles: () => ({
+            input: {
+              backgroundColor: currentThemeConfig.headerBackgroundColor,
+              color: currentThemeConfig.color,
+              borderColor: currentThemeConfig.borderColor,
+              transition:
+                'background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out',
+              '&:focus': {
+                borderColor: currentThemeConfig.button.color
+              }
+            },
+            label: {
+              color: currentThemeConfig.color,
+              transition: 'color 0.3s ease-in-out'
+            }
+          })
+        },
+        MultiSelect: {
           styles: () => ({
             input: {
               backgroundColor: currentThemeConfig.headerBackgroundColor,
@@ -271,7 +427,6 @@ const EmployeeRoutes = () => {
     <MantineProvider theme={mantineTheme}>
       <LoadingOverlay
         visible={isLoading}
-        bg="cyan"
         loaderProps={{ children: <Loader /> }}
       />
       <div

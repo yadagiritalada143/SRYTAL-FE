@@ -33,9 +33,7 @@ const AdminDashboard = () => {
         setIsDrawerOpen={toggleDrawer}
       />
 
-      <div
-        className={`flex-grow p-6 transition-all duration-300 overflow-hidden`}
-      >
+      <div className={`flex-grow transition-all duration-300 overflow-hidden`}>
         <div>
           <Outlet />
         </div>

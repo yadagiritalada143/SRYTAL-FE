@@ -3,7 +3,6 @@ import { useForm } from 'react-hook-form';
 import { organizationThemeAtom } from '../../../atoms/organization-atom';
 import { useRecoilValue } from 'recoil';
 import { useState, useMemo } from 'react';
-import { toast } from 'react-toastify';
 import { forgetPassword } from '../../../services/common-services';
 import { useCustomToast } from '../../../utils/common/toast';
 import { themeAtom } from '../../../atoms/theme';
@@ -27,7 +26,7 @@ const ForgotPassword = ({ closeModal }: ForgotPasswordProps) => {
 
   const organizationConfig = useRecoilValue(organizationThemeAtom);
   const isDarkTheme = useRecoilValue(themeAtom);
-  const { showSuccessToast } = useCustomToast();
+  const { showSuccessToast, showErrorToast } = useCustomToast();
 
   const emailValue = watch('username');
 
@@ -53,7 +52,7 @@ const ForgotPassword = ({ closeModal }: ForgotPasswordProps) => {
         closeModal();
       }, 3000);
     } catch (error: any) {
-      toast.error(
+      showErrorToast(
         error.response?.data?.message ||
           'Failed to send reset link. Please try again.'
       );

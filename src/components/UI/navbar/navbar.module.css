@@ -1,8 +1,5 @@
 /* Modern Floating Action Button (FAB) */
 .fab {
-  position: absolute;
-  top: 24px;
-  left: 24px;
   width: 56px;
   height: 56px;
   border-radius: 50%;
@@ -126,6 +123,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-top: 5%;
 }
 
 /* Logo in navbar header */

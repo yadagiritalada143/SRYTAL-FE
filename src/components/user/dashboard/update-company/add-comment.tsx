@@ -1,76 +1,80 @@
-import { BgDiv } from "../../../common/style-components/bg-div";
-import { Button, Grid, Group, Textarea } from "@mantine/core";
-import { OrganizationConfig } from "../../../../interfaces/organization";
-
-import { addCommentByRecruiter } from "../../../../services/user-services";
-import { useCustomToast } from "../../../../utils/common/toast";
-import { toast } from "react-toastify";
-import { useState } from "react";
+import { Button, Textarea, Card, Stack, Text } from '@mantine/core';
+import { addCommentByRecruiter } from '../../../../services/user-services';
+import { useCustomToast } from '../../../../utils/common/toast';
+import { toast } from 'react-toastify';
+import { useState } from 'react';
+import { IconMessagePlus } from '@tabler/icons-react';
 
 const AddCommentPoolCompany = ({
-  organizationConfig,
   setComments,
   companyId,
   user,
+  isMobile
 }: {
-  organizationConfig: OrganizationConfig;
   user: any;
   companyId: string;
   setComments: any;
   comments: any;
+  isMobile: boolean | undefined;
 }) => {
   const { showSuccessToast } = useCustomToast();
-  const [newComment, setNewComment] = useState<string>("");
+  const [newComment, setNewComment] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleAddComment = () => {
+    if (!newComment.trim()) {
+      toast.error('Please enter a comment');
+      return;
+    }
+
+    setIsSubmitting(true);
     addCommentByRecruiter(companyId, newComment)
       .then(() => {
-        showSuccessToast("Your comment has been added !");
+        showSuccessToast('Your comment has been added!');
         const comment = {
           userId: {
             firstName: user.firstName,
-            lastName: user.lastName,
+            lastName: user.lastName
           },
-          updateAt: new Date().toLocaleDateString(),
-          comment: newComment,
+          updateAt: new Date().toISOString(),
+          comment: newComment
         };
         setComments((prev: any) => [comment, ...prev]);
-        setNewComment("");
-        close();
+        setNewComment('');
       })
-      .catch((error) =>
-        toast.error(
-          error || error.response.data.message || "Something went wrong"
-        )
-      );
+      .catch(error =>
+        toast.error(error?.response?.data?.message || 'Something went wrong')
+      )
+      .finally(() => setIsSubmitting(false));
   };
+
   return (
-    <div className="w-full max-w-3xl mx-auto my-6">
-      <BgDiv>
-        <form
-          style={{
-            backgroundColor:
-              organizationConfig.organization_theme.theme.backgroundColor,
-          }}
-          className="rounded-lg shadow-lg w-full p-8"
+    <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder>
+      <Stack gap="md">
+        <Text size="lg" fw={600}>
+          Add New Comment
+        </Text>
+        <Textarea
+          placeholder="Enter your comment here..."
+          autosize
+          minRows={4}
+          maxRows={8}
+          value={newComment}
+          onChange={e => setNewComment(e.target.value)}
+          size={isMobile ? 'sm' : 'md'}
+        />
+        <Button
+          onClick={handleAddComment}
+          disabled={isSubmitting || !newComment.trim()}
+          leftSection={<IconMessagePlus size={16} />}
+          fullWidth={isMobile}
+          style={{ alignSelf: isMobile ? 'stretch' : 'flex-end' }}
+          size={isMobile ? 'md' : 'sm'}
         >
-          <Grid>
-            <Grid.Col span={12}>
-              <Textarea
-                label="Comment"
-                autosize
-                rows={4}
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-              />
-            </Grid.Col>
-          </Grid>
-          <Group justify="right" mt="lg">
-            <Button onClick={handleAddComment}>Add Comment</Button>
-          </Group>
-        </form>
-      </BgDiv>
-    </div>
+          {isSubmitting ? 'Adding...' : 'Add Comment'}
+        </Button>
+      </Stack>
+    </Card>
   );
 };
 

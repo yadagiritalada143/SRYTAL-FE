@@ -1,21 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from '@mantine/core';
 import { IconUser, IconUpload, IconLoader } from '@tabler/icons-react';
-import { OrganizationConfig } from '../../../interfaces/organization';
 import { toast } from 'react-toastify';
 import {
   getProfileImage,
-  uploadProfileImage,
+  uploadProfileImage
 } from '../../../services/user-services';
 import { useCustomToast } from '../../../utils/common/toast';
 import { useRecoilState } from 'recoil';
 import { profileImageAtom } from '../../../atoms/profile-image';
 
-interface Props {
-  organizationConfig: OrganizationConfig;
-}
-
-const ProfileImageUploader: React.FC<Props> = () => {
+const ProfileImageUploader = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [image, setImage] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useRecoilState(profileImageAtom);
