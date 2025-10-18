@@ -38,6 +38,7 @@ import UpdateMenteeTasks from '../components/common/update-mentee-task/UpdateMen
 import TaskDetail from '../components/common/mytasks/taskdetails';
 import { themeAtom } from '../atoms/theme';
 import { ThemeToggleButton } from '../components/UI/Theme-toggle-button/button';
+import WriterDashboard from '../components/common/contentwriter/contentwriter';
 
 const EmployeeRoutes = () => {
   const { organization } = useParams<{ organization: string }>();
@@ -524,6 +525,7 @@ const EmployeeRoutes = () => {
                 path="common/mentees/:empId"
                 element={<div>{<UpdateMenteeTasks />}</div>}
               />
+              <Route path="contentwriter" element={<WriterDashboard />} />
             </Route>
           </Route>
         </Route>

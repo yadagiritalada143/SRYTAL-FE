@@ -293,3 +293,15 @@ export const getProfileImage = async (): Promise<Blob> => {
     throw new Error('Failed to fetch profile image');
   }
 };
+
+export const getAllCoursesByUser = async () => {
+  const token = localStorage.getItem('token');
+  try {
+    const response = await apiClient.get('/contentwriter/getAllCourses', {
+      headers: { auth_token: token }
+    });
+    return response.data.courses;
+  } catch (error) {
+    throw error;
+  }
+};

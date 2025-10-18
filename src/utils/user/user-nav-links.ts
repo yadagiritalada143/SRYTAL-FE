@@ -1,4 +1,5 @@
 import {
+  IconBook,
   IconBuildings,
   IconCalendarTime,
   // IconCheckbox,
@@ -53,6 +54,12 @@ export const NavLinks = [
     url: 'employee/dashboard/timesheet',
     icon: IconCalendarTime,
     name: 'Timesheet'
+  },
+  {
+    role: 'employee',
+    url: 'employee/dashboard/contentwriter',
+    icon: IconBook,
+    name: 'Content Writer'
   }
   // {
   //   role: 'recruiter',
