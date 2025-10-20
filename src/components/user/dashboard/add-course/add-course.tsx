@@ -35,6 +35,9 @@ import { useRecoilValue } from 'recoil';
 import { organizationThemeAtom } from '../../../../atoms/organization-atom';
 import { themeAtom } from '../../../../atoms/theme';
 import { useMediaQuery } from '@mantine/hooks';
+import { addCourseContentWriter } from '../../../../services/user-services';
+import { useNavigate } from 'react-router-dom';
+import { useCustomToast } from '../../../../utils/common/toast';
 
 export const ContentWriterAddCourse = () => {
   const [courseName, setCourseName] = useState('');
@@ -43,6 +46,8 @@ export const ContentWriterAddCourse = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const organizationConfig = useRecoilValue(organizationThemeAtom);
   const isDarkTheme = useRecoilValue(themeAtom);
+  const navigate = useNavigate();
+  const { showErrorToast, showSuccessToast } = useCustomToast();
 
   const isMobile = useMediaQuery('(max-width: 768px)');
 
@@ -89,21 +94,16 @@ export const ContentWriterAddCourse = () => {
     const description = editor?.getHTML() || '';
 
     // Create form data for submission
-    const formData = {
-      courseName,
-      description,
-      thumbnail: thumbnailFile
-    };
 
-    console.log('Form Data:', formData);
+    try {
+      await addCourseContentWriter(courseName, description, thumbnailFile);
+      showSuccessToast('Course added successfully!');
+      navigate(-1);
+    } catch (error: any) {
+      showErrorToast(error?.response?.data?.message || 'Failed to add course');
+    }
 
-    // Add your API call here
-    // await createCourse(formData);
-
-    setTimeout(() => {
-      setIsSubmitting(false);
-      // Reset form or redirect
-    }, 1500);
+    setIsSubmitting(false);
   };
 
   const isFormValid =

@@ -305,3 +305,26 @@ export const getAllCoursesByUser = async () => {
     throw error;
   }
 };
+
+export const addCourseContentWriter = async (
+  name: string,
+  description: string,
+  image: File | null
+) => {
+  try {
+    const formData = new FormData();
+    formData.append('courseName', name);
+    formData.append('courseDescription', description);
+    if (image) {
+      formData.append('coursethumbnail', image);
+    }
+    const response = await apiClient.post(
+      '/contentwriter/addCourse',
+      { formData },
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
