@@ -247,7 +247,8 @@ const WriterDashboard = () => {
           {course.courseName}
         </Text>
         <Text size="sm" c="dimmed" lineClamp={2}>
-          {course.courseDescription}
+          {course.courseDescription.slice(0, 32)}{' '}
+          {course.courseDescription.length > 32 ? '...' : ''}
         </Text>
         <Badge color="blue" mt="xs" radius="sm" variant="light">
           {course.status || 'N/A'}
