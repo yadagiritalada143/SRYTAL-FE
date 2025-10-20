@@ -38,7 +38,8 @@ import UpdateMenteeTasks from '../components/common/update-mentee-task/UpdateMen
 import TaskDetail from '../components/common/mytasks/taskdetails';
 import { themeAtom } from '../atoms/theme';
 import { ThemeToggleButton } from '../components/UI/Theme-toggle-button/button';
-import WriterDashboard from '../components/common/contentwriter/contentwriter';
+import WriterDashboard from '../components/user/dashboard/content-writer/content-writer';
+import { ContentWriterAddCourse } from '../components/user/dashboard/add-course/add-course';
 
 const EmployeeRoutes = () => {
   const { organization } = useParams<{ organization: string }>();
@@ -525,7 +526,8 @@ const EmployeeRoutes = () => {
                 path="common/mentees/:empId"
                 element={<div>{<UpdateMenteeTasks />}</div>}
               />
-              <Route path="contentwriter" element={<WriterDashboard />} />
+              <Route path="content-writer" element={<WriterDashboard />} />
+              <Route path="add-course" element={<ContentWriterAddCourse />} />
             </Route>
           </Route>
         </Route>

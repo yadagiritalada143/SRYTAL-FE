@@ -20,6 +20,12 @@ export const NavLinks = [
     name: 'My Profile'
   },
   {
+    role: 'content-writer',
+    url: 'employee/dashboard/profile',
+    icon: IconUserEdit,
+    name: 'My Profile'
+  },
+  {
     role: 'recruiter',
     url: 'employee/dashboard/profile',
     icon: IconUserEdit,
@@ -56,8 +62,8 @@ export const NavLinks = [
     name: 'Timesheet'
   },
   {
-    role: 'employee',
-    url: 'employee/dashboard/contentwriter',
+    role: 'content-writer',
+    url: 'employee/dashboard/content-writer',
     icon: IconBook,
     name: 'Content Writer'
   }

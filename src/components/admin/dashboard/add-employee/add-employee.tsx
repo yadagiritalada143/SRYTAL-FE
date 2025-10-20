@@ -46,7 +46,8 @@ import { ThemeBackground } from '../../../UI/Theme-background/background';
 // Constants
 const USER_ROLES = [
   { label: 'Employee', value: 'employee' },
-  { label: 'Recruiter', value: 'recruiter' }
+  { label: 'Recruiter', value: 'recruiter' },
+  { label: ' Content Writer', value: 'content-writer' }
   // { label: 'Manager', value: 'manager' },
   // { label: 'Admin', value: 'admin' }
 ];
