@@ -203,12 +203,7 @@ const WriterDashboard = () => {
             <IconDots size={18} />
           </ActionIcon>
         </Menu.Target>
-        <Menu.Dropdown
-          style={{
-            backgroundColor: currentThemeConfig.headerBackgroundColor,
-            borderColor: currentThemeConfig.borderColor
-          }}
-        >
+        <Menu.Dropdown>
           <Menu.Item
             leftSection={<IconEdit size={16} />}
             onClick={() => handleEdit(course._id)}

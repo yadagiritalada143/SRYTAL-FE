@@ -170,15 +170,16 @@ const EmployeeRoutes = () => {
         Menu: {
           styles: () => ({
             dropdown: {
-              backgroundColor: currentThemeConfig.colors.primary[5],
+              backgroundColor: currentThemeConfig.headerBackgroundColor,
+              borderColor: currentThemeConfig.borderColor,
               transition: 'background-color 0.3s ease-in-out'
             },
             label: {
-              color: currentThemeConfig.button.textColor,
+              color: currentThemeConfig.color,
               transition: 'color 0.3s ease-in-out'
             },
             item: {
-              color: currentThemeConfig.button.textColor,
+              color: currentThemeConfig.color,
               transition: 'color 0.3s ease-in-out'
             }
           })
