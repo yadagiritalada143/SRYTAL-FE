@@ -38,6 +38,9 @@ import UpdateMenteeTasks from '../components/common/update-mentee-task/UpdateMen
 import TaskDetail from '../components/common/mytasks/taskdetails';
 import { themeAtom } from '../atoms/theme';
 import { ThemeToggleButton } from '../components/UI/Theme-toggle-button/button';
+import WriterDashboard from '../components/user/dashboard/content-writer/content-writer';
+import { ContentWriterAddCourse } from '../components/user/dashboard/add-course/add-course';
+import ContentWriterEditCourse from '../components/user/dashboard/edit-course/edit-course';
 
 const EmployeeRoutes = () => {
   const { organization } = useParams<{ organization: string }>();
@@ -167,15 +170,16 @@ const EmployeeRoutes = () => {
         Menu: {
           styles: () => ({
             dropdown: {
-              backgroundColor: currentThemeConfig.colors.primary[5],
+              backgroundColor: currentThemeConfig.headerBackgroundColor,
+              borderColor: currentThemeConfig.borderColor,
               transition: 'background-color 0.3s ease-in-out'
             },
             label: {
-              color: currentThemeConfig.button.textColor,
+              color: currentThemeConfig.color,
               transition: 'color 0.3s ease-in-out'
             },
             item: {
-              color: currentThemeConfig.button.textColor,
+              color: currentThemeConfig.color,
               transition: 'color 0.3s ease-in-out'
             }
           })
@@ -524,6 +528,9 @@ const EmployeeRoutes = () => {
                 path="common/mentees/:empId"
                 element={<div>{<UpdateMenteeTasks />}</div>}
               />
+              <Route path="content-writer" element={<WriterDashboard />} />
+              <Route path="add-course" element={<ContentWriterAddCourse />} />
+              <Route path="course/:id" element={<ContentWriterEditCourse />} />
             </Route>
           </Route>
         </Route>

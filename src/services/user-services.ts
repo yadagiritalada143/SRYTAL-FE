@@ -293,3 +293,38 @@ export const getProfileImage = async (): Promise<Blob> => {
     throw new Error('Failed to fetch profile image');
   }
 };
+
+export const getAllCoursesByUser = async () => {
+  const token = localStorage.getItem('token');
+  try {
+    const response = await apiClient.get('/contentwriter/getAllCourses', {
+      headers: { auth_token: token }
+    });
+    return response.data.courses;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const addCourseContentWriter = async (
+  name: string,
+  description: string,
+  image: File | null
+) => {
+  try {
+    const formData = new FormData();
+    formData.append('courseName', name);
+    formData.append('courseDescription', description);
+    if (image) {
+      formData.append('coursethumbnail', image);
+    }
+    const response = await apiClient.post(
+      '/contentwriter/addCourse',
+      { formData },
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
