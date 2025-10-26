@@ -180,13 +180,35 @@ const WriterDashboard = () => {
     );
   }, [navigate, organizationConfig.organization_name]);
 
+  const handleViewCourse = useCallback(
+    (courseId: string) => {
+      navigate(
+        `${organizationEmployeeUrls(organizationConfig.organization_name)}/dashboard/course/${courseId}`
+      );
+    },
+    [navigate, organizationConfig.organization_name]
+  );
+
   const CourseCard = ({ course }: { course: Course }) => (
     <Card
       shadow="xs"
       radius="md"
       p="md"
       withBorder
-      style={{ position: 'relative' }}
+      style={{
+        position: 'relative',
+        cursor: 'pointer',
+        transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+      }}
+      onClick={() => handleViewCourse(course._id)}
+      onMouseEnter={e => {
+        e.currentTarget.style.transform = 'scale(1.02)';
+        e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.1)';
+      }}
+      onMouseLeave={e => {
+        e.currentTarget.style.transform = 'scale(1)';
+        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)';
+      }}
     >
       <Menu position="bottom-end" shadow="md" width={160}>
         <Menu.Target>
@@ -199,6 +221,7 @@ const WriterDashboard = () => {
               zIndex: 1,
               color: currentThemeConfig.color
             }}
+            onClick={e => e.stopPropagation()}
           >
             <IconDots size={18} />
           </ActionIcon>

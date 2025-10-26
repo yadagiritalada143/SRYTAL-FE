@@ -328,3 +328,15 @@ export const addCourseContentWriter = async (
     throw error;
   }
 };
+
+export const getCourseById = async (id: string) => {
+  const token = localStorage.getItem('token');
+  try {
+    const response = await apiClient.get(`/contentwriter/getCourseById/${id}`, {
+      headers: { auth_token: token }
+    });
+    return response.data.coursedata;
+  } catch (error) {
+    throw error;
+  }
+};
