@@ -340,3 +340,28 @@ export const getCourseById = async (id: string) => {
     throw error;
   }
 };
+
+export const addCourseModule = async (
+  courseId: string,
+  moduleName: string,
+  moduleDescription: string,
+  moduleImage: File | null
+) => {
+  try {
+    const formData = new FormData();
+    formData.append('courseId', courseId);
+    formData.append('moduleName', moduleName);
+    formData.append('moduleDescription', moduleDescription);
+    if (moduleImage) {
+      formData.append('moduleThumbnail', moduleImage);
+    }
+    const response = await apiClient.post(
+      '/contentwriter/addCourseModule',
+      { formData },
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
