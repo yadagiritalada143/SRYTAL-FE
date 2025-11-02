@@ -476,19 +476,22 @@ export const ContentWriterAddCourse = () => {
 
         {/* Help Card */}
         <Card
+          style={{
+            color: currentThemeConfig.color,
+            backgroundColor: currentThemeConfig.backgroundColor
+          }}
           shadow="sm"
           p={{ base: 'md', sm: 'lg' }}
           radius="md"
           withBorder
-          bg="blue.0"
         >
           <Group gap={isMobile ? 'sm' : 'md'} align="flex-start">
-            <IconPhoto size={isMobile ? 24 : 32} color="#228BE6" />
+            <IconPhoto size={isMobile ? 24 : 32} />
             <Stack gap={4} style={{ flex: 1 }}>
               <Text size={isMobile ? 'xs' : 'sm'} fw={600}>
                 Tips for a Great Course
               </Text>
-              <Text size="xs" c="dimmed" style={{ lineHeight: 1.6 }}>
+              <Text size="xs" style={{ lineHeight: 1.6 }}>
                 • Use a clear, high-resolution thumbnail image
                 <br />
                 • Write a compelling description that highlights key learning

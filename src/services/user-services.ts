@@ -320,7 +320,7 @@ export const addCourseContentWriter = async (
     }
     const response = await apiClient.post(
       '/contentwriter/addCourse',
-      { formData },
+      formData,
       { headers: { 'Content-Type': 'multipart/form-data' } }
     );
     return response;

@@ -31,8 +31,7 @@ import {
   IconTrash,
   IconArchive,
   IconSearch,
-  IconX,
-  IconArrowLeft
+  IconX
 } from '@tabler/icons-react';
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { getAllCoursesByUser } from '../../../../services/user-services';
@@ -43,6 +42,7 @@ import { themeAtom } from '../../../../atoms/theme';
 import { useMediaQuery } from '@mantine/hooks';
 import { useNavigate } from 'react-router-dom';
 import { organizationEmployeeUrls } from '../../../../utils/common/constants';
+import { BackButton } from '../../../common/style-components/buttons';
 
 const COURSES_PER_PAGE = 6;
 
@@ -264,10 +264,15 @@ const WriterDashboard = () => {
         <Text fw={600} size="md" lineClamp={1}>
           {course.courseName}
         </Text>
-        <Text size="sm" c="dimmed" lineClamp={2}>
-          {course.courseDescription.slice(0, 32)}{' '}
-          {course.courseDescription.length > 32 ? '...' : ''}
-        </Text>
+        <Text
+          component="div"
+          fz="sm"
+          opacity={0.9}
+          mb="lg"
+          dangerouslySetInnerHTML={{
+            __html: course.courseDescription?.slice(0, 32)
+          }}
+        />
         <Badge color="blue" mt="xs" radius="sm" variant="light">
           {course.status || 'N/A'}
         </Badge>
@@ -281,18 +286,7 @@ const WriterDashboard = () => {
         <Stack gap="lg">
           <Group justify="space-between" align="center" wrap="nowrap">
             <Group gap="sm">
-              <ActionIcon
-                variant="subtle"
-                color="gray"
-                size="lg"
-                onClick={() => {
-                  setShowAllCourses(false);
-                  setActivePage(1);
-                  setSearchQuery('');
-                }}
-              >
-                <IconArrowLeft size={20} />
-              </ActionIcon>
+              <BackButton id="" />
               <Title order={2}>All Courses ({filteredCourses.length})</Title>
             </Group>
             <Button
@@ -417,8 +411,7 @@ const WriterDashboard = () => {
                 p={isMobile ? 'md' : 'xl'}
                 radius="xl"
                 style={{
-                  background:
-                    'linear-gradient(90deg, #6366F1, #8B5CF6, #EC4899)',
+                  background: `linear-gradient(90deg, ${currentThemeConfig.colors.primary[8]}, ${currentThemeConfig.colors.secondary[8]})`,
                   color: 'white'
                 }}
               >
@@ -626,8 +619,7 @@ const WriterDashboard = () => {
                   p="xl"
                   radius="xl"
                   style={{
-                    background:
-                      'linear-gradient(90deg, #6366F1, #8B5CF6, #EC4899)',
+                    background: `linear-gradient(90deg, ${currentThemeConfig.colors.primary[8]}, ${currentThemeConfig.colors.secondary[8]})`,
                     color: 'white'
                   }}
                 >

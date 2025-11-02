@@ -40,7 +40,6 @@ import { themeAtom } from '../atoms/theme';
 import { ThemeToggleButton } from '../components/UI/Theme-toggle-button/button';
 import WriterDashboard from '../components/user/dashboard/content-writer/content-writer';
 import { ContentWriterAddCourse } from '../components/user/dashboard/add-course/add-course';
-import ContentWriterEditCourse from '../components/user/dashboard/edit-course/edit-course';
 import ContentWriterUpdateCourse from '../components/user/dashboard/content-writer/update-content';
 
 const EmployeeRoutes = () => {
