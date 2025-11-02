@@ -30,6 +30,7 @@ import {
   IconTrash,
   IconArrowLeft,
   IconChartBar,
+  IconEyePlus,
   IconListCheck
 } from '@tabler/icons-react';
 import {
@@ -91,15 +92,14 @@ const CourseUpdatePage: React.FC = () => {
         moduleDescription,
         null
       );
+      console.log('Response after adding the module :', response);
       const newModule = response.data?.data || response.data;
       setCourse(prev =>
         prev ? { ...prev, modules: [...(prev.modules ?? []), newModule] } : prev
       );
-      console.log('Module added:', response);
       setOpened(false);
       setModuleName('');
       setModuleDescription('');
-      setStatus('Draft');
     } catch (err) {
       console.error(err);
     } finally {
@@ -294,7 +294,20 @@ const CourseUpdatePage: React.FC = () => {
           </Button>
         </Group>
       </Card>
-      <Modal opened={opened} onClose={() => setOpened(false)}>
+      <Modal
+        opened={opened}
+        onClose={() => setOpened(false)}
+        title={
+          <Group gap="xs">
+            <IconEyePlus size={24} />
+            <Text fw={600} size="lg">
+              Add New Module
+            </Text>
+          </Group>
+        }
+        centered
+        size="md"
+      >
         <form onSubmit={handleAddModule}>
           <TextInput
             required
@@ -303,6 +316,7 @@ const CourseUpdatePage: React.FC = () => {
             value={moduleName}
             onChange={e => setModuleName(e.currentTarget.value)}
             mb="sm"
+            mt="sm"
           />
 
           <Textarea
@@ -312,14 +326,6 @@ const CourseUpdatePage: React.FC = () => {
             value={moduleDescription}
             onChange={e => setModuleDescription(e.currentTarget.value)}
             mb="sm"
-          />
-
-          <Select
-            label="Status"
-            data={['Draft', 'Published']}
-            value={status}
-            onChange={value => setStatus(value as 'Draft' | 'Published')}
-            mb="md"
           />
 
           <Group justify="flex-end" mt="md">

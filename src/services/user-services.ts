@@ -357,7 +357,34 @@ export const addCourseModule = async (
     }
     const response = await apiClient.post(
       '/contentwriter/addCourseModule',
-      { formData },
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const addCourseTask = async (
+  moduleId: string,
+  taskName: string,
+  taskDescription: string,
+  thumbnail: File | null,
+  type: string
+) => {
+  try {
+    const formData = new FormData();
+    formData.append('moduleId', moduleId);
+    formData.append('taskName', taskName);
+    formData.append('taskDescription', taskDescription);
+    formData.append('type', type);
+    if (thumbnail) {
+      formData.append('taskThumbnail', thumbnail);
+    }
+    const response = await apiClient.post(
+      '/contentwriter/addCourseTask',
+      formData,
       { headers: { 'Content-Type': 'multipart/form-data' } }
     );
     return response;
