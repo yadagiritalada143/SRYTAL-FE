@@ -365,6 +365,7 @@ const UpdateEmployee = () => {
                           leftSection={<IconUser size={16} />}
                           {...register('employeeId')}
                           autoComplete="off"
+                          required
                           error={errors.employeeId?.message}
                         />
                       </Grid.Col>
