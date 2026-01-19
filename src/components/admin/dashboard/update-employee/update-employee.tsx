@@ -325,6 +325,9 @@ const UpdateEmployee = () => {
             <Tabs
               value={activeTab}
               onChange={value => setActiveTab(value ?? 'basic')}
+              classNames={{
+                tab: isDarkTheme ? 'dark-active-tab' : 'light-active-tab'
+              }}
             >
               <Tabs.List px="lg" pt="lg">
                 <Tabs.Tab value="basic" leftSection={<IconUser size={16} />}>
