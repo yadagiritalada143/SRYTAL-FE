@@ -305,26 +305,6 @@ const UpdateEmployee = () => {
           </Group>
         </Card>
 
-        {/* Progress */}
-        {isDirty && (
-          <Card shadow="sm" p="md" radius="md" withBorder>
-            <Group justify="space-between" mb="xs">
-              <Text size="sm" c="dimmed">
-                Form Completion
-              </Text>
-              <Text size="sm" c="dimmed">
-                {progressPercentage}%
-              </Text>
-            </Group>
-            <Progress
-              value={progressPercentage}
-              size="sm"
-              color={currentThemeConfig.button.color}
-              radius="xl"
-            />
-          </Card>
-        )}
-
         {/* Error Alert */}
         {submitError && (
           <Alert
@@ -456,7 +436,6 @@ const UpdateEmployee = () => {
                             <Select
                               label="Blood Group"
                               placeholder="Select blood group"
-                              required
                               leftSection={<IconDroplet size={16} />}
                               data={bloodGroupOptions || []}
                               {...field}
@@ -479,16 +458,21 @@ const UpdateEmployee = () => {
                               placeholder="Select date of birth"
                               leftSection={<IconCalendar size={16} />}
                               value={field.value ? new Date(field.value) : null}
-                              required
+                              maxDate={new Date()}
                               onChange={date => {
                                 if (date) {
-                                  const adjustedDate = new Date(
-                                    date.getTime() -
-                                      date.getTimezoneOffset() * 60000
-                                  )
-                                    .toISOString()
-                                    .split('T')[0];
-                                  field.onChange(adjustedDate);
+                                  const d = new Date(date);
+
+                                  if (!isNaN(d.getTime())) {
+                                    const adjustedDate = new Date(
+                                      d.getTime() -
+                                        d.getTimezoneOffset() * 60000
+                                    )
+                                      .toISOString()
+                                      .split('T')[0];
+
+                                    field.onChange(adjustedDate);
+                                  }
                                 } else {
                                   field.onChange(null);
                                 }
@@ -507,7 +491,6 @@ const UpdateEmployee = () => {
                           {...register('presentAddress')}
                           error={errors.presentAddress?.message}
                           minRows={3}
-                          required
                           autoComplete="off"
                         />
                       </Grid.Col>
@@ -520,7 +503,6 @@ const UpdateEmployee = () => {
                           {...register('permanentAddress')}
                           error={errors.permanentAddress?.message}
                           minRows={3}
-                          required
                           autoComplete="off"
                         />
                       </Grid.Col>
@@ -549,6 +531,7 @@ const UpdateEmployee = () => {
                               error={errors.employmentType?.message}
                               searchable
                               autoComplete="off"
+                              required
                               clearable
                             />
                           )}
@@ -573,6 +556,7 @@ const UpdateEmployee = () => {
                               onChange={field.onChange}
                               onBlur={field.onBlur}
                               autoComplete="off"
+                              required
                               error={errors.employeeRole?.message}
                               searchable
                               clearable
