@@ -22,7 +22,12 @@ export const employeeSchema = z.object({
     .regex(/^\d+$/, { message: 'Phone number must contain only digits' })
     .or(z.number()),
   bloodGroup: z.string().optional(),
-  dateOfBirth: z.date().nullable().optional(),
+  dateOfBirth: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, {
+      message: 'DOB must be in YYYY-MM-DD format'
+    })
+    .optional(),
   presentAddress: z.string().optional(),
   permanentAddress: z.string().optional(),
   employmentType: z.string().min(1, 'Employment type is required'),
