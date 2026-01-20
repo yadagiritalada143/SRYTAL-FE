@@ -15,7 +15,6 @@ import {
   Divider,
   Alert,
   Tabs,
-  Progress,
   Modal,
   Checkbox
 } from '@mantine/core';
@@ -116,20 +115,6 @@ const UpdateEmployee = () => {
     mode: 'onChange'
   });
 
-  // Watch form values for progress calculation
-  const watchedFields = watch();
-  const filledFields = Object.entries(watchedFields).filter(([key, value]) => {
-    if (key === 'bankDetailsInfo' && value) {
-      return Object.values(value as any).some(
-        v => v && v.toString().trim().length > 0
-      );
-    }
-    return value && value.toString().trim().length > 0;
-  }).length;
-
-  const totalFields = Object.keys(employeeSchema.shape).length;
-  const progressPercentage = Math.round((filledFields / totalFields) * 100);
-
   // Load dropdown options
   useEffect(() => {
     const loadOptions = async () => {
@@ -181,9 +166,10 @@ const UpdateEmployee = () => {
           bloodGroup: emp.bloodGroup?.id,
           employmentType: emp.employmentType?.id,
           employeeRole: emp.employeeRole.map((role: any) => role.id),
-          dateOfBirth: emp.dateOfBirth
-            ? new Date(emp.dateOfBirth).toISOString().split('T')[0]
-            : ''
+          dateOfBirth: emp.dateOfBirth ? new Date(emp.dateOfBirth) : null,
+          presentAddress: emp.presentAddress ?? '',
+          permanentAddress: emp.permanentAddress ?? '',
+          mobileNumber: emp.mobileNumber?.toString()
         };
 
         setEmployeeDetails(formatted);
@@ -207,7 +193,9 @@ const UpdateEmployee = () => {
     try {
       const updatedData = {
         ...data,
-        employeeRole: data.employeeRole?.filter(role => role)
+        employeeRole: data.employeeRole?.filter(role => role),
+        mobileNumber: Number(data.mobileNumber),
+        dateOfBirth: data.dateOfBirth ?? undefined
       };
 
       // Remove empty bank details
@@ -425,9 +413,14 @@ const UpdateEmployee = () => {
                 {/* Personal Details Tab */}
                 <Tabs.Panel value="personal">
                   <Stack gap="md">
-                    <Text fw={600} size="lg">
-                      Personal Details
-                    </Text>
+                    <Group justify="space-between">
+                      <Text fw={600} size="lg">
+                        Personal Details
+                      </Text>
+                      <Text size="sm" c="dimmed">
+                        (Optional)
+                      </Text>
+                    </Group>
                     <Grid>
                       <Grid.Col span={{ base: 12, sm: 6 }}>
                         <Controller
@@ -440,6 +433,12 @@ const UpdateEmployee = () => {
                               leftSection={<IconDroplet size={16} />}
                               data={bloodGroupOptions || []}
                               {...field}
+                              value={field.value ?? null}
+                              onChange={value =>
+                                field.onChange(
+                                  value === null ? undefined : value
+                                )
+                              }
                               error={errors.bloodGroup?.message}
                               searchable
                               clearable
@@ -458,7 +457,7 @@ const UpdateEmployee = () => {
                               label="Date of Birth"
                               placeholder="Select date of birth"
                               leftSection={<IconCalendar size={16} />}
-                              value={field.value ? new Date(field.value) : null}
+                              value={field.value}
                               maxDate={new Date()}
                               onChange={date => {
                                 if (date) {
@@ -529,6 +528,8 @@ const UpdateEmployee = () => {
                               leftSection={<IconBriefcase size={16} />}
                               data={employmentTypeOptions || []}
                               {...field}
+                              value={field.value ?? ''}
+                              onChange={value => field.onChange(value ?? '')}
                               error={errors.employmentType?.message}
                               searchable
                               autoComplete="off"
