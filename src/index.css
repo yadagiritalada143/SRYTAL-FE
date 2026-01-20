@@ -40,3 +40,10 @@ h1 {
 .animate-technologies:hover {
   animation-play-state: paused;
 }
+.tabs-content {
+  min-height: 300px;
+}
+
+.tabs-content .mantine-Tabs-panel {
+  height: 100%;
+}

@@ -274,7 +274,7 @@ const UpdateEmployee = () => {
   }
 
   return (
-    <Container size="xl" py="md">
+    <Container size="lg" py="md">
       <Stack gap="md">
         {/* Header */}
         <Card shadow="sm" p="lg" radius="md" withBorder>
@@ -338,7 +338,7 @@ const UpdateEmployee = () => {
                 </Tabs.Tab>
               </Tabs.List>
 
-              <Stack gap="lg" p="lg">
+              <Stack gap="lg" p="lg" className="tabs-content">
                 {/* Basic Information Tab */}
                 <Tabs.Panel value="basic">
                   <Stack gap="md">
@@ -517,7 +517,7 @@ const UpdateEmployee = () => {
                       Employment Details
                     </Text>
                     <Grid>
-                      <Grid.Col span={{ base: 12, sm: 6 }}>
+                      <Grid.Col span={12}>
                         <Controller
                           name="employmentType"
                           control={control}
@@ -540,7 +540,7 @@ const UpdateEmployee = () => {
                         />
                       </Grid.Col>
 
-                      <Grid.Col span={{ base: 12, sm: 6 }}>
+                      <Grid.Col span={12}>
                         <Controller
                           name="employeeRole"
                           control={control}
@@ -582,7 +582,7 @@ const UpdateEmployee = () => {
                       </Text>
                     </Group>
                     <Grid>
-                      <Grid.Col span={{ base: 12, sm: 4 }}>
+                      <Grid.Col span={12}>
                         <TextInput
                           label="Account Number"
                           placeholder="Enter account number"
@@ -593,7 +593,7 @@ const UpdateEmployee = () => {
                         />
                       </Grid.Col>
 
-                      <Grid.Col span={{ base: 12, sm: 4 }}>
+                      <Grid.Col span={12}>
                         <TextInput
                           label="Account Holder Name"
                           placeholder="Enter account holder name"
@@ -606,7 +606,7 @@ const UpdateEmployee = () => {
                         />
                       </Grid.Col>
 
-                      <Grid.Col span={{ base: 12, sm: 4 }}>
+                      <Grid.Col span={12}>
                         <TextInput
                           label="IFSC Code"
                           placeholder="Enter IFSC code"
