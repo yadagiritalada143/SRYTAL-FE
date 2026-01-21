@@ -491,6 +491,11 @@ const UpdateEmployee = () => {
                           {...register('presentAddress')}
                           error={errors.presentAddress?.message}
                           minRows={3}
+                          styles={{
+                            input: {
+                              paddingTop: 29
+                            }
+                          }}
                           autoComplete="off"
                         />
                       </Grid.Col>
@@ -503,6 +508,11 @@ const UpdateEmployee = () => {
                           {...register('permanentAddress')}
                           error={errors.permanentAddress?.message}
                           minRows={3}
+                          styles={{
+                            input: {
+                              paddingTop: 29
+                            }
+                          }}
                           autoComplete="off"
                         />
                       </Grid.Col>
