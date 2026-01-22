@@ -313,6 +313,7 @@ const UpdateEmployee = () => {
             <Tabs
               value={activeTab}
               onChange={value => setActiveTab(value ?? 'basic')}
+              variant="unstyled"
             >
               <Tabs.List px="lg" pt="lg">
                 <Tabs.Tab value="basic" leftSection={<IconUser size={16} />}>
