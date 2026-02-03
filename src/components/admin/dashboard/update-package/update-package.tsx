@@ -255,7 +255,7 @@ const UpdatePackage = () => {
                           field.onChange(date ? new Date(date) : null)
                         }
                         error={errors.startDate?.message}
-                        //valueFormat="YYYY-MM-DD"
+                        valueFormat="YYYY-MM-DD"
                         size="md"
                         clearable
                       />
