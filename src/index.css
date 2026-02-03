@@ -50,6 +50,7 @@ h1 {
 
 .mantine-Tabs-list {
   border-bottom: none;
+  overflow: visible;
 }
 
 .mantine-Tabs-tab {
@@ -68,4 +69,11 @@ h1 {
 
 .mantine-Tabs-tab[data-active]::after {
   background-color: #7c3aed;
+}
+.mantine-Tabs-tab {
+  border-bottom: none !important;
+}
+
+.mantine-Tabs-tab[data-active] {
+  border-bottom: none !important;
 }
