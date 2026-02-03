@@ -250,8 +250,10 @@ const UpdatePackage = () => {
                       <DateInput
                         label="Start Date"
                         placeholder="Pick a date"
-                        value={field.value || null}
-                        onChange={field.onChange}
+                        value={field.value ? new Date(field.value) : null}
+                        onChange={date =>
+                          field.onChange(date ? new Date(date) : null)
+                        }
                         error={errors.startDate?.message}
                         valueFormat="YYYY-MM-DD"
                         size="md"
@@ -266,8 +268,10 @@ const UpdatePackage = () => {
                       <DateInput
                         label="End Date"
                         placeholder="Pick a date"
-                        value={field.value || null}
-                        onChange={field.onChange}
+                        value={field.value ? new Date(field.value) : null}
+                        onChange={date =>
+                          field.onChange(date ? new Date(date) : null)
+                        }
                         error={errors.endDate?.message}
                         valueFormat="YYYY-MM-DD"
                         size="md"

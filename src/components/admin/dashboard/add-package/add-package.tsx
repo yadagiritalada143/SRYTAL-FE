@@ -10,7 +10,7 @@ import { organizationThemeAtom } from '../../../../atoms/organization-atom';
 import { useCustomToast } from '../../../../utils/common/toast';
 import {
   AddPackageForm,
-  addPackageSchema,
+  addPackageSchema
 } from '../../../../forms/add-package';
 import { toast } from 'react-toastify';
 import { BackButton } from '../../../common/style-components/buttons';
@@ -25,9 +25,9 @@ const AddPackage = () => {
     handleSubmit,
     reset,
     control,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting }
   } = useForm<AddPackageForm>({
-    resolver: zodResolver(addPackageSchema),
+    resolver: zodResolver(addPackageSchema)
   });
   const { showSuccessToast } = useCustomToast();
 
@@ -51,7 +51,7 @@ const AddPackage = () => {
           onSubmit={handleSubmit(onSubmit)}
           style={{
             backgroundColor:
-              organizationConfig.organization_theme.theme.backgroundColor,
+              organizationConfig.organization_theme.theme.backgroundColor
           }}
           className="rounded-lg shadow-lg w-full p-8"
         >
@@ -76,8 +76,10 @@ const AddPackage = () => {
                 <DateInput
                   label="Start Date"
                   placeholder="Pick a date"
-                  value={field.value}
-                  onChange={field.onChange}
+                  value={field.value ? new Date(field.value) : null}
+                  onChange={date =>
+                    field.onChange(date ? new Date(date) : null)
+                  }
                   error={errors.startDate?.message}
                   valueFormat="YYYY-MM-DD"
                   popoverProps={{ withinPortal: true }}
@@ -92,8 +94,10 @@ const AddPackage = () => {
                 <DateInput
                   label="End Date"
                   placeholder="Pick a date"
-                  value={field.value}
-                  onChange={field.onChange}
+                  value={field.value ? new Date(field.value) : null}
+                  onChange={date =>
+                    field.onChange(date ? new Date(date) : null)
+                  }
                   error={errors.endDate?.message}
                   valueFormat="YYYY-MM-DD"
                   popoverProps={{ withinPortal: true }}
