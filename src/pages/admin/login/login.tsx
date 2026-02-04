@@ -12,7 +12,7 @@ import { useSubmitAdminLogin } from './methods';
 import { ThemeBackground } from '../../../components/UI/Theme-background/background';
 import { ThemeForm } from '../../../components/UI/Form/form';
 import { useCustomToast } from '../../../utils/common/toast';
-
+import { IconLockPassword, IconMail } from '@tabler/icons-react';
 const AdminLogin = () => {
   const navigate = useNavigate();
   const { showErrorToast } = useCustomToast();
@@ -68,7 +68,7 @@ const AdminLogin = () => {
           <div className="relative mb-6">
             <img
               src={organizationConfig.organization_theme.logo}
-              className="max-h-32 object-contain transition-transform duration-300 hover:scale-105"
+              className="max-h-32 rounded-3xl object-contain transition-transform duration-300 hover:scale-105"
               alt={organizationConfig.organization_name}
             />
             <div
@@ -100,12 +100,6 @@ const AdminLogin = () => {
                 style={{ backgroundColor: currentThemeConfig.button.color }}
               />
             </div>
-            <p
-              className="text-sm opacity-70 transition-colors duration-300"
-              style={{ color: currentThemeConfig.color }}
-            >
-              {organizationConfig.organization_name}
-            </p>
           </div>
         </div>
 
@@ -113,11 +107,13 @@ const AdminLogin = () => {
           <TextInput
             {...register('email')}
             label="Email"
+            placeholder="Enter your email"
             autoComplete="off"
             error={errors.email?.message}
             onChange={e => {
               e.target.value = e.target.value.replace(/\s/g, '');
             }}
+            leftSection={<IconMail size={18} />}
           />
         </div>
 
@@ -125,7 +121,13 @@ const AdminLogin = () => {
           <PasswordInput
             {...register('password')}
             label="Password"
+            placeholder="Password"
             error={errors.password?.message}
+            leftSection={
+              <span>
+                <IconLockPassword size={18} />
+              </span>
+            }
           />
         </div>
 
