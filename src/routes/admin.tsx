@@ -28,6 +28,8 @@ import AddPoolCandidate from '../components/user/dashboard/add-candidate/add-can
 import UpdateCompany from '../components/user/dashboard/update-company/update-company';
 import EmploymentRoles from '../components/admin/dashboard/employment-roles/employment-roles';
 import Reports from '../components/admin/dashboard/reports/reports';
+import GenerateOfferReport from '../components/admin/dashboard/reports/generate-offer';
+import GenerateSalarySlipReport from '../components/admin/dashboard/reports/generate-salary-slip';
 import Packages from '../components/admin/dashboard/packages/packages';
 import AddPackage from '../components/admin/dashboard/add-package/add-package';
 import UpdatePackage from '../components/admin/dashboard/update-package/update-package';
@@ -455,7 +457,13 @@ const AdminRoutes = () => {
             <Route path="packages" element={<Packages />} />
             <Route path="/dashboard/addPackage" element={<AddPackage />} />
             <Route path="updates/:packageId" element={<UpdatePackage />} />
-            <Route path="reports" element={<Reports />} />
+            <Route path="reports" element={<Reports />}>
+              <Route path="generate-offer" element={<GenerateOfferReport />} />
+              <Route
+                path="generate-salary-slip"
+                element={<GenerateSalarySlipReport />}
+              />
+            </Route>
             <Route path="timesheet" element={<DateTableComponent />} />
             <Route
               path=":candidateId/edit-pool-candidate"

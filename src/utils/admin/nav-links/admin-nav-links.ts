@@ -2,7 +2,7 @@ import {
   IconBuildings,
   IconDroplet,
   IconNetwork,
-  // IconNotebook,
+  IconNotebook,
   IconPackage,
   IconUserEdit,
   IconUsers,
@@ -23,12 +23,22 @@ export const adminNavLinks = [
     icon: IconUserEdit,
     name: 'Profile'
   },
-  // {
-  //   role: 'admin',
-  //   url: 'admin/dashboard/reports',
-  //   icon: IconNotebook,
-  //   name: 'Reports',
-  // },
+  {
+    role: 'admin',
+    url: 'admin/dashboard/reports',
+    icon: IconNotebook,
+    name: 'Reports',
+    children: [
+      {
+        name: 'Generate Offer',
+        url: 'admin/dashboard/reports/generate-offer'
+      },
+      {
+        name: 'Generate Salary Slip',
+        url: 'admin/dashboard/reports/generate-salary-slip'
+      }
+    ]
+  },
   {
     role: 'admin',
     url: 'admin/dashboard/packages',
