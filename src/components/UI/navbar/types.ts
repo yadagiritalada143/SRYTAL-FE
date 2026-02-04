@@ -1,6 +1,11 @@
 import { Icon } from '@tabler/icons-react';
 import { OrganizationConfig } from '../../../interfaces/organization';
 
+export interface ChildNavLink {
+  name: string;
+  url: string;
+}
+
 export interface NavbarLinkProps {
   icon: any;
   name: string;
@@ -10,6 +15,7 @@ export interface NavbarLinkProps {
   isActive: boolean;
   onClick?: () => void;
   setIsDrawerOpen: () => void;
+  children?: ChildNavLink[];
 }
 
 export interface NavbarProps {
@@ -18,6 +24,7 @@ export interface NavbarProps {
     url: string;
     icon: Icon;
     name: string;
+    children?: ChildNavLink[];
   }[];
   organizationConfig: OrganizationConfig;
   isDrawerOpen: boolean;

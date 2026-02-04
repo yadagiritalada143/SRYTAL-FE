@@ -193,6 +193,7 @@ function NavbarMenu({ navLinks, isDrawerOpen, setIsDrawerOpen }: NavbarProps) {
           organization={organizationConfig}
           isActive={isActive}
           setIsDrawerOpen={setIsDrawerOpen}
+          children={link.children}
         />
       );
     });

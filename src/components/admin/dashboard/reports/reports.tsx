@@ -1,6 +1,7 @@
-import { useMantineTheme } from "@mantine/core";
-import { useRecoilValue } from "recoil";
-import { organizationThemeAtom } from "../../../../atoms/organization-atom";
+import { useMantineTheme } from '@mantine/core';
+import { useRecoilValue } from 'recoil';
+import { organizationThemeAtom } from '../../../../atoms/organization-atom';
+import { Outlet } from 'react-router-dom';
 
 const Reports = () => {
   const theme = useMantineTheme();
@@ -10,15 +11,11 @@ const Reports = () => {
     <div
       style={{
         color: organizationConfig.organization_theme.theme.button.textColor,
-        fontFamily: theme.fontFamily,
+        fontFamily: theme.fontFamily
       }}
       className="h-auto"
     >
-      <div>
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold underline text-center px-2 py-4">
-          Reports
-        </h1>
-      </div>
+      <Outlet />
     </div>
   );
 };
