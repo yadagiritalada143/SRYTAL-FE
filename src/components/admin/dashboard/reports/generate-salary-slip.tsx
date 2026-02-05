@@ -39,6 +39,24 @@ const formatDate = (isoDate: string): string => {
   }
 };
 
+const steps = [
+  {
+    label: 'Fill Details',
+    description: 'Employee Info',
+    enabled: true
+  },
+  {
+    label: 'Calculation',
+    description: 'Salary Breakdown',
+    enabled: true
+  },
+  {
+    label: 'Generate',
+    description: 'Final Review',
+    enabled: true
+  }
+];
+
 const GenerateSalarySlipReport = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [employees, setEmployees] = useState<any[]>([]);
@@ -208,320 +226,345 @@ const GenerateSalarySlipReport = () => {
   };
 
   return (
-    <Container size="md" py="xl">
+    <Container size="lg" py="xl">
       <Card shadow="md" radius="lg" p="xl" withBorder>
-        <Title order={2} ta="center" mb="lg">
+        <Title order={2} ta="center" mb="xl">
           Generate Salary Slip
         </Title>
 
         <form onSubmit={handleSubmit(onSubmit)}>
           <Stepper active={activeStep} mb="xl">
-            {/* ================= STEP 1 ================= */}
-            <Stepper.Step label="Fill Details" description="Employee Info">
-              <Stack mt="lg" gap="md">
-                <Select
-                  label="Employee ID"
-                  placeholder={
-                    isLoadingEmployees ? 'Loading...' : 'Select employee'
-                  }
-                  searchable
-                  required
-                  data={employees
-                    .filter(emp => emp.employeeId)
-                    .map(emp => ({
-                      value: emp.employeeId,
-                      label: `${emp.employeeId} - ${emp.firstName} ${emp.lastName}`
-                    }))}
-                  value={empDetails.empId}
-                  onChange={value => {
-                    handleEmployeeChange(value);
-                  }}
-                />
-                {errors.employeeId && (
-                  <Text size="sm" c="red">
-                    {errors.employeeId.message}
-                  </Text>
-                )}
-
-                <TextInput
-                  label="Employee Name"
-                  value={empDetails.empName}
-                  disabled
-                />
-                <TextInput
-                  label="Email"
-                  value={empDetails.email}
-                  disabled
-                  type="email"
-                />
-                <TextInput
-                  label="Designation"
-                  value={empDetails.designation}
-                  disabled
-                />
-                <TextInput
-                  label="Date of Birth"
-                  value={empDetails.dob}
-                  disabled
-                />
-
-                <TextInput
-                  label="Bank Account Number"
-                  value={empDetails.bankAccount}
-                  disabled
-                />
-                <TextInput label="IFSC Code" value={empDetails.ifsc} disabled />
-                <TextInput label="PAN Number" value={empDetails.pan} disabled />
-
-                <Controller
-                  name="selectedMonth"
-                  control={control}
-                  render={({ field }) => {
-                    let dateValue = field.value;
-                    if (typeof dateValue === 'string') {
-                      let dateValue: Date | null = field.value;
-
-                      if (typeof dateValue === 'string') {
-                        const parsed = new Date(dateValue);
-                        dateValue = isNaN(parsed.getTime()) ? null : parsed;
-                      }
-                    }
-
-                    return (
-                      <MonthPickerInput
-                        {...field}
-                        value={dateValue}
-                        label="Select Month"
+            {steps.map((step, index) => (
+              <Stepper.Step
+                key={index}
+                label={step.label}
+                description={step.description}
+                allowStepSelect={step.enabled}
+              >
+                {/* ================= STEP 1 ================= */}
+                {index === 0 && (
+                  <Stack mt="lg" gap="md">
+                    <Group grow>
+                      <Select
+                        label="Employee ID"
+                        placeholder={
+                          isLoadingEmployees ? 'Loading...' : 'Select employee'
+                        }
+                        searchable
                         required
-                        placeholder="Pick month"
-                        error={errors.selectedMonth?.message}
-                        onChange={date => {
-                          field.onChange(date);
+                        data={employees
+                          .filter(emp => emp.employeeId)
+                          .map(emp => ({
+                            value: emp.employeeId,
+                            label: `${emp.employeeId} - ${emp.firstName} ${emp.lastName}`
+                          }))}
+                        value={empDetails.empId}
+                        onChange={value => handleEmployeeChange(value)}
+                      />
+                    </Group>
+                    {errors.employeeId && (
+                      <Text size="sm" c="red">
+                        {errors.employeeId.message}
+                      </Text>
+                    )}
+
+                    <Group grow>
+                      <TextInput
+                        label="Employee Name"
+                        value={empDetails.empName}
+                        disabled
+                      />
+                      <TextInput
+                        label="Email"
+                        value={empDetails.email}
+                        disabled
+                      />
+                    </Group>
+                    <Group grow>
+                      <TextInput
+                        label="Designation"
+                        value={empDetails.designation}
+                        disabled
+                      />
+                      <TextInput
+                        label="Date of Birth"
+                        value={empDetails.dob}
+                        disabled
+                      />
+                    </Group>
+
+                    <Group grow>
+                      <TextInput
+                        label="Bank Account Number"
+                        value={empDetails.bankAccount}
+                        disabled
+                      />
+                      <TextInput
+                        label="IFSC Code"
+                        value={empDetails.ifsc}
+                        disabled
+                      />
+                    </Group>
+                    <TextInput
+                      label="PAN Number"
+                      value={empDetails.pan}
+                      disabled
+                    />
+
+                    <Group grow align="flex-end">
+                      <Controller
+                        name="selectedMonth"
+                        control={control}
+                        render={({ field }) => {
+                          let dateValue = field.value;
+                          if (typeof dateValue === 'string') {
+                            let dateValue: Date | null = field.value;
+
+                            if (typeof dateValue === 'string') {
+                              const parsed = new Date(dateValue);
+                              dateValue = isNaN(parsed.getTime())
+                                ? null
+                                : parsed;
+                            }
+                          }
+
+                          return (
+                            <MonthPickerInput
+                              {...field}
+                              value={dateValue}
+                              label="Select Month"
+                              required
+                              placeholder="Pick month"
+                              error={errors.selectedMonth?.message}
+                              onChange={date => {
+                                field.onChange(date);
+                              }}
+                            />
+                          );
                         }}
                       />
-                    );
-                  }}
-                />
 
-                <Group grow>
-                  <TextInput
-                    label="Total Days in Month"
-                    value={
-                      calculatedDaysInMonth > 0
-                        ? String(calculatedDaysInMonth)
-                        : ''
-                    }
-                    onChange={() => {}}
-                    disabled
-                    type="number"
-                    error={errors.daysInMonth?.message}
-                    placeholder="Select month above"
-                  />
-                  <TextInput
-                    label="LOP Days"
-                    {...register('lopDays', { valueAsNumber: true })}
-                    type="number"
-                    placeholder="0"
-                    error={errors.lopDays?.message}
-                    min="0"
-                  />
-                </Group>
-              </Stack>
-            </Stepper.Step>
-
-            {/* ================= STEP 2 ================= */}
-            <Stepper.Step label="Calculation" description="Salary Breakdown">
-              <Stack mt="lg" gap="md">
-                <Card withBorder radius="md" p="lg">
-                  <Group justify="space-between" mb="md">
-                    <Title order={5}>Salary Components</Title>
-
-                    <Button
-                      variant="light"
-                      onClick={() =>
-                        append({ label: 'New Component', amount: '' })
-                      }
-                    >
-                      + Add More
-                    </Button>
-                  </Group>
-
-                  <Stack gap="sm">
-                    {fields.map((field, index) => (
-                      <Group key={field.id} grow align="flex-end">
-                        <TextInput
-                          label={index === 0 ? 'Component Name' : ''}
-                          placeholder="Allowance Type"
-                          {...register(
-                            `salaryComponents.${index}.label` as const
-                          )}
-                        />
-
-                        <TextInput
-                          label={index === 0 ? 'Amount (₹)' : ''}
-                          placeholder="0.00"
-                          type="number"
-                          step="0.01"
-                          {...register(
-                            `salaryComponents.${index}.amount` as const
-                          )}
-                        />
-
-                        {index > 1 && (
-                          <Button
-                            color="red"
-                            variant="subtle"
-                            onClick={() => remove(index)}
-                          >
-                            Remove
-                          </Button>
-                        )}
-                      </Group>
-                    ))}
+                      <TextInput
+                        label="Total Days in Month"
+                        value={
+                          calculatedDaysInMonth > 0
+                            ? String(calculatedDaysInMonth)
+                            : ''
+                        }
+                        onChange={() => {}}
+                        disabled
+                        type="number"
+                        error={errors.daysInMonth?.message}
+                        placeholder="Select month above"
+                      />
+                      <TextInput
+                        label="LOP Days"
+                        {...register('lopDays', { valueAsNumber: true })}
+                        type="number"
+                        placeholder="0"
+                        error={errors.lopDays?.message}
+                        min="0"
+                      />
+                    </Group>
                   </Stack>
-                </Card>
+                )}
 
-                <Card withBorder p="md" radius="md" bg="green.0">
-                  <Group justify="space-between">
-                    <Text fw={600}>Total Earnings:</Text>
+                {/* ================= STEP 2 ================= */}
+                {index === 1 && (
+                  <Stack mt="lg" gap="md">
+                    <Card withBorder radius="md" p="lg">
+                      <Group justify="space-between" mb="md">
+                        <Title order={5}>Salary Components</Title>
 
-                    <Text fw={700} size="lg" c="green">
-                      ₹{' '}
-                      {fields
-                        .reduce((total, _, index) => {
-                          const value =
-                            parseFloat(
-                              watch(`salaryComponents.${index}.amount`)
-                            ) || 0;
-                          return total + value;
-                        }, 0)
-                        .toFixed(2)}
-                    </Text>
-                  </Group>
-                  {lopDays > 0 && daysInMonth > 0 && (
-                    <Card withBorder p="sm" bg="red.0">
+                        <Button
+                          variant="light"
+                          onClick={() =>
+                            append({ label: 'New Component', amount: '' })
+                          }
+                        >
+                          + Add More
+                        </Button>
+                      </Group>
+
+                      <Stack gap="sm">
+                        {fields.map((field, index) => (
+                          <Group key={field.id} grow align="flex-end">
+                            <TextInput
+                              label={index === 0 ? 'Component Name' : ''}
+                              placeholder="Allowance Type"
+                              {...register(
+                                `salaryComponents.${index}.label` as const
+                              )}
+                            />
+
+                            <TextInput
+                              label={index === 0 ? 'Amount (₹)' : ''}
+                              placeholder="0.00"
+                              type="number"
+                              step="0.01"
+                              {...register(
+                                `salaryComponents.${index}.amount` as const
+                              )}
+                            />
+
+                            {index > 1 && (
+                              <Button
+                                color="red"
+                                variant="subtle"
+                                onClick={() => remove(index)}
+                              >
+                                Remove
+                              </Button>
+                            )}
+                          </Group>
+                        ))}
+                      </Stack>
+                    </Card>
+
+                    <Card withBorder p="md" radius="md" bg="green.0">
                       <Group justify="space-between">
-                        <Text fw={600}>Estimated LOP Deduction:</Text>
-                        <Text fw={700} c="red">
-                          − ₹ {(perDaySalary * lopDays).toFixed(2)}
+                        <Text fw={600}>Total Earnings:</Text>
+
+                        <Text fw={700} size="lg" c="green">
+                          ₹{' '}
+                          {fields
+                            .reduce((total, _, index) => {
+                              const value =
+                                parseFloat(
+                                  watch(`salaryComponents.${index}.amount`)
+                                ) || 0;
+                              return total + value;
+                            }, 0)
+                            .toFixed(2)}
                         </Text>
                       </Group>
+                      {lopDays > 0 && daysInMonth > 0 && (
+                        <Card withBorder p="sm" bg="red.0">
+                          <Group justify="space-between">
+                            <Text fw={600}>Estimated LOP Deduction:</Text>
+                            <Text fw={700} c="red">
+                              − ₹ {(perDaySalary * lopDays).toFixed(2)}
+                            </Text>
+                          </Group>
+                        </Card>
+                      )}
                     </Card>
-                  )}
-                </Card>
-              </Stack>
-            </Stepper.Step>
-
-            {/* ================= STEP 3 ================= */}
-            <Stepper.Step label="Generate" description="Final Review">
-              <Stack mt="lg" gap="md">
-                <Title order={4}>✅ Salary Slip Summary</Title>
-
-                <Alert
-                  icon={<IconAlertCircle />}
-                  title="Review Details"
-                  color="blue"
-                >
-                  Please review all details before generating the salary slip
-                </Alert>
-
-                <Card p="md" bg="gray.0" withBorder>
-                  <Stack gap="sm">
-                    <Group justify="space-between">
-                      <Text fw={600}>Employee:</Text>
-                      <Text>{`${empDetails.empName} (${empDetails.empId})`}</Text>
-                    </Group>
-                    <Group justify="space-between">
-                      <Text fw={600}>Email:</Text>
-                      <Text>{empDetails.email}</Text>
-                    </Group>
-                    <Group justify="space-between">
-                      <Text fw={600}>Designation:</Text>
-                      <Text>{empDetails.designation}</Text>
-                    </Group>
-                    <Group justify="space-between">
-                      <Text fw={600}>Date of Birth:</Text>
-                      <Text>{empDetails.dob}</Text>
-                    </Group>
-                    <Group justify="space-between">
-                      <Text fw={600}>PAN:</Text>
-                      <Text>{empDetails.pan}</Text>
-                    </Group>
-                    <Group justify="space-between">
-                      <Text fw={600}>Month:</Text>
-                      <Text>
-                        {(() => {
-                          const monthDate = normalMonth(selectedMonth);
-                          return monthDate
-                            ? monthDate.toLocaleDateString('en-US', {
-                                month: 'long',
-                                year: 'numeric'
-                              })
-                            : '-';
-                        })()}
-                      </Text>
-                    </Group>
                   </Stack>
-                </Card>
+                )}
 
-                <Card p="md" bg="gray.0" withBorder>
-                  <Stack gap="sm">
-                    <Group justify="space-between">
-                      <Text fw={600}>Total Days:</Text>
-                      <Text>{daysInMonth}</Text>
-                    </Group>
-                    <Group justify="space-between">
-                      <Text fw={600}>LOP Days:</Text>
-                      <Text>{lopDays}</Text>
-                    </Group>
-                    <Group justify="space-between">
-                      <Text fw={600}>Working Days:</Text>
-                      <Text fw={700}>
-                        {(daysInMonth || 0) - (lopDays || 0)}
-                      </Text>
-                    </Group>
-                  </Stack>
-                </Card>
+                {/* ================= STEP 3 ================= */}
+                {index === 2 && (
+                  <Stack mt="lg" gap="md">
+                    <Title order={4}>Salary Slip Summary</Title>
 
-                <Card p="md" bg="green.0" withBorder>
-                  <Title order={5} mb="sm">
-                    Salary Breakdown
-                  </Title>
-
-                  <Stack gap="sm">
-                    {salaryComponents.map((item, index) => (
-                      <Group key={index} justify="space-between">
-                        <Text>{item.label}</Text>
-                        <Text fw={600}>₹ {item.amount || '0.00'}</Text>
-                      </Group>
-                    ))}
-
-                    <Group justify="space-between" pt="sm">
-                      <Text fw={600}>Gross Salary:</Text>
-                      <Text fw={700}>₹ {grossSalary.toFixed(2)}</Text>
-                    </Group>
-
-                    <Group justify="space-between">
-                      <Text fw={600}>LOP Deduction ({lopDays} days):</Text>
-                      <Text fw={700} c="red">
-                        − ₹ {lopDeduction.toFixed(2)}
-                      </Text>
-                    </Group>
-
-                    <Group
-                      justify="space-between"
-                      pt="sm"
-                      style={{ borderTop: '1px solid #2f9e44' }}
+                    <Alert
+                      icon={<IconAlertCircle />}
+                      title="Review Details"
+                      color="blue"
                     >
-                      <Text fw={700}>Final Payable Salary:</Text>
-                      <Text fw={700} size="lg" c="green">
-                        ₹ {finalSalary.toFixed(2)}
-                      </Text>
-                    </Group>
+                      Please review all details before generating the salary
+                      slip
+                    </Alert>
+
+                    <Card p="md" bg="gray.0" withBorder>
+                      <Stack gap="sm">
+                        <Group justify="space-between">
+                          <Text fw={600}>Employee:</Text>
+                          <Text>{`${empDetails.empName} (${empDetails.empId})`}</Text>
+                        </Group>
+                        <Group justify="space-between">
+                          <Text fw={600}>Email:</Text>
+                          <Text>{empDetails.email}</Text>
+                        </Group>
+                        <Group justify="space-between">
+                          <Text fw={600}>Designation:</Text>
+                          <Text>{empDetails.designation}</Text>
+                        </Group>
+                        <Group justify="space-between">
+                          <Text fw={600}>Date of Birth:</Text>
+                          <Text>{empDetails.dob}</Text>
+                        </Group>
+                        <Group justify="space-between">
+                          <Text fw={600}>PAN:</Text>
+                          <Text>{empDetails.pan}</Text>
+                        </Group>
+                        <Group justify="space-between">
+                          <Text fw={600}>Month:</Text>
+                          <Text>
+                            {(() => {
+                              const monthDate = normalMonth(selectedMonth);
+                              return monthDate
+                                ? monthDate.toLocaleDateString('en-US', {
+                                    month: 'long',
+                                    year: 'numeric'
+                                  })
+                                : '-';
+                            })()}
+                          </Text>
+                        </Group>
+                      </Stack>
+                    </Card>
+
+                    <Card p="md" bg="gray.0" withBorder>
+                      <Stack gap="sm">
+                        <Group justify="space-between">
+                          <Text fw={600}>Total Days:</Text>
+                          <Text>{daysInMonth}</Text>
+                        </Group>
+                        <Group justify="space-between">
+                          <Text fw={600}>LOP Days:</Text>
+                          <Text>{lopDays}</Text>
+                        </Group>
+                        <Group justify="space-between">
+                          <Text fw={600}>Working Days:</Text>
+                          <Text fw={700}>
+                            {(daysInMonth || 0) - (lopDays || 0)}
+                          </Text>
+                        </Group>
+                      </Stack>
+                    </Card>
+
+                    <Card p="md" bg="green.0" withBorder>
+                      <Title order={5} mb="sm">
+                        Salary Breakdown
+                      </Title>
+
+                      <Stack gap="sm">
+                        {salaryComponents.map((item, index) => (
+                          <Group key={index} justify="space-between">
+                            <Text>{item.label}</Text>
+                            <Text fw={600}>₹ {item.amount || '0.00'}</Text>
+                          </Group>
+                        ))}
+
+                        <Group justify="space-between" pt="sm">
+                          <Text fw={600}>Gross Salary:</Text>
+                          <Text fw={700}>₹ {grossSalary.toFixed(2)}</Text>
+                        </Group>
+
+                        <Group justify="space-between">
+                          <Text fw={600}>LOP Deduction ({lopDays} days):</Text>
+                          <Text fw={700} c="red">
+                            − ₹ {lopDeduction.toFixed(2)}
+                          </Text>
+                        </Group>
+
+                        <Group
+                          justify="space-between"
+                          pt="sm"
+                          style={{ borderTop: '1px solid #2f9e44' }}
+                        >
+                          <Text fw={700}>Final Payable Salary:</Text>
+                          <Text fw={700} size="lg" c="green">
+                            ₹ {finalSalary.toFixed(2)}
+                          </Text>
+                        </Group>
+                      </Stack>
+                    </Card>
                   </Stack>
-                </Card>
-              </Stack>
-            </Stepper.Step>
+                )}
+              </Stepper.Step>
+            ))}
           </Stepper>
 
           <Group justify="space-between" mt="xl">
