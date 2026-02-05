@@ -640,6 +640,7 @@ const Employees = () => {
                 onChange={e => debouncedSearch(e.target.value)}
                 radius="md"
                 size={isMobile ? 'sm' : 'md'}
+                w="100%"
               />
               <Select
                 placeholder="Filter by role"
@@ -650,6 +651,7 @@ const Employees = () => {
                 leftSection={<IconFilter size={16} />}
                 radius="md"
                 size={isMobile ? 'sm' : 'md'}
+                w="100%"
               />
             </Group>
 

@@ -109,7 +109,7 @@ const EmployeeLogin = () => {
         <img
           src={organizationConfig.organization_theme.logo}
           alt={organizationConfig.organization_name}
-          className="max-h-28 object-contain transition-transform duration-300 ease-out hover:scale-105 mb-6"
+          className="max-h-28 rounded-3xl object-contain transition-transform duration-300 ease-out hover:scale-105 mb-6"
         />
 
         {/* Welcome text */}
