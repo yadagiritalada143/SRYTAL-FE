@@ -59,9 +59,22 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
         {/* Header Card with Profile Image */}
         <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder>
           <Stack gap="lg">
-            <Group justify="space-between" wrap={isMobile ? 'wrap' : 'nowrap'}>
+            <Group
+              justify="space-between"
+              wrap={isMobile ? 'wrap' : 'nowrap'}
+              align={isMobile ? 'flex-start' : 'center'}
+            >
               <Group gap="md">
-                <ProfileImageUploader />
+                <div
+                  style={{
+                    width: 100,
+                    height: 100,
+                    borderRadius: '29px',
+                    overflow: 'hidden'
+                  }}
+                >
+                  <ProfileImageUploader />
+                </div>
                 <Stack gap={4}>
                   <Title order={isMobile ? 4 : 2}>
                     {details.firstName} {details.lastName}
@@ -74,14 +87,20 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                       </Text>
                     </Group>
                   )}
+                  {isMobile && (
+                    <Badge
+                      size={isMobile ? 'sm' : 'md'}
+                      variant="light"
+                      color="blue"
+                      w="fit-content"
+                    >
+                      {details.userRole}
+                    </Badge>
+                  )}
                 </Stack>
               </Group>
-              {details.userRole && (
-                <Badge
-                  size={isMobile ? 'md' : 'lg'}
-                  variant="light"
-                  color="blue"
-                >
+              {!isMobile && details.userRole && (
+                <Badge size="md" variant="light" color="blue">
                   {details.userRole}
                 </Badge>
               )}
@@ -155,19 +174,33 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
             defaultValue="employment"
             orientation={isMobile ? 'horizontal' : 'horizontal'}
           >
-            <Tabs.List p="md" grow={isMobile}>
+            <Tabs.List
+              p="md"
+              style={{
+                display: 'flex',
+                flexWrap: isMobile ? 'wrap' : 'nowrap',
+                justifyContent: 'flex-start'
+              }}
+            >
               <Tabs.Tab
                 value="employment"
                 leftSection={<IconBriefcase size={16} />}
+                w={isMobile ? '50%' : 'auto'}
               >
                 Employment
               </Tabs.Tab>
-              <Tabs.Tab value="address" leftSection={<IconMapPin size={16} />}>
+              <Tabs.Tab
+                value="address"
+                leftSection={<IconMapPin size={16} />}
+                w={isMobile ? '40%' : 'auto'}
+              >
                 Address
               </Tabs.Tab>
               <Tabs.Tab
                 value="bankDetails"
                 leftSection={<IconBuildingBank size={16} />}
+                w={isMobile ? '50%' : 'auto'}
+                mt={isMobile ? 'sm' : '0'}
               >
                 Bank Details
               </Tabs.Tab>
@@ -179,9 +212,12 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                   <Grid.Col span={{ base: 12, sm: 6 }}>
                     <Paper p="md" withBorder radius="md">
                       <Stack gap="xs">
-                        <Text size="xs" c="dimmed" fw={500}>
-                          Employment Type
-                        </Text>
+                        <Group gap="xs" align="center">
+                          <IconBriefcase size={16} />
+                          <Text size="xs" c="dimmed" fw={500}>
+                            Employment Type
+                          </Text>
+                        </Group>
                         <Badge size="lg" variant="light" color="teal">
                           {details.employmentType?.employmentType || 'N/A'}
                         </Badge>
@@ -191,9 +227,12 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                   <Grid.Col span={{ base: 12, sm: 6 }}>
                     <Paper p="md" withBorder radius="md">
                       <Stack gap="xs">
-                        <Text size="xs" c="dimmed" fw={500}>
-                          Designations
-                        </Text>
+                        <Group gap="xs" align="center">
+                          <IconBriefcase size={16} />
+                          <Text size="xs" c="dimmed" fw={500}>
+                            Designations
+                          </Text>
+                        </Group>
                         <Group gap="xs" wrap="wrap">
                           {details.employeeRole &&
                           details.employeeRole.length > 0 ? (
@@ -221,36 +260,41 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
             </Tabs.Panel>
 
             <Tabs.Panel value="address" p={isMobile ? 'md' : 'lg'}>
-              <Stack gap="md">
-                <Paper p="md" withBorder radius="md">
-                  <Stack gap="xs">
-                    <Group gap="xs">
-                      <IconMapPin
-                        size={18}
-                        color="var(--mantine-color-blue-6)"
-                      />
-                      <Text size="sm" fw={600} c="dimmed">
-                        Present Address
-                      </Text>
-                    </Group>
-                    <Text size="sm">{details.presentAddress || 'N/A'}</Text>
-                  </Stack>
-                </Paper>
-                <Paper p="md" withBorder radius="md">
-                  <Stack gap="xs">
-                    <Group gap="xs">
-                      <IconMapPin
-                        size={18}
-                        color="var(--mantine-color-green-6)"
-                      />
-                      <Text size="sm" fw={600} c="dimmed">
-                        Permanent Address
-                      </Text>
-                    </Group>
-                    <Text size="sm">{details.permanentAddress || 'N/A'}</Text>
-                  </Stack>
-                </Paper>
-              </Stack>
+              <Grid>
+                <Grid.Col span={{ base: 12, sm: 6 }}>
+                  <Paper p="md" withBorder radius="md">
+                    <Stack gap="xs">
+                      <Group gap="xs">
+                        <IconMapPin
+                          size={18}
+                          color="var(--mantine-color-blue-6)"
+                        />
+                        <Text size="sm" fw={600} c="dimmed">
+                          Present Address
+                        </Text>
+                      </Group>
+                      <Text size="sm">{details.presentAddress || 'N/A'}</Text>
+                    </Stack>
+                  </Paper>
+                </Grid.Col>
+
+                <Grid.Col span={{ base: 12, sm: 6 }}>
+                  <Paper p="md" withBorder radius="md">
+                    <Stack gap="xs">
+                      <Group gap="xs">
+                        <IconMapPin
+                          size={18}
+                          color="var(--mantine-color-green-6)"
+                        />
+                        <Text size="sm" fw={600} c="dimmed">
+                          Permanent Address
+                        </Text>
+                      </Group>
+                      <Text size="sm">{details.permanentAddress || 'N/A'}</Text>
+                    </Stack>
+                  </Paper>
+                </Grid.Col>
+              </Grid>
             </Tabs.Panel>
 
             <Tabs.Panel value="bankDetails" p={isMobile ? 'md' : 'lg'}>
@@ -259,9 +303,12 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                   <Grid.Col span={{ base: 12, sm: 6 }}>
                     <Paper p="md" withBorder radius="md">
                       <Stack gap="xs">
-                        <Text size="xs" c="dimmed" fw={500}>
-                          Account Number
-                        </Text>
+                        <Group gap="xs" align="center">
+                          <IconBuildingBank size={16} />
+                          <Text size="xs" c="dimmed" fw={500}>
+                            Account Number
+                          </Text>
+                        </Group>
                         <Text size="sm" fw={500}>
                           {details.bankDetailsInfo?.accountNumber || 'N/A'}
                         </Text>
@@ -271,9 +318,12 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                   <Grid.Col span={{ base: 12, sm: 6 }}>
                     <Paper p="md" withBorder radius="md">
                       <Stack gap="xs">
-                        <Text size="xs" c="dimmed" fw={500}>
-                          Account Holder Name
-                        </Text>
+                        <Group gap="xs" align="center">
+                          <IconUser size={16} />
+                          <Text size="xs" c="dimmed" fw={500}>
+                            Account Holder Name
+                          </Text>
+                        </Group>
                         <Text size="sm" fw={500}>
                           {details.bankDetailsInfo?.accountHolderName || 'N/A'}
                         </Text>
@@ -283,9 +333,12 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                   <Grid.Col span={{ base: 12, sm: 6 }}>
                     <Paper p="md" withBorder radius="md">
                       <Stack gap="xs">
-                        <Text size="xs" c="dimmed" fw={500}>
-                          IFSC Code
-                        </Text>
+                        <Group gap="xs" align="center">
+                          <IconBuildingBank size={16} />
+                          <Text size="xs" c="dimmed" fw={500}>
+                            IFSC Code
+                          </Text>
+                        </Group>
                         <Text size="sm" fw={500}>
                           {details.bankDetailsInfo?.ifscCode || 'N/A'}
                         </Text>
