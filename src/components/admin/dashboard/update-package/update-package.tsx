@@ -44,6 +44,7 @@ import { useCustomToast } from '../../../../utils/common/toast';
 import { DeletePackageModel } from './delete-models';
 import AddTasksPackage from './add-tasks';
 import PackageTasksTable from './tasks';
+import { BackButton } from '../../../common/style-components/buttons';
 
 const UpdatePackage = () => {
   const [opened, { open, close }] = useDisclosure(false);
@@ -176,16 +177,7 @@ const UpdatePackage = () => {
               align="center"
               gap="md"
             >
-              <Group gap="sm">
-                <Tooltip label="Go Back">
-                  <ActionIcon
-                    variant="subtle"
-                    size="lg"
-                    onClick={() => navigate(-1)}
-                  >
-                    <IconArrowLeft size={20} />
-                  </ActionIcon>
-                </Tooltip>
+              <Group justify="space-between" align="center">
                 <Group gap="xs">
                   <IconPackage size={24} />
                   <Text size={isMobile ? 'lg' : 'xl'} fw={700}>
@@ -193,6 +185,7 @@ const UpdatePackage = () => {
                   </Text>
                 </Group>
               </Group>
+              <BackButton id={packageId} />
             </Flex>
           </Card>
 

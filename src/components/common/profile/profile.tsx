@@ -213,7 +213,10 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                     <Paper p="md" withBorder radius="md">
                       <Stack gap="xs">
                         <Group gap="xs" align="center">
-                          <IconBriefcase size={16} />
+                          <IconBriefcase
+                            size={16}
+                            color="var(--mantine-color-blue-6)"
+                          />
                           <Text size="xs" c="dimmed" fw={500}>
                             Employment Type
                           </Text>
@@ -228,7 +231,10 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                     <Paper p="md" withBorder radius="md">
                       <Stack gap="xs">
                         <Group gap="xs" align="center">
-                          <IconBriefcase size={16} />
+                          <IconBriefcase
+                            size={16}
+                            color="var(--mantine-color-blue-6)"
+                          />
                           <Text size="xs" c="dimmed" fw={500}>
                             Designations
                           </Text>
@@ -304,7 +310,10 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                     <Paper p="md" withBorder radius="md">
                       <Stack gap="xs">
                         <Group gap="xs" align="center">
-                          <IconBuildingBank size={16} />
+                          <IconBuildingBank
+                            size={16}
+                            color="var(--mantine-color-blue-6)"
+                          />
                           <Text size="xs" c="dimmed" fw={500}>
                             Account Number
                           </Text>
@@ -319,7 +328,10 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                     <Paper p="md" withBorder radius="md">
                       <Stack gap="xs">
                         <Group gap="xs" align="center">
-                          <IconUser size={16} />
+                          <IconUser
+                            size={16}
+                            color="var(--mantine-color-blue-6)"
+                          />
                           <Text size="xs" c="dimmed" fw={500}>
                             Account Holder Name
                           </Text>
@@ -334,7 +346,10 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                     <Paper p="md" withBorder radius="md">
                       <Stack gap="xs">
                         <Group gap="xs" align="center">
-                          <IconBuildingBank size={16} />
+                          <IconBuildingBank
+                            size={16}
+                            color="var(--mantine-color-blue-6)"
+                          />
                           <Text size="xs" c="dimmed" fw={500}>
                             IFSC Code
                           </Text>
