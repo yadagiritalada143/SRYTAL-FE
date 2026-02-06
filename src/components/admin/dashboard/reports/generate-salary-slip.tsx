@@ -10,7 +10,9 @@ import {
   Select,
   Stack,
   Text,
-  Alert
+  Alert,
+  Grid,
+  Divider
 } from '@mantine/core';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -227,7 +229,7 @@ const GenerateSalarySlipReport = () => {
 
   return (
     <Container size="lg" py="xl">
-      <Card shadow="md" radius="lg" p="xl" withBorder>
+      <Card shadow="sm" radius="md" p="xl" withBorder>
         <Title order={2} ta="center" mb="xl">
           Generate Salary Slip
         </Title>
@@ -243,136 +245,162 @@ const GenerateSalarySlipReport = () => {
               >
                 {/* ================= STEP 1 ================= */}
                 {index === 0 && (
-                  <Stack mt="lg" gap="md">
-                    <Group grow>
-                      <Select
-                        label="Employee ID"
-                        placeholder={
-                          isLoadingEmployees ? 'Loading...' : 'Select employee'
-                        }
-                        searchable
-                        required
-                        data={employees
-                          .filter(emp => emp.employeeId)
-                          .map(emp => ({
-                            value: emp.employeeId,
-                            label: `${emp.employeeId} - ${emp.firstName} ${emp.lastName}`
-                          }))}
-                        value={empDetails.empId}
-                        onChange={value => handleEmployeeChange(value)}
-                      />
-                    </Group>
-                    {errors.employeeId && (
-                      <Text size="sm" c="red">
-                        {errors.employeeId.message}
-                      </Text>
-                    )}
-
-                    <Group grow>
-                      <TextInput
-                        label="Employee Name"
-                        value={empDetails.empName}
-                        disabled
-                      />
-                      <TextInput
-                        label="Email"
-                        value={empDetails.email}
-                        disabled
-                      />
-                    </Group>
-                    <Group grow>
-                      <TextInput
-                        label="Designation"
-                        value={empDetails.designation}
-                        disabled
-                      />
-                      <TextInput
-                        label="Date of Birth"
-                        value={empDetails.dob}
-                        disabled
-                      />
-                    </Group>
-
-                    <Group grow>
-                      <TextInput
-                        label="Bank Account Number"
-                        value={empDetails.bankAccount}
-                        disabled
-                      />
-                      <TextInput
-                        label="IFSC Code"
-                        value={empDetails.ifsc}
-                        disabled
-                      />
-                    </Group>
-                    <TextInput
-                      label="PAN Number"
-                      value={empDetails.pan}
-                      disabled
-                    />
-
-                    <Group grow align="flex-end">
-                      <Controller
-                        name="selectedMonth"
-                        control={control}
-                        render={({ field }) => {
-                          let dateValue = field.value;
-                          if (typeof dateValue === 'string') {
-                            let dateValue: Date | null = field.value;
-
-                            if (typeof dateValue === 'string') {
-                              const parsed = new Date(dateValue);
-                              dateValue = isNaN(parsed.getTime())
-                                ? null
-                                : parsed;
-                            }
+                  <Stack mt="lg" gap="lg">
+                    <Title order={5}>Employee Information</Title>
+                    <Grid>
+                      <Grid.Col span={6}>
+                        <Select
+                          label="Employee ID"
+                          placeholder={
+                            isLoadingEmployees
+                              ? 'Loading...'
+                              : 'Select employee'
                           }
+                          searchable
+                          required
+                          data={employees
+                            .filter(emp => emp.employeeId)
+                            .map(emp => ({
+                              value: emp.employeeId,
+                              label: `${emp.employeeId} - ${emp.firstName} ${emp.lastName}`
+                            }))}
+                          value={empDetails.empId}
+                          onChange={value => handleEmployeeChange(value)}
+                          error={errors.employeeId?.message}
+                        />
+                      </Grid.Col>
+                      <Grid.Col span={6}>
+                        <TextInput
+                          label="Employee Name"
+                          value={empDetails.empName}
+                          disabled
+                        />
+                      </Grid.Col>
 
-                          return (
-                            <MonthPickerInput
-                              {...field}
-                              value={dateValue}
-                              label="Select Month"
-                              required
-                              placeholder="Pick month"
-                              error={errors.selectedMonth?.message}
-                              onChange={date => {
-                                field.onChange(date);
-                              }}
-                            />
-                          );
-                        }}
-                      />
+                      <Grid.Col span={6}>
+                        <TextInput
+                          label="Email"
+                          value={empDetails.email}
+                          disabled
+                        />
+                      </Grid.Col>
 
-                      <TextInput
-                        label="Total Days in Month"
-                        value={
-                          calculatedDaysInMonth > 0
-                            ? String(calculatedDaysInMonth)
-                            : ''
-                        }
-                        onChange={() => {}}
-                        disabled
-                        type="number"
-                        error={errors.daysInMonth?.message}
-                        placeholder="Select month above"
-                      />
-                      <TextInput
-                        label="LOP Days"
-                        {...register('lopDays', { valueAsNumber: true })}
-                        type="number"
-                        placeholder="0"
-                        error={errors.lopDays?.message}
-                        min="0"
-                      />
-                    </Group>
+                      <Grid.Col span={6}>
+                        <TextInput
+                          label="Designation"
+                          value={empDetails.designation}
+                          disabled
+                        />
+                      </Grid.Col>
+
+                      <Grid.Col span={6}>
+                        <TextInput
+                          label="Date of Birth"
+                          value={empDetails.dob}
+                          disabled
+                        />
+                      </Grid.Col>
+                    </Grid>
+
+                    <Divider />
+
+                    <Title order={5}>Bank Details</Title>
+
+                    <Grid>
+                      <Grid.Col span={6}>
+                        <TextInput
+                          label="Bank Account Number"
+                          value={empDetails.bankAccount}
+                          disabled
+                        />
+                      </Grid.Col>
+
+                      <Grid.Col span={6}>
+                        <TextInput
+                          label="IFSC Code"
+                          value={empDetails.ifsc}
+                          disabled
+                        />
+                      </Grid.Col>
+
+                      <Grid.Col span={6}>
+                        <TextInput
+                          label="PAN Number"
+                          value={empDetails.pan}
+                          disabled
+                        />
+                      </Grid.Col>
+                    </Grid>
+
+                    <Divider />
+
+                    <Title order={5}>Salary Period</Title>
+
+                    <Grid align="end">
+                      <Grid.Col span={4}>
+                        <Controller
+                          name="selectedMonth"
+                          control={control}
+                          render={({ field }) => {
+                            let dateValue = field.value;
+                            if (typeof dateValue === 'string') {
+                              let dateValue: Date | null = field.value;
+
+                              if (typeof dateValue === 'string') {
+                                const parsed = new Date(dateValue);
+                                dateValue = isNaN(parsed.getTime())
+                                  ? null
+                                  : parsed;
+                              }
+                            }
+
+                            return (
+                              <MonthPickerInput
+                                {...field}
+                                value={dateValue}
+                                label="Select Month"
+                                required
+                                placeholder="Pick month"
+                                error={errors.selectedMonth?.message}
+                                onChange={date => {
+                                  field.onChange(date);
+                                }}
+                              />
+                            );
+                          }}
+                        />
+                      </Grid.Col>
+
+                      <Grid.Col span={4}>
+                        <TextInput
+                          label="Total Days"
+                          value={
+                            calculatedDaysInMonth > 0
+                              ? String(calculatedDaysInMonth)
+                              : ''
+                          }
+                          disabled
+                          error={errors.daysInMonth?.message}
+                        />
+                      </Grid.Col>
+
+                      <Grid.Col span={4}>
+                        <TextInput
+                          label="LOP Days"
+                          {...register('lopDays', { valueAsNumber: true })}
+                          type="number"
+                          placeholder="0"
+                          error={errors.lopDays?.message}
+                        />
+                      </Grid.Col>
+                    </Grid>
                   </Stack>
                 )}
 
                 {/* ================= STEP 2 ================= */}
                 {index === 1 && (
                   <Stack mt="lg" gap="md">
-                    <Card withBorder radius="md" p="lg">
+                    <Card shadow="sm" radius="md" p="lg" withBorder>
                       <Group justify="space-between" mb="md">
                         <Title order={5}>Salary Components</Title>
 
@@ -421,7 +449,13 @@ const GenerateSalarySlipReport = () => {
                       </Stack>
                     </Card>
 
-                    <Card withBorder p="md" radius="md" bg="green.0">
+                    <Card
+                      withBorder
+                      p="md"
+                      radius="md"
+                      shadow="md"
+                      bg="green.0"
+                    >
                       <Group justify="space-between">
                         <Text fw={600}>Total Earnings:</Text>
 
@@ -567,7 +601,7 @@ const GenerateSalarySlipReport = () => {
             ))}
           </Stepper>
 
-          <Group justify="space-between" mt="xl">
+          <Group justify="space-between" mt="xl" pt="md">
             <Button
               variant="default"
               disabled={activeStep === 0}
