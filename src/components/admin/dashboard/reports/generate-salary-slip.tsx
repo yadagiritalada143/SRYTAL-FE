@@ -268,6 +268,17 @@ const GenerateSalarySlipReport = () => {
 
       toast.success('Salary slip generated successfully!');
       reset();
+      setEmpDetails({
+        empId: '',
+        empName: '',
+        designation: '',
+        email: '',
+        dob: '',
+        bankAccount: '',
+        ifsc: '',
+        pan: ''
+      });
+      setCalculatedDaysInMonth(0);
       setActiveStep(0);
     } catch (error: any) {
       toast.error(error.message || 'Failed to generate salary slip');
