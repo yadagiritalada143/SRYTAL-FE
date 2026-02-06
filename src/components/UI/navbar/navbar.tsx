@@ -224,9 +224,9 @@ function NavbarMenu({ navLinks, isDrawerOpen, setIsDrawerOpen }: NavbarProps) {
         >
           <div className={classes.fabContent}>
             <Avatar
-              src="/public/srytal-organization-logo.png"
+              src={organizationConfig.organization_theme.logo}
               alt="Organization Logo"
-              size={74}
+              size={64}
               className={classes.fabLogo}
             />
           </div>
