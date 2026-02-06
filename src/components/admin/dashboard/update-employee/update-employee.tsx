@@ -63,7 +63,9 @@ import {
   IconDeviceFloppy,
   IconAlertTriangle,
   IconBriefcase,
-  IconDroplet
+  IconDroplet,
+  IconId,
+  IconFingerprint
 } from '@tabler/icons-react';
 import { themeAtom } from '../../../../atoms/theme';
 import { BackButton } from '../../../common/style-components/buttons';
@@ -114,6 +116,7 @@ const UpdateEmployee = () => {
     resolver: zodResolver(employeeSchema),
     mode: 'onChange'
   });
+  const panRegister = register('panCardNumber');
 
   // Load dropdown options
   useEffect(() => {
@@ -404,6 +407,34 @@ const UpdateEmployee = () => {
                           leftSection={<IconPhone size={16} />}
                           {...register('mobileNumber')}
                           error={errors.mobileNumber?.message}
+                          required
+                        />
+                      </Grid.Col>
+                      <Grid.Col span={{ base: 12, sm: 6 }}>
+                        <TextInput
+                          label="AadharCard Number"
+                          placeholder="Enter AadharCard number"
+                          type="tel"
+                          leftSection={<IconFingerprint size={16} />}
+                          {...register('aadharCardNumber')}
+                          maxLength={12}
+                          error={errors.aadharCardNumber?.message}
+                          required
+                        />
+                      </Grid.Col>
+                      <Grid.Col span={{ base: 12, sm: 6 }}>
+                        <TextInput
+                          label="PANCard Number"
+                          placeholder="Enter PANCard number"
+                          type="text"
+                          leftSection={<IconId size={16} />}
+                          {...panRegister}
+                          onChange={e => {
+                            e.target.value = e.target.value.toUpperCase();
+                            panRegister.onChange(e);
+                          }}
+                          maxLength={10}
+                          error={errors.panCardNumber?.message}
                           required
                         />
                       </Grid.Col>

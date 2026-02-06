@@ -57,7 +57,13 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
     <Container size="xl" py="md" my="xl" px={isSmallMobile ? 'xs' : 'md'}>
       <Stack gap="md">
         {/* Header Card with Profile Image */}
-        <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder>
+        <Card
+          shadow="sm"
+          p={isMobile ? 'md' : 'lg'}
+          radius="md"
+          withBorder
+          mt="xl"
+        >
           <Stack gap="lg">
             <Group
               justify="space-between"

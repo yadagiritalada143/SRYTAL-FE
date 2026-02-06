@@ -21,6 +21,16 @@ export const employeeSchema = z.object({
     .max(10, { message: 'Phone number must be 10 digits' })
     .regex(/^\d+$/, { message: 'Phone number must contain only digits' })
     .or(z.number()),
+  panCardNumber: z
+    .string()
+    .length(10, { message: 'PAN must be exactly 10 characters' })
+    .regex(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/, {
+      message: 'Invalid PAN format'
+    }),
+  aadharCardNumber: z
+    .string()
+    .length(12, { message: 'Aadhaar must be exactly 12 digits' })
+    .regex(/^\d+$/, { message: 'Aadhaar must contain only digits' }),
   bloodGroup: z.string().optional(),
   dateOfBirth: z
     .string()
