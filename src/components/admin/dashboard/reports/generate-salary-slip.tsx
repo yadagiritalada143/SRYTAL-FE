@@ -41,6 +41,20 @@ const formatDate = (isoDate: string): string => {
   }
 };
 
+type Employee = {
+  employeeId: string;
+  firstName: string;
+  lastName?: string;
+  email?: string;
+  dateOfBirth?: string;
+  panNumber?: string;
+  bankDetailsInfo?: {
+    accountNumber?: string;
+    ifscCode?: string;
+  };
+  employeeRole?: { designation?: string }[];
+};
+
 const steps = [
   {
     label: 'Fill Details',
@@ -54,14 +68,14 @@ const steps = [
   },
   {
     label: 'Generate',
-    description: 'Final Review',
+    description: 'Review & Generate',
     enabled: true
   }
 ];
 
 const GenerateSalarySlipReport = () => {
   const [activeStep, setActiveStep] = useState(0);
-  const [employees, setEmployees] = useState<any[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
   const [isLoadingEmployees, setIsLoadingEmployees] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [calculatedDaysInMonth, setCalculatedDaysInMonth] = useState<number>(0);
@@ -91,22 +105,38 @@ const GenerateSalarySlipReport = () => {
     defaultValues: {
       employeeId: '',
       selectedMonth: undefined,
-      daysInMonth: undefined,
+      daysInMonth: 0,
       lopDays: 0,
-      salaryComponents: [
-        { label: 'Basic Salary', amount: '' },
-        { label: 'Special Allowance', amount: '' }
-      ]
+      basicSalary: 0,
+      hraPercentage: 0,
+      specialAllowance: 0,
+      conveyanceAllowance: 0,
+      medicalAllowance: 0,
+      otherAllowances: 0,
+      extraAllowances: []
     }
   });
-  const salaryComponents = watch('salaryComponents') || [];
   const selectedMonth = watch('selectedMonth');
   const daysInMonth = watch('daysInMonth');
   const lopDays = watch('lopDays');
 
-  const grossSalary = salaryComponents.reduce((sum, item) => {
-    return sum + (parseFloat(item.amount) || 0);
-  }, 0);
+  const basic = watch('basicSalary') || 0;
+  const hra = watch('hraPercentage') || 0;
+  const special = watch('specialAllowance') || 0;
+  const conveyance = watch('conveyanceAllowance') || 0;
+  const medical = watch('medicalAllowance') || 0;
+  const other = watch('otherAllowances') || 0;
+  const extraAllowances = watch('extraAllowances') || [];
+
+  const extraTotal = extraAllowances.reduce(
+    (sum, item) => sum + (item.amount || 0),
+    0
+  );
+
+  const hraAmount = (basic * hra) / 100;
+
+  const grossSalary =
+    basic + hraAmount + special + conveyance + medical + other + extraTotal;
 
   const perDaySalary =
     daysInMonth && daysInMonth > 0 ? grossSalary / daysInMonth : 0;
@@ -118,7 +148,7 @@ const GenerateSalarySlipReport = () => {
 
   const { fields, append, remove } = useFieldArray({
     control,
-    name: 'salaryComponents'
+    name: 'extraAllowances'
   });
 
   // Fetch Employees List
@@ -168,12 +198,10 @@ const GenerateSalarySlipReport = () => {
         selectedEmployee.firstName + ' ' + (selectedEmployee.lastName || ''),
       designation: selectedEmployee.employeeRole?.[0]?.designation || '',
       email: selectedEmployee.email || '',
-      dob: formatDate(
-        selectedEmployee.dateOfBirth || selectedEmployee.dob || ''
-      ),
+      dob: formatDate(selectedEmployee.dateOfBirth || ''),
       bankAccount: selectedEmployee.bankDetailsInfo?.accountNumber || '',
       ifsc: selectedEmployee.bankDetailsInfo?.ifscCode || '',
-      pan: selectedEmployee.panNumber || selectedEmployee.pan || ''
+      pan: selectedEmployee.panNumber || ''
     });
   };
 
@@ -195,9 +223,10 @@ const GenerateSalarySlipReport = () => {
   }, [selectedMonth, setValue]);
 
   const nextStep = async () => {
-    const isValid = await trigger(['employeeId', 'selectedMonth']);
-
-    if (!isValid) return;
+    if (activeStep === 0) {
+      const isValid = await trigger(['employeeId', 'selectedMonth']);
+      if (!isValid) return;
+    }
 
     setActiveStep(current => (current < 2 ? current + 1 : current));
   };
@@ -208,6 +237,35 @@ const GenerateSalarySlipReport = () => {
   const onSubmit = async (data: GenerateSalarySlipForm) => {
     try {
       setIsGenerating(true);
+      if (data.lopDays > data.daysInMonth) {
+        toast.error('LOP days cannot exceed total days');
+        return;
+      }
+      const payload = {
+        employeeId: data.employeeId,
+        employeeName: empDetails.empName,
+        designation: empDetails.designation,
+        panNumber: empDetails.pan,
+
+        payPeriod: data.selectedMonth.toISOString(),
+        payDate: new Date().toISOString(),
+
+        bankAccountNumber: empDetails.bankAccount,
+        IFSCCODE: empDetails.ifsc,
+        transactionType: 'Bank Transfer',
+
+        totalWorkingDays: data.daysInMonth,
+        daysWorked: data.daysInMonth - (data.lopDays || 0),
+        lossOfPayDays: data.lopDays,
+
+        basicSalary: data.basicSalary,
+        hraPercentage: data.hraPercentage,
+        specialAllowance: data.specialAllowance,
+        conveyanceAllowance: data.conveyanceAllowance,
+        medicalAllowance: data.medicalAllowance,
+        otherAllowances: data.otherAllowances
+      };
+
       toast.success('Salary slip generated successfully!');
       reset();
       setActiveStep(0);
@@ -234,260 +292,294 @@ const GenerateSalarySlipReport = () => {
           Generate Salary Slip
         </Title>
 
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <Stepper active={activeStep} mb="xl">
-            {steps.map((step, index) => (
-              <Stepper.Step
-                key={index}
-                label={step.label}
-                description={step.description}
-                allowStepSelect={step.enabled}
-              >
-                {/* ================= STEP 1 ================= */}
-                {index === 0 && (
-                  <Stack mt="lg" gap="lg">
-                    <Title order={5}>Employee Information</Title>
-                    <Grid>
-                      <Grid.Col span={6}>
-                        <Select
-                          label="Employee ID"
-                          placeholder={
-                            isLoadingEmployees
-                              ? 'Loading...'
-                              : 'Select employee'
-                          }
-                          searchable
-                          required
-                          data={employees
-                            .filter(emp => emp.employeeId)
-                            .map(emp => ({
-                              value: emp.employeeId,
-                              label: `${emp.employeeId} - ${emp.firstName} ${emp.lastName}`
-                            }))}
-                          value={empDetails.empId}
-                          onChange={value => handleEmployeeChange(value)}
-                          error={errors.employeeId?.message}
-                        />
-                      </Grid.Col>
-                      <Grid.Col span={6}>
-                        <TextInput
-                          label="Employee Name"
-                          value={empDetails.empName}
-                          disabled
-                        />
-                      </Grid.Col>
+        <Stepper active={activeStep} mb="xl">
+          {steps.map((step, index) => (
+            <Stepper.Step
+              key={index}
+              label={step.label}
+              description={step.description}
+              allowStepSelect={step.enabled}
+            >
+              {/* ================= STEP 1 ================= */}
+              {index === 0 && (
+                <Stack mt="lg" gap="lg">
+                  <Title order={5}>Employee Information</Title>
+                  <Grid>
+                    <Grid.Col span={6}>
+                      <Select
+                        label="Employee ID"
+                        placeholder={
+                          isLoadingEmployees ? 'Loading...' : 'Select employee'
+                        }
+                        searchable
+                        required
+                        data={employees
+                          .filter(emp => emp.employeeId)
+                          .map(emp => ({
+                            value: emp.employeeId,
+                            label: `${emp.employeeId} - ${emp.firstName} ${emp.lastName}`
+                          }))}
+                        value={empDetails.empId}
+                        onChange={value => handleEmployeeChange(value)}
+                        error={errors.employeeId?.message}
+                      />
+                    </Grid.Col>
+                    <Grid.Col span={6}>
+                      <TextInput
+                        label="Employee Name"
+                        value={empDetails.empName}
+                        disabled
+                      />
+                    </Grid.Col>
 
-                      <Grid.Col span={6}>
-                        <TextInput
-                          label="Email"
-                          value={empDetails.email}
-                          disabled
-                        />
-                      </Grid.Col>
+                    <Grid.Col span={6}>
+                      <TextInput
+                        label="Email"
+                        value={empDetails.email}
+                        disabled
+                      />
+                    </Grid.Col>
 
-                      <Grid.Col span={6}>
-                        <TextInput
-                          label="Designation"
-                          value={empDetails.designation}
-                          disabled
-                        />
-                      </Grid.Col>
+                    <Grid.Col span={6}>
+                      <TextInput
+                        label="Designation"
+                        value={empDetails.designation}
+                        disabled
+                      />
+                    </Grid.Col>
 
-                      <Grid.Col span={6}>
-                        <TextInput
-                          label="Date of Birth"
-                          value={empDetails.dob}
-                          disabled
-                        />
-                      </Grid.Col>
-                    </Grid>
+                    <Grid.Col span={6}>
+                      <TextInput
+                        label="Date of Birth"
+                        value={empDetails.dob}
+                        disabled
+                      />
+                    </Grid.Col>
+                  </Grid>
 
-                    <Divider />
+                  <Divider />
 
-                    <Title order={5}>Bank Details</Title>
+                  <Title order={5}>Bank Details</Title>
 
-                    <Grid>
-                      <Grid.Col span={6}>
-                        <TextInput
-                          label="Bank Account Number"
-                          value={empDetails.bankAccount}
-                          disabled
-                        />
-                      </Grid.Col>
+                  <Grid>
+                    <Grid.Col span={6}>
+                      <TextInput
+                        label="Bank Account Number"
+                        value={empDetails.bankAccount}
+                        disabled
+                      />
+                    </Grid.Col>
 
-                      <Grid.Col span={6}>
-                        <TextInput
-                          label="IFSC Code"
-                          value={empDetails.ifsc}
-                          disabled
-                        />
-                      </Grid.Col>
+                    <Grid.Col span={6}>
+                      <TextInput
+                        label="IFSC Code"
+                        value={empDetails.ifsc}
+                        disabled
+                      />
+                    </Grid.Col>
 
-                      <Grid.Col span={6}>
-                        <TextInput
-                          label="PAN Number"
-                          value={empDetails.pan}
-                          disabled
-                        />
-                      </Grid.Col>
-                    </Grid>
+                    <Grid.Col span={6}>
+                      <TextInput
+                        label="PAN Number"
+                        value={empDetails.pan}
+                        disabled
+                      />
+                    </Grid.Col>
+                  </Grid>
 
-                    <Divider />
+                  <Divider />
 
-                    <Title order={5}>Salary Period</Title>
+                  <Title order={5}>Salary Period</Title>
 
-                    <Grid align="end">
-                      <Grid.Col span={4}>
-                        <Controller
-                          name="selectedMonth"
-                          control={control}
-                          render={({ field }) => {
-                            let dateValue = field.value;
-                            if (typeof dateValue === 'string') {
-                              let dateValue: Date | null = field.value;
-
-                              if (typeof dateValue === 'string') {
-                                const parsed = new Date(dateValue);
-                                dateValue = isNaN(parsed.getTime())
-                                  ? null
-                                  : parsed;
-                              }
+                  <Grid align="end">
+                    <Grid.Col span={4}>
+                      <Controller
+                        name="selectedMonth"
+                        control={control}
+                        render={({ field }) => (
+                          <MonthPickerInput
+                            value={
+                              field.value
+                                ? field.value instanceof Date
+                                  ? field.value
+                                  : new Date(field.value)
+                                : null
                             }
+                            onChange={field.onChange}
+                            label="Select Month"
+                            required
+                            placeholder="Pick month"
+                            error={errors.selectedMonth?.message}
+                          />
+                        )}
+                      />
+                    </Grid.Col>
 
-                            return (
-                              <MonthPickerInput
-                                {...field}
-                                value={dateValue}
-                                label="Select Month"
-                                required
-                                placeholder="Pick month"
-                                error={errors.selectedMonth?.message}
-                                onChange={date => {
-                                  field.onChange(date);
-                                }}
-                              />
-                            );
-                          }}
-                        />
-                      </Grid.Col>
+                    <Grid.Col span={4}>
+                      <TextInput
+                        label="Total Days"
+                        value={
+                          calculatedDaysInMonth > 0
+                            ? String(calculatedDaysInMonth)
+                            : ''
+                        }
+                        disabled
+                        error={errors.daysInMonth?.message}
+                      />
+                    </Grid.Col>
 
-                      <Grid.Col span={4}>
+                    <Grid.Col span={4}>
+                      <TextInput
+                        label="LOP Days"
+                        {...register('lopDays', { valueAsNumber: true })}
+                        type="number"
+                        placeholder="0"
+                        error={errors.lopDays?.message}
+                      />
+                    </Grid.Col>
+                  </Grid>
+                </Stack>
+              )}
+
+              {/* ================= STEP 2 ================= */}
+              {index === 1 && (
+                <Stack mt="lg" gap="md">
+                  <Card shadow="sm" radius="md" p="lg" withBorder>
+                    <Title order={5} mb="md">
+                      Earnings
+                    </Title>
+
+                    <Grid>
+                      <Grid.Col span={6}>
                         <TextInput
-                          label="Total Days"
-                          value={
-                            calculatedDaysInMonth > 0
-                              ? String(calculatedDaysInMonth)
-                              : ''
-                          }
-                          disabled
-                          error={errors.daysInMonth?.message}
-                        />
-                      </Grid.Col>
-
-                      <Grid.Col span={4}>
-                        <TextInput
-                          label="LOP Days"
-                          {...register('lopDays', { valueAsNumber: true })}
+                          label="Basic Salary"
                           type="number"
-                          placeholder="0"
-                          error={errors.lopDays?.message}
+                          {...register('basicSalary', {
+                            valueAsNumber: true
+                          })}
+                        />
+                      </Grid.Col>
+
+                      <Grid.Col span={6}>
+                        <TextInput
+                          label="HRA (%)"
+                          type="number"
+                          {...register('hraPercentage', {
+                            valueAsNumber: true
+                          })}
+                        />
+                      </Grid.Col>
+
+                      <Grid.Col span={6}>
+                        <TextInput
+                          label="Special Allowance"
+                          type="number"
+                          {...register('specialAllowance', {
+                            valueAsNumber: true
+                          })}
+                        />
+                      </Grid.Col>
+
+                      <Grid.Col span={6}>
+                        <TextInput
+                          label="Conveyance Allowance"
+                          type="number"
+                          {...register('conveyanceAllowance', {
+                            valueAsNumber: true
+                          })}
+                        />
+                      </Grid.Col>
+
+                      <Grid.Col span={6}>
+                        <TextInput
+                          label="Medical Allowance"
+                          type="number"
+                          {...register('medicalAllowance', {
+                            valueAsNumber: true
+                          })}
+                        />
+                      </Grid.Col>
+
+                      <Grid.Col span={6}>
+                        <TextInput
+                          label="Other Allowances"
+                          type="number"
+                          {...register('otherAllowances', {
+                            valueAsNumber: true
+                          })}
                         />
                       </Grid.Col>
                     </Grid>
-                  </Stack>
-                )}
+                  </Card>
 
-                {/* ================= STEP 2 ================= */}
-                {index === 1 && (
-                  <Stack mt="lg" gap="md">
-                    <Card shadow="sm" radius="md" p="lg" withBorder>
-                      <Group justify="space-between" mb="md">
-                        <Title order={5}>Salary Components</Title>
+                  <Card shadow="sm" radius="md" p="lg" withBorder>
+                    <Group justify="space-between" mb="md">
+                      <Title order={6}>Additional Allowances</Title>
 
-                        <Button
-                          variant="light"
-                          onClick={() =>
-                            append({ label: 'New Component', amount: '' })
-                          }
-                        >
-                          + Add More
-                        </Button>
-                      </Group>
+                      <Button
+                        type="button"
+                        variant="light"
+                        radius="lg"
+                        onClick={() => append({ label: '', amount: 0 })}
+                      >
+                        + Add More
+                      </Button>
+                    </Group>
 
-                      <Stack gap="sm">
-                        {fields.map((field, index) => (
-                          <Group key={field.id} grow align="flex-end">
-                            <TextInput
-                              label={index === 0 ? 'Component Name' : ''}
-                              placeholder="Allowance Type"
-                              {...register(
-                                `salaryComponents.${index}.label` as const
-                              )}
-                            />
+                    <Stack>
+                      {fields.map((field, index) => (
+                        <Group key={field.id} grow>
+                          <TextInput
+                            placeholder="Allowance Name"
+                            {...register(`extraAllowances.${index}.label`)}
+                          />
 
-                            <TextInput
-                              label={index === 0 ? 'Amount (₹)' : ''}
-                              placeholder="0.00"
-                              type="number"
-                              step="0.01"
-                              {...register(
-                                `salaryComponents.${index}.amount` as const
-                              )}
-                            />
+                          <TextInput
+                            type="number"
+                            placeholder="Amount"
+                            {...register(`extraAllowances.${index}.amount`, {
+                              valueAsNumber: true
+                            })}
+                          />
 
-                            {index > 1 && (
-                              <Button
-                                color="red"
-                                variant="subtle"
-                                onClick={() => remove(index)}
-                              >
-                                Remove
-                              </Button>
-                            )}
-                          </Group>
-                        ))}
-                      </Stack>
-                    </Card>
+                          <Button
+                            type="button"
+                            color="red"
+                            radius="md"
+                            variant="subtle"
+                            onClick={() => remove(index)}
+                          >
+                            Remove
+                          </Button>
+                        </Group>
+                      ))}
+                    </Stack>
+                  </Card>
 
-                    <Card
-                      withBorder
-                      p="md"
-                      radius="md"
-                      shadow="md"
-                      bg="green.0"
-                    >
-                      <Group justify="space-between">
-                        <Text fw={600}>Total Earnings:</Text>
+                  <Card withBorder p="md" radius="md" shadow="md" bg="green.0">
+                    <Group justify="space-between">
+                      <Text fw={600}>Total Earnings:</Text>
+                      <Text fw={700} size="lg" c="green">
+                        ₹ {grossSalary.toFixed(2)}
+                      </Text>
+                    </Group>
+                    {lopDays > 0 && daysInMonth > 0 && (
+                      <Card withBorder p="sm" bg="red.0">
+                        <Group justify="space-between">
+                          <Text fw={600}>Estimated LOP Deduction:</Text>
+                          <Text fw={700} c="red">
+                            − ₹ {(perDaySalary * lopDays).toFixed(2)}
+                          </Text>
+                        </Group>
+                      </Card>
+                    )}
+                  </Card>
+                </Stack>
+              )}
 
-                        <Text fw={700} size="lg" c="green">
-                          ₹{' '}
-                          {fields
-                            .reduce((total, _, index) => {
-                              const value =
-                                parseFloat(
-                                  watch(`salaryComponents.${index}.amount`)
-                                ) || 0;
-                              return total + value;
-                            }, 0)
-                            .toFixed(2)}
-                        </Text>
-                      </Group>
-                      {lopDays > 0 && daysInMonth > 0 && (
-                        <Card withBorder p="sm" bg="red.0">
-                          <Group justify="space-between">
-                            <Text fw={600}>Estimated LOP Deduction:</Text>
-                            <Text fw={700} c="red">
-                              − ₹ {(perDaySalary * lopDays).toFixed(2)}
-                            </Text>
-                          </Group>
-                        </Card>
-                      )}
-                    </Card>
-                  </Stack>
-                )}
-
-                {/* ================= STEP 3 ================= */}
-                {index === 2 && (
+              {/* ================= STEP 3 ================= */}
+              {index === 2 && (
+                <form onSubmit={handleSubmit(onSubmit)}>
                   <Stack mt="lg" gap="md">
                     <Title order={4}>Salary Slip Summary</Title>
 
@@ -552,7 +644,7 @@ const GenerateSalarySlipReport = () => {
                         <Group justify="space-between">
                           <Text fw={600}>Working Days:</Text>
                           <Text fw={700}>
-                            {(daysInMonth || 0) - (lopDays || 0)}
+                            {Math.max((daysInMonth || 0) - (lopDays || 0), 0)}
                           </Text>
                         </Group>
                       </Stack>
@@ -564,12 +656,39 @@ const GenerateSalarySlipReport = () => {
                       </Title>
 
                       <Stack gap="sm">
-                        {salaryComponents.map((item, index) => (
-                          <Group key={index} justify="space-between">
-                            <Text>{item.label}</Text>
-                            <Text fw={600}>₹ {item.amount || '0.00'}</Text>
+                        <Stack gap="sm">
+                          <Group justify="space-between">
+                            <Text>Basic Salary</Text>
+                            <Text fw={600}>₹ {basic.toFixed(2)}</Text>
                           </Group>
-                        ))}
+
+                          <Group justify="space-between">
+                            <Text>HRA</Text>
+                            <Text fw={600}>
+                              ₹ {((basic * hra) / 100).toFixed(2)}
+                            </Text>
+                          </Group>
+
+                          <Group justify="space-between">
+                            <Text>Special Allowance</Text>
+                            <Text fw={600}>₹ {special.toFixed(2)}</Text>
+                          </Group>
+
+                          <Group justify="space-between">
+                            <Text>Conveyance</Text>
+                            <Text fw={600}>₹ {conveyance.toFixed(2)}</Text>
+                          </Group>
+
+                          <Group justify="space-between">
+                            <Text>Medical</Text>
+                            <Text fw={600}>₹ {medical.toFixed(2)}</Text>
+                          </Group>
+
+                          <Group justify="space-between">
+                            <Text>Other Allowances</Text>
+                            <Text fw={600}>₹ {other.toFixed(2)}</Text>
+                          </Group>
+                        </Stack>
 
                         <Group justify="space-between" pt="sm">
                           <Text fw={600}>Gross Salary:</Text>
@@ -583,6 +702,13 @@ const GenerateSalarySlipReport = () => {
                           </Text>
                         </Group>
 
+                        {extraAllowances.map((item, i) => (
+                          <Group key={i} justify="space-between">
+                            <Text>{item.label}</Text>
+                            <Text fw={600}>₹ {item.amount}</Text>
+                          </Group>
+                        ))}
+
                         <Group
                           justify="space-between"
                           pt="sm"
@@ -595,34 +721,54 @@ const GenerateSalarySlipReport = () => {
                         </Group>
                       </Stack>
                     </Card>
-                  </Stack>
-                )}
-              </Stepper.Step>
-            ))}
-          </Stepper>
 
+                    <Group justify="space-between" mt="xl" pt="md">
+                      <Button
+                        variant="default"
+                        radius="lg"
+                        disabled={activeStep === 0}
+                        onClick={prevStep}
+                      >
+                        Back
+                      </Button>
+
+                      {activeStep === 2 ? (
+                        <Button
+                          type="submit"
+                          color="green"
+                          radius="lg"
+                          loading={isSubmitting || isGenerating}
+                        >
+                          Generate / Download
+                        </Button>
+                      ) : (
+                        <Button type="button" onClick={nextStep}>
+                          {activeStep === 1 ? 'Preview' : 'Next'}
+                        </Button>
+                      )}
+                    </Group>
+                  </Stack>
+                </form>
+              )}
+            </Stepper.Step>
+          ))}
+        </Stepper>
+        {activeStep !== 2 && (
           <Group justify="space-between" mt="xl" pt="md">
             <Button
               variant="default"
+              radius="lg"
               disabled={activeStep === 0}
               onClick={prevStep}
             >
               Back
             </Button>
 
-            {activeStep === 2 ? (
-              <Button
-                type="submit"
-                color="green"
-                loading={isSubmitting || isGenerating}
-              >
-                Generate Salary Slip PDF
-              </Button>
-            ) : (
-              <Button onClick={nextStep}>Next</Button>
-            )}
+            <Button type="button" onClick={nextStep} radius="lg">
+              {activeStep === 1 ? 'Preview' : 'Next'}
+            </Button>
           </Group>
-        </form>
+        )}
       </Card>
     </Container>
   );

@@ -29,16 +29,21 @@ export const generateSalarySlipSchema = z.object({
     .optional()
     .default(0),
 
-  basic: z.string(),
-  allowance: z.string(),
-  deduction: z.string(),
-
-  salaryComponents: z.array(
-    z.object({
-      label: z.string().min(1),
-      amount: z.string().min(1)
-    })
-  )
+  basicSalary: z.number().min(0),
+  hraPercentage: z.number().optional(),
+  specialAllowance: z.number().optional(),
+  conveyanceAllowance: z.number().optional(),
+  medicalAllowance: z.number().optional(),
+  otherAllowances: z.number().optional(),
+  extraAllowances: z
+    .array(
+      z.object({
+        label: z.string().min(1),
+        amount: z.number().min(0)
+      })
+    )
+    .optional()
+    .default([])
 });
 
 export type GenerateSalarySlipForm = z.infer<typeof generateSalarySlipSchema>;
