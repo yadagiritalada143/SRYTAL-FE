@@ -77,7 +77,6 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
           withBorder
           mt="xl"
           style={{
-            backgroundColor: currentThemeConfig.cardBackground,
             color: currentThemeConfig.color,
             borderColor: currentThemeConfig.borderColor
           }}
@@ -139,7 +138,6 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
           radius="md"
           withBorder
           style={{
-            backgroundColor: currentThemeConfig.cardBackground,
             color: currentThemeConfig.color,
             borderColor: currentThemeConfig.borderColor
           }}
@@ -221,7 +219,6 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
           radius="md"
           withBorder
           style={{
-            backgroundColor: currentThemeConfig.cardBackground,
             color: currentThemeConfig.color,
             borderColor: currentThemeConfig.borderColor
           }}
@@ -290,7 +287,6 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                       withBorder
                       radius="md"
                       style={{
-                        backgroundColor: currentThemeConfig.cardBackground,
                         color: currentThemeConfig.color,
                         borderColor: currentThemeConfig.borderColor
                       }}
@@ -321,7 +317,6 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                       withBorder
                       radius="md"
                       style={{
-                        backgroundColor: currentThemeConfig.cardBackground,
                         color: currentThemeConfig.color,
                         borderColor: currentThemeConfig.borderColor
                       }}
@@ -377,7 +372,6 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                     withBorder
                     radius="md"
                     style={{
-                      backgroundColor: currentThemeConfig.cardBackground,
                       color: currentThemeConfig.color,
                       borderColor: currentThemeConfig.borderColor
                     }}
@@ -407,7 +401,6 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                     withBorder
                     radius="md"
                     style={{
-                      backgroundColor: currentThemeConfig.cardBackground,
                       color: currentThemeConfig.color,
                       borderColor: currentThemeConfig.borderColor
                     }}
@@ -442,7 +435,6 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                       withBorder
                       radius="md"
                       style={{
-                        backgroundColor: currentThemeConfig.cardBackground,
                         color: currentThemeConfig.color,
                         borderColor: currentThemeConfig.borderColor
                       }}
@@ -473,7 +465,6 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                       withBorder
                       radius="md"
                       style={{
-                        backgroundColor: currentThemeConfig.cardBackground,
                         color: currentThemeConfig.color,
                         borderColor: currentThemeConfig.borderColor
                       }}
@@ -504,7 +495,6 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                       withBorder
                       radius="md"
                       style={{
-                        backgroundColor: currentThemeConfig.cardBackground,
                         color: currentThemeConfig.color,
                         borderColor: currentThemeConfig.borderColor
                       }}
