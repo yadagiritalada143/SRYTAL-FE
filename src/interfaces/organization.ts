@@ -39,6 +39,13 @@ export interface OrganizationConfig {
           textColor: string;
           hoverColor: string;
         };
+        iconColor: string;
+        accentColor: string;
+        successColor: string;
+        warningColor: string;
+        dangerColor: string;
+        mutedTextColor: string;
+        cardBackground: string;
         colors: {
           primary: string[];
           secondary: string[];
@@ -59,6 +66,13 @@ export interface OrganizationConfig {
           textColor: string;
           hoverColor: string;
         };
+        iconColor: string;
+        accentColor: string;
+        successColor: string;
+        warningColor: string;
+        dangerColor: string;
+        mutedTextColor: string;
+        cardBackground: string;
         colors: {
           primary: string[];
           secondary: string[];
