@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Container,
   Card,
@@ -25,6 +25,10 @@ import {
   generateSalarySlipSchema,
   GenerateSalarySlipForm
 } from '../../../../forms/generate-salary-slip';
+import { useRecoilValue } from 'recoil';
+import { organizationThemeAtom } from '../../../../atoms/organization-atom';
+import { themeAtom } from '../../../../atoms/theme';
+import { useMediaQuery } from '@mantine/hooks';
 
 // Helper function to format ISO date to readable format
 const formatDate = (isoDate: string): string => {
@@ -79,6 +83,13 @@ const GenerateSalarySlipReport = () => {
   const [isLoadingEmployees, setIsLoadingEmployees] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [calculatedDaysInMonth, setCalculatedDaysInMonth] = useState<number>(0);
+  const isDarkTheme = useRecoilValue(themeAtom);
+  const organizationConfig = useRecoilValue(organizationThemeAtom);
+  const currentThemeConfig = useMemo(() => {
+    const orgTheme = organizationConfig.organization_theme;
+    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+  }, [organizationConfig, isDarkTheme]);
+  const isMobile = useMediaQuery('(max-width: 768px)');
 
   const [empDetails, setEmpDetails] = useState({
     empId: '',
@@ -297,13 +308,36 @@ const GenerateSalarySlipReport = () => {
   };
 
   return (
-    <Container size="lg" py="xl">
-      <Card shadow="sm" radius="md" p="xl" withBorder>
+    <Container size="lg" py="xl" px="sm">
+      <Card
+        shadow="sm"
+        radius="md"
+        p={isMobile ? 'md' : 'xl'}
+        withBorder
+        style={{
+          backgroundColor: currentThemeConfig.backgroundColor,
+          color: currentThemeConfig.color
+        }}
+      >
         <Title order={2} ta="center" mb="xl">
           Generate Salary Slip
         </Title>
 
-        <Stepper active={activeStep} mb="xl">
+        <Stepper
+          active={activeStep}
+          size="sm"
+          styles={{
+            stepLabel: {
+              fontSize: '12px',
+              color: currentThemeConfig.color
+            },
+            stepDescription: {
+              fontSize: '11px',
+              color: currentThemeConfig.color,
+              opacity: 0.8
+            }
+          }}
+        >
           {steps.map((step, index) => (
             <Stepper.Step
               key={index}
@@ -316,7 +350,7 @@ const GenerateSalarySlipReport = () => {
                 <Stack mt="lg" gap="lg">
                   <Title order={5}>Employee Information</Title>
                   <Grid>
-                    <Grid.Col span={6}>
+                    <Grid.Col span={{ base: 12, sm: 6 }}>
                       <Select
                         label="Employee ID"
                         placeholder={
@@ -335,7 +369,7 @@ const GenerateSalarySlipReport = () => {
                         error={errors.employeeId?.message}
                       />
                     </Grid.Col>
-                    <Grid.Col span={6}>
+                    <Grid.Col span={{ base: 12, sm: 6 }}>
                       <TextInput
                         label="Employee Name"
                         value={empDetails.empName}
@@ -343,7 +377,7 @@ const GenerateSalarySlipReport = () => {
                       />
                     </Grid.Col>
 
-                    <Grid.Col span={6}>
+                    <Grid.Col span={{ base: 12, sm: 6 }}>
                       <TextInput
                         label="Email"
                         value={empDetails.email}
@@ -351,7 +385,7 @@ const GenerateSalarySlipReport = () => {
                       />
                     </Grid.Col>
 
-                    <Grid.Col span={6}>
+                    <Grid.Col span={{ base: 12, sm: 6 }}>
                       <TextInput
                         label="Designation"
                         value={empDetails.designation}
@@ -359,7 +393,7 @@ const GenerateSalarySlipReport = () => {
                       />
                     </Grid.Col>
 
-                    <Grid.Col span={6}>
+                    <Grid.Col span={{ base: 12, sm: 6 }}>
                       <TextInput
                         label="Date of Birth"
                         value={empDetails.dob}
@@ -373,7 +407,7 @@ const GenerateSalarySlipReport = () => {
                   <Title order={5}>Bank Details</Title>
 
                   <Grid>
-                    <Grid.Col span={6}>
+                    <Grid.Col span={{ base: 12, sm: 6 }}>
                       <TextInput
                         label="Bank Account Number"
                         value={empDetails.bankAccount}
@@ -381,7 +415,7 @@ const GenerateSalarySlipReport = () => {
                       />
                     </Grid.Col>
 
-                    <Grid.Col span={6}>
+                    <Grid.Col span={{ base: 12, sm: 6 }}>
                       <TextInput
                         label="IFSC Code"
                         value={empDetails.ifsc}
@@ -389,7 +423,7 @@ const GenerateSalarySlipReport = () => {
                       />
                     </Grid.Col>
 
-                    <Grid.Col span={6}>
+                    <Grid.Col span={{ base: 12, sm: 6 }}>
                       <TextInput
                         label="PAN Number"
                         value={empDetails.pan}
@@ -455,13 +489,22 @@ const GenerateSalarySlipReport = () => {
               {/* ================= STEP 2 ================= */}
               {index === 1 && (
                 <Stack mt="lg" gap="md">
-                  <Card shadow="sm" radius="md" p="lg" withBorder>
+                  <Card
+                    shadow="sm"
+                    radius="md"
+                    p={isMobile ? 'md' : 'lg'}
+                    withBorder
+                    style={{
+                      backgroundColor: currentThemeConfig.headerBackgroundColor,
+                      color: currentThemeConfig.color
+                    }}
+                  >
                     <Title order={5} mb="md">
                       Earnings
                     </Title>
 
                     <Grid>
-                      <Grid.Col span={6}>
+                      <Grid.Col span={{ base: 12, sm: 6 }}>
                         <TextInput
                           label="Basic Salary"
                           type="number"
@@ -471,7 +514,7 @@ const GenerateSalarySlipReport = () => {
                         />
                       </Grid.Col>
 
-                      <Grid.Col span={6}>
+                      <Grid.Col span={{ base: 12, sm: 6 }}>
                         <TextInput
                           label="HRA (%)"
                           type="number"
@@ -481,7 +524,7 @@ const GenerateSalarySlipReport = () => {
                         />
                       </Grid.Col>
 
-                      <Grid.Col span={6}>
+                      <Grid.Col span={{ base: 12, sm: 6 }}>
                         <TextInput
                           label="Special Allowance"
                           type="number"
@@ -491,7 +534,7 @@ const GenerateSalarySlipReport = () => {
                         />
                       </Grid.Col>
 
-                      <Grid.Col span={6}>
+                      <Grid.Col span={{ base: 12, sm: 6 }}>
                         <TextInput
                           label="Conveyance Allowance"
                           type="number"
@@ -501,7 +544,7 @@ const GenerateSalarySlipReport = () => {
                         />
                       </Grid.Col>
 
-                      <Grid.Col span={6}>
+                      <Grid.Col span={{ base: 12, sm: 6 }}>
                         <TextInput
                           label="Medical Allowance"
                           type="number"
@@ -511,7 +554,7 @@ const GenerateSalarySlipReport = () => {
                         />
                       </Grid.Col>
 
-                      <Grid.Col span={6}>
+                      <Grid.Col span={{ base: 12, sm: 6 }}>
                         <TextInput
                           label="Other Allowances"
                           type="number"
@@ -523,7 +566,16 @@ const GenerateSalarySlipReport = () => {
                     </Grid>
                   </Card>
 
-                  <Card shadow="sm" radius="md" p="lg" withBorder>
+                  <Card
+                    shadow="sm"
+                    radius="md"
+                    p={isMobile ? 'md' : 'lg'}
+                    withBorder
+                    style={{
+                      backgroundColor: currentThemeConfig.headerBackgroundColor,
+                      color: currentThemeConfig.color
+                    }}
+                  >
                     <Group justify="space-between" mb="md">
                       <Title order={6}>Additional Allowances</Title>
 
@@ -567,7 +619,16 @@ const GenerateSalarySlipReport = () => {
                     </Stack>
                   </Card>
 
-                  <Card withBorder p="md" radius="md" shadow="md" bg="green.0">
+                  <Card
+                    withBorder
+                    p="md"
+                    radius="md"
+                    shadow="md"
+                    style={{
+                      backgroundColor: currentThemeConfig.button.color + '20',
+                      color: currentThemeConfig.color
+                    }}
+                  >
                     <Group justify="space-between">
                       <Text fw={600}>Total Earnings:</Text>
                       <Text fw={700} size="lg" c="green">
@@ -575,10 +636,21 @@ const GenerateSalarySlipReport = () => {
                       </Text>
                     </Group>
                     {lopDays > 0 && daysInMonth > 0 && (
-                      <Card withBorder p="sm" bg="red.0">
+                      <Card
+                        withBorder
+                        p="sm"
+                        style={{
+                          backgroundColor:
+                            currentThemeConfig.button.color + '15',
+                          color: currentThemeConfig.color
+                        }}
+                      >
                         <Group justify="space-between">
                           <Text fw={600}>Estimated LOP Deduction:</Text>
-                          <Text fw={700} c="red">
+                          <Text
+                            fw={700}
+                            c={isDarkTheme ? '#ff8787' : '#c92a2a'}
+                          >
                             − ₹ {(perDaySalary * lopDays).toFixed(2)}
                           </Text>
                         </Group>
@@ -597,13 +669,23 @@ const GenerateSalarySlipReport = () => {
                     <Alert
                       icon={<IconAlertCircle />}
                       title="Review Details"
-                      color="blue"
+                      color={isDarkTheme ? 'cyan' : 'blue'}
                     >
-                      Please review all details before generating the salary
-                      slip
+                      <Text c={currentThemeConfig.color} size="sm">
+                        Please review all details before generating the salary
+                        slip
+                      </Text>
                     </Alert>
 
-                    <Card p="md" bg="gray.0" withBorder>
+                    <Card
+                      p="md"
+                      withBorder
+                      style={{
+                        backgroundColor:
+                          currentThemeConfig.headerBackgroundColor,
+                        color: currentThemeConfig.color
+                      }}
+                    >
                       <Stack gap="sm">
                         <Group justify="space-between">
                           <Text fw={600}>Employee:</Text>
@@ -642,7 +724,15 @@ const GenerateSalarySlipReport = () => {
                       </Stack>
                     </Card>
 
-                    <Card p="md" bg="gray.0" withBorder>
+                    <Card
+                      p="md"
+                      withBorder
+                      style={{
+                        backgroundColor:
+                          currentThemeConfig.headerBackgroundColor,
+                        color: currentThemeConfig.color
+                      }}
+                    >
                       <Stack gap="sm">
                         <Group justify="space-between">
                           <Text fw={600}>Total Days:</Text>
@@ -661,7 +751,15 @@ const GenerateSalarySlipReport = () => {
                       </Stack>
                     </Card>
 
-                    <Card p="md" bg="green.0" withBorder>
+                    <Card
+                      p="md"
+                      withBorder
+                      style={{
+                        backgroundColor:
+                          currentThemeConfig.headerBackgroundColor,
+                        color: currentThemeConfig.color
+                      }}
+                    >
                       <Title order={5} mb="sm">
                         Salary Breakdown
                       </Title>
@@ -708,7 +806,10 @@ const GenerateSalarySlipReport = () => {
 
                         <Group justify="space-between">
                           <Text fw={600}>LOP Deduction ({lopDays} days):</Text>
-                          <Text fw={700} c="red">
+                          <Text
+                            fw={700}
+                            c={isDarkTheme ? '#ff8787' : '#c92a2a'}
+                          >
                             − ₹ {lopDeduction.toFixed(2)}
                           </Text>
                         </Group>
@@ -723,7 +824,9 @@ const GenerateSalarySlipReport = () => {
                         <Group
                           justify="space-between"
                           pt="sm"
-                          style={{ borderTop: '1px solid #2f9e44' }}
+                          style={{
+                            borderTop: `1px solid ${currentThemeConfig.button.color}`
+                          }}
                         >
                           <Text fw={700}>Final Payable Salary:</Text>
                           <Text fw={700} size="lg" c="green">
