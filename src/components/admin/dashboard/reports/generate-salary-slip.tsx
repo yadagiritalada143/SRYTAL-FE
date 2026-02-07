@@ -436,13 +436,24 @@ const GenerateSalarySlipReport = () => {
 
                   <Title order={5}>Salary Period</Title>
 
-                  <Grid align="end">
+                  <Grid align="flex-start">
                     <Grid.Col span={4}>
                       <Controller
                         name="selectedMonth"
                         control={control}
                         render={({ field }) => (
                           <MonthPickerInput
+                            styles={{
+                              input: {
+                                backgroundColor:
+                                  currentThemeConfig.headerBackgroundColor,
+                                color: currentThemeConfig.color,
+                                borderColor: currentThemeConfig.borderColor
+                              },
+                              label: {
+                                color: currentThemeConfig.color
+                              }
+                            }}
                             value={
                               field.value
                                 ? field.value instanceof Date
@@ -483,6 +494,12 @@ const GenerateSalarySlipReport = () => {
                       />
                     </Grid.Col>
                   </Grid>
+
+                  <Group justify="flex-end" mt="xl">
+                    <Button onClick={nextStep} radius="lg">
+                      Next
+                    </Button>
+                  </Group>
                 </Stack>
               )}
 
@@ -657,6 +674,16 @@ const GenerateSalarySlipReport = () => {
                       </Card>
                     )}
                   </Card>
+
+                  <Group justify="space-between" mt="xl">
+                    <Button variant="default" radius="lg" onClick={prevStep}>
+                      Back
+                    </Button>
+
+                    <Button onClick={nextStep} radius="lg">
+                      Preview
+                    </Button>
+                  </Group>
                 </Stack>
               )}
 
@@ -837,29 +864,13 @@ const GenerateSalarySlipReport = () => {
                     </Card>
 
                     <Group justify="space-between" mt="xl" pt="md">
-                      <Button
-                        variant="default"
-                        radius="lg"
-                        disabled={activeStep === 0}
-                        onClick={prevStep}
-                      >
+                      <Button variant="default" radius="lg" onClick={prevStep}>
                         Back
                       </Button>
 
-                      {activeStep === 2 ? (
-                        <Button
-                          type="submit"
-                          color="green"
-                          radius="lg"
-                          loading={isSubmitting || isGenerating}
-                        >
-                          Generate / Download
-                        </Button>
-                      ) : (
-                        <Button type="button" onClick={nextStep}>
-                          {activeStep === 1 ? 'Preview' : 'Next'}
-                        </Button>
-                      )}
+                      <Button type="submit" radius="lg">
+                        Generate / Download
+                      </Button>
                     </Group>
                   </Stack>
                 </form>
@@ -867,22 +878,6 @@ const GenerateSalarySlipReport = () => {
             </Stepper.Step>
           ))}
         </Stepper>
-        {activeStep !== 2 && (
-          <Group justify="space-between" mt="xl" pt="md">
-            <Button
-              variant="default"
-              radius="lg"
-              disabled={activeStep === 0}
-              onClick={prevStep}
-            >
-              Back
-            </Button>
-
-            <Button type="button" onClick={nextStep} radius="lg">
-              {activeStep === 1 ? 'Preview' : 'Next'}
-            </Button>
-          </Group>
-        )}
       </Card>
     </Container>
   );
