@@ -403,7 +403,7 @@ const HeadingComponent: React.FC<{
   handleAddEmployee: () => void;
   isMobile?: boolean;
 }> = ({ filteredEmployees = 0, handleAddEmployee, isMobile = false }) => (
-  <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder>
+  <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder mt="xl">
     <Flex
       direction={isMobile ? 'column' : 'row'}
       justify="space-between"

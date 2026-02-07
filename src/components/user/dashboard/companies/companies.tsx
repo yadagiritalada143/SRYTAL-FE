@@ -448,7 +448,7 @@ const HeadingComponent: React.FC<{
   handleAddCompany: () => void;
   isMobile?: boolean;
 }> = ({ filteredCompanies = 0, handleAddCompany, isMobile = false }) => (
-  <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder>
+  <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder mt="xl">
     <Flex
       direction={isMobile ? 'column' : 'row'}
       justify="space-between"

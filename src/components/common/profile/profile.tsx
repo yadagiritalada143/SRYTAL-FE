@@ -25,19 +25,25 @@ import {
   IconBriefcase,
   IconBuildingBank
 } from '@tabler/icons-react';
+import { useMemo } from 'react';
+import { organizationThemeAtom } from '../../../atoms/organization-atom';
+import { useRecoilValue } from 'recoil';
+import { themeAtom } from '../../../atoms/theme';
 
 // Info Item Component
 const InfoItem: React.FC<{
   icon: React.ReactNode;
   label: string;
   value: string | undefined;
+  mutedTextColor: string;
+  iconColor: string;
   isMobile?: boolean;
-}> = ({ icon, label, value, isMobile = false }) => (
+}> = ({ icon, label, value, mutedTextColor, iconColor, isMobile = false }) => (
   <Paper p={isMobile ? 'xs' : 'sm'} withBorder radius="md">
     <Group gap="xs" wrap="nowrap">
-      <div style={{ color: 'var(--mantine-color-blue-6)' }}>{icon}</div>
+      <div style={{ color: iconColor }}>{icon}</div>
       <Stack gap={2} style={{ flex: 1 }}>
-        <Text size="xs" c="dimmed" fw={500}>
+        <Text size="xs" c={mutedTextColor} fw={500}>
           {label}
         </Text>
         <Text size="sm" fw={500} lineClamp={1}>
@@ -49,15 +55,32 @@ const InfoItem: React.FC<{
 );
 
 const Profile = ({ details }: { details: EmployeeInterface }) => {
+  const organizationConfig = useRecoilValue(organizationThemeAtom);
+  const isDarkTheme = useRecoilValue(themeAtom);
   // Responsive breakpoints
   const isMobile = useMediaQuery('(max-width: 768px)');
   const isSmallMobile = useMediaQuery('(max-width: 500px)');
+  const currentThemeConfig = useMemo(() => {
+    const orgTheme = organizationConfig.organization_theme;
+    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+  }, [organizationConfig, isDarkTheme]);
+  console.log('THEME:', currentThemeConfig);
 
   return (
     <Container size="xl" py="md" my="xl" px={isSmallMobile ? 'xs' : 'md'}>
       <Stack gap="md">
         {/* Header Card with Profile Image */}
-        <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder>
+        <Card
+          shadow="sm"
+          p={isMobile ? 'md' : 'lg'}
+          radius="md"
+          withBorder
+          mt="xl"
+          style={{
+            color: currentThemeConfig.color,
+            borderColor: currentThemeConfig.borderColor
+          }}
+        >
           <Stack gap="lg">
             <Group
               justify="space-between"
@@ -82,7 +105,7 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                   {details.employeeId && (
                     <Group gap="xs">
                       <IconId size={16} />
-                      <Text size="sm" c="dimmed">
+                      <Text size="sm" c={currentThemeConfig.mutedTextColor}>
                         {details.employeeId}
                       </Text>
                     </Group>
@@ -109,7 +132,16 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
         </Card>
 
         {/* Basic Information Card */}
-        <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder>
+        <Card
+          shadow="sm"
+          p={isMobile ? 'md' : 'lg'}
+          radius="md"
+          withBorder
+          style={{
+            color: currentThemeConfig.color,
+            borderColor: currentThemeConfig.borderColor
+          }}
+        >
           <Stack gap="md">
             <Text size="lg" fw={600}>
               Basic Information
@@ -118,18 +150,22 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
             <Grid gutter="md">
               <Grid.Col span={{ base: 12, xs: 6, sm: 6, md: 4 }}>
                 <InfoItem
-                  icon={<IconUser size={18} />}
+                  icon={<IconUser size={20} stroke={1.8} />}
                   label="First Name"
                   value={details.firstName}
                   isMobile={isMobile}
+                  mutedTextColor={currentThemeConfig.mutedTextColor}
+                  iconColor={currentThemeConfig.accentColor}
                 />
               </Grid.Col>
               <Grid.Col span={{ base: 12, xs: 6, sm: 6, md: 4 }}>
                 <InfoItem
-                  icon={<IconUser size={18} />}
+                  icon={<IconUser size={20} stroke={1.8} />}
                   label="Last Name"
                   value={details.lastName}
                   isMobile={isMobile}
+                  mutedTextColor={currentThemeConfig.mutedTextColor}
+                  iconColor={currentThemeConfig.accentColor}
                 />
               </Grid.Col>
               <Grid.Col span={{ base: 12, xs: 6, sm: 6, md: 4 }}>
@@ -138,6 +174,8 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                   label="Date of Birth"
                   value={details.dob}
                   isMobile={isMobile}
+                  mutedTextColor={currentThemeConfig.mutedTextColor}
+                  iconColor={currentThemeConfig.accentColor}
                 />
               </Grid.Col>
               <Grid.Col span={{ base: 12, xs: 6, sm: 6, md: 4 }}>
@@ -146,6 +184,8 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                   label="Blood Group"
                   value={details.bloodGroup?.type}
                   isMobile={isMobile}
+                  mutedTextColor={currentThemeConfig.mutedTextColor}
+                  iconColor={currentThemeConfig.accentColor}
                 />
               </Grid.Col>
               <Grid.Col span={{ base: 12, xs: 6, sm: 6, md: 4 }}>
@@ -154,6 +194,8 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                   label="Email"
                   value={details.email}
                   isMobile={isMobile}
+                  mutedTextColor={currentThemeConfig.mutedTextColor}
+                  iconColor={currentThemeConfig.accentColor}
                 />
               </Grid.Col>
               <Grid.Col span={{ base: 12, xs: 6, sm: 6, md: 4 }}>
@@ -162,6 +204,8 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                   label="Mobile"
                   value={details.mobileNumber}
                   isMobile={isMobile}
+                  mutedTextColor={currentThemeConfig.mutedTextColor}
+                  iconColor={currentThemeConfig.accentColor}
                 />
               </Grid.Col>
             </Grid>
@@ -169,10 +213,33 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
         </Card>
 
         {/* Tabbed Information */}
-        <Card shadow="sm" p={0} radius="md" withBorder>
+        <Card
+          shadow="sm"
+          p={0}
+          radius="md"
+          withBorder
+          style={{
+            color: currentThemeConfig.color,
+            borderColor: currentThemeConfig.borderColor
+          }}
+        >
           <Tabs
             defaultValue="employment"
             orientation={isMobile ? 'horizontal' : 'horizontal'}
+            styles={{
+              tab: {
+                color: currentThemeConfig.mutedTextColor
+              },
+              tabLabel: {
+                color: currentThemeConfig.mutedTextColor
+              },
+              tabSection: {
+                color: currentThemeConfig.accentColor
+              },
+              list: {
+                borderColor: currentThemeConfig.borderColor
+              }
+            }}
           >
             <Tabs.List
               p="md"
@@ -184,7 +251,12 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
             >
               <Tabs.Tab
                 value="employment"
-                leftSection={<IconBriefcase size={16} />}
+                leftSection={
+                  <IconBriefcase
+                    size={16}
+                    color={currentThemeConfig.iconColor}
+                  />
+                }
                 w={isMobile ? '50%' : 'auto'}
               >
                 Employment
@@ -210,11 +282,26 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
               <Stack gap="md">
                 <Grid gutter="md">
                   <Grid.Col span={{ base: 12, sm: 6 }}>
-                    <Paper p="md" withBorder radius="md">
+                    <Paper
+                      p="md"
+                      withBorder
+                      radius="md"
+                      style={{
+                        color: currentThemeConfig.color,
+                        borderColor: currentThemeConfig.borderColor
+                      }}
+                    >
                       <Stack gap="xs">
                         <Group gap="xs" align="center">
-                          <IconBriefcase size={16} />
-                          <Text size="xs" c="dimmed" fw={500}>
+                          <IconBriefcase
+                            size={16}
+                            color={currentThemeConfig.iconColor}
+                          />
+                          <Text
+                            size="xs"
+                            c={currentThemeConfig.mutedTextColor}
+                            fw={500}
+                          >
                             Employment Type
                           </Text>
                         </Group>
@@ -225,11 +312,26 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                     </Paper>
                   </Grid.Col>
                   <Grid.Col span={{ base: 12, sm: 6 }}>
-                    <Paper p="md" withBorder radius="md">
+                    <Paper
+                      p="md"
+                      withBorder
+                      radius="md"
+                      style={{
+                        color: currentThemeConfig.color,
+                        borderColor: currentThemeConfig.borderColor
+                      }}
+                    >
                       <Stack gap="xs">
                         <Group gap="xs" align="center">
-                          <IconBriefcase size={16} />
-                          <Text size="xs" c="dimmed" fw={500}>
+                          <IconBriefcase
+                            size={16}
+                            color={currentThemeConfig.iconColor}
+                          />
+                          <Text
+                            size="xs"
+                            c={currentThemeConfig.mutedTextColor}
+                            fw={500}
+                          >
                             Designations
                           </Text>
                         </Group>
@@ -247,7 +349,10 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                               </Badge>
                             ))
                           ) : (
-                            <Text size="sm" c="dimmed">
+                            <Text
+                              size="sm"
+                              c={currentThemeConfig.mutedTextColor}
+                            >
                               N/A
                             </Text>
                           )}
@@ -262,14 +367,26 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
             <Tabs.Panel value="address" p={isMobile ? 'md' : 'lg'}>
               <Grid>
                 <Grid.Col span={{ base: 12, sm: 6 }}>
-                  <Paper p="md" withBorder radius="md">
+                  <Paper
+                    p="md"
+                    withBorder
+                    radius="md"
+                    style={{
+                      color: currentThemeConfig.color,
+                      borderColor: currentThemeConfig.borderColor
+                    }}
+                  >
                     <Stack gap="xs">
                       <Group gap="xs">
                         <IconMapPin
                           size={18}
-                          color="var(--mantine-color-blue-6)"
+                          color={currentThemeConfig.iconColor}
                         />
-                        <Text size="sm" fw={600} c="dimmed">
+                        <Text
+                          size="sm"
+                          fw={600}
+                          c={currentThemeConfig.mutedTextColor}
+                        >
                           Present Address
                         </Text>
                       </Group>
@@ -279,14 +396,26 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                 </Grid.Col>
 
                 <Grid.Col span={{ base: 12, sm: 6 }}>
-                  <Paper p="md" withBorder radius="md">
+                  <Paper
+                    p="md"
+                    withBorder
+                    radius="md"
+                    style={{
+                      color: currentThemeConfig.color,
+                      borderColor: currentThemeConfig.borderColor
+                    }}
+                  >
                     <Stack gap="xs">
                       <Group gap="xs">
                         <IconMapPin
                           size={18}
-                          color="var(--mantine-color-green-6)"
+                          color={currentThemeConfig.successColor}
                         />
-                        <Text size="sm" fw={600} c="dimmed">
+                        <Text
+                          size="sm"
+                          fw={600}
+                          c={currentThemeConfig.mutedTextColor}
+                        >
                           Permanent Address
                         </Text>
                       </Group>
@@ -301,11 +430,26 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
               <Stack gap="md">
                 <Grid gutter="md">
                   <Grid.Col span={{ base: 12, sm: 6 }}>
-                    <Paper p="md" withBorder radius="md">
+                    <Paper
+                      p="md"
+                      withBorder
+                      radius="md"
+                      style={{
+                        color: currentThemeConfig.color,
+                        borderColor: currentThemeConfig.borderColor
+                      }}
+                    >
                       <Stack gap="xs">
                         <Group gap="xs" align="center">
-                          <IconBuildingBank size={16} />
-                          <Text size="xs" c="dimmed" fw={500}>
+                          <IconBuildingBank
+                            size={16}
+                            color={currentThemeConfig.iconColor}
+                          />
+                          <Text
+                            size="xs"
+                            c={currentThemeConfig.mutedTextColor}
+                            fw={500}
+                          >
                             Account Number
                           </Text>
                         </Group>
@@ -316,11 +460,26 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                     </Paper>
                   </Grid.Col>
                   <Grid.Col span={{ base: 12, sm: 6 }}>
-                    <Paper p="md" withBorder radius="md">
+                    <Paper
+                      p="md"
+                      withBorder
+                      radius="md"
+                      style={{
+                        color: currentThemeConfig.color,
+                        borderColor: currentThemeConfig.borderColor
+                      }}
+                    >
                       <Stack gap="xs">
                         <Group gap="xs" align="center">
-                          <IconUser size={16} />
-                          <Text size="xs" c="dimmed" fw={500}>
+                          <IconUser
+                            size={16}
+                            color={currentThemeConfig.iconColor}
+                          />
+                          <Text
+                            size="xs"
+                            c={currentThemeConfig.mutedTextColor}
+                            fw={500}
+                          >
                             Account Holder Name
                           </Text>
                         </Group>
@@ -331,11 +490,26 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                     </Paper>
                   </Grid.Col>
                   <Grid.Col span={{ base: 12, sm: 6 }}>
-                    <Paper p="md" withBorder radius="md">
+                    <Paper
+                      p="md"
+                      withBorder
+                      radius="md"
+                      style={{
+                        color: currentThemeConfig.color,
+                        borderColor: currentThemeConfig.borderColor
+                      }}
+                    >
                       <Stack gap="xs">
                         <Group gap="xs" align="center">
-                          <IconBuildingBank size={16} />
-                          <Text size="xs" c="dimmed" fw={500}>
+                          <IconBuildingBank
+                            size={16}
+                            color={currentThemeConfig.iconColor}
+                          />
+                          <Text
+                            size="xs"
+                            c={currentThemeConfig.mutedTextColor}
+                            fw={500}
+                          >
                             IFSC Code
                           </Text>
                         </Group>

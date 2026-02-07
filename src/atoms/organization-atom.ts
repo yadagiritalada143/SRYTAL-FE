@@ -61,6 +61,13 @@ export const organizationThemeAtom = atom<OrganizationConfig>({
             textColor: '#ffffff',
             hoverColor: '#23272b'
           },
+          iconColor: '#74c0fc',
+          accentColor: '#4dabf7',
+          successColor: '#69db7c',
+          warningColor: '#ffd43b',
+          dangerColor: '#ff8787',
+          mutedTextColor: '#adb5bd',
+          cardBackground: '#23272b',
           colors: {
             primary: [
               '#343a40',
@@ -102,6 +109,13 @@ export const organizationThemeAtom = atom<OrganizationConfig>({
             textColor: '#ffffff',
             hoverColor: '#343a40'
           },
+          iconColor: '#228be6',
+          accentColor: '#1c7ed6',
+          successColor: '#2f9e44',
+          warningColor: '#f08c00',
+          dangerColor: '#c92a2a',
+          mutedTextColor: '#6c757d',
+          cardBackground: '#f8f9fa',
           colors: {
             primary: [
               '#495057',
