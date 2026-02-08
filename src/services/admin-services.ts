@@ -706,3 +706,27 @@ export const updateEmployeePackageByAdmin = async ({
     throw error;
   }
 };
+export const previewSalarySlip = async (data: any) => {
+  const token = localStorage.getItem('token');
+  try {
+    const response = await apiClient.post('/admin/previewSalarySlip', data, {
+      headers: { auth_token: token },
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const generateSalarySlip = async (data: any) => {
+  const token = localStorage.getItem('token');
+  try {
+    const response = await apiClient.post('/admin/generateSalarySlip', data, {
+      headers: { auth_token: token },
+      responseType: 'blob'
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};

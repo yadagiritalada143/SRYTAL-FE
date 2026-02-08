@@ -20,15 +20,18 @@ import { MonthPickerInput } from '@mantine/dates';
 import '@mantine/dates/styles.css';
 import { toast } from 'react-toastify';
 import { IconAlertCircle } from '@tabler/icons-react';
-import { getAllEmployeeDetailsByAdmin } from '../../../../services/admin-services';
+import { getAllEmployeeDetailsByAdmin, generateSalarySlip } from '../../../../services/admin-services';
 import {
   generateSalarySlipSchema,
   GenerateSalarySlipForm
 } from '../../../../forms/generate-salary-slip';
+import { previewSalarySlip } from '../../../../services/admin-services';
+import { PreviewSalarySlipResponse } from '../../../../interfaces/salary-slip';
 import { useRecoilValue } from 'recoil';
 import { organizationThemeAtom } from '../../../../atoms/organization-atom';
 import { themeAtom } from '../../../../atoms/theme';
 import { useMediaQuery } from '@mantine/hooks';
+import { useCustomToast } from '../../../../utils/common/toast';
 
 // Helper function to format ISO date to readable format
 const formatDate = (isoDate: string): string => {
@@ -95,12 +98,21 @@ const GenerateSalarySlipReport = () => {
     empId: '',
     empName: '',
     designation: '',
+    department: 'Engineering',
+    doj: '',
     email: '',
     dob: '',
     bankAccount: '',
     ifsc: '',
-    pan: ''
+    bankName: 'HDFC Bank',
+    pan: '',
+    uan: '000000000000'
   });
+
+  const [previewData, setPreviewData] = useState<PreviewSalarySlipResponse | null>(null);
+  const [isPreviewLoading, setIsPreviewLoading] = useState(false);
+ const [generatedPdf, setGeneratedPdf] = useState<Blob | null>(null);
+  const { showSuccessToast } = useCustomToast();
 
   const {
     register,
@@ -124,7 +136,7 @@ const GenerateSalarySlipReport = () => {
       conveyanceAllowance: 0,
       medicalAllowance: 0,
       otherAllowances: 0,
-      extraAllowances: []
+      additionalAllowances: []
     }
   });
   const selectedMonth = watch('selectedMonth');
@@ -137,17 +149,36 @@ const GenerateSalarySlipReport = () => {
   const conveyance = watch('conveyanceAllowance') || 0;
   const medical = watch('medicalAllowance') || 0;
   const other = watch('otherAllowances') || 0;
-  const extraAllowances = watch('extraAllowances') || [];
+  // Watch all form values to detect changes
+  const allValues = watch();
 
-  const extraTotal = extraAllowances.reduce(
-    (sum, item) => sum + (item.amount || 0),
+  useEffect(() => {
+     if (generatedPdf) {
+         setGeneratedPdf(null);
+     }
+  }, [JSON.stringify(allValues)]);
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: 'additionalAllowances'
+  });
+
+  const additionalAllowances = watch('additionalAllowances') || [];
+
+  const additionalTotal = additionalAllowances.reduce(
+    (sum: number, item: any) => {
+        if (item.type === 'deduct') {
+            return sum - (item.amount || 0);
+        }
+        return sum + (item.amount || 0);
+    },
     0
   );
 
   const hraAmount = (basic * hra) / 100;
 
   const grossSalary =
-    basic + hraAmount + special + conveyance + medical + other + extraTotal;
+      basic + hraAmount + special + conveyance + medical + other + additionalTotal;
 
   const perDaySalary =
     daysInMonth && daysInMonth > 0 ? grossSalary / daysInMonth : 0;
@@ -157,10 +188,6 @@ const GenerateSalarySlipReport = () => {
   const netPayableSalary = grossSalary - lopDeduction;
   const finalSalary = Math.max(netPayableSalary, 0);
 
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: 'extraAllowances'
-  });
 
   // Fetch Employees List
   useEffect(() => {
@@ -188,11 +215,15 @@ const GenerateSalarySlipReport = () => {
         empId: '',
         empName: '',
         designation: '',
+        department: 'Engineering',
+        doj: '',
         email: '',
         dob: '',
         bankAccount: '',
         ifsc: '',
-        pan: ''
+        bankName: 'HDFC Bank',
+        pan: '',
+        uan: '000000000000'
       });
       return;
     }
@@ -208,11 +239,15 @@ const GenerateSalarySlipReport = () => {
       empName:
         selectedEmployee.firstName + ' ' + (selectedEmployee.lastName || ''),
       designation: selectedEmployee.employeeRole?.[0]?.designation || '',
+      department: 'Engineering', // TODO: Fetch from employee details if available
+      doj: '2024-01-15', // TODO: Fetch from employee details if available
       email: selectedEmployee.email || '',
       dob: formatDate(selectedEmployee.dateOfBirth || ''),
       bankAccount: selectedEmployee.bankDetailsInfo?.accountNumber || '',
       ifsc: selectedEmployee.bankDetailsInfo?.ifscCode || '',
-      pan: selectedEmployee.panNumber || ''
+      bankName: 'HDFC Bank', // TODO: Fetch
+      pan: selectedEmployee.panNumber || '',
+      uan: '000000000000' // TODO: Fetch
     });
   };
 
@@ -237,9 +272,62 @@ const GenerateSalarySlipReport = () => {
     if (activeStep === 0) {
       const isValid = await trigger(['employeeId', 'selectedMonth']);
       if (!isValid) return;
-    }
+      setActiveStep(current => (current < 2 ? current + 1 : current));
+    } else if (activeStep === 1) {
+      try {
+        setIsPreviewLoading(true);
+        const values = watch();
 
-    setActiveStep(current => (current < 2 ? current + 1 : current));
+        const monthNames = ["January", "February", "March", "April", "May", "June",
+          "July", "August", "September", "October", "November", "December"];
+        const d = values.selectedMonth instanceof Date ? values.selectedMonth : new Date(values.selectedMonth);
+        const payPeriod = `${monthNames[d.getMonth()]} ${d.getFullYear()}`;
+
+        const payload = {
+          employeeId: values.employeeId,
+          employeeName: empDetails.empName,
+          designation: empDetails.designation,
+          department: empDetails.department,
+          dateOfJoining: empDetails.doj,
+          payPeriod: payPeriod,
+          payDate: new Date().toISOString().split('T')[0],
+          bankName: empDetails.bankName,
+          IFSCCODE: empDetails.ifsc,
+          bankAccountNumber: empDetails.bankAccount,
+          transactionType: 'NEFT',
+          transactionId: "TBD",
+          panNumber: empDetails.pan,
+          uanNumber: empDetails.uan,
+
+          totalWorkingDays: values.daysInMonth,
+          daysWorked: values.daysInMonth - (values.lopDays || 0),
+          lossOfPayDays: values.lopDays,
+
+          basicSalary: values.basicSalary,
+          hraPercentage: values.hraPercentage,
+          specialAllowance: values.specialAllowance,
+          conveyanceAllowance: values.conveyanceAllowance,
+          medicalAllowance: values.medicalAllowance,
+          otherAllowances: values.otherAllowances,
+          additionalAllowances: values.additionalAllowances,
+          pfPercentage: 0,
+          professionalTax: 0,
+          incomeTax: 0,
+          otherDeductions: 0
+        };
+
+
+        const response = await previewSalarySlip(payload);
+        setPreviewData(response);
+        setActiveStep(current => (current < 2 ? current + 1 : current));
+      } catch (error: any) {
+        toast.error(error?.response?.data?.message || 'Failed to fetch salary slip preview');
+      } finally {
+        setIsPreviewLoading(false);
+      }
+    } else {
+      setActiveStep(current => (current < 2 ? current + 1 : current));
+    }
   };
 
   const prevStep = () =>
@@ -252,18 +340,26 @@ const GenerateSalarySlipReport = () => {
         toast.error('LOP days cannot exceed total days');
         return;
       }
+      const monthNames = ["January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"];
+      const d = data.selectedMonth instanceof Date ? data.selectedMonth : new Date(data.selectedMonth);
+      const payPeriod = `${monthNames[d.getMonth()]} ${d.getFullYear()}`;
+
       const payload = {
         employeeId: data.employeeId,
         employeeName: empDetails.empName,
         designation: empDetails.designation,
-        panNumber: empDetails.pan,
-
-        payPeriod: data.selectedMonth.toISOString(),
-        payDate: new Date().toISOString(),
-
-        bankAccountNumber: empDetails.bankAccount,
+        department: empDetails.department,
+        dateOfJoining: empDetails.doj,
+        payPeriod: payPeriod,
+        payDate: new Date().toISOString().split('T')[0],
+        bankName: empDetails.bankName,
         IFSCCODE: empDetails.ifsc,
-        transactionType: 'Bank Transfer',
+        bankAccountNumber: empDetails.bankAccount,
+        transactionType: 'NEFT',
+        transactionId: "TBD",
+        panNumber: empDetails.pan,
+        uanNumber: empDetails.uan,
 
         totalWorkingDays: data.daysInMonth,
         daysWorked: data.daysInMonth - (data.lopDays || 0),
@@ -274,25 +370,23 @@ const GenerateSalarySlipReport = () => {
         specialAllowance: data.specialAllowance,
         conveyanceAllowance: data.conveyanceAllowance,
         medicalAllowance: data.medicalAllowance,
-        otherAllowances: data.otherAllowances
+        otherAllowances: data.otherAllowances,
+        additionalAllowances: data.additionalAllowances,
+        pfPercentage: 0,
+        professionalTax: 0,
+        incomeTax: 0,
+        otherDeductions: 0
       };
 
-      toast.success('Salary slip generated successfully!');
-      reset();
-      setEmpDetails({
-        empId: '',
-        empName: '',
-        designation: '',
-        email: '',
-        dob: '',
-        bankAccount: '',
-        ifsc: '',
-        pan: ''
-      });
-      setCalculatedDaysInMonth(0);
-      setActiveStep(0);
+      const response = await generateSalarySlip(payload);
+      if (response instanceof Blob) {
+        setGeneratedPdf(response);
+        showSuccessToast('Salary slip generated successfully!');
+      } else {
+        throw new Error('Invalid PDF data');
+      }
     } catch (error: any) {
-      toast.error(error.message || 'Failed to generate salary slip');
+      toast.error(error.response?.data?.message || error.message || 'Failed to generate salary slip');
     } finally {
       setIsGenerating(false);
     }
@@ -525,6 +619,11 @@ const GenerateSalarySlipReport = () => {
                         <TextInput
                           label="Basic Salary"
                           type="number"
+                          onKeyDown={(e) => {
+                              if (["e", "E", "+", "-"].includes(e.key)) {
+                                  e.preventDefault();
+                              }
+                          }}
                           {...register('basicSalary', {
                             valueAsNumber: true
                           })}
@@ -535,6 +634,11 @@ const GenerateSalarySlipReport = () => {
                         <TextInput
                           label="HRA (%)"
                           type="number"
+                          onKeyDown={(e) => {
+                              if (["e", "E", "+", "-"].includes(e.key)) {
+                                  e.preventDefault();
+                              }
+                          }}
                           {...register('hraPercentage', {
                             valueAsNumber: true
                           })}
@@ -545,6 +649,11 @@ const GenerateSalarySlipReport = () => {
                         <TextInput
                           label="Special Allowance"
                           type="number"
+                          onKeyDown={(e) => {
+                              if (["e", "E", "+", "-"].includes(e.key)) {
+                                  e.preventDefault();
+                              }
+                          }}
                           {...register('specialAllowance', {
                             valueAsNumber: true
                           })}
@@ -555,6 +664,11 @@ const GenerateSalarySlipReport = () => {
                         <TextInput
                           label="Conveyance Allowance"
                           type="number"
+                          onKeyDown={(e) => {
+                              if (["e", "E", "+", "-"].includes(e.key)) {
+                                  e.preventDefault();
+                              }
+                          }}
                           {...register('conveyanceAllowance', {
                             valueAsNumber: true
                           })}
@@ -565,6 +679,11 @@ const GenerateSalarySlipReport = () => {
                         <TextInput
                           label="Medical Allowance"
                           type="number"
+                          onKeyDown={(e) => {
+                              if (["e", "E", "+", "-"].includes(e.key)) {
+                                  e.preventDefault();
+                              }
+                          }}
                           {...register('medicalAllowance', {
                             valueAsNumber: true
                           })}
@@ -575,6 +694,11 @@ const GenerateSalarySlipReport = () => {
                         <TextInput
                           label="Other Allowances"
                           type="number"
+                          onKeyDown={(e) => {
+                              if (["e", "E", "+", "-"].includes(e.key)) {
+                                  e.preventDefault();
+                              }
+                          }}
                           {...register('otherAllowances', {
                             valueAsNumber: true
                           })}
@@ -600,40 +724,62 @@ const GenerateSalarySlipReport = () => {
                         type="button"
                         variant="light"
                         radius="lg"
-                        onClick={() => append({ label: '', amount: 0 })}
+                        onClick={() => append({ label: '', amount: 0, type: 'add' })}
                       >
                         + Add More
                       </Button>
                     </Group>
 
-                    <Stack>
-                      {fields.map((field, index) => (
-                        <Group key={field.id} grow>
-                          <TextInput
-                            placeholder="Allowance Name"
-                            {...register(`extraAllowances.${index}.label`)}
-                          />
-
-                          <TextInput
-                            type="number"
-                            placeholder="Amount"
-                            {...register(`extraAllowances.${index}.amount`, {
-                              valueAsNumber: true
-                            })}
-                          />
-
-                          <Button
-                            type="button"
-                            color="red"
-                            radius="md"
-                            variant="subtle"
-                            onClick={() => remove(index)}
-                          >
-                            Remove
-                          </Button>
-                        </Group>
-                      ))}
-                    </Stack>
+                      <Stack>
+                        {fields.map((field, index) => (
+                          <Group key={field.id} grow>
+                            <Grid grow>
+                                <Grid.Col span={4}>
+                                    <TextInput
+                                      placeholder="Allowance Name"
+                                      {...register(`additionalAllowances.${index}.label`)}
+                                    />
+                                </Grid.Col>
+                                <Grid.Col span={3}>
+                                    <TextInput
+                                      type="number"
+                                      placeholder="Amount"
+                                      onKeyDown={(e) => {
+                                          if (["e", "E", "+", "-"].includes(e.key)) {
+                                              e.preventDefault();
+                                          }
+                                      }}
+                                      {...register(`additionalAllowances.${index}.amount`, {
+                                        valueAsNumber: true
+                                      })}
+                                    />
+                                </Grid.Col>
+                                <Grid.Col span={3}>
+                                    <Select
+                                        data={[
+                                            { value: 'add', label: 'Add' },
+                                            { value: 'deduct', label: 'Deduct' }
+                                        ]}
+                                        {...register(`additionalAllowances.${index}.type`)}
+                                        defaultValue="add"
+                                        onChange={(value) => setValue(`additionalAllowances.${index}.type`, value as 'add' | 'deduct')}
+                                    />
+                                </Grid.Col>
+                                <Grid.Col span={2}>
+                                    <Button
+                                      type="button"
+                                      color="red"
+                                      radius="md"
+                                      variant="subtle"
+                                      onClick={() => remove(index)}
+                                    >
+                                      Remove
+                                    </Button>
+                                </Grid.Col>
+                            </Grid>
+                          </Group>
+                        ))}
+                      </Stack>
                   </Card>
 
                   <Card
@@ -680,7 +826,7 @@ const GenerateSalarySlipReport = () => {
                       Back
                     </Button>
 
-                    <Button onClick={nextStep} radius="lg">
+                    <Button loading={isPreviewLoading} onClick={nextStep} radius="lg">
                       Preview
                     </Button>
                   </Group>
@@ -765,6 +911,7 @@ const GenerateSalarySlipReport = () => {
                           <Text fw={600}>Total Days:</Text>
                           <Text>{daysInMonth}</Text>
                         </Group>
+
                         <Group justify="space-between">
                           <Text fw={600}>LOP Days:</Text>
                           <Text>{lopDays}</Text>
@@ -795,40 +942,42 @@ const GenerateSalarySlipReport = () => {
                         <Stack gap="sm">
                           <Group justify="space-between">
                             <Text>Basic Salary</Text>
-                            <Text fw={600}>₹ {basic.toFixed(2)}</Text>
+                            <Text fw={600}>₹ {(previewData?.data?.calculations?.basicSalary ?? basic).toFixed(2)}</Text>
                           </Group>
 
                           <Group justify="space-between">
                             <Text>HRA</Text>
                             <Text fw={600}>
-                              ₹ {((basic * hra) / 100).toFixed(2)}
+                              ₹ {(previewData?.data?.calculations?.hra ?? ((basic * hra) / 100)).toFixed(2)}
                             </Text>
                           </Group>
 
                           <Group justify="space-between">
                             <Text>Special Allowance</Text>
-                            <Text fw={600}>₹ {special.toFixed(2)}</Text>
+                            <Text fw={600}>₹ {(previewData?.data?.calculations?.specialAllowance ?? special).toFixed(2)}</Text>
                           </Group>
 
                           <Group justify="space-between">
                             <Text>Conveyance</Text>
-                            <Text fw={600}>₹ {conveyance.toFixed(2)}</Text>
+                            <Text fw={600}>₹ {(previewData?.data?.calculations?.conveyanceAllowance ?? conveyance).toFixed(2)}</Text>
                           </Group>
 
                           <Group justify="space-between">
                             <Text>Medical</Text>
-                            <Text fw={600}>₹ {medical.toFixed(2)}</Text>
+                            <Text fw={600}>₹ {(previewData?.data?.calculations?.medicalAllowance ?? medical).toFixed(2)}</Text>
                           </Group>
 
                           <Group justify="space-between">
                             <Text>Other Allowances</Text>
-                            <Text fw={600}>₹ {other.toFixed(2)}</Text>
+                            <Text fw={600}>₹ {(previewData?.data?.calculations?.otherAllowances ?? other).toFixed(2)}</Text>
                           </Group>
                         </Stack>
 
                         <Group justify="space-between" pt="sm">
                           <Text fw={600}>Gross Salary:</Text>
-                          <Text fw={700}>₹ {grossSalary.toFixed(2)}</Text>
+                          <Text fw={700}>
+                            ₹ {(previewData?.data?.calculations?.grossEarnings ?? grossSalary).toFixed(2)}
+                          </Text>
                         </Group>
 
                         <Group justify="space-between">
@@ -841,10 +990,44 @@ const GenerateSalarySlipReport = () => {
                           </Text>
                         </Group>
 
-                        {extraAllowances.map((item, i) => (
+                        {/* Deductions Section */}
+                        {(previewData?.data?.calculations) ? (
+                          <>
+
+                             {previewData.data.calculations.providentFund > 0 && (
+                               <Group justify="space-between">
+                                 <Text>PF</Text>
+                                 <Text fw={600} c="red">− ₹ {previewData.data.calculations.providentFund.toFixed(2)}</Text>
+                               </Group>
+                             )}
+                             {previewData.data.calculations.professionalTax > 0 && (
+                               <Group justify="space-between">
+                                 <Text>Professional Tax</Text>
+                                 <Text fw={600} c="red">− ₹ {previewData.data.calculations.professionalTax.toFixed(2)}</Text>
+                               </Group>
+                             )}
+                             {previewData.data.calculations.incomeTax > 0 && (
+                               <Group justify="space-between">
+                                 <Text>Income Tax</Text>
+                                 <Text fw={600} c="red">− ₹ {previewData.data.calculations.incomeTax.toFixed(2)}</Text>
+                               </Group>
+                             )}
+                             {previewData.data.calculations.otherDeductions > 0 && (
+                               <Group justify="space-between">
+                                 <Text>Other Deductions</Text>
+                                 <Text fw={600} c="red">− ₹ {previewData.data.calculations.otherDeductions.toFixed(2)}</Text>
+                               </Group>
+                             )}
+                          </>
+                        ) : null}
+
+                        {/* Extra allowances from local state are likely already included in 'otherAllowances' in API response */}
+                        {!previewData && additionalAllowances.map((item, i) => (
                           <Group key={i} justify="space-between">
-                            <Text>{item.label}</Text>
-                            <Text fw={600}>₹ {item.amount}</Text>
+                            <Text>{item.label} ({item.type === 'deduct' ? '-' : '+'})</Text>
+                            <Text fw={600} c={item.type === 'deduct' ? 'red' : 'inherit'}>
+                                {item.type === 'deduct' ? '− ' : ''}₹ {item.amount}
+                            </Text>
                           </Group>
                         ))}
 
@@ -857,7 +1040,7 @@ const GenerateSalarySlipReport = () => {
                         >
                           <Text fw={700}>Final Payable Salary:</Text>
                           <Text fw={700} size="lg" c="green">
-                            ₹ {finalSalary.toFixed(2)}
+                            ₹ {(previewData?.data?.calculations?.netPay ?? 0).toFixed(2)}
                           </Text>
                         </Group>
                       </Stack>
@@ -868,9 +1051,42 @@ const GenerateSalarySlipReport = () => {
                         Back
                       </Button>
 
-                      <Button type="submit" radius="lg">
-                        Generate / Download
-                      </Button>
+                      {!generatedPdf ? (
+                        <Button type="submit" radius="lg" loading={isGenerating}>
+                          Generate
+                        </Button>
+                      ) : (
+                        <Button
+                          color="green"
+                          radius="lg"
+                          type="button"
+                          onClick={() => {
+                              if (!generatedPdf) return;
+
+                              try {
+                                const url = window.URL.createObjectURL(generatedPdf);
+                                const link = document.createElement('a');
+
+                                link.href = url;
+                                link.download = `SalarySlip_${empDetails.empId}_${
+                                  selectedMonth instanceof Date
+                                    ? selectedMonth.toISOString().slice(0, 7)
+                                    : new Date().toISOString().slice(0, 7)
+                                }.pdf`;
+
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                                window.URL.revokeObjectURL(url);
+                              } catch (error) {
+                                console.error('Download failed', error);
+                                toast.error('Failed to download PDF');
+                              }
+                            }}
+                        >
+                          Download PDF
+                        </Button>
+                      )}
                     </Group>
                   </Stack>
                 </form>
