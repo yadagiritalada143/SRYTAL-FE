@@ -93,15 +93,18 @@ type Employee = {
 
 const steps = [
   {
-    label: 'Employee Details',
+    label: 'Fill Details',
+    description: 'Employee Info',
     enabled: true
   },
   {
-    label: 'Salary Calculation',
+    label: 'Calculation',
+    description: 'Salary Breakdown',
     enabled: true
   },
   {
-    label: 'Review & Generate',
+    label: 'Generate',
+    description: 'Review & Generate',
     enabled: true
   }
 ];
@@ -489,9 +492,14 @@ const GenerateSalarySlipReport = () => {
               fontSize: '12px',
               color: currentThemeConfig.color
             },
+            stepDescription: {
+              fontSize: '11px',
+              color: currentThemeConfig.color,
+              opacity: 0.8
+            },
             separator: {
               height: 2,
-              backgroundColor: currentThemeConfig.color
+              backgroundColor: currentThemeConfig.button.color
             }
           }}
         >
@@ -499,6 +507,7 @@ const GenerateSalarySlipReport = () => {
             <Stepper.Step
               key={index}
               label={step.label}
+              description={step.description}
               allowStepSelect={step.enabled}
             >
               {/* ================= STEP 1 ================= */}
