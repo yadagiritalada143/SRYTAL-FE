@@ -20,7 +20,10 @@ import { MonthPickerInput } from '@mantine/dates';
 import '@mantine/dates/styles.css';
 import { toast } from 'react-toastify';
 import { IconAlertCircle } from '@tabler/icons-react';
-import { getAllEmployeeDetailsByAdmin, generateSalarySlip } from '../../../../services/admin-services';
+import {
+  getAllEmployeeDetailsByAdmin,
+  generateSalarySlip
+} from '../../../../services/admin-services';
 import {
   generateSalarySlipSchema,
   GenerateSalarySlipForm
@@ -32,6 +35,32 @@ import { organizationThemeAtom } from '../../../../atoms/organization-atom';
 import { themeAtom } from '../../../../atoms/theme';
 import { useMediaQuery } from '@mantine/hooks';
 import { useCustomToast } from '../../../../utils/common/toast';
+
+type ReadOnlyFieldProps = {
+  label: string;
+  value?: string | number | null;
+  color?: string;
+  error?: string;
+};
+
+const ReadOnlyField = ({ label, value, color, error }: ReadOnlyFieldProps) => {
+  return (
+    <TextInput
+      label={label}
+      value={value ?? ''}
+      disabled
+      error={error}
+      styles={{
+        input: {
+          backgroundColor: 'transparent',
+          border: 'none',
+          paddingLeft: '10px',
+          color: color
+        }
+      }}
+    />
+  );
+};
 
 // Helper function to format ISO date to readable format
 const formatDate = (isoDate: string): string => {
@@ -106,12 +135,13 @@ const GenerateSalarySlipReport = () => {
     ifsc: '',
     bankName: 'HDFC Bank',
     pan: '',
-    uan: '000000000000'
+    uan: 'N/A'
   });
 
-  const [previewData, setPreviewData] = useState<PreviewSalarySlipResponse | null>(null);
+  const [previewData, setPreviewData] =
+    useState<PreviewSalarySlipResponse | null>(null);
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
- const [generatedPdf, setGeneratedPdf] = useState<Blob | null>(null);
+  const [generatedPdf, setGeneratedPdf] = useState<Blob | null>(null);
   const { showSuccessToast } = useCustomToast();
 
   const {
@@ -121,8 +151,7 @@ const GenerateSalarySlipReport = () => {
     watch,
     trigger,
     setValue,
-    formState: { errors, isSubmitting },
-    reset
+    formState: { errors, isSubmitting }
   } = useForm<GenerateSalarySlipForm>({
     resolver: zodResolver(generateSalarySlipSchema),
     defaultValues: {
@@ -153,9 +182,9 @@ const GenerateSalarySlipReport = () => {
   const allValues = watch();
 
   useEffect(() => {
-     if (generatedPdf) {
-         setGeneratedPdf(null);
-     }
+    if (generatedPdf) {
+      setGeneratedPdf(null);
+    }
   }, [JSON.stringify(allValues)]);
 
   const { fields, append, remove } = useFieldArray({
@@ -167,10 +196,10 @@ const GenerateSalarySlipReport = () => {
 
   const additionalTotal = additionalAllowances.reduce(
     (sum: number, item: any) => {
-        if (item.type === 'deduct') {
-            return sum - (item.amount || 0);
-        }
-        return sum + (item.amount || 0);
+      if (item.type === 'deduct') {
+        return sum - (item.amount || 0);
+      }
+      return sum + (item.amount || 0);
     },
     0
   );
@@ -178,16 +207,18 @@ const GenerateSalarySlipReport = () => {
   const hraAmount = (basic * hra) / 100;
 
   const grossSalary =
-      basic + hraAmount + special + conveyance + medical + other + additionalTotal;
+    basic +
+    hraAmount +
+    special +
+    conveyance +
+    medical +
+    other +
+    additionalTotal;
 
   const perDaySalary =
     daysInMonth && daysInMonth > 0 ? grossSalary / daysInMonth : 0;
 
   const lopDeduction = lopDays && lopDays > 0 ? perDaySalary * lopDays : 0;
-
-  const netPayableSalary = grossSalary - lopDeduction;
-  const finalSalary = Math.max(netPayableSalary, 0);
-
 
   // Fetch Employees List
   useEffect(() => {
@@ -223,7 +254,7 @@ const GenerateSalarySlipReport = () => {
         ifsc: '',
         bankName: 'HDFC Bank',
         pan: '',
-        uan: '000000000000'
+        uan: 'N/A'
       });
       return;
     }
@@ -245,9 +276,9 @@ const GenerateSalarySlipReport = () => {
       dob: formatDate(selectedEmployee.dateOfBirth || ''),
       bankAccount: selectedEmployee.bankDetailsInfo?.accountNumber || '',
       ifsc: selectedEmployee.bankDetailsInfo?.ifscCode || '',
-      bankName: 'HDFC Bank', // TODO: Fetch
+      bankName: 'HDFC Bank',
       pan: selectedEmployee.panNumber || '',
-      uan: '000000000000' // TODO: Fetch
+      uan: 'N/A'
     });
   };
 
@@ -278,9 +309,24 @@ const GenerateSalarySlipReport = () => {
         setIsPreviewLoading(true);
         const values = watch();
 
-        const monthNames = ["January", "February", "March", "April", "May", "June",
-          "July", "August", "September", "October", "November", "December"];
-        const d = values.selectedMonth instanceof Date ? values.selectedMonth : new Date(values.selectedMonth);
+        const monthNames = [
+          'January',
+          'February',
+          'March',
+          'April',
+          'May',
+          'June',
+          'July',
+          'August',
+          'September',
+          'October',
+          'November',
+          'December'
+        ];
+        const d =
+          values.selectedMonth instanceof Date
+            ? values.selectedMonth
+            : new Date(values.selectedMonth);
         const payPeriod = `${monthNames[d.getMonth()]} ${d.getFullYear()}`;
 
         const payload = {
@@ -295,7 +341,7 @@ const GenerateSalarySlipReport = () => {
           IFSCCODE: empDetails.ifsc,
           bankAccountNumber: empDetails.bankAccount,
           transactionType: 'NEFT',
-          transactionId: "TBD",
+          transactionId: 'TBD',
           panNumber: empDetails.pan,
           uanNumber: empDetails.uan,
 
@@ -316,12 +362,14 @@ const GenerateSalarySlipReport = () => {
           otherDeductions: 0
         };
 
-
         const response = await previewSalarySlip(payload);
         setPreviewData(response);
         setActiveStep(current => (current < 2 ? current + 1 : current));
       } catch (error: any) {
-        toast.error(error?.response?.data?.message || 'Failed to fetch salary slip preview');
+        toast.error(
+          error?.response?.data?.message ||
+            'Failed to fetch salary slip preview'
+        );
       } finally {
         setIsPreviewLoading(false);
       }
@@ -340,9 +388,24 @@ const GenerateSalarySlipReport = () => {
         toast.error('LOP days cannot exceed total days');
         return;
       }
-      const monthNames = ["January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"];
-      const d = data.selectedMonth instanceof Date ? data.selectedMonth : new Date(data.selectedMonth);
+      const monthNames = [
+        'January',
+        'February',
+        'March',
+        'April',
+        'May',
+        'June',
+        'July',
+        'August',
+        'September',
+        'October',
+        'November',
+        'December'
+      ];
+      const d =
+        data.selectedMonth instanceof Date
+          ? data.selectedMonth
+          : new Date(data.selectedMonth);
       const payPeriod = `${monthNames[d.getMonth()]} ${d.getFullYear()}`;
 
       const payload = {
@@ -357,7 +420,7 @@ const GenerateSalarySlipReport = () => {
         IFSCCODE: empDetails.ifsc,
         bankAccountNumber: empDetails.bankAccount,
         transactionType: 'NEFT',
-        transactionId: "TBD",
+        transactionId: 'TBD',
         panNumber: empDetails.pan,
         uanNumber: empDetails.uan,
 
@@ -386,7 +449,11 @@ const GenerateSalarySlipReport = () => {
         throw new Error('Invalid PDF data');
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.message || error.message || 'Failed to generate salary slip');
+      toast.error(
+        error.response?.data?.message ||
+          error.message ||
+          'Failed to generate salary slip'
+      );
     } finally {
       setIsGenerating(false);
     }
@@ -429,6 +496,10 @@ const GenerateSalarySlipReport = () => {
               fontSize: '11px',
               color: currentThemeConfig.color,
               opacity: 0.8
+            },
+            separator: {
+              height: 2,
+              backgroundColor: currentThemeConfig.button.color
             }
           }}
         >
@@ -464,34 +535,34 @@ const GenerateSalarySlipReport = () => {
                       />
                     </Grid.Col>
                     <Grid.Col span={{ base: 12, sm: 6 }}>
-                      <TextInput
+                      <ReadOnlyField
                         label="Employee Name"
                         value={empDetails.empName}
-                        disabled
+                        color={currentThemeConfig.color}
                       />
                     </Grid.Col>
 
                     <Grid.Col span={{ base: 12, sm: 6 }}>
-                      <TextInput
+                      <ReadOnlyField
                         label="Email"
                         value={empDetails.email}
-                        disabled
+                        color={currentThemeConfig.color}
                       />
                     </Grid.Col>
 
                     <Grid.Col span={{ base: 12, sm: 6 }}>
-                      <TextInput
+                      <ReadOnlyField
                         label="Designation"
                         value={empDetails.designation}
-                        disabled
+                        color={currentThemeConfig.color}
                       />
                     </Grid.Col>
 
                     <Grid.Col span={{ base: 12, sm: 6 }}>
-                      <TextInput
+                      <ReadOnlyField
                         label="Date of Birth"
                         value={empDetails.dob}
-                        disabled
+                        color={currentThemeConfig.color}
                       />
                     </Grid.Col>
                   </Grid>
@@ -502,26 +573,26 @@ const GenerateSalarySlipReport = () => {
 
                   <Grid>
                     <Grid.Col span={{ base: 12, sm: 6 }}>
-                      <TextInput
+                      <ReadOnlyField
                         label="Bank Account Number"
                         value={empDetails.bankAccount}
-                        disabled
+                        color={currentThemeConfig.color}
                       />
                     </Grid.Col>
 
                     <Grid.Col span={{ base: 12, sm: 6 }}>
-                      <TextInput
+                      <ReadOnlyField
                         label="IFSC Code"
                         value={empDetails.ifsc}
-                        disabled
+                        color={currentThemeConfig.color}
                       />
                     </Grid.Col>
 
                     <Grid.Col span={{ base: 12, sm: 6 }}>
-                      <TextInput
+                      <ReadOnlyField
                         label="PAN Number"
                         value={empDetails.pan}
-                        disabled
+                        color={currentThemeConfig.color}
                       />
                     </Grid.Col>
                   </Grid>
@@ -566,14 +637,14 @@ const GenerateSalarySlipReport = () => {
                     </Grid.Col>
 
                     <Grid.Col span={4}>
-                      <TextInput
+                      <ReadOnlyField
                         label="Total Days"
                         value={
                           calculatedDaysInMonth > 0
                             ? String(calculatedDaysInMonth)
                             : ''
                         }
-                        disabled
+                        color={currentThemeConfig.color}
                         error={errors.daysInMonth?.message}
                       />
                     </Grid.Col>
@@ -619,10 +690,10 @@ const GenerateSalarySlipReport = () => {
                         <TextInput
                           label="Basic Salary"
                           type="number"
-                          onKeyDown={(e) => {
-                              if (["e", "E", "+", "-"].includes(e.key)) {
-                                  e.preventDefault();
-                              }
+                          onKeyDown={e => {
+                            if (['e', 'E', '+', '-'].includes(e.key)) {
+                              e.preventDefault();
+                            }
                           }}
                           {...register('basicSalary', {
                             valueAsNumber: true
@@ -634,10 +705,10 @@ const GenerateSalarySlipReport = () => {
                         <TextInput
                           label="HRA (%)"
                           type="number"
-                          onKeyDown={(e) => {
-                              if (["e", "E", "+", "-"].includes(e.key)) {
-                                  e.preventDefault();
-                              }
+                          onKeyDown={e => {
+                            if (['e', 'E', '+', '-'].includes(e.key)) {
+                              e.preventDefault();
+                            }
                           }}
                           {...register('hraPercentage', {
                             valueAsNumber: true
@@ -649,10 +720,10 @@ const GenerateSalarySlipReport = () => {
                         <TextInput
                           label="Special Allowance"
                           type="number"
-                          onKeyDown={(e) => {
-                              if (["e", "E", "+", "-"].includes(e.key)) {
-                                  e.preventDefault();
-                              }
+                          onKeyDown={e => {
+                            if (['e', 'E', '+', '-'].includes(e.key)) {
+                              e.preventDefault();
+                            }
                           }}
                           {...register('specialAllowance', {
                             valueAsNumber: true
@@ -664,10 +735,10 @@ const GenerateSalarySlipReport = () => {
                         <TextInput
                           label="Conveyance Allowance"
                           type="number"
-                          onKeyDown={(e) => {
-                              if (["e", "E", "+", "-"].includes(e.key)) {
-                                  e.preventDefault();
-                              }
+                          onKeyDown={e => {
+                            if (['e', 'E', '+', '-'].includes(e.key)) {
+                              e.preventDefault();
+                            }
                           }}
                           {...register('conveyanceAllowance', {
                             valueAsNumber: true
@@ -679,10 +750,10 @@ const GenerateSalarySlipReport = () => {
                         <TextInput
                           label="Medical Allowance"
                           type="number"
-                          onKeyDown={(e) => {
-                              if (["e", "E", "+", "-"].includes(e.key)) {
-                                  e.preventDefault();
-                              }
+                          onKeyDown={e => {
+                            if (['e', 'E', '+', '-'].includes(e.key)) {
+                              e.preventDefault();
+                            }
                           }}
                           {...register('medicalAllowance', {
                             valueAsNumber: true
@@ -694,10 +765,10 @@ const GenerateSalarySlipReport = () => {
                         <TextInput
                           label="Other Allowances"
                           type="number"
-                          onKeyDown={(e) => {
-                              if (["e", "E", "+", "-"].includes(e.key)) {
-                                  e.preventDefault();
-                              }
+                          onKeyDown={e => {
+                            if (['e', 'E', '+', '-'].includes(e.key)) {
+                              e.preventDefault();
+                            }
                           }}
                           {...register('otherAllowances', {
                             valueAsNumber: true
@@ -724,101 +795,76 @@ const GenerateSalarySlipReport = () => {
                         type="button"
                         variant="light"
                         radius="lg"
-                        onClick={() => append({ label: '', amount: 0, type: 'add' })}
+                        onClick={() =>
+                          append({ label: '', amount: 0, type: 'add' })
+                        }
                       >
                         + Add More
                       </Button>
                     </Group>
 
-                      <Stack>
-                        {fields.map((field, index) => (
-                          <Group key={field.id} grow>
-                            <Grid grow>
-                                <Grid.Col span={4}>
-                                    <TextInput
-                                      placeholder="Allowance Name"
-                                      {...register(`additionalAllowances.${index}.label`)}
-                                    />
-                                </Grid.Col>
-                                <Grid.Col span={3}>
-                                    <TextInput
-                                      type="number"
-                                      placeholder="Amount"
-                                      onKeyDown={(e) => {
-                                          if (["e", "E", "+", "-"].includes(e.key)) {
-                                              e.preventDefault();
-                                          }
-                                      }}
-                                      {...register(`additionalAllowances.${index}.amount`, {
-                                        valueAsNumber: true
-                                      })}
-                                    />
-                                </Grid.Col>
-                                <Grid.Col span={3}>
-                                    <Select
-                                        data={[
-                                            { value: 'add', label: 'Add' },
-                                            { value: 'deduct', label: 'Deduct' }
-                                        ]}
-                                        {...register(`additionalAllowances.${index}.type`)}
-                                        defaultValue="add"
-                                        onChange={(value) => setValue(`additionalAllowances.${index}.type`, value as 'add' | 'deduct')}
-                                    />
-                                </Grid.Col>
-                                <Grid.Col span={2}>
-                                    <Button
-                                      type="button"
-                                      color="red"
-                                      radius="md"
-                                      variant="subtle"
-                                      onClick={() => remove(index)}
-                                    >
-                                      Remove
-                                    </Button>
-                                </Grid.Col>
-                            </Grid>
-                          </Group>
-                        ))}
-                      </Stack>
-                  </Card>
-
-                  <Card
-                    withBorder
-                    p="md"
-                    radius="md"
-                    shadow="md"
-                    style={{
-                      backgroundColor: currentThemeConfig.button.color + '20',
-                      color: currentThemeConfig.color
-                    }}
-                  >
-                    <Group justify="space-between">
-                      <Text fw={600}>Total Earnings:</Text>
-                      <Text fw={700} size="lg" c="green">
-                        ₹ {grossSalary.toFixed(2)}
-                      </Text>
-                    </Group>
-                    {lopDays > 0 && daysInMonth > 0 && (
-                      <Card
-                        withBorder
-                        p="sm"
-                        style={{
-                          backgroundColor:
-                            currentThemeConfig.button.color + '15',
-                          color: currentThemeConfig.color
-                        }}
-                      >
-                        <Group justify="space-between">
-                          <Text fw={600}>Estimated LOP Deduction:</Text>
-                          <Text
-                            fw={700}
-                            c={isDarkTheme ? '#ff8787' : '#c92a2a'}
-                          >
-                            − ₹ {(perDaySalary * lopDays).toFixed(2)}
-                          </Text>
+                    <Stack>
+                      {fields.map((field, index) => (
+                        <Group key={field.id} grow>
+                          <Grid grow>
+                            <Grid.Col span={4}>
+                              <TextInput
+                                placeholder="Allowance Name"
+                                {...register(
+                                  `additionalAllowances.${index}.label`
+                                )}
+                              />
+                            </Grid.Col>
+                            <Grid.Col span={3}>
+                              <TextInput
+                                type="number"
+                                placeholder="Amount"
+                                onKeyDown={e => {
+                                  if (['e', 'E', '+', '-'].includes(e.key)) {
+                                    e.preventDefault();
+                                  }
+                                }}
+                                {...register(
+                                  `additionalAllowances.${index}.amount`,
+                                  {
+                                    valueAsNumber: true
+                                  }
+                                )}
+                              />
+                            </Grid.Col>
+                            <Grid.Col span={3}>
+                              <Select
+                                data={[
+                                  { value: 'add', label: 'Add' },
+                                  { value: 'deduct', label: 'Deduct' }
+                                ]}
+                                {...register(
+                                  `additionalAllowances.${index}.type`
+                                )}
+                                defaultValue="add"
+                                onChange={value =>
+                                  setValue(
+                                    `additionalAllowances.${index}.type`,
+                                    value as 'add' | 'deduct'
+                                  )
+                                }
+                              />
+                            </Grid.Col>
+                            <Grid.Col span={2}>
+                              <Button
+                                type="button"
+                                color="red"
+                                radius="md"
+                                variant="subtle"
+                                onClick={() => remove(index)}
+                              >
+                                Remove
+                              </Button>
+                            </Grid.Col>
+                          </Grid>
                         </Group>
-                      </Card>
-                    )}
+                      ))}
+                    </Stack>
                   </Card>
 
                   <Group justify="space-between" mt="xl">
@@ -826,7 +872,11 @@ const GenerateSalarySlipReport = () => {
                       Back
                     </Button>
 
-                    <Button loading={isPreviewLoading} onClick={nextStep} radius="lg">
+                    <Button
+                      loading={isPreviewLoading}
+                      onClick={nextStep}
+                      radius="lg"
+                    >
                       Preview
                     </Button>
                   </Group>
@@ -843,12 +893,7 @@ const GenerateSalarySlipReport = () => {
                       icon={<IconAlertCircle />}
                       title="Review Details"
                       color={isDarkTheme ? 'cyan' : 'blue'}
-                    >
-                      <Text c={currentThemeConfig.color} size="sm">
-                        Please review all details before generating the salary
-                        slip
-                      </Text>
-                    </Alert>
+                    ></Alert>
 
                     <Card
                       p="md"
@@ -942,41 +987,79 @@ const GenerateSalarySlipReport = () => {
                         <Stack gap="sm">
                           <Group justify="space-between">
                             <Text>Basic Salary</Text>
-                            <Text fw={600}>₹ {(previewData?.data?.calculations?.basicSalary ?? basic).toFixed(2)}</Text>
+                            <Text fw={600}>
+                              ₹{' '}
+                              {(
+                                previewData?.data?.calculations?.basicSalary ??
+                                basic
+                              ).toFixed(2)}
+                            </Text>
                           </Group>
 
                           <Group justify="space-between">
                             <Text>HRA</Text>
                             <Text fw={600}>
-                              ₹ {(previewData?.data?.calculations?.hra ?? ((basic * hra) / 100)).toFixed(2)}
+                              ₹{' '}
+                              {(
+                                previewData?.data?.calculations?.hra ??
+                                (basic * hra) / 100
+                              ).toFixed(2)}
                             </Text>
                           </Group>
 
                           <Group justify="space-between">
                             <Text>Special Allowance</Text>
-                            <Text fw={600}>₹ {(previewData?.data?.calculations?.specialAllowance ?? special).toFixed(2)}</Text>
+                            <Text fw={600}>
+                              ₹{' '}
+                              {(
+                                previewData?.data?.calculations
+                                  ?.specialAllowance ?? special
+                              ).toFixed(2)}
+                            </Text>
                           </Group>
 
                           <Group justify="space-between">
                             <Text>Conveyance</Text>
-                            <Text fw={600}>₹ {(previewData?.data?.calculations?.conveyanceAllowance ?? conveyance).toFixed(2)}</Text>
+                            <Text fw={600}>
+                              ₹{' '}
+                              {(
+                                previewData?.data?.calculations
+                                  ?.conveyanceAllowance ?? conveyance
+                              ).toFixed(2)}
+                            </Text>
                           </Group>
 
                           <Group justify="space-between">
                             <Text>Medical</Text>
-                            <Text fw={600}>₹ {(previewData?.data?.calculations?.medicalAllowance ?? medical).toFixed(2)}</Text>
+                            <Text fw={600}>
+                              ₹{' '}
+                              {(
+                                previewData?.data?.calculations
+                                  ?.medicalAllowance ?? medical
+                              ).toFixed(2)}
+                            </Text>
                           </Group>
 
                           <Group justify="space-between">
                             <Text>Other Allowances</Text>
-                            <Text fw={600}>₹ {(previewData?.data?.calculations?.otherAllowances ?? other).toFixed(2)}</Text>
+                            <Text fw={600}>
+                              ₹{' '}
+                              {(
+                                previewData?.data?.calculations
+                                  ?.otherAllowances ?? other
+                              ).toFixed(2)}
+                            </Text>
                           </Group>
                         </Stack>
 
                         <Group justify="space-between" pt="sm">
                           <Text fw={600}>Gross Salary:</Text>
                           <Text fw={700}>
-                            ₹ {(previewData?.data?.calculations?.grossEarnings ?? grossSalary).toFixed(2)}
+                            ₹{' '}
+                            {(
+                              previewData?.data?.calculations?.grossEarnings ??
+                              grossSalary
+                            ).toFixed(2)}
                           </Text>
                         </Group>
 
@@ -991,45 +1074,75 @@ const GenerateSalarySlipReport = () => {
                         </Group>
 
                         {/* Deductions Section */}
-                        {(previewData?.data?.calculations) ? (
+                        {previewData?.data?.calculations ? (
                           <>
-
-                             {previewData.data.calculations.providentFund > 0 && (
-                               <Group justify="space-between">
-                                 <Text>PF</Text>
-                                 <Text fw={600} c="red">− ₹ {previewData.data.calculations.providentFund.toFixed(2)}</Text>
-                               </Group>
-                             )}
-                             {previewData.data.calculations.professionalTax > 0 && (
-                               <Group justify="space-between">
-                                 <Text>Professional Tax</Text>
-                                 <Text fw={600} c="red">− ₹ {previewData.data.calculations.professionalTax.toFixed(2)}</Text>
-                               </Group>
-                             )}
-                             {previewData.data.calculations.incomeTax > 0 && (
-                               <Group justify="space-between">
-                                 <Text>Income Tax</Text>
-                                 <Text fw={600} c="red">− ₹ {previewData.data.calculations.incomeTax.toFixed(2)}</Text>
-                               </Group>
-                             )}
-                             {previewData.data.calculations.otherDeductions > 0 && (
-                               <Group justify="space-between">
-                                 <Text>Other Deductions</Text>
-                                 <Text fw={600} c="red">− ₹ {previewData.data.calculations.otherDeductions.toFixed(2)}</Text>
-                               </Group>
-                             )}
+                            {previewData.data.calculations.providentFund >
+                              0 && (
+                              <Group justify="space-between">
+                                <Text>PF</Text>
+                                <Text fw={600} c="red">
+                                  − ₹{' '}
+                                  {previewData.data.calculations.providentFund.toFixed(
+                                    2
+                                  )}
+                                </Text>
+                              </Group>
+                            )}
+                            {previewData.data.calculations.professionalTax >
+                              0 && (
+                              <Group justify="space-between">
+                                <Text>Professional Tax</Text>
+                                <Text fw={600} c="red">
+                                  − ₹{' '}
+                                  {previewData.data.calculations.professionalTax.toFixed(
+                                    2
+                                  )}
+                                </Text>
+                              </Group>
+                            )}
+                            {previewData.data.calculations.incomeTax > 0 && (
+                              <Group justify="space-between">
+                                <Text>Income Tax</Text>
+                                <Text fw={600} c="red">
+                                  − ₹{' '}
+                                  {previewData.data.calculations.incomeTax.toFixed(
+                                    2
+                                  )}
+                                </Text>
+                              </Group>
+                            )}
+                            {previewData.data.calculations.otherDeductions >
+                              0 && (
+                              <Group justify="space-between">
+                                <Text>Other Deductions</Text>
+                                <Text fw={600} c="red">
+                                  − ₹{' '}
+                                  {previewData.data.calculations.otherDeductions.toFixed(
+                                    2
+                                  )}
+                                </Text>
+                              </Group>
+                            )}
                           </>
                         ) : null}
 
                         {/* Extra allowances from local state are likely already included in 'otherAllowances' in API response */}
-                        {!previewData && additionalAllowances.map((item, i) => (
-                          <Group key={i} justify="space-between">
-                            <Text>{item.label} ({item.type === 'deduct' ? '-' : '+'})</Text>
-                            <Text fw={600} c={item.type === 'deduct' ? 'red' : 'inherit'}>
-                                {item.type === 'deduct' ? '− ' : ''}₹ {item.amount}
-                            </Text>
-                          </Group>
-                        ))}
+                        {!previewData &&
+                          additionalAllowances.map((item, i) => (
+                            <Group key={i} justify="space-between">
+                              <Text>
+                                {item.label} (
+                                {item.type === 'deduct' ? '-' : '+'})
+                              </Text>
+                              <Text
+                                fw={600}
+                                c={item.type === 'deduct' ? 'red' : 'inherit'}
+                              >
+                                {item.type === 'deduct' ? '− ' : ''}₹{' '}
+                                {item.amount}
+                              </Text>
+                            </Group>
+                          ))}
 
                         <Group
                           justify="space-between"
@@ -1040,7 +1153,10 @@ const GenerateSalarySlipReport = () => {
                         >
                           <Text fw={700}>Final Payable Salary:</Text>
                           <Text fw={700} size="lg" c="green">
-                            ₹ {(previewData?.data?.calculations?.netPay ?? 0).toFixed(2)}
+                            ₹{' '}
+                            {(
+                              previewData?.data?.calculations?.netPay ?? 0
+                            ).toFixed(2)}
                           </Text>
                         </Group>
                       </Stack>
@@ -1052,7 +1168,11 @@ const GenerateSalarySlipReport = () => {
                       </Button>
 
                       {!generatedPdf ? (
-                        <Button type="submit" radius="lg" loading={isGenerating}>
+                        <Button
+                          type="submit"
+                          radius="lg"
+                          loading={isGenerating}
+                        >
                           Generate
                         </Button>
                       ) : (
@@ -1061,28 +1181,29 @@ const GenerateSalarySlipReport = () => {
                           radius="lg"
                           type="button"
                           onClick={() => {
-                              if (!generatedPdf) return;
+                            if (!generatedPdf) return;
 
-                              try {
-                                const url = window.URL.createObjectURL(generatedPdf);
-                                const link = document.createElement('a');
+                            try {
+                              const url =
+                                window.URL.createObjectURL(generatedPdf);
+                              const link = document.createElement('a');
 
-                                link.href = url;
-                                link.download = `SalarySlip_${empDetails.empId}_${
-                                  selectedMonth instanceof Date
-                                    ? selectedMonth.toISOString().slice(0, 7)
-                                    : new Date().toISOString().slice(0, 7)
-                                }.pdf`;
+                              link.href = url;
+                              link.download = `SalarySlip_${empDetails.empId}_${
+                                selectedMonth instanceof Date
+                                  ? selectedMonth.toISOString().slice(0, 7)
+                                  : new Date().toISOString().slice(0, 7)
+                              }.pdf`;
 
-                                document.body.appendChild(link);
-                                link.click();
-                                document.body.removeChild(link);
-                                window.URL.revokeObjectURL(url);
-                              } catch (error) {
-                                console.error('Download failed', error);
-                                toast.error('Failed to download PDF');
-                              }
-                            }}
+                              document.body.appendChild(link);
+                              link.click();
+                              document.body.removeChild(link);
+                              window.URL.revokeObjectURL(url);
+                            } catch (error) {
+                              console.error('Download failed', error);
+                              toast.error('Failed to download PDF');
+                            }
+                          }}
                         >
                           Download PDF
                         </Button>
