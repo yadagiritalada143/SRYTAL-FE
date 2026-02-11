@@ -12,7 +12,8 @@ import {
   Text,
   Alert,
   Grid,
-  Divider
+  Divider,
+  rgba
 } from '@mantine/core';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -122,6 +123,11 @@ const GenerateSalarySlipReport = () => {
     return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
   }, [organizationConfig, isDarkTheme]);
   const isMobile = useMediaQuery('(max-width: 768px)');
+  const [generatedPdf, setGeneratedPdf] = useState<Blob | null>(null);
+
+  const dangerBorderColor = isDarkTheme
+    ? currentThemeConfig.dangerColor
+    : currentThemeConfig.lightDangerColor;
 
   const [empDetails, setEmpDetails] = useState({
     empId: '',
@@ -177,6 +183,15 @@ const GenerateSalarySlipReport = () => {
   const conveyance = watch('conveyanceAllowance') || 0;
   const medical = watch('medicalAllowance') || 0;
   const other = watch('otherAllowances') || 0;
+
+  // Watch all form values to detect changes
+  const allValues = watch();
+
+  useEffect(() => {
+    if (generatedPdf) {
+      setGeneratedPdf(null);
+    }
+  }, [JSON.stringify(allValues)]);
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -374,7 +389,20 @@ const GenerateSalarySlipReport = () => {
 
   const onSubmit = async (data: GenerateSalarySlipForm) => {
     try {
+      if (generatedPdf) {
+        const url = window.URL.createObjectURL(generatedPdf);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `SalarySlip_${empDetails.empId}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        return;
+      }
+
       setIsGenerating(true);
+
       if (data.lopDays > data.daysInMonth) {
         toast.error('LOP days cannot exceed total days');
         return;
@@ -434,6 +462,8 @@ const GenerateSalarySlipReport = () => {
 
       const response = await generateSalarySlip(payload);
       if (response instanceof Blob) {
+        setGeneratedPdf(response);
+
         const url = window.URL.createObjectURL(response);
         const link = document.createElement('a');
         link.href = url;
@@ -442,6 +472,7 @@ const GenerateSalarySlipReport = () => {
         link.click();
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
+
         showSuccessToast('Salary slip generated successfully!');
       } else {
         throw new Error('Invalid PDF data');
@@ -510,159 +541,186 @@ const GenerateSalarySlipReport = () => {
             >
               {/* ================= STEP 1 ================= */}
               {index === 0 && (
-                <Stack mt="lg" gap="lg">
-                  <Title order={5}>Employee Information</Title>
-                  <Grid>
-                    <Grid.Col span={{ base: 12, sm: 6 }}>
-                      <Select
-                        label="Employee ID"
-                        placeholder={
-                          isLoadingEmployees ? 'Loading...' : 'Select employee'
-                        }
-                        searchable
-                        required
-                        data={employees
-                          .filter(emp => emp.employeeId)
-                          .map(emp => ({
-                            value: emp.employeeId,
-                            label: `${emp.employeeId} - ${emp.firstName} ${emp.lastName}`
-                          }))}
-                        value={empDetails.empId}
-                        onChange={value => handleEmployeeChange(value)}
-                        error={errors.employeeId?.message}
-                      />
-                    </Grid.Col>
-                    <Grid.Col span={{ base: 12, sm: 6 }}>
-                      <ReadOnlyField
-                        label="Employee Name"
-                        value={empDetails.empName}
-                        color={currentThemeConfig.color}
-                      />
-                    </Grid.Col>
+                <Stack mt="lg" gap="md">
+                  <Card
+                    shadow="sm"
+                    radius="md"
+                    p={isMobile ? 'md' : 'lg'}
+                    withBorder
+                    style={{
+                      backgroundColor: currentThemeConfig.headerBackgroundColor,
+                      color: currentThemeConfig.color
+                    }}
+                  >
+                    <Title order={5} mb="md">
+                      Employee Information
+                    </Title>
+                    <Grid mb="md">
+                      <Grid.Col span={{ base: 12, sm: 6 }}>
+                        <Select
+                          label="Employee ID"
+                          placeholder={
+                            isLoadingEmployees
+                              ? 'Loading...'
+                              : 'Select employee'
+                          }
+                          searchable
+                          required
+                          data={employees
+                            .filter(emp => emp.employeeId)
+                            .map(emp => ({
+                              value: emp.employeeId,
+                              label: `${emp.employeeId} - ${emp.firstName} ${emp.lastName}`
+                            }))}
+                          value={empDetails.empId}
+                          onChange={value => handleEmployeeChange(value)}
+                          error={errors.employeeId?.message}
+                        />
+                      </Grid.Col>
+                      <Grid.Col span={{ base: 12, sm: 6 }}>
+                        <ReadOnlyField
+                          label="Employee Name"
+                          value={empDetails.empName}
+                          color={currentThemeConfig.color}
+                        />
+                      </Grid.Col>
 
-                    <Grid.Col span={{ base: 12, sm: 6 }}>
-                      <ReadOnlyField
-                        label="Email"
-                        value={empDetails.email}
-                        color={currentThemeConfig.color}
-                      />
-                    </Grid.Col>
+                      <Grid.Col span={{ base: 12, sm: 6 }}>
+                        <ReadOnlyField
+                          label="Email"
+                          value={empDetails.email}
+                          color={currentThemeConfig.color}
+                        />
+                      </Grid.Col>
 
-                    <Grid.Col span={{ base: 12, sm: 6 }}>
-                      <ReadOnlyField
-                        label="Designation"
-                        value={empDetails.designation}
-                        color={currentThemeConfig.color}
-                      />
-                    </Grid.Col>
+                      <Grid.Col span={{ base: 12, sm: 6 }}>
+                        <ReadOnlyField
+                          label="Designation"
+                          value={empDetails.designation}
+                          color={currentThemeConfig.color}
+                        />
+                      </Grid.Col>
 
-                    <Grid.Col span={{ base: 12, sm: 6 }}>
-                      <ReadOnlyField
-                        label="Date of Birth"
-                        value={empDetails.dob}
-                        color={currentThemeConfig.color}
-                      />
-                    </Grid.Col>
-                  </Grid>
+                      <Grid.Col span={{ base: 12, sm: 6 }}>
+                        <ReadOnlyField
+                          label="Date of Birth"
+                          value={empDetails.dob}
+                          color={currentThemeConfig.color}
+                        />
+                      </Grid.Col>
+                    </Grid>
 
-                  <Divider />
+                    <Divider mb="md" />
 
-                  <Title order={5}>Bank Details</Title>
+                    <Title order={5} mb="md">
+                      Bank Details
+                    </Title>
 
-                  <Grid>
-                    <Grid.Col span={{ base: 12, sm: 6 }}>
-                      <ReadOnlyField
-                        label="Bank Account Number"
-                        value={empDetails.bankAccount}
-                        color={currentThemeConfig.color}
-                      />
-                    </Grid.Col>
+                    <Grid>
+                      <Grid.Col span={{ base: 12, sm: 6 }}>
+                        <ReadOnlyField
+                          label="Bank Account Number"
+                          value={empDetails.bankAccount}
+                          color={currentThemeConfig.color}
+                        />
+                      </Grid.Col>
 
-                    <Grid.Col span={{ base: 12, sm: 6 }}>
-                      <ReadOnlyField
-                        label="IFSC Code"
-                        value={empDetails.ifsc}
-                        color={currentThemeConfig.color}
-                      />
-                    </Grid.Col>
+                      <Grid.Col span={{ base: 12, sm: 6 }}>
+                        <ReadOnlyField
+                          label="IFSC Code"
+                          value={empDetails.ifsc}
+                          color={currentThemeConfig.color}
+                        />
+                      </Grid.Col>
 
-                    <Grid.Col span={{ base: 12, sm: 6 }}>
-                      <ReadOnlyField
-                        label="PAN Number"
-                        value={empDetails.pan}
-                        color={currentThemeConfig.color}
-                      />
-                    </Grid.Col>
-                  </Grid>
+                      <Grid.Col span={{ base: 12, sm: 6 }}>
+                        <ReadOnlyField
+                          label="PAN Number"
+                          value={empDetails.pan}
+                          color={currentThemeConfig.color}
+                        />
+                      </Grid.Col>
+                    </Grid>
+                  </Card>
+                  <Card
+                    shadow="sm"
+                    radius="md"
+                    p={isMobile ? 'md' : 'lg'}
+                    withBorder
+                    style={{
+                      backgroundColor: currentThemeConfig.headerBackgroundColor,
+                      color: currentThemeConfig.color
+                    }}
+                  >
+                    <Title order={5} mb="md">
+                      Salary Period
+                    </Title>
 
-                  <Divider />
-
-                  <Title order={5}>Salary Period</Title>
-
-                  <Grid align="flex-start">
-                    <Grid.Col span={4}>
-                      <Controller
-                        name="selectedMonth"
-                        control={control}
-                        render={({ field }) => (
-                          <MonthPickerInput
-                            styles={{
-                              input: {
-                                backgroundColor:
-                                  currentThemeConfig.headerBackgroundColor,
-                                color: currentThemeConfig.color,
-                                borderColor: currentThemeConfig.borderColor
-                              },
-                              label: {
-                                color: currentThemeConfig.color
+                    <Grid align="flex-start">
+                      <Grid.Col span={4}>
+                        <Controller
+                          name="selectedMonth"
+                          control={control}
+                          render={({ field }) => (
+                            <MonthPickerInput
+                              styles={{
+                                input: {
+                                  backgroundColor:
+                                    currentThemeConfig.headerBackgroundColor,
+                                  color: currentThemeConfig.color,
+                                  borderColor: currentThemeConfig.borderColor
+                                },
+                                label: {
+                                  color: currentThemeConfig.color
+                                }
+                              }}
+                              value={
+                                field.value
+                                  ? field.value instanceof Date
+                                    ? field.value
+                                    : new Date(field.value)
+                                  : null
                               }
-                            }}
-                            value={
-                              field.value
-                                ? field.value instanceof Date
-                                  ? field.value
-                                  : new Date(field.value)
-                                : null
-                            }
-                            onChange={field.onChange}
-                            label="Select Month"
-                            required
-                            placeholder="Pick month"
-                            error={errors.selectedMonth?.message}
-                          />
-                        )}
-                      />
-                    </Grid.Col>
+                              onChange={field.onChange}
+                              label="Select Month"
+                              required
+                              placeholder="Pick month"
+                              error={errors.selectedMonth?.message}
+                            />
+                          )}
+                        />
+                      </Grid.Col>
 
-                    <Grid.Col span={4}>
-                      <ReadOnlyField
-                        label="Total Days"
-                        value={
-                          calculatedDaysInMonth > 0
-                            ? String(calculatedDaysInMonth)
-                            : ''
-                        }
-                        color={currentThemeConfig.color}
-                        error={errors.daysInMonth?.message}
-                      />
-                    </Grid.Col>
+                      <Grid.Col span={4}>
+                        <ReadOnlyField
+                          label="Total Days"
+                          value={
+                            calculatedDaysInMonth > 0
+                              ? String(calculatedDaysInMonth)
+                              : ''
+                          }
+                          color={currentThemeConfig.color}
+                          error={errors.daysInMonth?.message}
+                        />
+                      </Grid.Col>
 
-                    <Grid.Col span={4}>
-                      <TextInput
-                        label="LOP Days"
-                        {...register('lopDays', { valueAsNumber: true })}
-                        type="number"
-                        placeholder="0"
-                        error={errors.lopDays?.message}
-                      />
-                    </Grid.Col>
-                  </Grid>
+                      <Grid.Col span={4}>
+                        <TextInput
+                          label="LOP Days"
+                          {...register('lopDays', { valueAsNumber: true })}
+                          type="number"
+                          placeholder="0"
+                          error={errors.lopDays?.message}
+                        />
+                      </Grid.Col>
+                    </Grid>
 
-                  <Group justify="flex-end" mt="xl">
-                    <Button onClick={nextStep} radius="lg">
-                      Next
-                    </Button>
-                  </Group>
+                    <Group justify="flex-end" mt="xl">
+                      <Button onClick={nextStep} radius="lg">
+                        Next
+                      </Button>
+                    </Group>
+                  </Card>
                 </Stack>
               )}
 
@@ -933,7 +991,7 @@ const GenerateSalarySlipReport = () => {
                           p="sm"
                           ta="center"
                           style={{
-                            borderLeft: `4px solid ${currentThemeConfig.lightDangerColor}`
+                            borderLeft: `4px solid ${dangerBorderColor}`
                           }}
                         >
                           <Text
@@ -1264,12 +1322,15 @@ const GenerateSalarySlipReport = () => {
                               </Group>
                             ))}
                           <Card
-                            bg="green.0"
                             p="md"
                             mt="md"
                             radius="md"
                             style={{
-                              border: `1px dashed ${currentThemeConfig.successColor}`
+                              border: `1px dashed ${currentThemeConfig.successColor}`,
+                              backgroundColor: rgba(
+                                currentThemeConfig.successColor,
+                                0.2
+                              )
                             }}
                           >
                             <Group justify="space-between">
