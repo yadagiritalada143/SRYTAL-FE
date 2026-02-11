@@ -66,6 +66,7 @@ export const organizationThemeAtom = atom<OrganizationConfig>({
           successColor: '#69db7c',
           warningColor: '#ffd43b',
           dangerColor: '#ff8787',
+          lightDangerColor: '#fa5252',
           mutedTextColor: '#adb5bd',
           cardBackground: '#23272b',
           colors: {
@@ -114,6 +115,7 @@ export const organizationThemeAtom = atom<OrganizationConfig>({
           successColor: '#2f9e44',
           warningColor: '#f08c00',
           dangerColor: '#c92a2a',
+          lightDangerColor: '#fa5252',
           mutedTextColor: '#6c757d',
           cardBackground: '#f8f9fa',
           colors: {

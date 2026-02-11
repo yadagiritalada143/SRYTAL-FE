@@ -44,6 +44,7 @@ export interface OrganizationConfig {
         successColor: string;
         warningColor: string;
         dangerColor: string;
+        lightDangerColor: string;
         mutedTextColor: string;
         cardBackground: string;
         colors: {
@@ -71,6 +72,7 @@ export interface OrganizationConfig {
         successColor: string;
         warningColor: string;
         dangerColor: string;
+        lightDangerColor: string;
         mutedTextColor: string;
         cardBackground: string;
         colors: {

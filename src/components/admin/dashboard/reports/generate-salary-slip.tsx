@@ -103,7 +103,7 @@ const steps = [
     enabled: true
   },
   {
-    label: 'Generate',
+    label: 'Generate Salary Slip',
     description: 'Review & Generate',
     enabled: true
   }
@@ -141,7 +141,6 @@ const GenerateSalarySlipReport = () => {
   const [previewData, setPreviewData] =
     useState<PreviewSalarySlipResponse | null>(null);
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
-  const [generatedPdf, setGeneratedPdf] = useState<Blob | null>(null);
   const { showSuccessToast } = useCustomToast();
 
   const {
@@ -178,14 +177,6 @@ const GenerateSalarySlipReport = () => {
   const conveyance = watch('conveyanceAllowance') || 0;
   const medical = watch('medicalAllowance') || 0;
   const other = watch('otherAllowances') || 0;
-  // Watch all form values to detect changes
-  const allValues = watch();
-
-  useEffect(() => {
-    if (generatedPdf) {
-      setGeneratedPdf(null);
-    }
-  }, [JSON.stringify(allValues)]);
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -443,7 +434,14 @@ const GenerateSalarySlipReport = () => {
 
       const response = await generateSalarySlip(payload);
       if (response instanceof Blob) {
-        setGeneratedPdf(response);
+        const url = window.URL.createObjectURL(response);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `SalarySlip_${empDetails.empId}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
         showSuccessToast('Salary slip generated successfully!');
       } else {
         throw new Error('Invalid PDF data');
@@ -886,328 +884,431 @@ const GenerateSalarySlipReport = () => {
               {/* ================= STEP 3 ================= */}
               {index === 2 && (
                 <form onSubmit={handleSubmit(onSubmit)}>
-                  <Stack mt="lg" gap="md">
-                    <Title order={4}>Salary Slip Summary</Title>
+                  <Stack mt="lg" gap="xl">
+                    <Group justify="space-between" align="flex-end">
+                      <div>
+                        <Title order={3}>Salary Slip Summary</Title>
+                      </div>
+                      <Alert
+                        icon={<IconAlertCircle size={16} />}
+                        title="Review Details"
+                        color={isDarkTheme ? 'cyan' : 'blue'}
+                        py={5}
+                        variant="light"
+                      ></Alert>
+                    </Group>
 
-                    <Alert
-                      icon={<IconAlertCircle />}
-                      title="Review Details"
-                      color={isDarkTheme ? 'cyan' : 'blue'}
-                    ></Alert>
-
-                    <Card
-                      p="md"
-                      withBorder
-                      style={{
-                        backgroundColor:
-                          currentThemeConfig.headerBackgroundColor,
-                        color: currentThemeConfig.color
-                      }}
-                    >
-                      <Stack gap="sm">
-                        <Group justify="space-between">
-                          <Text fw={600}>Employee:</Text>
-                          <Text>{`${empDetails.empName} (${empDetails.empId})`}</Text>
-                        </Group>
-                        <Group justify="space-between">
-                          <Text fw={600}>Email:</Text>
-                          <Text>{empDetails.email}</Text>
-                        </Group>
-                        <Group justify="space-between">
-                          <Text fw={600}>Designation:</Text>
-                          <Text>{empDetails.designation}</Text>
-                        </Group>
-                        <Group justify="space-between">
-                          <Text fw={600}>Date of Birth:</Text>
-                          <Text>{empDetails.dob}</Text>
-                        </Group>
-                        <Group justify="space-between">
-                          <Text fw={600}>PAN:</Text>
-                          <Text>{empDetails.pan}</Text>
-                        </Group>
-                        <Group justify="space-between">
-                          <Text fw={600}>Month:</Text>
-                          <Text>
-                            {(() => {
-                              const monthDate = normalMonth(selectedMonth);
-                              return monthDate
-                                ? monthDate.toLocaleDateString('en-US', {
-                                    month: 'long',
-                                    year: 'numeric'
-                                  })
-                                : '-';
-                            })()}
-                          </Text>
-                        </Group>
-                      </Stack>
-                    </Card>
-
-                    <Card
-                      p="md"
-                      withBorder
-                      style={{
-                        backgroundColor:
-                          currentThemeConfig.headerBackgroundColor,
-                        color: currentThemeConfig.color
-                      }}
-                    >
-                      <Stack gap="sm">
-                        <Group justify="space-between">
-                          <Text fw={600}>Total Days:</Text>
-                          <Text>{daysInMonth}</Text>
-                        </Group>
-
-                        <Group justify="space-between">
-                          <Text fw={600}>LOP Days:</Text>
-                          <Text>{lopDays}</Text>
-                        </Group>
-                        <Group justify="space-between">
-                          <Text fw={600}>Working Days:</Text>
-                          <Text fw={700}>
-                            {Math.max((daysInMonth || 0) - (lopDays || 0), 0)}
-                          </Text>
-                        </Group>
-                      </Stack>
-                    </Card>
-
-                    <Card
-                      p="md"
-                      withBorder
-                      style={{
-                        backgroundColor:
-                          currentThemeConfig.headerBackgroundColor,
-                        color: currentThemeConfig.color
-                      }}
-                    >
-                      <Title order={5} mb="sm">
-                        Salary Breakdown
-                      </Title>
-
-                      <Stack gap="sm">
-                        <Stack gap="sm">
-                          <Group justify="space-between">
-                            <Text>Basic Salary</Text>
-                            <Text fw={600}>
-                              ₹{' '}
-                              {(
-                                previewData?.data?.calculations?.basicSalary ??
-                                basic
-                              ).toFixed(2)}
-                            </Text>
-                          </Group>
-
-                          <Group justify="space-between">
-                            <Text>HRA</Text>
-                            <Text fw={600}>
-                              ₹{' '}
-                              {(
-                                previewData?.data?.calculations?.hra ??
-                                (basic * hra) / 100
-                              ).toFixed(2)}
-                            </Text>
-                          </Group>
-
-                          <Group justify="space-between">
-                            <Text>Special Allowance</Text>
-                            <Text fw={600}>
-                              ₹{' '}
-                              {(
-                                previewData?.data?.calculations
-                                  ?.specialAllowance ?? special
-                              ).toFixed(2)}
-                            </Text>
-                          </Group>
-
-                          <Group justify="space-between">
-                            <Text>Conveyance</Text>
-                            <Text fw={600}>
-                              ₹{' '}
-                              {(
-                                previewData?.data?.calculations
-                                  ?.conveyanceAllowance ?? conveyance
-                              ).toFixed(2)}
-                            </Text>
-                          </Group>
-
-                          <Group justify="space-between">
-                            <Text>Medical</Text>
-                            <Text fw={600}>
-                              ₹{' '}
-                              {(
-                                previewData?.data?.calculations
-                                  ?.medicalAllowance ?? medical
-                              ).toFixed(2)}
-                            </Text>
-                          </Group>
-
-                          <Group justify="space-between">
-                            <Text>Other Allowances</Text>
-                            <Text fw={600}>
-                              ₹{' '}
-                              {(
-                                previewData?.data?.calculations
-                                  ?.otherAllowances ?? other
-                              ).toFixed(2)}
-                            </Text>
-                          </Group>
-                        </Stack>
-
-                        <Group justify="space-between" pt="sm">
-                          <Text fw={600}>Gross Salary:</Text>
-                          <Text fw={700}>
-                            ₹{' '}
-                            {(
-                              previewData?.data?.calculations?.grossEarnings ??
-                              grossSalary
-                            ).toFixed(2)}
-                          </Text>
-                        </Group>
-
-                        <Group justify="space-between">
-                          <Text fw={600}>LOP Deduction ({lopDays} days):</Text>
-                          <Text
-                            fw={700}
-                            c={isDarkTheme ? '#ff8787' : '#c92a2a'}
-                          >
-                            − ₹ {lopDeduction.toFixed(2)}
-                          </Text>
-                        </Group>
-
-                        {/* Deductions Section */}
-                        {previewData?.data?.calculations ? (
-                          <>
-                            {previewData.data.calculations.providentFund >
-                              0 && (
-                              <Group justify="space-between">
-                                <Text>PF</Text>
-                                <Text fw={600} c="red">
-                                  − ₹{' '}
-                                  {previewData.data.calculations.providentFund.toFixed(
-                                    2
-                                  )}
-                                </Text>
-                              </Group>
-                            )}
-                            {previewData.data.calculations.professionalTax >
-                              0 && (
-                              <Group justify="space-between">
-                                <Text>Professional Tax</Text>
-                                <Text fw={600} c="red">
-                                  − ₹{' '}
-                                  {previewData.data.calculations.professionalTax.toFixed(
-                                    2
-                                  )}
-                                </Text>
-                              </Group>
-                            )}
-                            {previewData.data.calculations.incomeTax > 0 && (
-                              <Group justify="space-between">
-                                <Text>Income Tax</Text>
-                                <Text fw={600} c="red">
-                                  − ₹{' '}
-                                  {previewData.data.calculations.incomeTax.toFixed(
-                                    2
-                                  )}
-                                </Text>
-                              </Group>
-                            )}
-                            {previewData.data.calculations.otherDeductions >
-                              0 && (
-                              <Group justify="space-between">
-                                <Text>Other Deductions</Text>
-                                <Text fw={600} c="red">
-                                  − ₹{' '}
-                                  {previewData.data.calculations.otherDeductions.toFixed(
-                                    2
-                                  )}
-                                </Text>
-                              </Group>
-                            )}
-                          </>
-                        ) : null}
-
-                        {/* Extra allowances from local state are likely already included in 'otherAllowances' in API response */}
-                        {!previewData &&
-                          additionalAllowances.map((item, i) => (
-                            <Group key={i} justify="space-between">
-                              <Text>
-                                {item.label} (
-                                {item.type === 'deduct' ? '-' : '+'})
-                              </Text>
-                              <Text
-                                fw={600}
-                                c={item.type === 'deduct' ? 'red' : 'inherit'}
-                              >
-                                {item.type === 'deduct' ? '− ' : ''}₹{' '}
-                                {item.amount}
-                              </Text>
-                            </Group>
-                          ))}
-
-                        <Group
-                          justify="space-between"
-                          pt="sm"
+                    <Grid gutter="md">
+                      <Grid.Col span={{ base: 4 }}>
+                        <Card
+                          withBorder
+                          radius="md"
+                          p="sm"
+                          ta="center"
                           style={{
-                            borderTop: `1px solid ${currentThemeConfig.button.color}`
+                            borderLeft: `4px solid ${currentThemeConfig.accentColor}`
                           }}
                         >
-                          <Text fw={700}>Final Payable Salary:</Text>
-                          <Text fw={700} size="lg" c="green">
-                            ₹{' '}
-                            {(
-                              previewData?.data?.calculations?.netPay ?? 0
-                            ).toFixed(2)}
+                          <Text
+                            size="xs"
+                            fw={700}
+                            tt="uppercase"
+                            c={currentThemeConfig.accentColor}
+                          >
+                            Total Days
                           </Text>
-                        </Group>
-                      </Stack>
-                    </Card>
+                          <Text
+                            size="xl"
+                            fw={800}
+                            c={currentThemeConfig.accentColor}
+                          >
+                            {daysInMonth}
+                          </Text>
+                        </Card>
+                      </Grid.Col>
+                      <Grid.Col span={{ base: 4 }}>
+                        <Card
+                          withBorder
+                          radius="md"
+                          p="sm"
+                          ta="center"
+                          style={{
+                            borderLeft: `4px solid ${currentThemeConfig.lightDangerColor}`
+                          }}
+                        >
+                          <Text
+                            size="xs"
+                            fw={700}
+                            tt="uppercase"
+                            c={currentThemeConfig.lightDangerColor}
+                          >
+                            LOP Days
+                          </Text>
+                          <Text
+                            size="xl"
+                            fw={800}
+                            c={currentThemeConfig.lightDangerColor}
+                          >
+                            {lopDays || 0}
+                          </Text>
+                        </Card>
+                      </Grid.Col>
+                      <Grid.Col span={{ base: 4 }}>
+                        <Card
+                          withBorder
+                          radius="md"
+                          p="sm"
+                          ta="center"
+                          style={{
+                            borderLeft: `4px solid ${currentThemeConfig.successColor}`
+                          }}
+                        >
+                          <Text
+                            size="xs"
+                            fw={700}
+                            tt="uppercase"
+                            c={currentThemeConfig.successColor}
+                          >
+                            Working Days
+                          </Text>
+                          <Text
+                            size="xl"
+                            fw={800}
+                            c={currentThemeConfig.successColor}
+                          >
+                            {Math.max((daysInMonth || 0) - (lopDays || 0), 0)}
+                          </Text>
+                        </Card>
+                      </Grid.Col>
+                    </Grid>
 
-                    <Group justify="space-between" mt="xl" pt="md">
-                      <Button variant="default" radius="lg" onClick={prevStep}>
+                    <Grid gutter="xl">
+                      <Grid.Col span={{ base: 12, md: 5 }}>
+                        <Card withBorder radius="md" p="lg" h="100%">
+                          <Text fw={700} mb="md" size="sm" tt="uppercase">
+                            Employee Details
+                          </Text>
+                          <Stack gap="xs">
+                            <Group justify="space-between">
+                              <Text size="sm" opacity={0.7}>
+                                Name
+                              </Text>
+                              <Text size="sm" fw={600}>
+                                {empDetails.empName}
+                              </Text>
+                            </Group>
+
+                            <Group justify="space-between">
+                              <Text size="sm" opacity={0.7}>
+                                Employee ID
+                              </Text>
+                              <Text size="sm" fw={600}>
+                                {empDetails.empId}
+                              </Text>
+                            </Group>
+
+                            <Group justify="space-between">
+                              <Text size="sm" opacity={0.7}>
+                                Designation
+                              </Text>
+                              <Text size="sm" fw={600}>
+                                {empDetails.designation}
+                              </Text>
+                            </Group>
+
+                            <Group justify="space-between">
+                              <Text size="sm" opacity={0.7}>
+                                Email
+                              </Text>
+                              <Text size="sm" fw={600}>
+                                {empDetails.email}
+                              </Text>
+                            </Group>
+
+                            <Group justify="space-between">
+                              <Text size="sm" opacity={0.7}>
+                                Date of Birth
+                              </Text>
+                              <Text size="sm" fw={600}>
+                                {empDetails.dob}
+                              </Text>
+                            </Group>
+
+                            <Group justify="space-between">
+                              <Text size="sm" opacity={0.7}>
+                                PAN
+                              </Text>
+                              <Text size="sm" fw={600}>
+                                {empDetails.pan}
+                              </Text>
+                            </Group>
+                            <Divider my="xs" />
+                            <Group justify="space-between">
+                              <Text size="sm" opacity={0.7}>
+                                Pay Period
+                              </Text>
+                              <Text
+                                size="sm"
+                                fw={700}
+                                c={currentThemeConfig.accentColor}
+                              >
+                                {(() => {
+                                  const monthDate = normalMonth(selectedMonth);
+                                  return monthDate
+                                    ? monthDate.toLocaleDateString('en-US', {
+                                        month: 'long',
+                                        year: 'numeric'
+                                      })
+                                    : '-';
+                                })()}
+                              </Text>
+                            </Group>
+                          </Stack>
+                        </Card>
+                      </Grid.Col>
+
+                      <Grid.Col span={{ base: 12, md: 7 }}>
+                        <Card
+                          withBorder
+                          radius="md"
+                          p="lg"
+                          style={{
+                            backgroundColor:
+                              currentThemeConfig.headerBackgroundColor
+                          }}
+                        >
+                          <Text fw={700} mb="md" size="sm" tt="uppercase">
+                            Salary Breakdown
+                          </Text>
+                          <Stack gap="xs">
+                            <Group justify="space-between">
+                              <Text size="sm">Basic Salary</Text>
+                              <Text size="sm" fw={600}>
+                                ₹{' '}
+                                {(
+                                  previewData?.data?.calculations
+                                    ?.basicSalary ?? basic
+                                ).toFixed(2)}
+                              </Text>
+                            </Group>
+                            <Group justify="space-between">
+                              <Text size="sm">HRA</Text>
+                              <Text size="sm" fw={600}>
+                                ₹{' '}
+                                {(
+                                  previewData?.data?.calculations?.hra ??
+                                  (basic * hra) / 100
+                                ).toFixed(2)}
+                              </Text>
+                            </Group>
+                            <Group justify="space-between">
+                              <Text size="sm">Special Allowance</Text>
+                              <Text size="sm" fw={600}>
+                                ₹{' '}
+                                {(
+                                  previewData?.data?.calculations
+                                    ?.specialAllowance ?? special
+                                ).toFixed(2)}
+                              </Text>
+                            </Group>
+
+                            <Group justify="space-between">
+                              <Text size="sm">Conveyance</Text>
+                              <Text size="sm" fw={600}>
+                                ₹{' '}
+                                {(
+                                  previewData?.data?.calculations
+                                    ?.conveyanceAllowance ?? conveyance
+                                ).toFixed(2)}
+                              </Text>
+                            </Group>
+
+                            <Group justify="space-between">
+                              <Text size="sm">Medical</Text>
+                              <Text size="sm" fw={600}>
+                                ₹{' '}
+                                {(
+                                  previewData?.data?.calculations
+                                    ?.medicalAllowance ?? medical
+                                ).toFixed(2)}
+                              </Text>
+                            </Group>
+
+                            <Group justify="space-between">
+                              <Text size="sm">Other Allowances</Text>
+                              <Text size="sm" fw={600}>
+                                ₹{' '}
+                                {(
+                                  previewData?.data?.calculations
+                                    ?.otherAllowances ?? other
+                                ).toFixed(2)}
+                              </Text>
+                            </Group>
+                          </Stack>
+
+                          <Group justify="space-between" pt="sm">
+                            <Text size="sm" fw={600}>
+                              Gross Salary:
+                            </Text>
+                            <Text size="sm" fw={700}>
+                              ₹{' '}
+                              {(
+                                previewData?.data?.calculations
+                                  ?.grossEarnings ?? grossSalary
+                              ).toFixed(2)}
+                            </Text>
+                          </Group>
+
+                          {(lopDeduction > 0 ||
+                            (previewData?.data?.calculations?.providentFund ??
+                              0) > 0 ||
+                            (previewData?.data?.calculations?.professionalTax ??
+                              0) > 0 ||
+                            (previewData?.data?.calculations?.incomeTax ?? 0) >
+                              0 ||
+                            (previewData?.data?.calculations?.otherDeductions ??
+                              0) > 0) && (
+                            <>
+                              <Divider
+                                my="xs"
+                                label="Deductions"
+                                labelPosition="center"
+                              />
+                              {lopDeduction > 0 && (
+                                <Group justify="space-between">
+                                  <Text
+                                    size="sm"
+                                    c={currentThemeConfig.lightDangerColor}
+                                  >
+                                    LOP Deduction ({lopDays} days)
+                                  </Text>
+                                  <Text
+                                    size="sm"
+                                    fw={600}
+                                    c={currentThemeConfig.lightDangerColor}
+                                  >
+                                    − ₹ {lopDeduction.toFixed(2)}
+                                  </Text>
+                                </Group>
+                              )}
+                              {previewData?.data?.calculations ? (
+                                <>
+                                  {previewData.data.calculations.providentFund >
+                                    0 && (
+                                    <Group justify="space-between">
+                                      <Text>PF</Text>
+                                      <Text fw={600} c="red">
+                                        − ₹{' '}
+                                        {previewData.data.calculations.providentFund.toFixed(
+                                          2
+                                        )}
+                                      </Text>
+                                    </Group>
+                                  )}
+                                  {previewData.data.calculations
+                                    .professionalTax > 0 && (
+                                    <Group justify="space-between">
+                                      <Text>Professional Tax</Text>
+                                      <Text fw={600} c="red">
+                                        − ₹{' '}
+                                        {previewData.data.calculations.professionalTax.toFixed(
+                                          2
+                                        )}
+                                      </Text>
+                                    </Group>
+                                  )}
+                                  {previewData.data.calculations.incomeTax >
+                                    0 && (
+                                    <Group justify="space-between">
+                                      <Text>Income Tax</Text>
+                                      <Text fw={600} c="red">
+                                        − ₹{' '}
+                                        {previewData.data.calculations.incomeTax.toFixed(
+                                          2
+                                        )}
+                                      </Text>
+                                    </Group>
+                                  )}
+                                  {previewData.data.calculations
+                                    .otherDeductions > 0 && (
+                                    <Group justify="space-between">
+                                      <Text>Other Deductions</Text>
+                                      <Text fw={600} c="red">
+                                        − ₹{' '}
+                                        {previewData.data.calculations.otherDeductions.toFixed(
+                                          2
+                                        )}
+                                      </Text>
+                                    </Group>
+                                  )}
+                                </>
+                              ) : null}
+                            </>
+                          )}
+
+                          {/* Extra allowances from local state are likely already included in 'otherAllowances' in API response */}
+                          {!previewData &&
+                            additionalAllowances.map((item, i) => (
+                              <Group key={i} justify="space-between">
+                                <Text>
+                                  {item.label} (
+                                  {item.type === 'deduct' ? '-' : '+'})
+                                </Text>
+                                <Text
+                                  fw={600}
+                                  c={item.type === 'deduct' ? 'red' : 'inherit'}
+                                >
+                                  {item.type === 'deduct' ? '− ' : ''}₹{' '}
+                                  {item.amount}
+                                </Text>
+                              </Group>
+                            ))}
+                          <Card
+                            bg="green.0"
+                            p="md"
+                            mt="md"
+                            radius="md"
+                            style={{
+                              border: `1px dashed ${currentThemeConfig.successColor}`
+                            }}
+                          >
+                            <Group justify="space-between">
+                              <Text
+                                fw={700}
+                                c={currentThemeConfig.successColor}
+                              >
+                                Net Payable
+                              </Text>
+                              <Text
+                                fw={800}
+                                size="xl"
+                                c={currentThemeConfig.successColor}
+                              >
+                                ₹{' '}
+                                {(
+                                  previewData?.data?.calculations?.netPay ?? 0
+                                ).toFixed(2)}
+                              </Text>
+                            </Group>
+                          </Card>
+                        </Card>
+                      </Grid.Col>
+                    </Grid>
+
+                    <Divider mt="xl" />
+                    <Group justify="space-between" pb="md">
+                      <Button
+                        variant="subtle"
+                        color="gray"
+                        radius="lg"
+                        onClick={prevStep}
+                      >
                         Back
                       </Button>
 
-                      {!generatedPdf ? (
-                        <Button
-                          type="submit"
-                          radius="lg"
-                          loading={isGenerating}
-                        >
-                          Generate
-                        </Button>
-                      ) : (
-                        <Button
-                          color="green"
-                          radius="lg"
-                          type="button"
-                          onClick={() => {
-                            if (!generatedPdf) return;
-
-                            try {
-                              const url =
-                                window.URL.createObjectURL(generatedPdf);
-                              const link = document.createElement('a');
-
-                              link.href = url;
-                              link.download = `SalarySlip_${empDetails.empId}_${
-                                selectedMonth instanceof Date
-                                  ? selectedMonth.toISOString().slice(0, 7)
-                                  : new Date().toISOString().slice(0, 7)
-                              }.pdf`;
-
-                              document.body.appendChild(link);
-                              link.click();
-                              document.body.removeChild(link);
-                              window.URL.revokeObjectURL(url);
-                            } catch (error) {
-                              console.error('Download failed', error);
-                              toast.error('Failed to download PDF');
-                            }
-                          }}
-                        >
-                          Download PDF
-                        </Button>
-                      )}
+                      <Button type="submit" radius="lg" loading={isGenerating}>
+                        Download Salary Slip
+                      </Button>
                     </Group>
                   </Stack>
                 </form>
