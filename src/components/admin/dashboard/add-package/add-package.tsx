@@ -14,12 +14,20 @@ import {
 } from '../../../../forms/add-package';
 import { toast } from 'react-toastify';
 import { BackButton } from '../../../common/style-components/buttons';
+import { useMemo } from 'react';
+import { themeAtom } from '../../../../atoms/theme';
 
 const AddPackage = () => {
   const navigate = useNavigate();
   const params = useParams();
   const packageId = params.packageId as string;
   const organizationConfig = useRecoilValue(organizationThemeAtom);
+
+  const isDarkTheme = useRecoilValue(themeAtom);
+  const currentThemeConfig = useMemo(() => {
+    const orgTheme = organizationConfig.organization_theme;
+    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+  }, [organizationConfig, isDarkTheme]);
   const {
     register,
     handleSubmit,
@@ -50,13 +58,15 @@ const AddPackage = () => {
         <form
           onSubmit={handleSubmit(onSubmit)}
           style={{
-            backgroundColor:
-              organizationConfig.organization_theme.theme.backgroundColor
+            backgroundColor: currentThemeConfig.backgroundColor
           }}
           className="rounded-lg shadow-lg w-full p-8"
         >
           <div className="px-2 py-4 flex justify-between items-center flex-wrap">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold underline">
+            <h1
+              className="text-xl sm:text-2xl md:text-3xl font-extrabold underline"
+              style={{ color: currentThemeConfig.color }}
+            >
               Add Package
             </h1>
             <BackButton id={packageId} />
@@ -122,12 +132,7 @@ const AddPackage = () => {
               data-testid="submitButton"
               leftSection={
                 isSubmitting && (
-                  <Loader
-                    size="xs"
-                    color={
-                      organizationConfig.organization_theme.theme.button.color
-                    }
-                  />
+                  <Loader size="xs" color={currentThemeConfig.button.color} />
                 )
               }
               disabled={isSubmitting}
