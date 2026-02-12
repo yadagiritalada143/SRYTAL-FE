@@ -3,7 +3,6 @@ import {
   Container,
   Card,
   Title,
-  Stepper,
   Button,
   Group,
   TextInput,
@@ -20,22 +19,27 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { MonthPickerInput } from '@mantine/dates';
 import '@mantine/dates/styles.css';
 import { toast } from 'react-toastify';
-import { IconAlertCircle } from '@tabler/icons-react';
+import {
+  IconAlertCircle,
+  IconCheck,
+  IconCircleCheck
+} from '@tabler/icons-react';
 import {
   getAllEmployeeDetailsByAdmin,
-  generateSalarySlip
+  generateSalarySlip,
+  previewSalarySlip
 } from '../../../../services/admin-services';
 import {
   generateSalarySlipSchema,
   GenerateSalarySlipForm
 } from '../../../../forms/generate-salary-slip';
-import { previewSalarySlip } from '../../../../services/admin-services';
 import { PreviewSalarySlipResponse } from '../../../../interfaces/salary-slip';
 import { useRecoilValue } from 'recoil';
 import { organizationThemeAtom } from '../../../../atoms/organization-atom';
 import { themeAtom } from '../../../../atoms/theme';
 import { useMediaQuery } from '@mantine/hooks';
 import { useCustomToast } from '../../../../utils/common/toast';
+import DynamicStepper from '../../../common/reports-salary-slip/dynamicstepper';
 
 type ReadOnlyFieldProps = {
   label: string;
@@ -92,20 +96,12 @@ type Employee = {
   employeeRole?: { designation?: string }[];
 };
 
-const steps = [
-  {
-    label: 'Fill Details',
-    description: 'Employee Info',
-    enabled: true
-  },
-  {
-    label: 'Calculation',
-    description: 'Salary Breakdown',
-    enabled: true
-  },
+const stepsConfig = [
+  { label: 'Fill Details', description: 'Employee Info', enabled: true },
+  { label: 'Calculation', description: 'Salary Breakdown', enabled: true },
   {
     label: 'Generate Salary Slip',
-    description: 'Review & Generate',
+    description: 'Review & Download',
     enabled: true
   }
 ];
@@ -156,7 +152,7 @@ const GenerateSalarySlipReport = () => {
     watch,
     trigger,
     setValue,
-    formState: { errors, isSubmitting }
+    formState: { errors }
   } = useForm<GenerateSalarySlipForm>({
     resolver: zodResolver(generateSalarySlipSchema),
     defaultValues: {
@@ -276,8 +272,8 @@ const GenerateSalarySlipReport = () => {
       empName:
         selectedEmployee.firstName + ' ' + (selectedEmployee.lastName || ''),
       designation: selectedEmployee.employeeRole?.[0]?.designation || '',
-      department: 'Engineering', // TODO: Fetch from employee details if available
-      doj: '2024-01-15', // TODO: Fetch from employee details if available
+      department: 'Engineering',
+      doj: '2024-01-15',
       email: selectedEmployee.email || '',
       dob: formatDate(selectedEmployee.dateOfBirth || ''),
       bankAccount: selectedEmployee.bankDetailsInfo?.accountNumber || '',
@@ -370,7 +366,7 @@ const GenerateSalarySlipReport = () => {
 
         const response = await previewSalarySlip(payload);
         setPreviewData(response);
-        setActiveStep(current => (current < 2 ? current + 1 : current));
+        setActiveStep(2);
       } catch (error: any) {
         toast.error(
           error?.response?.data?.message ||
@@ -379,8 +375,6 @@ const GenerateSalarySlipReport = () => {
       } finally {
         setIsPreviewLoading(false);
       }
-    } else {
-      setActiveStep(current => (current < 2 ? current + 1 : current));
     }
   };
 
@@ -472,10 +466,8 @@ const GenerateSalarySlipReport = () => {
         link.click();
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
-
         showSuccessToast('Salary slip generated successfully!');
-      } else {
-        throw new Error('Invalid PDF data');
+        setActiveStep(3);
       }
     } catch (error: any) {
       toast.error(
@@ -512,871 +504,833 @@ const GenerateSalarySlipReport = () => {
         <Title order={2} ta="center" mb="xl">
           Generate Salary Slip
         </Title>
+        <DynamicStepper steps={stepsConfig} active={activeStep}>
+          {[
+            //{/* ================= STEP 1 ================= */}
+            <Stack key="step1" mt="lg" gap="lg">
+              <Title order={5}>Employee Information</Title>
+              <Grid>
+                <Grid.Col span={{ base: 12, sm: 6 }}>
+                  <Select
+                    label="Employee ID"
+                    placeholder={
+                      isLoadingEmployees ? 'Loading...' : 'Select employee'
+                    }
+                    searchable
+                    required
+                    data={employees
+                      .filter(emp => emp.employeeId)
+                      .map(emp => ({
+                        value: emp.employeeId,
+                        label: `${emp.employeeId} - ${emp.firstName} ${emp.lastName}`
+                      }))}
+                    value={empDetails.empId}
+                    onChange={value => handleEmployeeChange(value)}
+                    error={errors.employeeId?.message}
+                  />
+                </Grid.Col>
+                <Grid.Col span={{ base: 12, sm: 6 }}>
+                  <ReadOnlyField
+                    label="Employee Name"
+                    value={empDetails.empName}
+                    color={currentThemeConfig.color}
+                  />
+                </Grid.Col>
 
-        <Stepper
-          active={activeStep}
-          size="sm"
-          styles={{
-            stepLabel: {
-              fontSize: '12px',
-              color: currentThemeConfig.color
-            },
-            stepDescription: {
-              fontSize: '11px',
-              color: currentThemeConfig.color,
-              opacity: 0.8
-            },
-            separator: {
-              height: 2,
-              backgroundColor: currentThemeConfig.button.color
-            }
-          }}
-        >
-          {steps.map((step, index) => (
-            <Stepper.Step
-              key={index}
-              label={step.label}
-              description={step.description}
-              allowStepSelect={step.enabled}
-            >
-              {/* ================= STEP 1 ================= */}
-              {index === 0 && (
-                <Stack mt="lg" gap="md">
-                  <Card
-                    shadow="sm"
-                    radius="md"
-                    p={isMobile ? 'md' : 'lg'}
-                    withBorder
-                    style={{
-                      backgroundColor: currentThemeConfig.headerBackgroundColor,
-                      color: currentThemeConfig.color
-                    }}
-                  >
-                    <Title order={5} mb="md">
-                      Employee Information
-                    </Title>
-                    <Grid mb="md">
-                      <Grid.Col span={{ base: 12, sm: 6 }}>
-                        <Select
-                          label="Employee ID"
-                          placeholder={
-                            isLoadingEmployees
-                              ? 'Loading...'
-                              : 'Select employee'
+                <Grid.Col span={{ base: 12, sm: 6 }}>
+                  <ReadOnlyField
+                    label="Email"
+                    value={empDetails.email}
+                    color={currentThemeConfig.color}
+                  />
+                </Grid.Col>
+
+                <Grid.Col span={{ base: 12, sm: 6 }}>
+                  <ReadOnlyField
+                    label="Designation"
+                    value={empDetails.designation}
+                    color={currentThemeConfig.color}
+                  />
+                </Grid.Col>
+
+                <Grid.Col span={{ base: 12, sm: 6 }}>
+                  <ReadOnlyField
+                    label="Date of Birth"
+                    value={empDetails.dob}
+                    color={currentThemeConfig.color}
+                  />
+                </Grid.Col>
+              </Grid>
+
+              <Divider />
+
+              <Title order={5}>Bank Details</Title>
+
+              <Grid>
+                <Grid.Col span={{ base: 12, sm: 6 }}>
+                  <ReadOnlyField
+                    label="Bank Account Number"
+                    value={empDetails.bankAccount}
+                    color={currentThemeConfig.color}
+                  />
+                </Grid.Col>
+
+                <Grid.Col span={{ base: 12, sm: 6 }}>
+                  <ReadOnlyField
+                    label="IFSC Code"
+                    value={empDetails.ifsc}
+                    color={currentThemeConfig.color}
+                  />
+                </Grid.Col>
+
+                <Grid.Col span={{ base: 12, sm: 6 }}>
+                  <ReadOnlyField
+                    label="PAN Number"
+                    value={empDetails.pan}
+                    color={currentThemeConfig.color}
+                  />
+                </Grid.Col>
+              </Grid>
+
+              <Divider />
+              <Title order={5}>Salary Period</Title>
+
+              <Grid align="flex-end">
+                <Grid.Col span={4}>
+                  <Controller
+                    name="selectedMonth"
+                    control={control}
+                    render={({ field }) => (
+                      <MonthPickerInput
+                        styles={{
+                          input: {
+                            backgroundColor:
+                              currentThemeConfig.headerBackgroundColor,
+                            color: currentThemeConfig.color,
+                            borderColor: currentThemeConfig.borderColor
+                          },
+                          label: {
+                            color: currentThemeConfig.color
                           }
-                          searchable
-                          required
-                          data={employees
-                            .filter(emp => emp.employeeId)
-                            .map(emp => ({
-                              value: emp.employeeId,
-                              label: `${emp.employeeId} - ${emp.firstName} ${emp.lastName}`
-                            }))}
-                          value={empDetails.empId}
-                          onChange={value => handleEmployeeChange(value)}
-                          error={errors.employeeId?.message}
-                        />
-                      </Grid.Col>
-                      <Grid.Col span={{ base: 12, sm: 6 }}>
-                        <ReadOnlyField
-                          label="Employee Name"
-                          value={empDetails.empName}
-                          color={currentThemeConfig.color}
-                        />
-                      </Grid.Col>
-
-                      <Grid.Col span={{ base: 12, sm: 6 }}>
-                        <ReadOnlyField
-                          label="Email"
-                          value={empDetails.email}
-                          color={currentThemeConfig.color}
-                        />
-                      </Grid.Col>
-
-                      <Grid.Col span={{ base: 12, sm: 6 }}>
-                        <ReadOnlyField
-                          label="Designation"
-                          value={empDetails.designation}
-                          color={currentThemeConfig.color}
-                        />
-                      </Grid.Col>
-
-                      <Grid.Col span={{ base: 12, sm: 6 }}>
-                        <ReadOnlyField
-                          label="Date of Birth"
-                          value={empDetails.dob}
-                          color={currentThemeConfig.color}
-                        />
-                      </Grid.Col>
-                    </Grid>
-
-                    <Divider mb="md" />
-
-                    <Title order={5} mb="md">
-                      Bank Details
-                    </Title>
-
-                    <Grid>
-                      <Grid.Col span={{ base: 12, sm: 6 }}>
-                        <ReadOnlyField
-                          label="Bank Account Number"
-                          value={empDetails.bankAccount}
-                          color={currentThemeConfig.color}
-                        />
-                      </Grid.Col>
-
-                      <Grid.Col span={{ base: 12, sm: 6 }}>
-                        <ReadOnlyField
-                          label="IFSC Code"
-                          value={empDetails.ifsc}
-                          color={currentThemeConfig.color}
-                        />
-                      </Grid.Col>
-
-                      <Grid.Col span={{ base: 12, sm: 6 }}>
-                        <ReadOnlyField
-                          label="PAN Number"
-                          value={empDetails.pan}
-                          color={currentThemeConfig.color}
-                        />
-                      </Grid.Col>
-                    </Grid>
-                  </Card>
-                  <Card
-                    shadow="sm"
-                    radius="md"
-                    p={isMobile ? 'md' : 'lg'}
-                    withBorder
-                    style={{
-                      backgroundColor: currentThemeConfig.headerBackgroundColor,
-                      color: currentThemeConfig.color
-                    }}
-                  >
-                    <Title order={5} mb="md">
-                      Salary Period
-                    </Title>
-
-                    <Grid align="flex-start">
-                      <Grid.Col span={4}>
-                        <Controller
-                          name="selectedMonth"
-                          control={control}
-                          render={({ field }) => (
-                            <MonthPickerInput
-                              styles={{
-                                input: {
-                                  backgroundColor:
-                                    currentThemeConfig.headerBackgroundColor,
-                                  color: currentThemeConfig.color,
-                                  borderColor: currentThemeConfig.borderColor
-                                },
-                                label: {
-                                  color: currentThemeConfig.color
-                                }
-                              }}
-                              value={
-                                field.value
-                                  ? field.value instanceof Date
-                                    ? field.value
-                                    : new Date(field.value)
-                                  : null
-                              }
-                              onChange={field.onChange}
-                              label="Select Month"
-                              required
-                              placeholder="Pick month"
-                              error={errors.selectedMonth?.message}
-                            />
-                          )}
-                        />
-                      </Grid.Col>
-
-                      <Grid.Col span={4}>
-                        <ReadOnlyField
-                          label="Total Days"
-                          value={
-                            calculatedDaysInMonth > 0
-                              ? String(calculatedDaysInMonth)
-                              : ''
-                          }
-                          color={currentThemeConfig.color}
-                          error={errors.daysInMonth?.message}
-                        />
-                      </Grid.Col>
-
-                      <Grid.Col span={4}>
-                        <TextInput
-                          label="LOP Days"
-                          {...register('lopDays', { valueAsNumber: true })}
-                          type="number"
-                          placeholder="0"
-                          error={errors.lopDays?.message}
-                        />
-                      </Grid.Col>
-                    </Grid>
-
-                    <Group justify="flex-end" mt="xl">
-                      <Button onClick={nextStep} radius="lg">
-                        Next
-                      </Button>
-                    </Group>
-                  </Card>
-                </Stack>
-              )}
-
-              {/* ================= STEP 2 ================= */}
-              {index === 1 && (
-                <Stack mt="lg" gap="md">
-                  <Card
-                    shadow="sm"
-                    radius="md"
-                    p={isMobile ? 'md' : 'lg'}
-                    withBorder
-                    style={{
-                      backgroundColor: currentThemeConfig.headerBackgroundColor,
-                      color: currentThemeConfig.color
-                    }}
-                  >
-                    <Title order={5} mb="md">
-                      Earnings
-                    </Title>
-
-                    <Grid>
-                      <Grid.Col span={{ base: 12, sm: 6 }}>
-                        <TextInput
-                          label="Basic Salary"
-                          type="number"
-                          onKeyDown={e => {
-                            if (['e', 'E', '+', '-'].includes(e.key)) {
-                              e.preventDefault();
-                            }
-                          }}
-                          {...register('basicSalary', {
-                            valueAsNumber: true
-                          })}
-                        />
-                      </Grid.Col>
-
-                      <Grid.Col span={{ base: 12, sm: 6 }}>
-                        <TextInput
-                          label="HRA (%)"
-                          type="number"
-                          onKeyDown={e => {
-                            if (['e', 'E', '+', '-'].includes(e.key)) {
-                              e.preventDefault();
-                            }
-                          }}
-                          {...register('hraPercentage', {
-                            valueAsNumber: true
-                          })}
-                        />
-                      </Grid.Col>
-
-                      <Grid.Col span={{ base: 12, sm: 6 }}>
-                        <TextInput
-                          label="Special Allowance"
-                          type="number"
-                          onKeyDown={e => {
-                            if (['e', 'E', '+', '-'].includes(e.key)) {
-                              e.preventDefault();
-                            }
-                          }}
-                          {...register('specialAllowance', {
-                            valueAsNumber: true
-                          })}
-                        />
-                      </Grid.Col>
-
-                      <Grid.Col span={{ base: 12, sm: 6 }}>
-                        <TextInput
-                          label="Conveyance Allowance"
-                          type="number"
-                          onKeyDown={e => {
-                            if (['e', 'E', '+', '-'].includes(e.key)) {
-                              e.preventDefault();
-                            }
-                          }}
-                          {...register('conveyanceAllowance', {
-                            valueAsNumber: true
-                          })}
-                        />
-                      </Grid.Col>
-
-                      <Grid.Col span={{ base: 12, sm: 6 }}>
-                        <TextInput
-                          label="Medical Allowance"
-                          type="number"
-                          onKeyDown={e => {
-                            if (['e', 'E', '+', '-'].includes(e.key)) {
-                              e.preventDefault();
-                            }
-                          }}
-                          {...register('medicalAllowance', {
-                            valueAsNumber: true
-                          })}
-                        />
-                      </Grid.Col>
-
-                      <Grid.Col span={{ base: 12, sm: 6 }}>
-                        <TextInput
-                          label="Other Allowances"
-                          type="number"
-                          onKeyDown={e => {
-                            if (['e', 'E', '+', '-'].includes(e.key)) {
-                              e.preventDefault();
-                            }
-                          }}
-                          {...register('otherAllowances', {
-                            valueAsNumber: true
-                          })}
-                        />
-                      </Grid.Col>
-                    </Grid>
-                  </Card>
-
-                  <Card
-                    shadow="sm"
-                    radius="md"
-                    p={isMobile ? 'md' : 'lg'}
-                    withBorder
-                    style={{
-                      backgroundColor: currentThemeConfig.headerBackgroundColor,
-                      color: currentThemeConfig.color
-                    }}
-                  >
-                    <Group justify="space-between" mb="md">
-                      <Title order={6}>Additional Allowances</Title>
-
-                      <Button
-                        type="button"
-                        variant="light"
-                        radius="lg"
-                        onClick={() =>
-                          append({ label: '', amount: 0, type: 'add' })
+                        }}
+                        value={
+                          field.value
+                            ? field.value instanceof Date
+                              ? field.value
+                              : new Date(field.value)
+                            : null
                         }
-                      >
-                        + Add More
-                      </Button>
+                        onChange={field.onChange}
+                        label="Select Month"
+                        required
+                        placeholder="Pick month"
+                        error={errors.selectedMonth?.message}
+                      />
+                    )}
+                  />
+                </Grid.Col>
+
+                <Grid.Col span={4}>
+                  <ReadOnlyField
+                    label="Total Days"
+                    value={
+                      calculatedDaysInMonth > 0
+                        ? String(calculatedDaysInMonth)
+                        : ''
+                    }
+                    color={currentThemeConfig.color}
+                    error={errors.daysInMonth?.message}
+                  />
+                </Grid.Col>
+
+                <Grid.Col span={4}>
+                  <TextInput
+                    label="LOP Days"
+                    {...register('lopDays', { valueAsNumber: true })}
+                    type="number"
+                    placeholder="0"
+                    error={errors.lopDays?.message}
+                  />
+                </Grid.Col>
+              </Grid>
+
+              <Group justify="flex-end" mt="xl">
+                <Button onClick={nextStep} radius="lg">
+                  Next
+                </Button>
+              </Group>
+            </Stack>,
+            //{/* ================= STEP 2 ================= */}
+            <Stack key="step2" mt="lg" gap="md">
+              <Card
+                radius="md"
+                p={isMobile ? 'md' : 'lg'}
+                withBorder
+                style={{
+                  backgroundColor: currentThemeConfig.headerBackgroundColor,
+                  color: currentThemeConfig.color
+                }}
+              >
+                <Title order={5} mb="md">
+                  Earnings Breakdown
+                </Title>
+
+                <Grid>
+                  <Grid.Col span={{ base: 12, sm: 6 }}>
+                    <TextInput
+                      label="Basic Salary"
+                      type="number"
+                      onKeyDown={e => {
+                        if (['e', 'E', '+', '-'].includes(e.key)) {
+                          e.preventDefault();
+                        }
+                      }}
+                      {...register('basicSalary', {
+                        valueAsNumber: true
+                      })}
+                    />
+                  </Grid.Col>
+
+                  <Grid.Col span={{ base: 12, sm: 6 }}>
+                    <TextInput
+                      label="HRA (%)"
+                      type="number"
+                      onKeyDown={e => {
+                        if (['e', 'E', '+', '-'].includes(e.key)) {
+                          e.preventDefault();
+                        }
+                      }}
+                      {...register('hraPercentage', {
+                        valueAsNumber: true
+                      })}
+                    />
+                  </Grid.Col>
+
+                  <Grid.Col span={{ base: 12, sm: 6 }}>
+                    <TextInput
+                      label="Special Allowance"
+                      type="number"
+                      onKeyDown={e => {
+                        if (['e', 'E', '+', '-'].includes(e.key)) {
+                          e.preventDefault();
+                        }
+                      }}
+                      {...register('specialAllowance', {
+                        valueAsNumber: true
+                      })}
+                    />
+                  </Grid.Col>
+
+                  <Grid.Col span={{ base: 12, sm: 6 }}>
+                    <TextInput
+                      label="Conveyance Allowance"
+                      type="number"
+                      onKeyDown={e => {
+                        if (['e', 'E', '+', '-'].includes(e.key)) {
+                          e.preventDefault();
+                        }
+                      }}
+                      {...register('conveyanceAllowance', {
+                        valueAsNumber: true
+                      })}
+                    />
+                  </Grid.Col>
+
+                  <Grid.Col span={{ base: 12, sm: 6 }}>
+                    <TextInput
+                      label="Medical Allowance"
+                      type="number"
+                      onKeyDown={e => {
+                        if (['e', 'E', '+', '-'].includes(e.key)) {
+                          e.preventDefault();
+                        }
+                      }}
+                      {...register('medicalAllowance', {
+                        valueAsNumber: true
+                      })}
+                    />
+                  </Grid.Col>
+
+                  <Grid.Col span={{ base: 12, sm: 6 }}>
+                    <TextInput
+                      label="Other Allowances"
+                      type="number"
+                      onKeyDown={e => {
+                        if (['e', 'E', '+', '-'].includes(e.key)) {
+                          e.preventDefault();
+                        }
+                      }}
+                      {...register('otherAllowances', {
+                        valueAsNumber: true
+                      })}
+                    />
+                  </Grid.Col>
+                </Grid>
+              </Card>
+
+              <Card
+                shadow="sm"
+                radius="md"
+                p={isMobile ? 'md' : 'lg'}
+                withBorder
+                style={{
+                  backgroundColor: currentThemeConfig.headerBackgroundColor,
+                  color: currentThemeConfig.color
+                }}
+              >
+                <Group justify="space-between" mb="md">
+                  <Title order={6}>Additional Allowances</Title>
+
+                  <Button
+                    type="button"
+                    variant="light"
+                    radius="lg"
+                    onClick={() =>
+                      append({ label: '', amount: 0, type: 'add' })
+                    }
+                  >
+                    + Add More
+                  </Button>
+                </Group>
+
+                <Stack>
+                  {fields.map((field, index) => (
+                    <Group key={field.id} grow>
+                      <Grid grow>
+                        <Grid.Col span={4}>
+                          <TextInput
+                            placeholder="Allowance Name"
+                            {...register(`additionalAllowances.${index}.label`)}
+                          />
+                        </Grid.Col>
+                        <Grid.Col span={3}>
+                          <TextInput
+                            type="number"
+                            placeholder="Amount"
+                            onKeyDown={e => {
+                              if (['e', 'E', '+', '-'].includes(e.key)) {
+                                e.preventDefault();
+                              }
+                            }}
+                            {...register(
+                              `additionalAllowances.${index}.amount`,
+                              {
+                                valueAsNumber: true
+                              }
+                            )}
+                          />
+                        </Grid.Col>
+                        <Grid.Col span={3}>
+                          <Select
+                            data={[
+                              { value: 'add', label: 'Add' },
+                              { value: 'deduct', label: 'Deduct' }
+                            ]}
+                            {...register(`additionalAllowances.${index}.type`)}
+                            defaultValue="add"
+                            onChange={value =>
+                              setValue(
+                                `additionalAllowances.${index}.type`,
+                                value as 'add' | 'deduct'
+                              )
+                            }
+                          />
+                        </Grid.Col>
+                        <Grid.Col span={2}>
+                          <Button
+                            type="button"
+                            color="red"
+                            radius="md"
+                            variant="subtle"
+                            onClick={() => remove(index)}
+                          >
+                            Remove
+                          </Button>
+                        </Grid.Col>
+                      </Grid>
                     </Group>
-
-                    <Stack>
-                      {fields.map((field, index) => (
-                        <Group key={field.id} grow>
-                          <Grid grow>
-                            <Grid.Col span={4}>
-                              <TextInput
-                                placeholder="Allowance Name"
-                                {...register(
-                                  `additionalAllowances.${index}.label`
-                                )}
-                              />
-                            </Grid.Col>
-                            <Grid.Col span={3}>
-                              <TextInput
-                                type="number"
-                                placeholder="Amount"
-                                onKeyDown={e => {
-                                  if (['e', 'E', '+', '-'].includes(e.key)) {
-                                    e.preventDefault();
-                                  }
-                                }}
-                                {...register(
-                                  `additionalAllowances.${index}.amount`,
-                                  {
-                                    valueAsNumber: true
-                                  }
-                                )}
-                              />
-                            </Grid.Col>
-                            <Grid.Col span={3}>
-                              <Select
-                                data={[
-                                  { value: 'add', label: 'Add' },
-                                  { value: 'deduct', label: 'Deduct' }
-                                ]}
-                                {...register(
-                                  `additionalAllowances.${index}.type`
-                                )}
-                                defaultValue="add"
-                                onChange={value =>
-                                  setValue(
-                                    `additionalAllowances.${index}.type`,
-                                    value as 'add' | 'deduct'
-                                  )
-                                }
-                              />
-                            </Grid.Col>
-                            <Grid.Col span={2}>
-                              <Button
-                                type="button"
-                                color="red"
-                                radius="md"
-                                variant="subtle"
-                                onClick={() => remove(index)}
-                              >
-                                Remove
-                              </Button>
-                            </Grid.Col>
-                          </Grid>
-                        </Group>
-                      ))}
-                    </Stack>
-                  </Card>
-
-                  <Group justify="space-between" mt="xl">
-                    <Button variant="default" radius="lg" onClick={prevStep}>
-                      Back
-                    </Button>
-
-                    <Button
-                      loading={isPreviewLoading}
-                      onClick={nextStep}
-                      radius="lg"
-                    >
-                      Preview
-                    </Button>
-                  </Group>
+                  ))}
                 </Stack>
-              )}
+              </Card>
 
-              {/* ================= STEP 3 ================= */}
-              {index === 2 && (
-                <form onSubmit={handleSubmit(onSubmit)}>
-                  <Stack mt="lg" gap="xl">
-                    <Group justify="space-between" align="flex-end">
-                      <div>
-                        <Title order={3}>Salary Slip Summary</Title>
-                      </div>
-                      <Alert
-                        icon={<IconAlertCircle size={16} />}
-                        title="Review Details"
-                        color={isDarkTheme ? 'cyan' : 'blue'}
-                        py={5}
-                        variant="light"
-                      ></Alert>
-                    </Group>
+              <Group justify="space-between" mt="xl">
+                <Button variant="default" radius="lg" onClick={prevStep}>
+                  Back
+                </Button>
 
-                    <Grid gutter="md">
-                      <Grid.Col span={{ base: 4 }}>
-                        <Card
-                          withBorder
-                          radius="md"
-                          p="sm"
-                          ta="center"
-                          style={{
-                            borderLeft: `4px solid ${currentThemeConfig.accentColor}`
-                          }}
-                        >
+                <Button
+                  loading={isPreviewLoading}
+                  onClick={nextStep}
+                  radius="lg"
+                >
+                  Preview
+                </Button>
+              </Group>
+            </Stack>,
+
+            //{/* ================= STEP 3 ================= */}{' '}
+            <form key="step3" onSubmit={handleSubmit(onSubmit)}>
+              <Stack mt="lg" gap="xl">
+                <Group justify="space-between" align="flex-end">
+                  <div>
+                    <Title order={3}>Salary Slip Summary</Title>
+                  </div>
+                  <Alert
+                    icon={<IconAlertCircle size={16} />}
+                    title="Review Details"
+                    color={isDarkTheme ? 'cyan' : 'blue'}
+                    py={5}
+                    variant="light"
+                  ></Alert>
+                </Group>
+
+                <Grid gutter="md">
+                  <Grid.Col span={{ base: 4 }}>
+                    <Card
+                      withBorder
+                      radius="md"
+                      p="sm"
+                      ta="center"
+                      style={{
+                        borderLeft: `4px solid ${currentThemeConfig.accentColor}`
+                      }}
+                    >
+                      <Text
+                        size="xs"
+                        fw={700}
+                        tt="uppercase"
+                        c={currentThemeConfig.accentColor}
+                      >
+                        Total Days
+                      </Text>
+                      <Text
+                        size="xl"
+                        fw={800}
+                        c={currentThemeConfig.accentColor}
+                      >
+                        {daysInMonth}
+                      </Text>
+                    </Card>
+                  </Grid.Col>
+                  <Grid.Col span={{ base: 4 }}>
+                    <Card
+                      withBorder
+                      radius="md"
+                      p="sm"
+                      ta="center"
+                      style={{
+                        borderLeft: `4px solid ${dangerBorderColor}`
+                      }}
+                    >
+                      <Text
+                        size="xs"
+                        fw={700}
+                        tt="uppercase"
+                        c={currentThemeConfig.lightDangerColor}
+                      >
+                        LOP Days
+                      </Text>
+                      <Text
+                        size="xl"
+                        fw={800}
+                        c={currentThemeConfig.lightDangerColor}
+                      >
+                        {lopDays || 0}
+                      </Text>
+                    </Card>
+                  </Grid.Col>
+                  <Grid.Col span={{ base: 4 }}>
+                    <Card
+                      withBorder
+                      radius="md"
+                      p="sm"
+                      ta="center"
+                      style={{
+                        borderLeft: `4px solid ${currentThemeConfig.successColor}`
+                      }}
+                    >
+                      <Text
+                        size="xs"
+                        fw={700}
+                        tt="uppercase"
+                        c={currentThemeConfig.successColor}
+                      >
+                        Working Days
+                      </Text>
+                      <Text
+                        size="xl"
+                        fw={800}
+                        c={currentThemeConfig.successColor}
+                      >
+                        {Math.max((daysInMonth || 0) - (lopDays || 0), 0)}
+                      </Text>
+                    </Card>
+                  </Grid.Col>
+                </Grid>
+
+                <Grid gutter="xl">
+                  <Grid.Col span={{ base: 12, md: 5 }}>
+                    <Card withBorder radius="md" p="lg" h="100%">
+                      <Text fw={700} mb="md" size="sm" tt="uppercase">
+                        Employee Details
+                      </Text>
+                      <Stack gap="xs">
+                        <Group justify="space-between">
+                          <Text size="sm" opacity={0.7}>
+                            Name
+                          </Text>
+                          <Text size="sm" fw={600}>
+                            {empDetails.empName}
+                          </Text>
+                        </Group>
+
+                        <Group justify="space-between">
+                          <Text size="sm" opacity={0.7}>
+                            Employee ID
+                          </Text>
+                          <Text size="sm" fw={600}>
+                            {empDetails.empId}
+                          </Text>
+                        </Group>
+
+                        <Group justify="space-between">
+                          <Text size="sm" opacity={0.7}>
+                            Designation
+                          </Text>
+                          <Text size="sm" fw={600}>
+                            {empDetails.designation}
+                          </Text>
+                        </Group>
+
+                        <Group justify="space-between">
+                          <Text size="sm" opacity={0.7}>
+                            Email
+                          </Text>
+                          <Text size="sm" fw={600}>
+                            {empDetails.email}
+                          </Text>
+                        </Group>
+
+                        <Group justify="space-between">
+                          <Text size="sm" opacity={0.7}>
+                            Date of Birth
+                          </Text>
+                          <Text size="sm" fw={600}>
+                            {empDetails.dob}
+                          </Text>
+                        </Group>
+
+                        <Group justify="space-between">
+                          <Text size="sm" opacity={0.7}>
+                            PAN
+                          </Text>
+                          <Text size="sm" fw={600}>
+                            {empDetails.pan}
+                          </Text>
+                        </Group>
+                        <Divider my="xs" />
+                        <Group justify="space-between">
+                          <Text size="sm" opacity={0.7}>
+                            Pay Period
+                          </Text>
                           <Text
-                            size="xs"
+                            size="sm"
                             fw={700}
-                            tt="uppercase"
                             c={currentThemeConfig.accentColor}
                           >
-                            Total Days
+                            {(() => {
+                              const monthDate = normalMonth(selectedMonth);
+                              return monthDate
+                                ? monthDate.toLocaleDateString('en-US', {
+                                    month: 'long',
+                                    year: 'numeric'
+                                  })
+                                : '-';
+                            })()}
                           </Text>
-                          <Text
-                            size="xl"
-                            fw={800}
-                            c={currentThemeConfig.accentColor}
-                          >
-                            {daysInMonth}
-                          </Text>
-                        </Card>
-                      </Grid.Col>
-                      <Grid.Col span={{ base: 4 }}>
-                        <Card
-                          withBorder
-                          radius="md"
-                          p="sm"
-                          ta="center"
-                          style={{
-                            borderLeft: `4px solid ${dangerBorderColor}`
-                          }}
-                        >
-                          <Text
-                            size="xs"
-                            fw={700}
-                            tt="uppercase"
-                            c={currentThemeConfig.lightDangerColor}
-                          >
-                            LOP Days
-                          </Text>
-                          <Text
-                            size="xl"
-                            fw={800}
-                            c={currentThemeConfig.lightDangerColor}
-                          >
-                            {lopDays || 0}
-                          </Text>
-                        </Card>
-                      </Grid.Col>
-                      <Grid.Col span={{ base: 4 }}>
-                        <Card
-                          withBorder
-                          radius="md"
-                          p="sm"
-                          ta="center"
-                          style={{
-                            borderLeft: `4px solid ${currentThemeConfig.successColor}`
-                          }}
-                        >
-                          <Text
-                            size="xs"
-                            fw={700}
-                            tt="uppercase"
-                            c={currentThemeConfig.successColor}
-                          >
-                            Working Days
-                          </Text>
-                          <Text
-                            size="xl"
-                            fw={800}
-                            c={currentThemeConfig.successColor}
-                          >
-                            {Math.max((daysInMonth || 0) - (lopDays || 0), 0)}
-                          </Text>
-                        </Card>
-                      </Grid.Col>
-                    </Grid>
+                        </Group>
+                      </Stack>
+                    </Card>
+                  </Grid.Col>
 
-                    <Grid gutter="xl">
-                      <Grid.Col span={{ base: 12, md: 5 }}>
-                        <Card withBorder radius="md" p="lg" h="100%">
-                          <Text fw={700} mb="md" size="sm" tt="uppercase">
-                            Employee Details
+                  <Grid.Col span={{ base: 12, md: 7 }}>
+                    <Card
+                      withBorder
+                      radius="md"
+                      p="lg"
+                      style={{
+                        backgroundColor:
+                          currentThemeConfig.headerBackgroundColor
+                      }}
+                    >
+                      <Text fw={700} mb="md" size="sm" tt="uppercase">
+                        Salary Breakdown
+                      </Text>
+                      <Stack gap="xs">
+                        <Group justify="space-between">
+                          <Text size="sm">Basic Salary</Text>
+                          <Text size="sm" fw={600}>
+                            ₹{' '}
+                            {(
+                              previewData?.data?.calculations?.basicSalary ??
+                              basic
+                            ).toFixed(2)}
                           </Text>
-                          <Stack gap="xs">
-                            <Group justify="space-between">
-                              <Text size="sm" opacity={0.7}>
-                                Name
-                              </Text>
-                              <Text size="sm" fw={600}>
-                                {empDetails.empName}
-                              </Text>
-                            </Group>
+                        </Group>
+                        <Group justify="space-between">
+                          <Text size="sm">HRA</Text>
+                          <Text size="sm" fw={600}>
+                            ₹{' '}
+                            {(
+                              previewData?.data?.calculations?.hra ??
+                              (basic * hra) / 100
+                            ).toFixed(2)}
+                          </Text>
+                        </Group>
+                        <Group justify="space-between">
+                          <Text size="sm">Special Allowance</Text>
+                          <Text size="sm" fw={600}>
+                            ₹{' '}
+                            {(
+                              previewData?.data?.calculations
+                                ?.specialAllowance ?? special
+                            ).toFixed(2)}
+                          </Text>
+                        </Group>
 
-                            <Group justify="space-between">
-                              <Text size="sm" opacity={0.7}>
-                                Employee ID
-                              </Text>
-                              <Text size="sm" fw={600}>
-                                {empDetails.empId}
-                              </Text>
-                            </Group>
+                        <Group justify="space-between">
+                          <Text size="sm">Conveyance</Text>
+                          <Text size="sm" fw={600}>
+                            ₹{' '}
+                            {(
+                              previewData?.data?.calculations
+                                ?.conveyanceAllowance ?? conveyance
+                            ).toFixed(2)}
+                          </Text>
+                        </Group>
 
-                            <Group justify="space-between">
-                              <Text size="sm" opacity={0.7}>
-                                Designation
-                              </Text>
-                              <Text size="sm" fw={600}>
-                                {empDetails.designation}
-                              </Text>
-                            </Group>
+                        <Group justify="space-between">
+                          <Text size="sm">Medical</Text>
+                          <Text size="sm" fw={600}>
+                            ₹{' '}
+                            {(
+                              previewData?.data?.calculations
+                                ?.medicalAllowance ?? medical
+                            ).toFixed(2)}
+                          </Text>
+                        </Group>
 
-                            <Group justify="space-between">
-                              <Text size="sm" opacity={0.7}>
-                                Email
-                              </Text>
-                              <Text size="sm" fw={600}>
-                                {empDetails.email}
-                              </Text>
-                            </Group>
+                        <Group justify="space-between">
+                          <Text size="sm">Other Allowances</Text>
+                          <Text size="sm" fw={600}>
+                            ₹{' '}
+                            {(
+                              previewData?.data?.calculations
+                                ?.otherAllowances ?? other
+                            ).toFixed(2)}
+                          </Text>
+                        </Group>
+                      </Stack>
 
-                            <Group justify="space-between">
-                              <Text size="sm" opacity={0.7}>
-                                Date of Birth
-                              </Text>
-                              <Text size="sm" fw={600}>
-                                {empDetails.dob}
-                              </Text>
-                            </Group>
+                      <Group justify="space-between" pt="sm">
+                        <Text size="sm" fw={600}>
+                          Gross Salary:
+                        </Text>
+                        <Text size="sm" fw={700}>
+                          ₹{' '}
+                          {(
+                            previewData?.data?.calculations?.grossEarnings ??
+                            grossSalary
+                          ).toFixed(2)}
+                        </Text>
+                      </Group>
 
+                      {(lopDeduction > 0 ||
+                        (previewData?.data?.calculations?.providentFund ?? 0) >
+                          0 ||
+                        (previewData?.data?.calculations?.professionalTax ??
+                          0) > 0 ||
+                        (previewData?.data?.calculations?.incomeTax ?? 0) > 0 ||
+                        (previewData?.data?.calculations?.otherDeductions ??
+                          0) > 0) && (
+                        <>
+                          <Divider
+                            my="xs"
+                            label="Deductions"
+                            labelPosition="center"
+                          />
+                          {lopDeduction > 0 && (
                             <Group justify="space-between">
-                              <Text size="sm" opacity={0.7}>
-                                PAN
-                              </Text>
-                              <Text size="sm" fw={600}>
-                                {empDetails.pan}
-                              </Text>
-                            </Group>
-                            <Divider my="xs" />
-                            <Group justify="space-between">
-                              <Text size="sm" opacity={0.7}>
-                                Pay Period
+                              <Text
+                                size="sm"
+                                c={currentThemeConfig.lightDangerColor}
+                              >
+                                LOP Deduction ({lopDays} days)
                               </Text>
                               <Text
                                 size="sm"
-                                fw={700}
-                                c={currentThemeConfig.accentColor}
+                                fw={600}
+                                c={currentThemeConfig.lightDangerColor}
                               >
-                                {(() => {
-                                  const monthDate = normalMonth(selectedMonth);
-                                  return monthDate
-                                    ? monthDate.toLocaleDateString('en-US', {
-                                        month: 'long',
-                                        year: 'numeric'
-                                      })
-                                    : '-';
-                                })()}
+                                − ₹ {lopDeduction.toFixed(2)}
                               </Text>
                             </Group>
-                          </Stack>
-                        </Card>
-                      </Grid.Col>
-
-                      <Grid.Col span={{ base: 12, md: 7 }}>
-                        <Card
-                          withBorder
-                          radius="md"
-                          p="lg"
-                          style={{
-                            backgroundColor:
-                              currentThemeConfig.headerBackgroundColor
-                          }}
-                        >
-                          <Text fw={700} mb="md" size="sm" tt="uppercase">
-                            Salary Breakdown
-                          </Text>
-                          <Stack gap="xs">
-                            <Group justify="space-between">
-                              <Text size="sm">Basic Salary</Text>
-                              <Text size="sm" fw={600}>
-                                ₹{' '}
-                                {(
-                                  previewData?.data?.calculations
-                                    ?.basicSalary ?? basic
-                                ).toFixed(2)}
-                              </Text>
-                            </Group>
-                            <Group justify="space-between">
-                              <Text size="sm">HRA</Text>
-                              <Text size="sm" fw={600}>
-                                ₹{' '}
-                                {(
-                                  previewData?.data?.calculations?.hra ??
-                                  (basic * hra) / 100
-                                ).toFixed(2)}
-                              </Text>
-                            </Group>
-                            <Group justify="space-between">
-                              <Text size="sm">Special Allowance</Text>
-                              <Text size="sm" fw={600}>
-                                ₹{' '}
-                                {(
-                                  previewData?.data?.calculations
-                                    ?.specialAllowance ?? special
-                                ).toFixed(2)}
-                              </Text>
-                            </Group>
-
-                            <Group justify="space-between">
-                              <Text size="sm">Conveyance</Text>
-                              <Text size="sm" fw={600}>
-                                ₹{' '}
-                                {(
-                                  previewData?.data?.calculations
-                                    ?.conveyanceAllowance ?? conveyance
-                                ).toFixed(2)}
-                              </Text>
-                            </Group>
-
-                            <Group justify="space-between">
-                              <Text size="sm">Medical</Text>
-                              <Text size="sm" fw={600}>
-                                ₹{' '}
-                                {(
-                                  previewData?.data?.calculations
-                                    ?.medicalAllowance ?? medical
-                                ).toFixed(2)}
-                              </Text>
-                            </Group>
-
-                            <Group justify="space-between">
-                              <Text size="sm">Other Allowances</Text>
-                              <Text size="sm" fw={600}>
-                                ₹{' '}
-                                {(
-                                  previewData?.data?.calculations
-                                    ?.otherAllowances ?? other
-                                ).toFixed(2)}
-                              </Text>
-                            </Group>
-                          </Stack>
-
-                          <Group justify="space-between" pt="sm">
-                            <Text size="sm" fw={600}>
-                              Gross Salary:
-                            </Text>
-                            <Text size="sm" fw={700}>
-                              ₹{' '}
-                              {(
-                                previewData?.data?.calculations
-                                  ?.grossEarnings ?? grossSalary
-                              ).toFixed(2)}
-                            </Text>
-                          </Group>
-
-                          {(lopDeduction > 0 ||
-                            (previewData?.data?.calculations?.providentFund ??
-                              0) > 0 ||
-                            (previewData?.data?.calculations?.professionalTax ??
-                              0) > 0 ||
-                            (previewData?.data?.calculations?.incomeTax ?? 0) >
-                              0 ||
-                            (previewData?.data?.calculations?.otherDeductions ??
-                              0) > 0) && (
+                          )}
+                          {previewData?.data?.calculations ? (
                             <>
-                              <Divider
-                                my="xs"
-                                label="Deductions"
-                                labelPosition="center"
-                              />
-                              {lopDeduction > 0 && (
+                              {previewData.data.calculations.providentFund >
+                                0 && (
                                 <Group justify="space-between">
-                                  <Text
-                                    size="sm"
-                                    c={currentThemeConfig.lightDangerColor}
-                                  >
-                                    LOP Deduction ({lopDays} days)
-                                  </Text>
-                                  <Text
-                                    size="sm"
-                                    fw={600}
-                                    c={currentThemeConfig.lightDangerColor}
-                                  >
-                                    − ₹ {lopDeduction.toFixed(2)}
+                                  <Text>PF</Text>
+                                  <Text fw={600} c="red">
+                                    − ₹{' '}
+                                    {previewData.data.calculations.providentFund.toFixed(
+                                      2
+                                    )}
                                   </Text>
                                 </Group>
                               )}
-                              {previewData?.data?.calculations ? (
-                                <>
-                                  {previewData.data.calculations.providentFund >
-                                    0 && (
-                                    <Group justify="space-between">
-                                      <Text>PF</Text>
-                                      <Text fw={600} c="red">
-                                        − ₹{' '}
-                                        {previewData.data.calculations.providentFund.toFixed(
-                                          2
-                                        )}
-                                      </Text>
-                                    </Group>
-                                  )}
-                                  {previewData.data.calculations
-                                    .professionalTax > 0 && (
-                                    <Group justify="space-between">
-                                      <Text>Professional Tax</Text>
-                                      <Text fw={600} c="red">
-                                        − ₹{' '}
-                                        {previewData.data.calculations.professionalTax.toFixed(
-                                          2
-                                        )}
-                                      </Text>
-                                    </Group>
-                                  )}
-                                  {previewData.data.calculations.incomeTax >
-                                    0 && (
-                                    <Group justify="space-between">
-                                      <Text>Income Tax</Text>
-                                      <Text fw={600} c="red">
-                                        − ₹{' '}
-                                        {previewData.data.calculations.incomeTax.toFixed(
-                                          2
-                                        )}
-                                      </Text>
-                                    </Group>
-                                  )}
-                                  {previewData.data.calculations
-                                    .otherDeductions > 0 && (
-                                    <Group justify="space-between">
-                                      <Text>Other Deductions</Text>
-                                      <Text fw={600} c="red">
-                                        − ₹{' '}
-                                        {previewData.data.calculations.otherDeductions.toFixed(
-                                          2
-                                        )}
-                                      </Text>
-                                    </Group>
-                                  )}
-                                </>
-                              ) : null}
+                              {previewData.data.calculations.professionalTax >
+                                0 && (
+                                <Group justify="space-between">
+                                  <Text>Professional Tax</Text>
+                                  <Text fw={600} c="red">
+                                    − ₹{' '}
+                                    {previewData.data.calculations.professionalTax.toFixed(
+                                      2
+                                    )}
+                                  </Text>
+                                </Group>
+                              )}
+                              {previewData.data.calculations.incomeTax > 0 && (
+                                <Group justify="space-between">
+                                  <Text>Income Tax</Text>
+                                  <Text fw={600} c="red">
+                                    − ₹{' '}
+                                    {previewData.data.calculations.incomeTax.toFixed(
+                                      2
+                                    )}
+                                  </Text>
+                                </Group>
+                              )}
+                              {previewData.data.calculations.otherDeductions >
+                                0 && (
+                                <Group justify="space-between">
+                                  <Text>Other Deductions</Text>
+                                  <Text fw={600} c="red">
+                                    − ₹{' '}
+                                    {previewData.data.calculations.otherDeductions.toFixed(
+                                      2
+                                    )}
+                                  </Text>
+                                </Group>
+                              )}
                             </>
-                          )}
+                          ) : null}
+                        </>
+                      )}
 
-                          {/* Extra allowances from local state are likely already included in 'otherAllowances' in API response */}
-                          {!previewData &&
-                            additionalAllowances.map((item, i) => (
-                              <Group key={i} justify="space-between">
-                                <Text>
-                                  {item.label} (
-                                  {item.type === 'deduct' ? '-' : '+'})
-                                </Text>
-                                <Text
-                                  fw={600}
-                                  c={item.type === 'deduct' ? 'red' : 'inherit'}
-                                >
-                                  {item.type === 'deduct' ? '− ' : ''}₹{' '}
-                                  {item.amount}
-                                </Text>
-                              </Group>
-                            ))}
-                          <Card
-                            p="md"
-                            mt="md"
-                            radius="md"
-                            style={{
-                              border: `1px dashed ${currentThemeConfig.successColor}`,
-                              backgroundColor: rgba(
-                                currentThemeConfig.successColor,
-                                0.2
+                      {/* Extra allowances from local state are likely already included in 'otherAllowances' in API response */}
+                      {!previewData &&
+                        additionalAllowances.map((item, i) => (
+                          <Group key={i} justify="space-between">
+                            <Text>
+                              {item.label} ({item.type === 'deduct' ? '-' : '+'}
                               )
-                            }}
-                          >
-                            <Group justify="space-between">
-                              <Text
-                                fw={700}
-                                c={currentThemeConfig.successColor}
-                              >
-                                Net Payable
-                              </Text>
-                              <Text
-                                fw={800}
-                                size="xl"
-                                c={currentThemeConfig.successColor}
-                              >
-                                ₹{' '}
-                                {(
-                                  previewData?.data?.calculations?.netPay ?? 0
-                                ).toFixed(2)}
-                              </Text>
-                            </Group>
-                          </Card>
-                        </Card>
-                      </Grid.Col>
-                    </Grid>
-
-                    <Divider mt="xl" />
-                    <Group justify="space-between" pb="md">
-                      <Button
-                        variant="subtle"
-                        color="gray"
-                        radius="lg"
-                        onClick={prevStep}
+                            </Text>
+                            <Text
+                              fw={600}
+                              c={item.type === 'deduct' ? 'red' : 'inherit'}
+                            >
+                              {item.type === 'deduct' ? '− ' : ''}₹{' '}
+                              {item.amount}
+                            </Text>
+                          </Group>
+                        ))}
+                      <Card
+                        p="md"
+                        mt="md"
+                        radius="md"
+                        style={{
+                          border: `1px dashed ${currentThemeConfig.successColor}`,
+                          backgroundColor: rgba(
+                            currentThemeConfig.successColor,
+                            0.2
+                          )
+                        }}
                       >
-                        Back
-                      </Button>
+                        <Group justify="space-between">
+                          <Text fw={700} c={currentThemeConfig.successColor}>
+                            Net Payable
+                          </Text>
+                          <Text
+                            fw={800}
+                            size="xl"
+                            c={currentThemeConfig.successColor}
+                          >
+                            ₹{' '}
+                            {(
+                              previewData?.data?.calculations?.netPay ?? 0
+                            ).toFixed(2)}
+                          </Text>
+                        </Group>
+                      </Card>
+                    </Card>
+                  </Grid.Col>
+                </Grid>
+                <Divider mt="xl" />
+                <Group justify="space-between" pb="md">
+                  <Button
+                    variant="subtle"
+                    color="gray"
+                    radius="lg"
+                    onClick={prevStep}
+                    disabled={activeStep === 3}
+                  >
+                    Back
+                  </Button>
 
-                      <Button type="submit" radius="lg" loading={isGenerating}>
-                        Download Salary Slip
-                      </Button>
-                    </Group>
-                  </Stack>
-                </form>
-              )}
-            </Stepper.Step>
-          ))}
-        </Stepper>
+                  <Button
+                    type="submit"
+                    radius="lg"
+                    loading={isGenerating}
+                    leftSection={
+                      activeStep === 3 ? <IconCheck size={16} /> : null
+                    }
+                  >
+                    {activeStep === 3
+                      ? 'Salary Slip Generated'
+                      : 'Download Salary Slip'}
+                  </Button>
+                </Group>
+              </Stack>
+            </form>,
+
+            //{/* ================= STEP 4 (COMPLETED) ================= */}
+            <Stack key="completed" align="center" py="xl" gap="md">
+              <IconCircleCheck
+                size={48}
+                color={currentThemeConfig.successColor}
+              />
+
+              <Title order={3} c={currentThemeConfig.successColor}>
+                Salary Slip Generated
+              </Title>
+
+              <Text size="sm" ta="center" opacity={0.8}>
+                The salary slip has been successfully generated and downloaded.
+              </Text>
+
+              <Button
+                variant="light"
+                radius="lg"
+                onClick={() => window.location.reload()}
+              >
+                Generate Another Salary Slip
+              </Button>
+            </Stack>
+          ]}
+        </DynamicStepper>
       </Card>
     </Container>
   );
