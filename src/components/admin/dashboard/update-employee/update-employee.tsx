@@ -171,7 +171,9 @@ const UpdateEmployee = () => {
           bloodGroup: emp.bloodGroup?.id,
           employmentType: emp.employmentType?.id,
           employeeRole: emp.employeeRole.map((role: any) => role.id),
-          dateOfBirth: emp.dateOfBirth ? new Date(emp.dateOfBirth) : null,
+          dateOfBirth: emp.dateOfBirth
+            ? new Date(emp.dateOfBirth).toISOString().split('T')[0]
+            : '',
           presentAddress: emp.presentAddress ?? '',
           permanentAddress: emp.permanentAddress ?? '',
           mobileNumber: emp.mobileNumber?.toString()
