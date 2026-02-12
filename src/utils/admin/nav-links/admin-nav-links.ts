@@ -29,10 +29,10 @@ export const adminNavLinks = [
     icon: IconNotebook,
     name: 'Reports',
     children: [
-      {
-        name: 'Generate Offer',
-        url: 'admin/dashboard/reports/generate-offer'
-      },
+      //{
+      //name: 'Generate Offer',
+      //url: 'admin/dashboard/reports/generate-offer'
+      //},
       {
         name: 'Generate Salary Slip',
         url: 'admin/dashboard/reports/generate-salary-slip'
