@@ -825,7 +825,7 @@ const UpdateEmployee = () => {
                   <Button
                     type="submit"
                     loading={isSubmitting}
-                    disabled={!isValid || isSubmitting}
+                    disabled={isSubmitting}
                     radius="lg"
                     leftSection={
                       !isSubmitting && <IconDeviceFloppy size={16} />
