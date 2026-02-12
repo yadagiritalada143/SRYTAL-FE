@@ -885,11 +885,11 @@ const GenerateSalarySlipReport = () => {
                 </Group>
 
                 <Grid gutter="md">
-                  <Grid.Col span={{ base: 4 }}>
+                  <Grid.Col span={{ base: 12, sm: 4 }}>
                     <Card
                       withBorder
                       radius="md"
-                      p="sm"
+                      p={isMobile ? 'xs' : 'sm'}
                       ta="center"
                       style={{
                         borderLeft: `4px solid ${currentThemeConfig.accentColor}`
@@ -904,7 +904,7 @@ const GenerateSalarySlipReport = () => {
                         Total Days
                       </Text>
                       <Text
-                        size="xl"
+                        size={isMobile ? 'lg' : 'xl'}
                         fw={800}
                         c={currentThemeConfig.accentColor}
                       >
@@ -912,11 +912,11 @@ const GenerateSalarySlipReport = () => {
                       </Text>
                     </Card>
                   </Grid.Col>
-                  <Grid.Col span={{ base: 4 }}>
+                  <Grid.Col span={{ base: 12, sm: 4 }}>
                     <Card
                       withBorder
                       radius="md"
-                      p="sm"
+                      p={isMobile ? 'xs' : 'sm'}
                       ta="center"
                       style={{
                         borderLeft: `4px solid ${dangerBorderColor}`
@@ -931,7 +931,7 @@ const GenerateSalarySlipReport = () => {
                         LOP Days
                       </Text>
                       <Text
-                        size="xl"
+                        size={isMobile ? 'lg' : 'xl'}
                         fw={800}
                         c={currentThemeConfig.lightDangerColor}
                       >
@@ -939,11 +939,11 @@ const GenerateSalarySlipReport = () => {
                       </Text>
                     </Card>
                   </Grid.Col>
-                  <Grid.Col span={{ base: 4 }}>
+                  <Grid.Col span={{ base: 12, sm: 4 }}>
                     <Card
                       withBorder
                       radius="md"
-                      p="sm"
+                      p={isMobile ? 'xs' : 'sm'}
                       ta="center"
                       style={{
                         borderLeft: `4px solid ${currentThemeConfig.successColor}`
@@ -958,7 +958,7 @@ const GenerateSalarySlipReport = () => {
                         Working Days
                       </Text>
                       <Text
-                        size="xl"
+                        size={isMobile ? 'lg' : 'xl'}
                         fw={800}
                         c={currentThemeConfig.successColor}
                       >
