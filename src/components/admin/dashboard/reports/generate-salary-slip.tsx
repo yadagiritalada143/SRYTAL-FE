@@ -167,7 +167,7 @@ const GenerateSalarySlipReport = () => {
       medicalAllowance: 0,
       otherAllowances: 0,
       additionalAllowances: [],
-      payDate: new Date()
+      payDate: new Date().toISOString().split('T')[0]
     }
   });
   const selectedMonth = watch('selectedMonth');
@@ -432,9 +432,7 @@ const GenerateSalarySlipReport = () => {
         department: empDetails.department,
         dateOfJoining: empDetails.doj,
         payPeriod: payPeriod,
-        payDate: data.payDate
-          ? new Date(data.payDate).toISOString().split('T')[0]
-          : '',
+        payDate: data.payDate,
         bankName: empDetails.bankName,
         IFSCCODE: empDetails.ifsc,
         bankAccountNumber: empDetails.bankAccount,
@@ -782,14 +780,20 @@ const GenerateSalarySlipReport = () => {
                           label="Pay Date"
                           placeholder="Select pay date"
                           required
-                          value={
-                            field.value
-                              ? field.value instanceof Date
-                                ? field.value
-                                : new Date(field.value)
-                              : null
-                          }
-                          onChange={field.onChange}
+                          value={field.value ? new Date(field.value) : null}
+                          onChange={date => {
+                            if (date) {
+                              const d = new Date(date);
+
+                              const adjustedDate = new Date(
+                                d.getTime() - d.getTimezoneOffset() * 60000
+                              )
+                                .toISOString()
+                                .split('T')[0];
+
+                              field.onChange(adjustedDate);
+                            }
+                          }}
                           error={errors.payDate?.message}
                           styles={{
                             input: {
