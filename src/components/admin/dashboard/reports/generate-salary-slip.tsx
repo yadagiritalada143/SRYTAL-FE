@@ -496,10 +496,7 @@ const GenerateSalarySlipReport = () => {
         radius="md"
         p={isMobile ? 'md' : 'xl'}
         withBorder
-        style={{
-          backgroundColor: currentThemeConfig.backgroundColor,
-          color: currentThemeConfig.color
-        }}
+
       >
         <Title order={2} ta="center" mb="xl">
           Generate Salary Slip
