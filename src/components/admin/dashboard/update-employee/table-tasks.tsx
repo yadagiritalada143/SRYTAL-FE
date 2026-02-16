@@ -40,6 +40,7 @@ import { toast } from 'react-toastify';
 import { useDisclosure } from '@mantine/hooks';
 import { useRecoilValue } from 'recoil';
 import { themeAtom } from '../../../../atoms/theme';
+import { getThemeConfig } from '../../../../utils/common/theme-utils';
 
 const PackagesTaskTable = ({
   selectedPackagesData = {},
@@ -81,8 +82,7 @@ const PackagesTaskTable = ({
 
   // Get current theme configuration
   const currentThemeConfig = useMemo(() => {
-    const orgTheme = organizationConfig.organization_theme;
-    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+    return getThemeConfig(organizationConfig, isDarkTheme);
   }, [organizationConfig, isDarkTheme]);
 
   const itemsPerPage = 5; // Reduced for better UX

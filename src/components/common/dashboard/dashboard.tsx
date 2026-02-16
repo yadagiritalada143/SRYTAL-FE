@@ -1,6 +1,9 @@
+import { useMemo } from 'react';
 import { Card, Text } from '@mantine/core';
 import { useRecoilValue } from 'recoil';
 import { organizationThemeAtom } from '../../../atoms/organization-atom';
+import { themeAtom } from '../../../atoms/theme';
+import { getThemeConfig } from '../../../utils/common/theme-utils';
 import { BgDiv } from '../../common/style-components/bg-div';
 import { EmployeeInterface } from '../../../interfaces/employee';
 import { useEffect, useState } from 'react';
@@ -9,7 +12,11 @@ import { toast } from 'react-toastify';
 
 const Dashboard = () => {
   const organizationConfig = useRecoilValue(organizationThemeAtom);
-  const orgTheme = organizationConfig.organization_theme.theme;
+  const isDarkTheme = useRecoilValue(themeAtom);
+
+  const currentThemeConfig = useMemo(() => {
+    return getThemeConfig(organizationConfig, isDarkTheme);
+  }, [organizationConfig, isDarkTheme]);
 
   const [userDetails, setUserDetails] = useState<EmployeeInterface | null>(
     null
@@ -33,9 +40,9 @@ const Dashboard = () => {
         <div
           className="w-full p-8 shadow-lg rounded-lg"
           style={{
-            backgroundColor: orgTheme.backgroundColor,
-            color: orgTheme.color,
-            fontFamily: orgTheme.fontFamily,
+            backgroundColor: currentThemeConfig.backgroundColor,
+            color: currentThemeConfig.color,
+            fontFamily: currentThemeConfig.fontFamily,
           }}
         >
           <div className="mb-8">
@@ -54,8 +61,8 @@ const Dashboard = () => {
               radius="md"
               shadow="md"
               style={{
-                backgroundColor: orgTheme.colors.primary[1],
-                color: orgTheme.button.textColor,
+                backgroundColor: currentThemeConfig.colors.primary[1],
+                color: currentThemeConfig.button.textColor,
               }}
             >
               <Text size="xl" fw={700}>
@@ -69,8 +76,8 @@ const Dashboard = () => {
               radius="md"
               shadow="md"
               style={{
-                backgroundColor: orgTheme.colors.primary[2],
-                color: orgTheme.button.textColor,
+                backgroundColor: currentThemeConfig.colors.primary[2],
+                color: currentThemeConfig.button.textColor,
               }}
             >
               <Text size="xl" fw={700}>
@@ -84,8 +91,8 @@ const Dashboard = () => {
               radius="md"
               shadow="md"
               style={{
-                backgroundColor: orgTheme.colors.primary[4],
-                color: orgTheme.button.textColor,
+                backgroundColor: currentThemeConfig.colors.primary[4],
+                color: currentThemeConfig.button.textColor,
               }}
             >
               <Text size="xl" fw={700}>
@@ -101,9 +108,9 @@ const Dashboard = () => {
               radius="md"
               shadow="sm"
               style={{
-                backgroundColor: orgTheme.backgroundColor,
-                color: orgTheme.color,
-                border: `1px solid ${orgTheme.borderColor}`,
+                backgroundColor: currentThemeConfig.backgroundColor,
+                color: currentThemeConfig.color,
+                border: `1px solid ${currentThemeConfig.borderColor}`,
               }}
             >
               <Text size="lg" fw={600} mb="sm">
@@ -130,9 +137,9 @@ const Dashboard = () => {
               radius="md"
               shadow="sm"
               style={{
-                backgroundColor: orgTheme.backgroundColor,
-                color: orgTheme.color,
-                border: `1px solid ${orgTheme.borderColor}`,
+                backgroundColor: currentThemeConfig.backgroundColor,
+                color: currentThemeConfig.color,
+                border: `1px solid ${currentThemeConfig.borderColor}`,
               }}
             >
               <Text size="lg" fw={600} mb="sm">
@@ -157,9 +164,9 @@ const Dashboard = () => {
               radius="md"
               shadow="sm"
               style={{
-                backgroundColor: orgTheme.backgroundColor,
-                color: orgTheme.color,
-                border: `1px solid ${orgTheme.borderColor}`,
+                backgroundColor: currentThemeConfig.backgroundColor,
+                color: currentThemeConfig.color,
+                border: `1px solid ${currentThemeConfig.borderColor}`,
               }}
             >
               <Text size="lg" fw={600} mb="sm">
@@ -168,7 +175,7 @@ const Dashboard = () => {
               <ul className="text-sm space-y-2">
                 <li>
                   <strong>Quarterly Meeting on April 30, 2024</strong>
-                  <p style={{ color: orgTheme.linkColor }}>
+                  <p style={{ color: currentThemeConfig.linkColor }}>
                     Reminder: The quarterly meeting is scheduled for 2:00 PM.
                   </p>
                 </li>

@@ -70,6 +70,7 @@ import { themeAtom } from '../../../../atoms/theme';
 import { toast } from 'react-toastify';
 import { useCustomToast } from '../../../../utils/common/toast';
 import { getEmployeeInfoItems } from '../update-employee/helper-functions/add-package';
+import { getThemeConfig } from '../../../../utils/common/theme-utils';
 
 // Constants
 const ITEMS_PER_PAGE_OPTIONS = ['10', '20', '50', '100'];
@@ -441,8 +442,7 @@ export const EmployeeTimesheetAdminView = () => {
   }, [isMobile, isSmallMobile, itemsPerPage]);
 
   const currentThemeConfig = useMemo(() => {
-    const orgTheme = organizationConfig.organization_theme;
-    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+    return getThemeConfig(organizationConfig, isDarkTheme);
   }, [organizationConfig, isDarkTheme]);
 
   const {

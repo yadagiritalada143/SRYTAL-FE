@@ -43,6 +43,7 @@ import { themeAtom } from '../../../../atoms/theme';
 import { useMediaQuery } from '@mantine/hooks';
 import { useNavigate } from 'react-router-dom';
 import { organizationEmployeeUrls } from '../../../../utils/common/constants';
+import { getThemeConfig } from '../../../../utils/common/theme-utils';
 
 const COURSES_PER_PAGE = 6;
 
@@ -70,8 +71,7 @@ const WriterDashboard = () => {
   >([]);
 
   const currentThemeConfig = useMemo(() => {
-    const orgTheme = organizationConfig.organization_theme;
-    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+    return getThemeConfig(organizationConfig, isDarkTheme);
   }, [organizationConfig, isDarkTheme]);
 
   const overview = useMemo(

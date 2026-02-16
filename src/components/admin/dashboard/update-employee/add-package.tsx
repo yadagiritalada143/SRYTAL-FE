@@ -64,6 +64,7 @@ import { PackagesList, Task } from '../../../../interfaces/package';
 import { StandardModal } from '../../../UI/Models/base-model';
 import { ThemeBackground } from '../../../UI/Theme-background/background';
 import { BackButton } from '../../../common/style-components/buttons';
+import { getThemeConfig } from '../../../../utils/common/theme-utils';
 
 const PackagesFormComponent = ({
   organizationConfig,
@@ -87,8 +88,7 @@ const PackagesFormComponent = ({
 
   // Get current theme configuration
   const currentThemeConfig = useMemo(() => {
-    const orgTheme = organizationConfig.organization_theme;
-    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+    return getThemeConfig(organizationConfig, isDarkTheme);
   }, [organizationConfig, isDarkTheme]);
 
   const {

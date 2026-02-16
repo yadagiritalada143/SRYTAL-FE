@@ -8,7 +8,7 @@ export interface OrganizationConfig {
     organization: string;
 
     // Legacy theme structure for backward compatibility
-    theme: {
+    theme?: {
       backgroundColor: string;
       headerBackgroundColor: string;
       colorScheme: 'light' | 'dark';
@@ -17,6 +17,7 @@ export interface OrganizationConfig {
       button: {
         color: string;
         textColor: string;
+        hoverColor?: string;
       };
       colors: {
         primary: string[];
@@ -26,10 +27,18 @@ export interface OrganizationConfig {
       color: string;
       borderColor: string;
       linkColor: string;
+      iconColor?: string;
+      accentColor?: string;
+      successColor?: string;
+      warningColor?: string;
+      dangerColor?: string;
+      lightDangerColor?: string;
+      mutedTextColor?: string;
+      cardBackground?: string;
     };
 
     // New dual themes structure
-    themes: {
+    themes?: {
       light: {
         primaryColor: string;
         colorScheme: 'light';

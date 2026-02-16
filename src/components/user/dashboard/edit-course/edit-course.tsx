@@ -27,6 +27,7 @@ import { organizationThemeAtom } from '../../../../atoms/organization-atom';
 import { themeAtom } from '../../../../atoms/theme';
 import { useMediaQuery } from '@mantine/hooks';
 import { useNavigate } from 'react-router-dom';
+import { getThemeConfig } from '../../../../utils/common/theme-utils';
 
 // Mock course data - replace with actual data from props or API
 const mockCourse = {
@@ -67,8 +68,7 @@ export const ContentWriterEditCourse = () => {
   const isMobile = useMediaQuery('(max-width: 768px)');
 
   const currentThemeConfig = useMemo(() => {
-    const orgTheme = organizationConfig.organization_theme;
-    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+    return getThemeConfig(organizationConfig, isDarkTheme);
   }, [organizationConfig, isDarkTheme]);
 
   const handleEdit = () => {

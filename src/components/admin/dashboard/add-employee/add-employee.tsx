@@ -42,6 +42,7 @@ import {
 import { useMemo, useState } from 'react';
 import { themeAtom } from '../../../../atoms/theme';
 import { ThemeBackground } from '../../../UI/Theme-background/background';
+import { getThemeConfig } from '../../../../utils/common/theme-utils';
 
 // Constants
 const USER_ROLES = [
@@ -61,8 +62,7 @@ const AddEmployee = () => {
 
   // Get current theme configuration
   const currentThemeConfig = useMemo(() => {
-    const orgTheme = organizationConfig.organization_theme;
-    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+    return getThemeConfig(organizationConfig, isDarkTheme);
   }, [organizationConfig, isDarkTheme]);
 
   const {

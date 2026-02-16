@@ -28,6 +28,7 @@ import PoolCandidateList from '../components/user/dashboard/candidate/candidate'
 import AddPoolCandidate from '../components/user/dashboard/add-candidate/add-candidate';
 import UpdatePoolCandidateForm from '../components/user/dashboard/update-candidate/update-candidate';
 import UserProvider from '../hooks/user-context';
+import { getThemeConfig } from '../utils/common/theme-utils';
 import Dashboard from '../components/common/dashboard/dashboard';
 import PayslipList from '../components/common/payslip/payslip';
 import Support from '../components/common/support/support';
@@ -64,10 +65,7 @@ const EmployeeRoutes = () => {
 
   // Get the current theme configuration based on theme mode
   const currentThemeConfig = useMemo(() => {
-    const orgTheme = organizationConfig.organization_theme;
-
-    // Check if new dual themes structure exists
-    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+    return getThemeConfig(organizationConfig, isDarkTheme);
   }, [organizationConfig, isDarkTheme]);
 
   const mantineTheme = useMemo(() => {

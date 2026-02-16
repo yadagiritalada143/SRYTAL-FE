@@ -13,6 +13,7 @@ import { ThemeBackground } from '../Theme-background/background';
 import { organizationThemeAtom } from '../../../atoms/organization-atom';
 import { themeAtom } from '../../../atoms/theme';
 import { LogoutButton } from '../Buttons/buttons';
+import { getThemeConfig } from '../../../utils/common/theme-utils';
 
 interface Position {
   x: number;
@@ -45,8 +46,7 @@ function NavbarMenu({ navLinks, isDrawerOpen, setIsDrawerOpen }: NavbarProps) {
   const fabRef = useRef<HTMLButtonElement>(null);
 
   const currentThemeConfig = useMemo(() => {
-    const orgTheme = organizationConfig.organization_theme;
-    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+    return getThemeConfig(organizationConfig, isDarkTheme);
   }, [organizationConfig, isDarkTheme]);
 
   const { showSuccessToast } = useCustomToast();

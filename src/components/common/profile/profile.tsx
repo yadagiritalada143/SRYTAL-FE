@@ -29,6 +29,7 @@ import { useMemo } from 'react';
 import { organizationThemeAtom } from '../../../atoms/organization-atom';
 import { useRecoilValue } from 'recoil';
 import { themeAtom } from '../../../atoms/theme';
+import { getThemeConfig } from '../../../utils/common/theme-utils';
 
 // Info Item Component
 const InfoItem: React.FC<{
@@ -61,8 +62,7 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
   const isMobile = useMediaQuery('(max-width: 768px)');
   const isSmallMobile = useMediaQuery('(max-width: 500px)');
   const currentThemeConfig = useMemo(() => {
-    const orgTheme = organizationConfig.organization_theme;
-    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+    return getThemeConfig(organizationConfig, isDarkTheme);
   }, [organizationConfig, isDarkTheme]);
   console.log('THEME:', currentThemeConfig);
 

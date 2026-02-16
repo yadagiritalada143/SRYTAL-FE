@@ -35,6 +35,7 @@ import { DeleteTaskModel } from './delete-task';
 import { useCustomToast } from '../../../../utils/common/toast';
 import { useRecoilValue } from 'recoil';
 import { themeAtom } from '../../../../atoms/theme';
+import { getThemeConfig } from '../../../../utils/common/theme-utils';
 
 // Mobile Task Card Component
 const MobileTaskCard: React.FC<{
@@ -135,8 +136,7 @@ const PackageTasksTable = ({
   const isDarkTheme = useRecoilValue(themeAtom);
 
   const currentThemeConfig = useMemo(() => {
-    const orgTheme = organizationConfig.organization_theme;
-    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+    return getThemeConfig(organizationConfig, isDarkTheme);
   }, [organizationConfig, isDarkTheme]);
 
   useEffect(() => {

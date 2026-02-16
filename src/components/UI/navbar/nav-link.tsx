@@ -6,6 +6,7 @@ import { organizationThemeAtom } from '../../../atoms/organization-atom';
 import { useRecoilValue } from 'recoil';
 import { themeAtom } from '../../../atoms/theme';
 import { IconChevronDown, IconChevronUp } from '@tabler/icons-react';
+import { getThemeConfig } from '../../../utils/common/theme-utils';
 
 export function NavbarLink({
   icon: Icon,
@@ -37,9 +38,7 @@ export function NavbarLink({
   }, [isActiveChild, location.pathname]);
 
   const currentThemeConfig = useMemo(() => {
-    const orgTheme = organizationConfig.organization_theme;
-
-    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+    return getThemeConfig(organizationConfig, isDarkTheme);
   }, [organizationConfig, isDarkTheme]);
 
   const buttonStyles = useMemo(

@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { useRecoilValue } from 'recoil';
 import { organizationThemeAtom } from '../../../atoms/organization-atom';
 import { themeAtom } from '../../../atoms/theme';
+import { getThemeConfig } from '../../../utils/common/theme-utils';
 
 interface ThemeBackgroundProps {
   children: React.ReactNode;
@@ -19,13 +20,7 @@ export const ThemeBackground: React.FC<ThemeBackgroundProps> = ({
 
   // Get the current theme configuration for background styling
   const currentThemeConfig = useMemo(() => {
-    const orgTheme = organizationConfig.organization_theme;
-
-    if (orgTheme.themes) {
-      return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
-    }
-
-    return orgTheme.theme;
+    return getThemeConfig(organizationConfig, isDarkTheme);
   }, [organizationConfig, isDarkTheme]);
 
   return (

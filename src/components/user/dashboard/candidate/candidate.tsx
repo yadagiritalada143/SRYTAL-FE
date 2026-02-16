@@ -48,6 +48,7 @@ import moment from 'moment';
 import useHorizontalScroll from '../../../../hooks/horizontal-scroll';
 import { CandidateInterface } from '../../../../interfaces/candidate';
 import { debounce } from '../../../../utils/common/debounce';
+import { getThemeConfig } from '../../../../utils/common/theme-utils';
 import { useMediaQuery } from '@mantine/hooks';
 
 // Constants
@@ -410,8 +411,7 @@ const PoolCandidateList = () => {
 
   // Get the current theme configuration
   const currentThemeConfig = useMemo(() => {
-    const orgTheme = organizationConfig.organization_theme;
-    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+    return getThemeConfig(organizationConfig, isDarkTheme);
   }, [organizationConfig, isDarkTheme]);
 
   const highlightCandidateId = useRef<string | null>(null);

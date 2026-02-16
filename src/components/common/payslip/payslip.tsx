@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import {
   Box,
   Button,
@@ -14,6 +14,8 @@ import {
 import { DatePickerInput, DatesRangeValue } from '@mantine/dates';
 import { useRecoilValue } from 'recoil';
 import { organizationThemeAtom } from '../../../atoms/organization-atom';
+import { themeAtom } from '../../../atoms/theme';
+import { getThemeConfig } from '../../../utils/common/theme-utils';
 import {
   IconSearch,
   IconX,
@@ -30,7 +32,10 @@ import { toast } from 'react-toastify';
 
 const PayslipList = () => {
   const organizationConfig = useRecoilValue(organizationThemeAtom);
-  const theme = organizationConfig.organization_theme.theme;
+  const isDarkTheme = useRecoilValue(themeAtom);
+  const theme = useMemo(() => {
+    return getThemeConfig(organizationConfig, isDarkTheme);
+  }, [organizationConfig, isDarkTheme]);
   const [userDetails, setUserDetails] = useState<EmployeeInterface | null>(
     null
   );

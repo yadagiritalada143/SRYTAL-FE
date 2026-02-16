@@ -49,6 +49,7 @@ import { debounce } from '../../../../utils/common/debounce';
 import { EmployeeInterface } from '../../../../interfaces/employee';
 import { themeAtom } from '../../../../atoms/theme';
 import { useMediaQuery } from '@mantine/hooks';
+import { getThemeConfig } from '../../../../utils/common/theme-utils';
 
 // Constants
 const ITEMS_PER_PAGE_OPTIONS = ['5', '10', '20', '50'];
@@ -447,8 +448,7 @@ const Employees = () => {
 
   // Get the current theme configuration based on theme mode
   const currentThemeConfig = useMemo(() => {
-    const orgTheme = organizationConfig.organization_theme;
-    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+    return getThemeConfig(organizationConfig, isDarkTheme);
   }, [organizationConfig, isDarkTheme]);
 
   const highlightEmployeeId = useRef<string | null>(null);

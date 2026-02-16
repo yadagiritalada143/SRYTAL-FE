@@ -38,6 +38,7 @@ import PackagePageWrapper from '../components/admin/dashboard/update-employee/pa
 import { EmployeeTimesheetAdminView } from '../components/admin/dashboard/employee-timesheet/employee-timesheet';
 import { ThemeToggleButton } from '../components/UI/Theme-toggle-button/button';
 import { themeAtom } from '../atoms/theme';
+import { getThemeConfig } from '../utils/common/theme-utils';
 
 const AdminRoutes = () => {
   const { organization } = useParams<{ organization: string }>();
@@ -61,10 +62,7 @@ const AdminRoutes = () => {
 
   // Get the current theme configuration based on theme mode
   const currentThemeConfig = useMemo(() => {
-    const orgTheme = organizationConfig.organization_theme;
-
-    // Check if new dual themes structure exists
-    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+    return getThemeConfig(organizationConfig, isDarkTheme);
   }, [organizationConfig, isDarkTheme]);
 
   const mantineTheme = useMemo(() => {

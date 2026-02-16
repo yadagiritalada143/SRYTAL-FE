@@ -43,6 +43,7 @@ import { organizationThemeAtom } from '../../../../atoms/organization-atom';
 import { themeAtom } from '../../../../atoms/theme';
 import useHorizontalScroll from '../../../../hooks/horizontal-scroll';
 import { debounce } from '../../../../utils/common/debounce';
+import { getThemeConfig } from '../../../../utils/common/theme-utils';
 import { CompaniesInterface } from '../../../../interfaces/companies';
 import moment from 'moment';
 import { useMediaQuery } from '@mantine/hooks';
@@ -492,8 +493,7 @@ const Companies = () => {
 
   // Get the current theme configuration based on theme mode
   const currentThemeConfig = useMemo(() => {
-    const orgTheme = organizationConfig.organization_theme;
-    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+    return getThemeConfig(organizationConfig, isDarkTheme);
   }, [organizationConfig, isDarkTheme]);
 
   const highlightCompanyId = useRef<string | null>(null);

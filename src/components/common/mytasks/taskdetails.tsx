@@ -9,7 +9,7 @@ import {
   Center,
   Group
 } from '@mantine/core';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useRecoilState } from 'recoil';
 import ProgressBar from '../../UI/Buttonsanimate/ProgressBar';
@@ -17,6 +17,8 @@ import { taskAtom } from '../../../atoms/mytasks-atom';
 import { Lesson, Task } from '../../../interfaces/mytasks';
 import { useRecoilValue } from 'recoil';
 import { organizationThemeAtom } from '../../../atoms/organization-atom';
+import { themeAtom } from '../../../atoms/theme';
+import { getThemeConfig } from '../../../utils/common/theme-utils';
 import {
   IconArrowLeft,
   IconArrowRight,
@@ -99,6 +101,10 @@ const TaskDetail = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const organizationConfig = useRecoilValue(organizationThemeAtom);
+  const isDarkTheme = useRecoilValue(themeAtom);
+  const currentThemeConfig = useMemo(() => {
+    return getThemeConfig(organizationConfig, isDarkTheme);
+  }, [organizationConfig, isDarkTheme]);
 
   useEffect(() => {
     setLoading(true);
@@ -207,7 +213,7 @@ const TaskDetail = () => {
           mt={300}
           size="lg"
           type="bars"
-          color={organizationConfig.organization_theme.theme.button.color}
+          color={currentThemeConfig.button.color}
         />
       </Center>
     );

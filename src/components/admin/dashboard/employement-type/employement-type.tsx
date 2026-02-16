@@ -42,6 +42,7 @@ import { themeAtom } from '../../../../atoms/theme';
 import { employeeTypeAtom } from '../../../../atoms/employeetypes-atom';
 import { debounce } from '../../../../utils/common/debounce';
 import { useCustomToast } from '../../../../utils/common/toast';
+import { getThemeConfig } from '../../../../utils/common/theme-utils';
 
 const ITEMS_PER_PAGE_OPTIONS = ['5', '10', '20', '50'];
 const DEFAULT_ITEMS_PER_PAGE = 10;
@@ -165,8 +166,7 @@ const EmploymentTypes = () => {
 
   // Get the current theme configuration
   const currentThemeConfig = useMemo(() => {
-    const orgTheme = organizationConfig.organization_theme;
-    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+    return getThemeConfig(organizationConfig, isDarkTheme);
   }, [organizationConfig, isDarkTheme]);
 
   const [editModalOpened, { open: openEditModal, close: closeEditModal }] =

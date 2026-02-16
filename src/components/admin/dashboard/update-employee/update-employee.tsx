@@ -72,6 +72,7 @@ import {
 } from '@tabler/icons-react';
 import { themeAtom } from '../../../../atoms/theme';
 import { BackButton } from '../../../common/style-components/buttons';
+import { getThemeConfig } from '../../../../utils/common/theme-utils';
 
 const UpdateEmployee = () => {
   const navigate = useNavigate();
@@ -103,8 +104,7 @@ const UpdateEmployee = () => {
 
   // Get current theme configuration
   const currentThemeConfig = useMemo(() => {
-    const orgTheme = organizationConfig.organization_theme;
-    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+    return getThemeConfig(organizationConfig, isDarkTheme);
   }, [organizationConfig, isDarkTheme]);
 
   const {

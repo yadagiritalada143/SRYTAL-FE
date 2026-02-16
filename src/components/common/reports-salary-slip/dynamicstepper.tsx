@@ -4,6 +4,7 @@ import { useRecoilValue } from 'recoil';
 import { themeAtom } from '../../../atoms/theme';
 import { organizationThemeAtom } from '../../../atoms/organization-atom';
 import { useMemo } from 'react';
+import { getThemeConfig } from '../../../utils/common/theme-utils';
 
 interface Props {
   steps: StepConfig[];
@@ -16,8 +17,7 @@ const DynamicStepper = ({ steps, active, children }: Props) => {
   const organizationConfig = useRecoilValue(organizationThemeAtom);
 
   const currentThemeConfig = useMemo(() => {
-    const orgTheme = organizationConfig.organization_theme;
-    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+    return getThemeConfig(organizationConfig, isDarkTheme);
   }, [organizationConfig, isDarkTheme]);
 
   return (

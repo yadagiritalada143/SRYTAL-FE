@@ -17,6 +17,7 @@ import { IconLockPassword, IconLogin2, IconMail } from '@tabler/icons-react';
 import { themeAtom } from '../../../atoms/theme';
 import { ThemeBackground } from '../../../components/UI/Theme-background/background';
 import { ThemeForm } from '../../../components/UI/Form/form';
+import { getThemeConfig } from '../../../utils/common/theme-utils';
 
 const EmployeeLogin = () => {
   const { showSuccessToast, showErrorToast } = useCustomToast();
@@ -34,9 +35,7 @@ const EmployeeLogin = () => {
 
   // Get the current theme configuration for form styling
   const currentThemeConfig = useMemo(() => {
-    const orgTheme = organizationConfig.organization_theme;
-
-    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+    return getThemeConfig(organizationConfig, isDarkTheme);
   }, [organizationConfig, isDarkTheme]);
 
   const { backgroundColor, button, color, linkColor } = currentThemeConfig;
