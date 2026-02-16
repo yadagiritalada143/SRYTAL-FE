@@ -4,6 +4,7 @@ import {
   IconNetwork,
   IconNotebook,
   IconPackage,
+  IconSettings,
   IconUserEdit,
   IconUsers,
   IconUsersGroup,
@@ -74,5 +75,11 @@ export const adminNavLinks = [
     url: 'admin/dashboard/employment-role-management',
     icon: IconWorldCheck,
     name: 'Employment Roles'
+  },
+  {
+    role: 'admin',
+    url: 'admin/dashboard/settings',
+    icon: IconSettings,
+    name: 'Settings'
   }
 ];

@@ -216,6 +216,8 @@ function NavbarMenu({ navLinks, isDrawerOpen, setIsDrawerOpen }: NavbarProps) {
             position: 'fixed',
             left: `${fabPosition.x}px`,
             top: `${fabPosition.y}px`,
+            width: 132,
+            height: 50,
             cursor: isDragging ? 'grabbing' : 'grab',
             transition: isDragging
               ? 'none'
@@ -223,11 +225,15 @@ function NavbarMenu({ navLinks, isDrawerOpen, setIsDrawerOpen }: NavbarProps) {
           }}
         >
           <div className={classes.fabContent}>
-            <Avatar
+            <img
               src={organizationConfig.organization_theme.logo}
               alt="Organization Logo"
-              size={64}
               className={classes.fabLogo}
+              style={{
+                width: 130,
+                height: 55,
+                borderRadius: 16
+              }}
             />
           </div>
         </UnstyledButton>

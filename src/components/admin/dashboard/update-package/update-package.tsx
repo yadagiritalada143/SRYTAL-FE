@@ -172,7 +172,7 @@ const UpdatePackage = () => {
           {/* Header Card */}
           <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder>
             <Flex
-              direction={isMobile ? 'column' : 'row'}
+              direction="row"
               justify="space-between"
               align="center"
               gap="md"

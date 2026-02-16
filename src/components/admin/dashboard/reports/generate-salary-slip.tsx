@@ -500,10 +500,7 @@ const GenerateSalarySlipReport = () => {
         radius="md"
         p={isMobile ? 'md' : 'xl'}
         withBorder
-        style={{
-          backgroundColor: currentThemeConfig.backgroundColor,
-          color: currentThemeConfig.color
-        }}
+
       >
         <Title order={2} ta="center" mb="xl">
           Generate Salary Slip
@@ -1021,63 +1018,49 @@ const GenerateSalarySlipReport = () => {
                       </Text>
                       <Stack gap="xs">
                         <Group justify="space-between">
-                          <Text size="sm" opacity={0.7}>
-                            Name
-                          </Text>
+                          <Text size="sm">Name</Text>
                           <Text size="sm" fw={600}>
                             {empDetails.empName}
                           </Text>
                         </Group>
 
                         <Group justify="space-between">
-                          <Text size="sm" opacity={0.7}>
-                            Employee ID
-                          </Text>
+                          <Text size="sm">Employee ID</Text>
                           <Text size="sm" fw={600}>
                             {empDetails.empId}
                           </Text>
                         </Group>
 
                         <Group justify="space-between">
-                          <Text size="sm" opacity={0.7}>
-                            Designation
-                          </Text>
+                          <Text size="sm">Designation</Text>
                           <Text size="sm" fw={600}>
                             {empDetails.designation}
                           </Text>
                         </Group>
 
                         <Group justify="space-between">
-                          <Text size="sm" opacity={0.7}>
-                            Email
-                          </Text>
+                          <Text size="sm">Email</Text>
                           <Text size="sm" fw={600}>
                             {empDetails.email}
                           </Text>
                         </Group>
 
                         <Group justify="space-between">
-                          <Text size="sm" opacity={0.7}>
-                            Date of Birth
-                          </Text>
+                          <Text size="sm">Date of Birth</Text>
                           <Text size="sm" fw={600}>
                             {empDetails.dob}
                           </Text>
                         </Group>
 
                         <Group justify="space-between">
-                          <Text size="sm" opacity={0.7}>
-                            PAN
-                          </Text>
+                          <Text size="sm">PAN</Text>
                           <Text size="sm" fw={600}>
                             {empDetails.pan}
                           </Text>
                         </Group>
                         <Divider my="xs" />
                         <Group justify="space-between">
-                          <Text size="sm" opacity={0.7}>
-                            Pay Period
-                          </Text>
+                          <Text size="sm">Pay Period</Text>
                           <Text
                             size="sm"
                             fw={700}
