@@ -16,7 +16,7 @@ import {
 } from '@mantine/core';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { MonthPickerInput } from '@mantine/dates';
+import { DatePickerInput, MonthPickerInput } from '@mantine/dates';
 import '@mantine/dates/styles.css';
 import { toast } from 'react-toastify';
 import {
@@ -88,7 +88,7 @@ type Employee = {
   lastName?: string;
   email?: string;
   dateOfBirth?: string;
-  panNumber?: string;
+  panCardNumber?: string;
   bankDetailsInfo?: {
     accountNumber?: string;
     ifscCode?: string;
@@ -166,7 +166,8 @@ const GenerateSalarySlipReport = () => {
       conveyanceAllowance: 0,
       medicalAllowance: 0,
       otherAllowances: 0,
-      additionalAllowances: []
+      additionalAllowances: [],
+      payDate: new Date()
     }
   });
   const selectedMonth = watch('selectedMonth');
@@ -179,6 +180,7 @@ const GenerateSalarySlipReport = () => {
   const conveyance = watch('conveyanceAllowance') || 0;
   const medical = watch('medicalAllowance') || 0;
   const other = watch('otherAllowances') || 0;
+  const payDate = watch('payDate');
 
   // Watch all form values to detect changes
   const allValues = watch();
@@ -279,7 +281,7 @@ const GenerateSalarySlipReport = () => {
       bankAccount: selectedEmployee.bankDetailsInfo?.accountNumber || '',
       ifsc: selectedEmployee.bankDetailsInfo?.ifscCode || '',
       bankName: 'HDFC Bank',
-      pan: selectedEmployee.panNumber || '',
+      pan: selectedEmployee.panCardNumber || '',
       uan: 'N/A'
     });
   };
@@ -338,7 +340,9 @@ const GenerateSalarySlipReport = () => {
           department: empDetails.department,
           dateOfJoining: empDetails.doj,
           payPeriod: payPeriod,
-          payDate: new Date().toISOString().split('T')[0],
+          payDate: values.payDate
+            ? new Date(values.payDate).toISOString().split('T')[0]
+            : '',
           bankName: empDetails.bankName,
           IFSCCODE: empDetails.ifsc,
           bankAccountNumber: empDetails.bankAccount,
@@ -428,7 +432,9 @@ const GenerateSalarySlipReport = () => {
         department: empDetails.department,
         dateOfJoining: empDetails.doj,
         payPeriod: payPeriod,
-        payDate: new Date().toISOString().split('T')[0],
+        payDate: data.payDate
+          ? new Date(data.payDate).toISOString().split('T')[0]
+          : '',
         bankName: empDetails.bankName,
         IFSCCODE: empDetails.ifsc,
         bankAccountNumber: empDetails.bankAccount,
@@ -680,6 +686,7 @@ const GenerateSalarySlipReport = () => {
                     <TextInput
                       label="Basic Salary"
                       type="number"
+                      required
                       onKeyDown={e => {
                         if (['e', 'E', '+', '-'].includes(e.key)) {
                           e.preventDefault();
@@ -763,6 +770,40 @@ const GenerateSalarySlipReport = () => {
                       {...register('otherAllowances', {
                         valueAsNumber: true
                       })}
+                    />
+                  </Grid.Col>
+
+                  <Grid.Col span={{ base: 12, sm: 6 }}>
+                    <Controller
+                      name="payDate"
+                      control={control}
+                      render={({ field }) => (
+                        <DatePickerInput
+                          label="Pay Date"
+                          placeholder="Select pay date"
+                          required
+                          value={
+                            field.value
+                              ? field.value instanceof Date
+                                ? field.value
+                                : new Date(field.value)
+                              : null
+                          }
+                          onChange={field.onChange}
+                          error={errors.payDate?.message}
+                          styles={{
+                            input: {
+                              backgroundColor:
+                                currentThemeConfig.headerBackgroundColor,
+                              color: currentThemeConfig.color,
+                              borderColor: currentThemeConfig.borderColor
+                            },
+                            label: {
+                              color: currentThemeConfig.color
+                            }
+                          }}
+                        />
+                      )}
                     />
                   </Grid.Col>
                 </Grid>
@@ -1047,6 +1088,24 @@ const GenerateSalarySlipReport = () => {
                                   })
                                 : '-';
                             })()}
+                          </Text>
+                        </Group>
+                        <Group justify="space-between">
+                          <Text size="sm" opacity={0.7}>
+                            Pay Date
+                          </Text>
+                          <Text
+                            size="sm"
+                            fw={600}
+                            c={currentThemeConfig.accentColor}
+                          >
+                            {payDate
+                              ? new Date(payDate).toLocaleDateString('en-IN', {
+                                  year: 'numeric',
+                                  month: 'short',
+                                  day: '2-digit'
+                                })
+                              : '-'}
                           </Text>
                         </Group>
                       </Stack>

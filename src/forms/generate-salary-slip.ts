@@ -44,7 +44,11 @@ export const generateSalarySlipSchema = z.object({
       })
     )
     .optional()
-    .default([])
+    .default([]),
+
+  payDate: z.date({
+    required_error: 'Pay date is required'
+  })
 });
 
 export type GenerateSalarySlipForm = z.infer<typeof generateSalarySlipSchema>;
