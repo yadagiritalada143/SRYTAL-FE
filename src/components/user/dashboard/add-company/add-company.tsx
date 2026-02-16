@@ -24,6 +24,7 @@ import { themeAtom } from '../../../../atoms/theme';
 import { useMediaQuery } from '@mantine/hooks';
 import { useMemo } from 'react';
 import { useCustomToast } from '../../../../utils/common/toast';
+import { getThemeConfig } from '../../../../utils/common/theme-utils';
 
 const AddCompany = () => {
   const navigate = useNavigate();
@@ -37,8 +38,7 @@ const AddCompany = () => {
 
   // Get the current theme configuration
   const currentThemeConfig = useMemo(() => {
-    const orgTheme = organizationConfig.organization_theme;
-    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+    return getThemeConfig(organizationConfig, isDarkTheme);
   }, [organizationConfig, isDarkTheme]);
 
   const {

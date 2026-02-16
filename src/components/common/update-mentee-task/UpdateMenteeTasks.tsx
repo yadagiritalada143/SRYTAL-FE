@@ -1,8 +1,10 @@
 import { Paper, Title, Center, useMantineTheme } from '@mantine/core';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useRecoilValue } from 'recoil';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { organizationThemeAtom } from '../../../atoms/organization-atom';
+import { themeAtom } from '../../../atoms/theme';
+import { getThemeConfig } from '../../../utils/common/theme-utils';
 import { organizationEmployeeUrls } from '../../../utils/common/constants';
 import BackButton from '../../UI/Buttonsanimate/BackButton';
 import { Mentee, Task } from '../../../interfaces/mentee';
@@ -49,6 +51,10 @@ const UpdateMenteeTasks = () => {
   const { empId } = useParams<{ empId: string }>();
   const theme = useMantineTheme();
   const organizationConfig = useRecoilValue(organizationThemeAtom);
+  const isDarkTheme = useRecoilValue(themeAtom);
+  const currentThemeConfig = useMemo(() => {
+    return getThemeConfig(organizationConfig, isDarkTheme);
+  }, [organizationConfig, isDarkTheme]);
   const navigate = useNavigate();
   const [mentee, setMentee] = useState<Mentee | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -100,8 +106,7 @@ const UpdateMenteeTasks = () => {
         withBorder
         className="w-full sm:w-4/5 md:w-3/4 lg:w-1/2"
         style={{
-          backgroundColor:
-            organizationConfig.organization_theme.theme.backgroundColor,
+          backgroundColor: currentThemeConfig.backgroundColor,
           color: theme.colors.primary[2],
           fontFamily: theme.fontFamily
         }}
@@ -128,10 +133,8 @@ const UpdateMenteeTasks = () => {
           newTask={newTask}
           setNewTask={setNewTask}
           onAssign={handleAssign}
-          buttonColor={organizationConfig.organization_theme.theme.button.color}
-          buttonTextColor={
-            organizationConfig.organization_theme.theme.button.textColor
-          }
+          buttonColor={currentThemeConfig.button.color}
+          buttonTextColor={currentThemeConfig.button.textColor}
         />
       </Paper>
     </div>

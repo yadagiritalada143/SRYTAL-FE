@@ -1,7 +1,9 @@
 import { useMantineTheme } from '@mantine/core';
 import { useRecoilValue } from 'recoil';
 import { organizationThemeAtom } from '../../../atoms/organization-atom';
-import { HTMLAttributes } from 'react';
+import { themeAtom } from '../../../atoms/theme';
+import { HTMLAttributes, useMemo } from 'react';
+import { getThemeConfig } from '../../../utils/common/theme-utils';
 
 export const BgDiv = ({
   children,
@@ -13,12 +15,16 @@ export const BgDiv = ({
 } & HTMLAttributes<HTMLDivElement>) => {
   const theme = useMantineTheme();
   const organizationConfig = useRecoilValue(organizationThemeAtom);
+  const isDarkTheme = useRecoilValue(themeAtom);
+  const currentThemeConfig = useMemo(() => {
+    return getThemeConfig(organizationConfig, isDarkTheme);
+  }, [organizationConfig, isDarkTheme]);
 
   return (
     <div
       className={`custom-style-div ${className}`}
       style={{
-        color: organizationConfig.organization_theme.theme.color,
+        color: currentThemeConfig.color,
         backgroundImage: `linear-gradient(to right, ${theme.colors.primary[6]}, ${theme.colors.primary[5]})`,
         fontFamily: theme.fontFamily,
       }}
@@ -27,7 +33,7 @@ export const BgDiv = ({
       <style>
         {`
           a {
-            color: ${organizationConfig.organization_theme.theme.linkColor};
+            color: ${currentThemeConfig.linkColor};
           }
         `}
       </style>

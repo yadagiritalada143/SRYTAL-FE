@@ -13,6 +13,7 @@ import { ThemeBackground } from '../../../components/UI/Theme-background/backgro
 import { ThemeForm } from '../../../components/UI/Form/form';
 import { useCustomToast } from '../../../utils/common/toast';
 import { IconLockPassword, IconMail } from '@tabler/icons-react';
+import { getThemeConfig } from '../../../utils/common/theme-utils';
 const AdminLogin = () => {
   const navigate = useNavigate();
   const { showErrorToast } = useCustomToast();
@@ -36,9 +37,7 @@ const AdminLogin = () => {
 
   // Get the current theme configuration for form styling
   const currentThemeConfig = useMemo(() => {
-    const orgTheme = organizationConfig.organization_theme;
-
-    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+    return getThemeConfig(organizationConfig, isDarkTheme);
   }, [organizationConfig, isDarkTheme]);
 
   useEffect(() => {

@@ -40,6 +40,7 @@ import { themeAtom } from '../../../../atoms/theme';
 import { useMediaQuery } from '@mantine/hooks';
 import { useCustomToast } from '../../../../utils/common/toast';
 import DynamicStepper from '../../../common/reports-salary-slip/dynamicstepper';
+import { getThemeConfig } from '../../../../utils/common/theme-utils';
 
 type ReadOnlyFieldProps = {
   label: string;
@@ -115,8 +116,7 @@ const GenerateSalarySlipReport = () => {
   const isDarkTheme = useRecoilValue(themeAtom);
   const organizationConfig = useRecoilValue(organizationThemeAtom);
   const currentThemeConfig = useMemo(() => {
-    const orgTheme = organizationConfig.organization_theme;
-    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+    return getThemeConfig(organizationConfig, isDarkTheme);
   }, [organizationConfig, isDarkTheme]);
   const isMobile = useMediaQuery('(max-width: 768px)');
   const [generatedPdf, setGeneratedPdf] = useState<Blob | null>(null);

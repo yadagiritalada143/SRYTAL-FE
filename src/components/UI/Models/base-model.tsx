@@ -1,6 +1,9 @@
 import { Modal, ModalProps } from '@mantine/core';
 import { useRecoilValue } from 'recoil';
+import { useMemo } from 'react';
 import { organizationThemeAtom } from '../../../atoms/organization-atom';
+import { themeAtom } from '../../../atoms/theme';
+import { getThemeConfig } from '../../../utils/common/theme-utils';
 import { toast } from 'react-toastify';
 
 interface StandardModalProps extends ModalProps {
@@ -14,6 +17,10 @@ export const StandardModal: React.FC<StandardModalProps> = ({
   ...props
 }) => {
   const orgTheme = useRecoilValue(organizationThemeAtom);
+  const isDarkTheme = useRecoilValue(themeAtom);
+  const currentThemeConfig = useMemo(() => {
+    return getThemeConfig(orgTheme, isDarkTheme);
+  }, [orgTheme, isDarkTheme]);
 
   const handleClose = () => {
     if (forceAction) {
@@ -31,7 +38,7 @@ export const StandardModal: React.FC<StandardModalProps> = ({
       closeOnEscape={!forceAction}
       withCloseButton={!forceAction}
       overlayProps={{
-        color: orgTheme.organization_theme.theme.backgroundColor,
+        color: currentThemeConfig.backgroundColor,
         opacity: 0.7,
         blur: 3,
       }}

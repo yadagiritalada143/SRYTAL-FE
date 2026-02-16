@@ -38,6 +38,7 @@ import { useMediaQuery } from '@mantine/hooks';
 import { addCourseContentWriter } from '../../../../services/user-services';
 import { useNavigate } from 'react-router-dom';
 import { useCustomToast } from '../../../../utils/common/toast';
+import { getThemeConfig } from '../../../../utils/common/theme-utils';
 
 export const ContentWriterAddCourse = () => {
   const [courseName, setCourseName] = useState('');
@@ -65,8 +66,7 @@ export const ContentWriterAddCourse = () => {
   });
 
   const currentThemeConfig = useMemo(() => {
-    const orgTheme = organizationConfig.organization_theme;
-    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+    return getThemeConfig(organizationConfig, isDarkTheme);
   }, [organizationConfig, isDarkTheme]);
 
   const handleThumbnailChange = (file: File | null) => {

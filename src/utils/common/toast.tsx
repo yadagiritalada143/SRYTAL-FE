@@ -8,6 +8,7 @@ import { useRecoilValue } from 'recoil';
 import { organizationThemeAtom } from '../../atoms/organization-atom';
 import { themeAtom } from '../../atoms/theme';
 import { useMemo } from 'react';
+import { getThemeConfig } from './theme-utils';
 
 export const useCustomToast = () => {
   const organizationConfig = useRecoilValue(organizationThemeAtom);
@@ -15,8 +16,7 @@ export const useCustomToast = () => {
 
   // Get current theme configuration
   const currentThemeConfig = useMemo(() => {
-    const orgTheme = organizationConfig.organization_theme;
-    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+    return getThemeConfig(organizationConfig, isDarkTheme);
   }, [organizationConfig, isDarkTheme]);
 
   const showSuccessToast = (

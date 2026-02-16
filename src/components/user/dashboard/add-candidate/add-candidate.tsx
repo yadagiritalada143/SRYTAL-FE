@@ -30,6 +30,7 @@ import { useRecoilValue } from 'recoil';
 import { organizationThemeAtom } from '../../../../atoms/organization-atom';
 import { themeAtom } from '../../../../atoms/theme';
 import { useMediaQuery } from '@mantine/hooks';
+import { getThemeConfig } from '../../../../utils/common/theme-utils';
 import {
   IconArrowLeft,
   IconUser,
@@ -54,8 +55,7 @@ const AddPoolCandidate = () => {
 
   // Get the current theme configuration
   const currentThemeConfig = useMemo(() => {
-    const orgTheme = organizationConfig.organization_theme;
-    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+    return getThemeConfig(organizationConfig, isDarkTheme);
   }, [organizationConfig, isDarkTheme]);
 
   const {

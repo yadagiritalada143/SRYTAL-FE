@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Group,
   Text,
@@ -15,6 +15,8 @@ import {
 } from '@mantine/core';
 import { useRecoilValue } from 'recoil';
 import { organizationThemeAtom } from '../../../atoms/organization-atom';
+import { themeAtom } from '../../../atoms/theme';
+import { getThemeConfig } from '../../../utils/common/theme-utils';
 // import { menteesAtom } from '../../../atoms/mentees-atom';
 import { useNavigate } from 'react-router-dom';
 import { IconSearch } from '@tabler/icons-react';
@@ -91,7 +93,12 @@ const mockMentees = [
 const Mentees = () => {
   const theme = useMantineTheme();
   const organizationConfig = useRecoilValue(organizationThemeAtom);
-  const orgTheme = organizationConfig.organization_theme.theme;
+  const isDarkTheme = useRecoilValue(themeAtom);
+
+  const currentThemeConfig = useMemo(() => {
+    return getThemeConfig(organizationConfig, isDarkTheme);
+  }, [organizationConfig, isDarkTheme]);
+
   const [mentees, setMentees] = useState<typeof mockMentees>([]);
   //const [mentees, setMentees] = useRecoilValue(menteesAtom);
   const [loading, setLoading] = useState(true);
@@ -127,7 +134,7 @@ const Mentees = () => {
       gap={24}
       px="md"
       style={{
-        color: organizationConfig.organization_theme.theme.button.textColor,
+        color: currentThemeConfig.button.textColor,
         fontFamily: theme.fontFamily
       }}
     >
@@ -152,9 +159,9 @@ const Mentees = () => {
           radius="md"
           styles={{
             input: {
-              backgroundColor: orgTheme.backgroundColor,
-              color: orgTheme.color,
-              borderColor: orgTheme.borderColor
+              backgroundColor: currentThemeConfig.backgroundColor,
+              color: currentThemeConfig.color,
+              borderColor: currentThemeConfig.borderColor
             }
           }}
         />
@@ -166,7 +173,7 @@ const Mentees = () => {
           <Loader
             size="lg"
             type="bars"
-            color={organizationConfig.organization_theme.theme.button.color}
+            color={currentThemeConfig.button.color}
           />
         </Center>
       ) : (
@@ -189,9 +196,9 @@ const Mentees = () => {
                     withBorder
                     p="md"
                     style={{
-                      backgroundColor: orgTheme.backgroundColor,
-                      color: orgTheme.color,
-                      border: `1px solid ${orgTheme.borderColor}`,
+                      backgroundColor: currentThemeConfig.backgroundColor,
+                      color: currentThemeConfig.color,
+                      border: `1px solid ${currentThemeConfig.borderColor}`,
                       transition: 'transform 0.15s ease, box-shadow 0.15s ease',
                       width: '100%'
                     }}
@@ -248,7 +255,7 @@ const Mentees = () => {
                     radius="md"
                     styles={{
                       control: {
-                        borderColor: orgTheme.borderColor
+                        borderColor: currentThemeConfig.borderColor
                       }
                     }}
                   />

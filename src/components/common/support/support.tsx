@@ -1,15 +1,22 @@
 import { useMantineTheme } from '@mantine/core';
 import { useRecoilValue } from 'recoil';
+import { useMemo } from 'react';
 import { organizationThemeAtom } from '../../../atoms/organization-atom';
+import { themeAtom } from '../../../atoms/theme';
+import { getThemeConfig } from '../../../utils/common/theme-utils';
 
 const Support = () => {
   const theme = useMantineTheme();
   const organizationConfig = useRecoilValue(organizationThemeAtom);
+  const isDarkTheme = useRecoilValue(themeAtom);
+  const currentThemeConfig = useMemo(() => {
+    return getThemeConfig(organizationConfig, isDarkTheme);
+  }, [organizationConfig, isDarkTheme]);
 
   return (
     <div
       style={{
-        color: organizationConfig.organization_theme.theme.button.textColor,
+        color: currentThemeConfig.button.textColor,
         fontFamily: theme.fontFamily,
       }}
       className="h-auto"

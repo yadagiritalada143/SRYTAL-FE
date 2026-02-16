@@ -48,6 +48,7 @@ import {
   TimesheetStatus
 } from '../../../interfaces/timesheet';
 import { getTimesheetData } from '../../../services/common-services';
+import { getThemeConfig } from '../../../utils/common/theme-utils';
 import {
   formatData,
   formatDisplayDate,
@@ -104,8 +105,7 @@ const DateTableComponent = () => {
 
   // Get the current theme configuration
   const currentThemeConfig = useMemo(() => {
-    const orgTheme = organizationConfig.organization_theme;
-    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+    return getThemeConfig(organizationConfig, isDarkTheme);
   }, [organizationConfig, isDarkTheme]);
 
   const {

@@ -8,6 +8,7 @@ import { useCustomToast } from '../../../utils/common/toast';
 import { themeAtom } from '../../../atoms/theme';
 import { IconMail, IconLock, IconArrowLeft } from '@tabler/icons-react';
 import { CancelStyledButton } from '../../UI/Buttons/buttons';
+import { getThemeConfig } from '../../../utils/common/theme-utils';
 
 interface ForgotPasswordProps {
   closeModal: () => void;
@@ -32,8 +33,7 @@ const ForgotPassword = ({ closeModal }: ForgotPasswordProps) => {
 
   // Get current theme configuration
   const currentThemeConfig = useMemo(() => {
-    const orgTheme = organizationConfig.organization_theme;
-    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+    return getThemeConfig(organizationConfig, isDarkTheme);
   }, [organizationConfig, isDarkTheme]);
 
   const onSubmit = async (data: { username: string }) => {
