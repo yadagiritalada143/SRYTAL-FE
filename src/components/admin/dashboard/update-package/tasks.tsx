@@ -1,29 +1,121 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
-  Box,
   Button,
   Group,
   Modal,
   Table,
   TextInput,
   Text,
+  Card,
+  Stack,
+  ActionIcon,
+  Tooltip,
+  Badge,
+  ScrollArea,
+  Center,
+  Divider
 } from '@mantine/core';
-import { OrganizationConfig } from '../../../../interfaces/organization';
+import { useDisclosure, useMediaQuery } from '@mantine/hooks';
+import { toast } from 'react-toastify';
 import moment from 'moment';
-import { IconEdit, IconTrash } from '@tabler/icons-react';
+import {
+  IconEdit,
+  IconTrash,
+  IconChecklist,
+  IconDeviceFloppy,
+  IconUser,
+  IconCalendar
+} from '@tabler/icons-react';
+import { OrganizationConfig } from '../../../../interfaces/organization';
 import {
   deleteTaskByAdmin,
-  updateTaskByAdmin,
+  updateTaskByAdmin
 } from '../../../../services/admin-services';
-import { toast } from 'react-toastify';
 import { DeleteTaskModel } from './delete-task';
-import { useDisclosure } from '@mantine/hooks';
 import { useCustomToast } from '../../../../utils/common/toast';
+import { useRecoilValue } from 'recoil';
+import { themeAtom } from '../../../../atoms/theme';
+
+// Mobile Task Card Component
+const MobileTaskCard: React.FC<{
+  task: any;
+  index: number;
+  onEdit: (task: any) => void;
+  onDelete: (taskId: string) => void;
+}> = ({ task, index, onEdit, onDelete }) => {
+  return (
+    <Card shadow="sm" p="md" mb="sm" withBorder>
+      <Stack gap="sm">
+        <Group justify="space-between" align="flex-start">
+          <Badge variant="filled" color="blue">
+            #{index + 1}
+          </Badge>
+          <Group gap="xs">
+            <ActionIcon
+              variant="subtle"
+              color="blue"
+              onClick={() => onEdit(task)}
+              size="md"
+            >
+              <IconEdit size={18} />
+            </ActionIcon>
+            <ActionIcon
+              variant="subtle"
+              color="red"
+              onClick={() => onDelete(task._id)}
+              size="md"
+            >
+              <IconTrash size={18} />
+            </ActionIcon>
+          </Group>
+        </Group>
+
+        <Divider />
+
+        <Stack gap="xs">
+          <Stack gap={2}>
+            <Text size="xs" fw={600} c="dimmed">
+              Task
+            </Text>
+            <Text size="sm" fw={500}>
+              {task.title}
+            </Text>
+          </Stack>
+
+          <Stack gap={2}>
+            <Text size="xs" fw={600} c="dimmed">
+              <Group gap={4}>
+                <IconUser size={12} />
+                Created By
+              </Group>
+            </Text>
+            <Text size="sm">
+              {task?.createdBy?.firstName || ''}{' '}
+              {task?.createdBy?.lastName || ''}
+            </Text>
+          </Stack>
+
+          <Stack gap={2}>
+            <Text size="xs" fw={600} c="dimmed">
+              <Group gap={4}>
+                <IconCalendar size={12} />
+                Created At
+              </Group>
+            </Text>
+            <Text size="xs">
+              {moment(task.createdAt).format('MMM DD, YYYY - h:mm A')}
+            </Text>
+          </Stack>
+        </Stack>
+      </Stack>
+    </Card>
+  );
+};
 
 const PackageTasksTable = ({
   tasks = [],
   organizationConfig,
-  fetchPackageDetails,
+  fetchPackageDetails
 }: {
   tasks: any[];
   organizationConfig: OrganizationConfig;
@@ -39,9 +131,27 @@ const PackageTasksTable = ({
     useDisclosure(false);
   const { showSuccessToast } = useCustomToast();
 
+  const isMobile = useMediaQuery('(max-width: 768px)');
+  const isDarkTheme = useRecoilValue(themeAtom);
+
+  const currentThemeConfig = useMemo(() => {
+    const orgTheme = organizationConfig.organization_theme;
+    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+  }, [organizationConfig, isDarkTheme]);
+
   useEffect(() => {
     setTaskList(tasks);
   }, [tasks]);
+
+  const handleEdit = (task: any) => {
+    setSelectedTaskObj(task);
+    openEditModal();
+  };
+
+  const handleDelete = (taskId: string) => {
+    setSelectedTask(taskId);
+    open();
+  };
 
   const handleDeleteTask = async (taskId: string, hardDelete: boolean) => {
     try {
@@ -58,151 +168,217 @@ const PackageTasksTable = ({
     }
   };
 
-  return (
-    <div
-      style={{
-        color: organizationConfig.organization_theme.theme.button.textColor,
-        fontFamily: organizationConfig.organization_theme.theme.fontFamily,
-      }}
-      className="my-10 overflow-x-auto shadow-lg rounded-lg"
-    >
-      <Table className="w-full text-center border table-auto">
-        <colgroup>
-          <col className="w-[5%] min-w-[50px]" />
-          <col className="w-[40%] min-w-[200px]" />
-          <col className="w-[20%] min-w-[150px]" />
-          <col className="w-[20%] min-w-[200px]" />
-          <col className="w-[15%] min-w-[120px]" />
-        </colgroup>
-        <thead
-          style={{
-            backgroundColor:
-              organizationConfig.organization_theme.theme.backgroundColor,
-            color: organizationConfig.organization_theme.theme.color,
-          }}
-        >
-          <tr className="border-b">
-            <th className="px-4 py-2 border-r text-left">S.no</th>
-            <th className="px-4 py-2 border-r text-left">Tasks</th>
-            <th className="px-4 py-2 border-r text-left">Created By</th>
-            <th className="px-4 py-2 border-r text-left">Created At</th>
-            <th className="px-4 py-2 text-center">Action</th>
-          </tr>
-        </thead>
+  const handleUpdateTask = async () => {
+    if (!selectedTaskObj?._id) return;
 
-        <tbody>
-          {taskList.length > 0 ? (
-            taskList.map((task, index) => (
-              <tr key={task._id} className="border-b text-left ">
-                <td className="px-4 py-2 border-r">{index + 1}</td>
-                <td className="px-4 py-2 border-r">{task.title}</td>
-                <td className="px-4 py-2 border-r">
-                  {task?.createdBy?.firstName || ''}{' '}
-                  {task?.createdBy?.lastName || ''}
-                </td>
-                <td className="px-4 py-2 border-r">
-                  {moment(task.createdAt).format('MMMM Do YYYY, h:mm A')}
-                </td>
-                <td className="px-4 py-2 text-center">
-                  <div className="flex flex-wrap justify-center gap-2 sm:flex-nowrap">
-                    <Button
-                      variant="light"
-                      color="red"
-                      size="xs"
-                      onClick={() => {
-                        open();
-                        setSelectedTask(task._id);
-                      }}
-                      className="w-full sm:w-auto"
-                    >
-                      <IconTrash size={18} />
-                    </Button>
-                    <Button
-                      variant="light"
-                      color="blue"
-                      size="xs"
-                      onClick={() => {
-                        setSelectedTaskObj(task);
-                        openEditModal();
-                      }}
-                      className="w-full sm:w-auto"
-                    >
-                      <IconEdit size={18} />
-                    </Button>
-                  </div>
-                </td>
-              </tr>
-            ))
+    try {
+      await updateTaskByAdmin(selectedTaskObj._id, selectedTaskObj.title);
+      showSuccessToast('Task updated successfully');
+
+      setTaskList(prev =>
+        prev.map(task =>
+          task._id === selectedTaskObj._id
+            ? { ...task, title: selectedTaskObj.title }
+            : task
+        )
+      );
+
+      fetchPackageDetails();
+      closeEditModal();
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to update task');
+    }
+  };
+
+  return (
+    <>
+      <Card shadow="sm" p={0} radius="md" withBorder>
+        <Stack gap={0}>
+          {/* Header */}
+          <Group
+            p={isMobile ? 'md' : 'lg'}
+            justify="space-between"
+            style={{
+              borderBottom: '1px solid var(--mantine-color-gray-3)'
+            }}
+          >
+            <Group gap="xs">
+              <IconChecklist size={20} />
+              <Text size="lg" fw={600}>
+                Package Tasks ({taskList.length})
+              </Text>
+            </Group>
+          </Group>
+
+          {/* Content */}
+          {taskList.length === 0 ? (
+            <Center p="xl">
+              <Stack align="center" gap="md">
+                <IconChecklist size={48} opacity={0.5} />
+                <Text size="lg">No tasks available</Text>
+                <Text size="sm" c="dimmed">
+                  Add your first task to get started
+                </Text>
+              </Stack>
+            </Center>
+          ) : isMobile ? (
+            // Mobile Card View
+            <ScrollArea p="md">
+              <Stack gap="sm">
+                {taskList.map((task, index) => (
+                  <MobileTaskCard
+                    key={task._id}
+                    task={task}
+                    index={index}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                  />
+                ))}
+              </Stack>
+            </ScrollArea>
           ) : (
-            <tr>
-              <td colSpan={5} className="text-center py-4">
-                No tasks available
-              </td>
-            </tr>
+            // Desktop Table View
+            <ScrollArea>
+              <Table stickyHeader withTableBorder withColumnBorders>
+                <Table.Thead
+                  style={{
+                    backgroundColor: currentThemeConfig.backgroundColor,
+                    color: currentThemeConfig.color
+                  }}
+                >
+                  <Table.Tr>
+                    <Table.Th
+                      className="p-3 border text-center"
+                      style={{ width: '80px' }}
+                    >
+                      <Text size="sm" fw={500}>
+                        S.No
+                      </Text>
+                    </Table.Th>
+                    <Table.Th className="p-3 border">
+                      <Text size="sm" fw={500}>
+                        Task
+                      </Text>
+                    </Table.Th>
+                    <Table.Th className="p-3 border" style={{ width: '200px' }}>
+                      <Text size="sm" fw={500}>
+                        Created By
+                      </Text>
+                    </Table.Th>
+                    <Table.Th className="p-3 border" style={{ width: '220px' }}>
+                      <Text size="sm" fw={500}>
+                        Created At
+                      </Text>
+                    </Table.Th>
+                    <Table.Th
+                      className="p-3 border text-center"
+                      style={{ width: '120px' }}
+                    >
+                      <Text size="sm" fw={500}>
+                        Actions
+                      </Text>
+                    </Table.Th>
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>
+                  {taskList.map((task, index) => (
+                    <Table.Tr key={task._id} className="transition-colors">
+                      <Table.Td className="text-center p-3">
+                        <Text size="sm">{index + 1}</Text>
+                      </Table.Td>
+                      <Table.Td className="p-3">
+                        <Text size="sm" fw={500}>
+                          {task.title}
+                        </Text>
+                      </Table.Td>
+                      <Table.Td className="p-3">
+                        <Text size="sm">
+                          {task?.createdBy?.firstName || ''}{' '}
+                          {task?.createdBy?.lastName || ''}
+                        </Text>
+                      </Table.Td>
+                      <Table.Td className="p-3">
+                        <Text size="xs">
+                          {moment(task.createdAt).format(
+                            'MMM DD, YYYY - h:mm A'
+                          )}
+                        </Text>
+                      </Table.Td>
+                      <Table.Td className="p-3">
+                        <Group gap="xs" justify="center">
+                          <Tooltip label="Edit Task">
+                            <ActionIcon
+                              variant="subtle"
+                              color="blue"
+                              onClick={() => handleEdit(task)}
+                              size="sm"
+                            >
+                              <IconEdit size={16} />
+                            </ActionIcon>
+                          </Tooltip>
+                          <Tooltip label="Delete Task">
+                            <ActionIcon
+                              variant="subtle"
+                              color="red"
+                              onClick={() => handleDelete(task._id)}
+                              size="sm"
+                            >
+                              <IconTrash size={16} />
+                            </ActionIcon>
+                          </Tooltip>
+                        </Group>
+                      </Table.Td>
+                    </Table.Tr>
+                  ))}
+                </Table.Tbody>
+              </Table>
+            </ScrollArea>
           )}
-        </tbody>
-      </Table>
+        </Stack>
+      </Card>
+
+      {/* Edit Modal */}
       <Modal
         opened={editModalOpened}
         onClose={closeEditModal}
-        title={<Text className="text-center font-bold text-xl">Edit Task</Text>}
+        title={
+          <Group gap="xs">
+            <IconEdit size={20} />
+            <Text fw={600} size="lg">
+              Edit Task
+            </Text>
+          </Group>
+        }
         centered
+        size="md"
       >
-        <Box>
+        <Stack gap="md">
           <TextInput
-            label="Task Name"
+            label="Task Title"
             value={selectedTaskObj?.title || ''}
             onChange={e =>
               setSelectedTaskObj({ ...selectedTaskObj, title: e.target.value })
             }
             required
-            mb="md"
+            size="md"
+            placeholder="Enter task title"
           />
-          <Group justify="flex-end">
-            <Button
-              bg={organizationConfig.organization_theme.theme.backgroundColor}
-              c={organizationConfig.organization_theme.theme.color}
-              variant="outline"
-              onClick={closeEditModal}
-            >
+          <Group justify="flex-end" mt="md">
+            <Button variant="default" onClick={closeEditModal}>
               Cancel
             </Button>
             <Button
-              bg={organizationConfig.organization_theme.theme.backgroundColor}
-              c={organizationConfig.organization_theme.theme.color}
-              variant="outline"
-              onClick={async () => {
-                if (!selectedTaskObj?._id) return;
-
-                try {
-                  await updateTaskByAdmin(
-                    selectedTaskObj._id,
-                    selectedTaskObj.title
-                  );
-                  showSuccessToast('Task updated successfully');
-
-                  setTaskList(prev =>
-                    prev.map(task =>
-                      task._id === selectedTaskObj._id
-                        ? { ...task, title: selectedTaskObj.title }
-                        : task
-                    )
-                  );
-
-                  fetchPackageDetails();
-                  closeEditModal();
-                } catch (err) {
-                  console.error(err);
-                  toast.error('Failed to update task');
-                }
-              }}
+              onClick={handleUpdateTask}
+              leftSection={<IconDeviceFloppy size={16} />}
             >
               Save Changes
             </Button>
           </Group>
-        </Box>
+        </Stack>
       </Modal>
 
+      {/* Delete Task Modal */}
       <DeleteTaskModel
         agreeTerms={agreeTerms}
         close={close}
@@ -213,7 +389,7 @@ const PackageTasksTable = ({
         setConfirmDelete={setConfirmDelete}
         selectedTask={selectedTask}
       />
-    </div>
+    </>
   );
 };
 

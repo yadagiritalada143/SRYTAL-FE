@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
-  Box,
   Button,
   Group,
   Modal,
@@ -8,23 +7,45 @@ import {
   Text,
   Pagination,
   Loader,
+  Card,
+  Stack,
+  ActionIcon,
+  Badge,
+  Alert,
+  Divider,
+  Tooltip,
+  Grid
 } from '@mantine/core';
+import {
+  IconTrash,
+  IconEdit,
+  IconSearch,
+  IconPackage,
+  IconAlertCircle,
+  IconCheck,
+  IconX,
+  IconEye,
+  IconChevronDown,
+  IconChevronRight,
+  IconSubtask
+} from '@tabler/icons-react';
 import { OrganizationConfig } from '../../../../interfaces/organization';
-import { IconTrash, IconEdit } from '@tabler/icons-react';
 import {
   deleteEmployeePackagesByAdmin,
   updateTaskByAdmin,
   getEmployeePackagesByAdmin,
-  deleteEmployeeTasksByAdmin,
+  deleteEmployeeTasksByAdmin
 } from '../../../../services/admin-services';
 import { toast } from 'react-toastify';
 import { useDisclosure } from '@mantine/hooks';
+import { useRecoilValue } from 'recoil';
+import { themeAtom } from '../../../../atoms/theme';
 
 const PackagesTaskTable = ({
   selectedPackagesData = {},
   tasks = [],
   organizationConfig,
-  employeeId,
+  employeeId
 }: {
   selectedPackagesData: any;
   tasks: any[];
@@ -39,15 +60,59 @@ const PackagesTaskTable = ({
   const [activePage, setActivePage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedTaskObj, setSelectedTaskObj] = useState<any>(null);
+  const [expandedPackages, setExpandedPackages] = useState<Set<string>>(
+    new Set()
+  );
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const isDarkTheme = useRecoilValue(themeAtom);
+
   const [editModalOpened, { open: openEditModal, close: closeEditModal }] =
     useDisclosure(false);
+  const [
+    deleteModalOpened,
+    { open: openDeleteModal, close: closeDeleteModal }
+  ] = useDisclosure(false);
+  const [itemToDelete, setItemToDelete] = useState<{
+    type: 'package' | 'task';
+    packageId: string;
+    taskId?: string;
+    title: string;
+  } | null>(null);
 
-  const itemsPerPage = 10;
+  // Get current theme configuration
+  const currentThemeConfig = useMemo(() => {
+    const orgTheme = organizationConfig.organization_theme;
+    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+  }, [organizationConfig, isDarkTheme]);
+
+  const itemsPerPage = 5; // Reduced for better UX
   const totalPages = Math.ceil(filteredPackages.length / itemsPerPage);
   const paginatedData = filteredPackages.slice(
     (activePage - 1) * itemsPerPage,
     activePage * itemsPerPage
   );
+
+  // Statistics calculation
+  const stats = useMemo(() => {
+    const totalPackages = packagesList.length;
+    const totalTasks = packagesList.reduce(
+      (acc, pkg) => acc + (pkg.tasks?.length || 0),
+      0
+    );
+    const packagesWithTasks = packagesList.filter(
+      pkg => pkg.tasks?.length > 0
+    ).length;
+
+    return {
+      totalPackages,
+      totalTasks,
+      packagesWithTasks,
+      averageTasksPerPackage:
+        totalPackages > 0
+          ? Math.round((totalTasks / totalPackages) * 10) / 10
+          : 0
+    };
+  }, [packagesList]);
 
   const refreshEmployeePackages = async () => {
     setIsLoading(true);
@@ -57,7 +122,12 @@ const PackagesTaskTable = ({
       setFilteredPackages(updatedPackages?.packages || []);
     } catch (error) {
       console.error('Failed to fetch updated employee packages:', error);
-      toast.error('Could not refresh package data');
+      toast.error('Could not refresh package data', {
+        style: {
+          color: currentThemeConfig.color,
+          backgroundColor: currentThemeConfig.backgroundColor
+        }
+      });
     } finally {
       setIsLoading(false);
     }
@@ -67,6 +137,14 @@ const PackagesTaskTable = ({
     if (selectedPackagesData && selectedPackagesData.packages?.length > 0) {
       setPackagesList(selectedPackagesData.packages);
       setFilteredPackages(selectedPackagesData.packages);
+      // Auto-expand packages with few tasks for better visibility
+      const autoExpand = new Set<string>();
+      selectedPackagesData.packages.forEach((pkg: any) => {
+        if (pkg.tasks?.length <= 3) {
+          autoExpand.add(pkg.packageId);
+        }
+      });
+      setExpandedPackages(autoExpand);
     }
   }, [selectedPackagesData, tasks]);
 
@@ -84,243 +162,687 @@ const PackagesTaskTable = ({
     setActivePage(1);
   }, [searchTerm, packagesList]);
 
-  const handleDeletePackage = async (packageId: string) => {
-    const originalPackages = [...packagesList];
+  const togglePackageExpansion = (packageId: string) => {
+    setExpandedPackages(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(packageId)) {
+        newSet.delete(packageId);
+      } else {
+        newSet.add(packageId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!itemToDelete) return;
+
     try {
-      setPackagesList(prev => prev.filter(pkg => pkg.packageId !== packageId));
-      setFilteredPackages(prev =>
-        prev.filter(pkg => pkg.packageId !== packageId)
-      );
-      await deleteEmployeePackagesByAdmin(employeeId, packageId);
-      toast.success('Package deleted successfully');
-    } catch (error) {
-      console.error('Error deleting package:', error);
-      toast.error('Failed to delete package');
-      setPackagesList(originalPackages);
-      setFilteredPackages(originalPackages);
+      setDeleteError(null);
+
+      if (itemToDelete.type === 'package') {
+        setPackagesList(prev =>
+          prev.filter(pkg => pkg.packageId !== itemToDelete.packageId)
+        );
+        setFilteredPackages(prev =>
+          prev.filter(pkg => pkg.packageId !== itemToDelete.packageId)
+        );
+
+        await deleteEmployeePackagesByAdmin(employeeId, itemToDelete.packageId);
+        toast.success('Package deleted successfully', {
+          style: {
+            color: currentThemeConfig.color,
+            backgroundColor: currentThemeConfig.backgroundColor,
+            border: `1px solid ${currentThemeConfig.borderColor}`
+          },
+          icon: <IconCheck size={24} />
+        });
+      } else if (itemToDelete.type === 'task' && itemToDelete.taskId) {
+        await deleteEmployeeTasksByAdmin(
+          employeeId,
+          itemToDelete.packageId,
+          itemToDelete.taskId
+        );
+        setPackagesList(prev => {
+          const updatedPackages = prev.map(pkg => {
+            if (pkg.packageId === itemToDelete.packageId) {
+              return {
+                ...pkg,
+                tasks: pkg.tasks.filter(
+                  (task: any) => task.taskId !== itemToDelete.taskId
+                )
+              };
+            }
+            return pkg;
+          });
+          return updatedPackages;
+        });
+        toast.success('Task deleted successfully', {
+          style: {
+            color: currentThemeConfig.color,
+            backgroundColor: currentThemeConfig.backgroundColor,
+            border: `1px solid ${currentThemeConfig.borderColor}`
+          },
+          icon: <IconCheck size={24} />
+        });
+      }
+
+      closeDeleteModal();
+      setItemToDelete(null);
+    } catch (error: any) {
+      console.error('Error deleting item:', error);
+      const errorMessage =
+        error?.response?.data?.message ||
+        `Failed to delete ${itemToDelete.type}`;
+      setDeleteError(errorMessage);
+      toast.error(errorMessage, {
+        style: {
+          color: currentThemeConfig.color,
+          backgroundColor: currentThemeConfig.backgroundColor
+        }
+      });
     }
   };
 
-  const handleDeleteTask = async (packageId: string, taskId: string) => {
-    try {
-      await deleteEmployeeTasksByAdmin(employeeId, packageId, taskId);
-      setPackagesList(prev => {
-        const updatedPackages = prev.map(pkg => {
-          if (pkg.packageId === packageId) {
-            return {
-              ...pkg,
-              tasks: pkg.tasks.filter((task: any) => task.taskId !== taskId),
-            };
-          }
-          return pkg;
-        });
-        return updatedPackages;
-      });
-      toast.success('Task deleted successfully');
-    } catch (error) {
-      console.error('Error deleting task:', error);
-      toast.error('Failed to delete task');
-    }
+  const openDeleteConfirmation = (
+    type: 'package' | 'task',
+    packageId: string,
+    title: string,
+    taskId?: string
+  ) => {
+    setItemToDelete({ type, packageId, taskId, title });
+    openDeleteModal();
   };
 
   const handleEditTask = (task: any) => {
-    setSelectedTaskObj(task);
+    setSelectedTaskObj({ ...task });
     openEditModal();
   };
 
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
+  const handleSaveTask = async () => {
+    if (!selectedTaskObj?._id || !selectedTaskObj.title.trim()) return;
+
+    try {
+      await updateTaskByAdmin(selectedTaskObj._id, selectedTaskObj.title);
+      toast.success('Task updated successfully', {
+        style: {
+          color: currentThemeConfig.color,
+          backgroundColor: currentThemeConfig.backgroundColor,
+          border: `1px solid ${currentThemeConfig.borderColor}`
+        },
+        icon: <IconCheck size={24} />
+      });
+      await refreshEmployeePackages();
+      closeEditModal();
+    } catch (err: any) {
+      console.error(err);
+      const errorMessage =
+        err?.response?.data?.message || 'Failed to update task';
+      toast.error(errorMessage, {
+        style: {
+          color: currentThemeConfig.color,
+          backgroundColor: currentThemeConfig.backgroundColor
+        }
+      });
+    }
   };
 
-  return (
-    <div
-      className="w-full"
-      style={{
-        color: organizationConfig.organization_theme.theme.button.textColor,
-        fontFamily: organizationConfig.organization_theme.theme.fontFamily,
-      }}
-    >
-      <div className="mb-4">
-        <TextInput
-          placeholder="Search packages or tasks..."
-          value={searchTerm}
-          onChange={handleSearch}
-          className="w-full"
-        />
-      </div>
-
-      {isLoading ? (
+  if (isLoading) {
+    return (
+      <Card
+        radius="md"
+        p="xl"
+        style={{
+          backgroundColor: currentThemeConfig.backgroundColor,
+          borderColor: currentThemeConfig.borderColor,
+          border: `1px solid ${currentThemeConfig.borderColor}`
+        }}
+      >
         <div className="flex justify-center items-center h-48">
-          <Loader
-            size="xl"
-            color={organizationConfig.organization_theme.theme.button.color}
-          />
+          <Stack align="center" gap="md">
+            <Loader size="xl" color={currentThemeConfig.button.color} />
+            <Text size="lg" c={currentThemeConfig.color}>
+              Loading packages...
+            </Text>
+          </Stack>
         </div>
-      ) : (
-        <div className="overflow-auto max-w-full shadow-lg rounded-lg">
-          <table className="w-full text-center shadow-md border table-auto">
-            <colgroup>
-              <col className="w-[5%]" />
-              <col className="w-[25%]" />
-              <col className="w-[55%]" />
-              <col className="w-[15%]" />
-            </colgroup>
-            <thead
-              className="text-xs"
-              style={{
-                backgroundColor:
-                  organizationConfig.organization_theme.theme.backgroundColor,
-                color: organizationConfig.organization_theme.theme.color,
+      </Card>
+    );
+  }
+
+  return (
+    <Stack gap="lg">
+      {/* Statistics Cards */}
+      <Grid>
+        <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
+          <Card
+            radius="md"
+            p="md"
+            style={{
+              backgroundColor: isDarkTheme
+                ? 'rgba(255,255,255,0.05)'
+                : 'rgba(0,0,0,0.02)',
+              border: `1px solid ${currentThemeConfig.borderColor}`
+            }}
+          >
+            <Group gap="sm">
+              <IconPackage size={20} color={currentThemeConfig.button.color} />
+              <Stack gap="xs">
+                <Text size="xs" c="dimmed">
+                  Total Packages
+                </Text>
+                <Text size="lg" fw={700} c={currentThemeConfig.color}>
+                  {stats.totalPackages}
+                </Text>
+              </Stack>
+            </Group>
+          </Card>
+        </Grid.Col>
+
+        <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
+          <Card
+            radius="md"
+            p="md"
+            style={{
+              backgroundColor: isDarkTheme
+                ? 'rgba(255,255,255,0.05)'
+                : 'rgba(0,0,0,0.02)',
+              border: `1px solid ${currentThemeConfig.borderColor}`
+            }}
+          >
+            <Group gap="sm">
+              <IconSubtask size={20} color="blue" />
+              <Stack gap="xs">
+                <Text size="xs" c="dimmed">
+                  Total Tasks
+                </Text>
+                <Text size="lg" fw={700} c={currentThemeConfig.color}>
+                  {stats.totalTasks}
+                </Text>
+              </Stack>
+            </Group>
+          </Card>
+        </Grid.Col>
+
+        <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
+          <Card
+            radius="md"
+            p="md"
+            style={{
+              backgroundColor: isDarkTheme
+                ? 'rgba(255,255,255,0.05)'
+                : 'rgba(0,0,0,0.02)',
+              border: `1px solid ${currentThemeConfig.borderColor}`
+            }}
+          >
+            <Group gap="sm">
+              <IconCheck size={20} color="green" />
+              <Stack gap="xs">
+                <Text size="xs" c="dimmed">
+                  Active Packages
+                </Text>
+                <Text size="lg" fw={700} c={currentThemeConfig.color}>
+                  {stats.packagesWithTasks}
+                </Text>
+              </Stack>
+            </Group>
+          </Card>
+        </Grid.Col>
+
+        <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
+          <Card
+            radius="md"
+            p="md"
+            style={{
+              backgroundColor: isDarkTheme
+                ? 'rgba(255,255,255,0.05)'
+                : 'rgba(0,0,0,0.02)',
+              border: `1px solid ${currentThemeConfig.borderColor}`
+            }}
+          >
+            <Group gap="sm">
+              <IconEye size={20} color="orange" />
+              <Stack gap="xs">
+                <Text size="xs" c="dimmed">
+                  Avg Tasks/Package
+                </Text>
+                <Text size="lg" fw={700} c={currentThemeConfig.color}>
+                  {stats.averageTasksPerPackage}
+                </Text>
+              </Stack>
+            </Group>
+          </Card>
+        </Grid.Col>
+      </Grid>
+
+      {/* Search and Controls */}
+      <Card
+        radius="md"
+        p="lg"
+        style={{
+          backgroundColor: currentThemeConfig.backgroundColor,
+          borderColor: currentThemeConfig.borderColor,
+          border: `1px solid ${currentThemeConfig.borderColor}`
+        }}
+      >
+        <Group justify="space-between" align="flex-end">
+          <TextInput
+            placeholder="Search packages or tasks..."
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            leftSection={<IconSearch size={16} />}
+            style={{ flex: 1, maxWidth: 400 }}
+            radius="md"
+          />
+
+          <Group gap="sm">
+            <Button
+              variant="light"
+              size="sm"
+              onClick={() => {
+                const allPackageIds = new Set(
+                  packagesList.map(pkg => pkg.packageId)
+                );
+                setExpandedPackages(allPackageIds);
               }}
             >
-              <tr>
-                <th className="p-2 border">S.No</th>
-                <th className="p-2 border">Package</th>
-                <th className="p-2 border">Tasks</th>
-                <th className="p-2 border">Actions</th>
-              </tr>
-            </thead>
+              Expand All
+            </Button>
+            <Button
+              variant="light"
+              size="sm"
+              onClick={() => setExpandedPackages(new Set())}
+            >
+              Collapse All
+            </Button>
+          </Group>
+        </Group>
+      </Card>
 
-            <tbody className="text-sm">
-              {paginatedData.length > 0 ? (
-                paginatedData.map((pkg, index) => (
-                  <tr key={pkg.packageId} className="border-b">
-                    <td className="px-4 py-2 border align-middle text-center">
-                      {(activePage - 1) * itemsPerPage + index + 1}
-                    </td>
-                    <td className="px-4 py-2 border align-middle ">
-                      {pkg.title}
-                    </td>
-                    <td className="px-4 py-2 border text-left">
-                      {pkg.tasks?.length > 0 ? (
-                        <div className="space-y-1">
-                          {pkg.tasks.map((task: any) => (
-                            <div
-                              key={task.taskId}
-                              className="flex items-center justify-between py-1 pr-2"
-                            >
-                              <span>{task.title}</span>
-                              <div className="flex space-x-1">
-                                <Button
-                                  variant="subtle"
-                                  size="xs"
-                                  onClick={() => handleEditTask(task)}
-                                >
-                                  <IconEdit size={14} />
-                                </Button>
-                                <Button
-                                  variant="subtle"
-                                  color="red"
-                                  size="xs"
-                                  onClick={() =>
-                                    handleDeleteTask(pkg.packageId, task.taskId)
-                                  }
-                                >
-                                  <IconTrash size={14} />
-                                </Button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <Text c="dimmed">No tasks</Text>
-                      )}
-                    </td>
-                    <td className="px-4 py-2 border">
-                      <Button
-                        variant="subtle"
-                        color="red"
-                        onClick={() => handleDeletePackage(pkg.packageId)}
+      {/* Packages List */}
+      <Stack gap="md">
+        {paginatedData.length > 0 ? (
+          paginatedData.map((pkg, index) => {
+            const isExpanded = expandedPackages.has(pkg.packageId);
+            const taskCount = pkg.tasks?.length || 0;
+
+            return (
+              <Card
+                key={pkg.packageId}
+                radius="md"
+                p="lg"
+                style={{
+                  backgroundColor: currentThemeConfig.backgroundColor,
+                  borderColor: currentThemeConfig.borderColor,
+                  border: `1px solid ${currentThemeConfig.borderColor}`
+                }}
+              >
+                <Stack gap="md">
+                  {/* Package Header */}
+                  <Group justify="space-between" align="flex-start">
+                    <Group gap="md" style={{ flex: 1 }}>
+                      <Text
+                        size="sm"
+                        c="dimmed"
+                        style={{
+                          minWidth: '2rem',
+                          textAlign: 'center',
+                          fontWeight: 500
+                        }}
                       >
-                        Delete
-                      </Button>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={4} className="py-4">
-                    {searchTerm ? (
-                      <Text>No matching packages or tasks found</Text>
-                    ) : (
-                      <Text>No packages assigned yet</Text>
-                    )}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      )}
+                        #{(activePage - 1) * itemsPerPage + index + 1}
+                      </Text>
 
+                      <Stack gap="xs" style={{ flex: 1 }}>
+                        <Group gap="sm">
+                          <IconPackage
+                            size={18}
+                            color={currentThemeConfig.button.color}
+                          />
+                          <Text fw={600} size="lg" c={currentThemeConfig.color}>
+                            {pkg.title}
+                          </Text>
+                        </Group>
+
+                        <Group gap="xs">
+                          <Badge
+                            variant="light"
+                            color={taskCount > 0 ? 'blue' : 'gray'}
+                            size="sm"
+                          >
+                            {taskCount} Task{taskCount !== 1 ? 's' : ''}
+                          </Badge>
+
+                          {taskCount > 0 && (
+                            <Badge
+                              variant="light"
+                              color={isExpanded ? 'green' : 'orange'}
+                              size="sm"
+                            >
+                              {isExpanded ? 'Expanded' : 'Collapsed'}
+                            </Badge>
+                          )}
+                        </Group>
+                      </Stack>
+                    </Group>
+
+                    <Group gap="xs">
+                      {taskCount > 0 && (
+                        <Tooltip
+                          label={isExpanded ? 'Collapse tasks' : 'Expand tasks'}
+                        >
+                          <ActionIcon
+                            variant="subtle"
+                            onClick={() =>
+                              togglePackageExpansion(pkg.packageId)
+                            }
+                            color={currentThemeConfig.button.color}
+                          >
+                            {isExpanded ? (
+                              <IconChevronDown size={16} />
+                            ) : (
+                              <IconChevronRight size={16} />
+                            )}
+                          </ActionIcon>
+                        </Tooltip>
+                      )}
+
+                      <Tooltip label="Delete package">
+                        <ActionIcon
+                          variant="subtle"
+                          color="red"
+                          onClick={() =>
+                            openDeleteConfirmation(
+                              'package',
+                              pkg.packageId,
+                              pkg.title
+                            )
+                          }
+                        >
+                          <IconTrash size={16} />
+                        </ActionIcon>
+                      </Tooltip>
+                    </Group>
+                  </Group>
+
+                  {/* Tasks Section */}
+                  {taskCount > 0 && isExpanded && (
+                    <>
+                      <Divider />
+                      <Stack gap="sm">
+                        <Group gap="sm">
+                          <IconSubtask size={16} color="blue" />
+                          <Text size="sm" fw={500} c={currentThemeConfig.color}>
+                            Tasks ({taskCount})
+                          </Text>
+                        </Group>
+
+                        <Stack gap="xs">
+                          {pkg.tasks.map((task: any, taskIndex: number) => (
+                            <Card
+                              key={task.taskId}
+                              radius="sm"
+                              p="md"
+                              style={{
+                                backgroundColor: isDarkTheme
+                                  ? 'rgba(255,255,255,0.03)'
+                                  : 'rgba(0,0,0,0.01)',
+                                border: `1px solid ${currentThemeConfig.borderColor}`
+                              }}
+                            >
+                              <Group justify="space-between" align="center">
+                                <Group gap="sm" style={{ flex: 1 }}>
+                                  <Text
+                                    size="xs"
+                                    c="dimmed"
+                                    style={{
+                                      minWidth: '1.5rem',
+                                      textAlign: 'center'
+                                    }}
+                                  >
+                                    {taskIndex + 1}
+                                  </Text>
+                                  <Text
+                                    size="sm"
+                                    c={currentThemeConfig.color}
+                                    className="break-words"
+                                  >
+                                    {task.title}
+                                  </Text>
+                                </Group>
+
+                                <Group gap="xs">
+                                  <Tooltip label="Edit task">
+                                    <ActionIcon
+                                      variant="subtle"
+                                      size="sm"
+                                      onClick={() => handleEditTask(task)}
+                                      color={currentThemeConfig.button.color}
+                                    >
+                                      <IconEdit size={14} />
+                                    </ActionIcon>
+                                  </Tooltip>
+
+                                  <Tooltip label="Delete task">
+                                    <ActionIcon
+                                      variant="subtle"
+                                      color="red"
+                                      size="sm"
+                                      onClick={() =>
+                                        openDeleteConfirmation(
+                                          'task',
+                                          pkg.packageId,
+                                          task.title,
+                                          task.taskId
+                                        )
+                                      }
+                                    >
+                                      <IconTrash size={14} />
+                                    </ActionIcon>
+                                  </Tooltip>
+                                </Group>
+                              </Group>
+                            </Card>
+                          ))}
+                        </Stack>
+                      </Stack>
+                    </>
+                  )}
+
+                  {taskCount === 0 && (
+                    <>
+                      <Divider />
+                      <Text size="sm" c="dimmed" ta="center" py="md">
+                        No tasks assigned to this package
+                      </Text>
+                    </>
+                  )}
+                </Stack>
+              </Card>
+            );
+          })
+        ) : (
+          <Card
+            radius="md"
+            p="xl"
+            style={{
+              backgroundColor: currentThemeConfig.backgroundColor,
+              borderColor: currentThemeConfig.borderColor,
+              border: `1px solid ${currentThemeConfig.borderColor}`
+            }}
+          >
+            <Stack align="center" gap="md">
+              <IconPackage size={48} color="gray" />
+              <Stack align="center" gap="xs">
+                <Text size="lg" fw={500} c={currentThemeConfig.color}>
+                  {searchTerm
+                    ? 'No matching packages found'
+                    : 'No packages assigned yet'}
+                </Text>
+                <Text size="sm" c="dimmed" ta="center">
+                  {searchTerm
+                    ? "Try adjusting your search terms to find what you're looking for."
+                    : 'Assign packages to this employee to get started.'}
+                </Text>
+              </Stack>
+              {searchTerm && (
+                <Button
+                  variant="light"
+                  onClick={() => setSearchTerm('')}
+                  leftSection={<IconX size={16} />}
+                >
+                  Clear Search
+                </Button>
+              )}
+            </Stack>
+          </Card>
+        )}
+      </Stack>
+
+      {/* Pagination */}
       {totalPages > 1 && (
-        <div className="mt-4 flex justify-center">
+        <Group justify="center" mt="lg">
           <Pagination
             total={totalPages}
             value={activePage}
             onChange={setActivePage}
+            color={currentThemeConfig.button.color}
+            size="md"
           />
-        </div>
+        </Group>
       )}
 
       {/* Edit Task Modal */}
       <Modal
         opened={editModalOpened}
         onClose={closeEditModal}
-        title={<Text className="text-center font-bold text-xl">Edit Task</Text>}
+        title={
+          <Group gap="sm">
+            <IconEdit size={20} color={currentThemeConfig.button.color} />
+            <Text fw={600} c={currentThemeConfig.color}>
+              Edit Task
+            </Text>
+          </Group>
+        }
         centered
+        size="md"
       >
-        <Box>
+        <Stack gap="lg">
           <TextInput
             label="Task Name"
+            placeholder="Enter task name"
             value={selectedTaskObj?.title || ''}
             onChange={e =>
               setSelectedTaskObj({ ...selectedTaskObj, title: e.target.value })
             }
             required
-            mb="md"
+            leftSection={<IconSubtask size={16} />}
+            error={
+              !selectedTaskObj?.title?.trim() ? 'Task name is required' : null
+            }
           />
-          <Group justify="flex-end">
+
+          <Group justify="space-between" mt="md">
             <Button
-              variant="outline"
+              variant="subtle"
+              leftSection={<IconX size={16} />}
               onClick={closeEditModal}
-              style={{
-                backgroundColor:
-                  organizationConfig.organization_theme.theme.backgroundColor,
-                color: organizationConfig.organization_theme.theme.color,
-              }}
             >
               Cancel
             </Button>
-            <Button
-              style={{
-                backgroundColor:
-                  organizationConfig.organization_theme.theme.backgroundColor,
-                color: organizationConfig.organization_theme.theme.color,
-              }}
-              onClick={async () => {
-                if (!selectedTaskObj?._id) return;
 
-                try {
-                  await updateTaskByAdmin(
-                    selectedTaskObj._id,
-                    selectedTaskObj.title
-                  );
-                  toast.success('Task updated successfully');
-                  await refreshEmployeePackages();
-                  closeEditModal();
-                } catch (err) {
-                  console.error(err);
-                  toast.error('Failed to update task');
-                }
+            <Button
+              leftSection={<IconCheck size={16} />}
+              onClick={handleSaveTask}
+              disabled={!selectedTaskObj?.title?.trim()}
+              style={{
+                backgroundColor: currentThemeConfig.button.color,
+                color: currentThemeConfig.button.textColor
               }}
             >
               Save Changes
             </Button>
           </Group>
-        </Box>
+        </Stack>
       </Modal>
-    </div>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        opened={deleteModalOpened}
+        onClose={closeDeleteModal}
+        title={
+          <Group gap="sm">
+            <IconAlertCircle size={20} color="red" />
+            <Text fw={600} c={currentThemeConfig.color}>
+              Confirm Deletion
+            </Text>
+          </Group>
+        }
+        centered
+        size="md"
+      >
+        <Stack gap="lg">
+          {deleteError && (
+            <Alert
+              icon={<IconAlertCircle size={16} />}
+              color="red"
+              title="Error"
+              variant="light"
+            >
+              {deleteError}
+            </Alert>
+          )}
+
+          <Text c={currentThemeConfig.color}>
+            Are you sure you want to delete this {itemToDelete?.type}?
+          </Text>
+
+          <Card
+            radius="md"
+            p="md"
+            style={{
+              backgroundColor: isDarkTheme
+                ? 'rgba(255,0,0,0.1)'
+                : 'rgba(255,0,0,0.05)',
+              border: '1px solid rgba(255,0,0,0.2)'
+            }}
+          >
+            <Group gap="sm">
+              {itemToDelete?.type === 'package' ? (
+                <IconPackage size={16} color="red" />
+              ) : (
+                <IconSubtask size={16} color="red" />
+              )}
+              <Text fw={500} c="red">
+                {itemToDelete?.title}
+              </Text>
+            </Group>
+          </Card>
+
+          <Text size="sm" c="dimmed">
+            This action cannot be undone.
+          </Text>
+
+          <Group justify="space-between" mt="md">
+            <Button
+              variant="subtle"
+              leftSection={<IconX size={16} />}
+              onClick={closeDeleteModal}
+            >
+              Cancel
+            </Button>
+
+            <Button
+              color="red"
+              leftSection={<IconTrash size={16} />}
+              onClick={handleDeleteConfirm}
+            >
+              Delete {itemToDelete?.type}
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
+    </Stack>
   );
 };
 

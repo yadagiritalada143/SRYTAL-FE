@@ -13,7 +13,11 @@ import {
   Box,
   Tooltip,
   Collapse,
-  Center
+  Center,
+  Container,
+  Card,
+  Stack,
+  Divider
 } from '@mantine/core';
 import { DatePickerInput, DatesRangeValue } from '@mantine/dates';
 import {
@@ -25,15 +29,20 @@ import {
   IconBeach,
   IconCalendarOff,
   IconX,
-  IconCheck
+  IconCheck,
+  IconClock
 } from '@tabler/icons-react';
-import { useDebouncedValue, useDisclosure } from '@mantine/hooks';
+import {
+  useDebouncedValue,
+  useDisclosure,
+  useMediaQuery
+} from '@mantine/hooks';
 import moment from 'moment-timezone';
 import { toast } from 'react-toastify';
 import { TaskPopover } from './task-popover';
-import { ColorDiv } from '../style-components/c-div';
 import { useRecoilValue } from 'recoil';
 import { organizationThemeAtom } from '../../../atoms/organization-atom';
+import { themeAtom } from '../../../atoms/theme';
 import {
   EmployeeTimesheet,
   TimesheetStatus
@@ -68,12 +77,14 @@ const DateTableComponent = () => {
   const [openedEntryModal, { open: openEntryModal, close: closeEntryModal }] =
     useDisclosure(false);
   const [openedSearch, { toggle: toggleSearch }] = useDisclosure(false);
+
   const [dateRange, setDateRange] = useState<DatesRangeValue>(() => {
     const today = moment().tz('Asia/Kolkata');
     const startOfWeek = today.clone().startOf('isoWeek');
     const endOfWeek = today.clone().endOf('isoWeek');
     return [startOfWeek.toDate(), endOfWeek.toDate()];
   });
+
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [timeEntries, setTimeEntries] = useState<EmployeeTimesheet[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -83,7 +94,20 @@ const DateTableComponent = () => {
     []
   );
   const [changesMade, setChangesMade] = useState<EmployeeTimesheet[]>([]);
+
   const organizationConfig = useRecoilValue(organizationThemeAtom);
+  const isDarkTheme = useRecoilValue(themeAtom);
+
+  // Responsive breakpoints
+  const isMobile = useMediaQuery('(max-width: 768px)');
+  const isSmallMobile = useMediaQuery('(max-width: 500px)');
+
+  // Get the current theme configuration
+  const currentThemeConfig = useMemo(() => {
+    const orgTheme = organizationConfig.organization_theme;
+    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+  }, [organizationConfig, isDarkTheme]);
+
   const {
     scrollRef,
     handleMouseDown,
@@ -275,8 +299,8 @@ const DateTableComponent = () => {
             short={config.label}
             status={status}
             bgColor={[
-              organizationConfig.organization_theme.theme.backgroundColor,
-              organizationConfig.organization_theme.theme.color
+              currentThemeConfig.backgroundColor,
+              currentThemeConfig.color
             ]}
           />
         </Text>
@@ -338,8 +362,8 @@ const DateTableComponent = () => {
             full={isEditableDate ? comments : "Can't Edit"}
             status={isEditableDate ? timesheetStatus : 'Not started'}
             bgColor={[
-              organizationConfig.organization_theme.theme.backgroundColor,
-              organizationConfig.organization_theme.theme.color
+              currentThemeConfig.backgroundColor,
+              currentThemeConfig.color
             ]}
           />
         </Box>
@@ -348,287 +372,342 @@ const DateTableComponent = () => {
   };
 
   return (
-    <ColorDiv className="w-100 p-5">
-      <Title
-        order={2}
-        className="text-xl sm:text-2xl md:text-3xl font-extrabold underline text-center px-2 py-4"
-      >
-        Timesheet
-      </Title>
+    <Container size="xl" py="md" my="xl" px={isSmallMobile ? 'xs' : 'md'}>
+      <Stack gap="md">
+        {/* Header Card */}
+        <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder>
+          <Stack gap="md">
+            <Group justify="space-between" align="center">
+              <Group gap="xs">
+                <IconClock size={28} />
+                <Title order={isMobile ? 4 : 2} fw={700}>
+                  Timesheet
+                </Title>
+              </Group>
+              {changesMade.length > 0 && (
+                <Badge size="lg" variant="filled" color="green">
+                  {changesMade.length} pending change
+                  {changesMade.length !== 1 ? 's' : ''}
+                </Badge>
+              )}
+            </Group>
 
-      <Grid align="center" gutter="md" className="mb-6 p-4 rounded-md">
-        <Grid.Col span={{ xs: 12, md: 8 }}>
-          <Group>
-            <ActionIcon
-              variant="outline"
-              radius="xl"
-              color={organizationConfig.organization_theme.theme.color}
-              size="lg"
-              onClick={() =>
-                navigateDateRange('previous', dateRange, setDateRange)
-              }
-            >
-              <IconChevronLeft size={18} />
-            </ActionIcon>
+            <Divider />
 
-            <DatePickerInput
-              type="range"
-              onChange={value => {
-                // if (value[0] && value[1]) {
-                //   const daysDiff =
-                //     moment(value[1]).diff(moment(value[0]), 'days') + 1;
-                //   if (daysDiff > 14) {
-                //     toast.error('Maximum date range is 14 days');
-                //     return;
-                //   }
-                // }
-                setDateRange(value);
-              }}
-              leftSection={<IconCalendar size={16} />}
-              size="sm"
-              minDate={moment().subtract(3, 'month').toDate()}
-              maxDate={
-                moment().date() >= 26
-                  ? moment().add(1, 'month').toDate()
-                  : moment().endOf('month').toDate()
-              }
-              value={dateRange}
-              placeholder="Pick date range"
-              allowSingleDateInRange={false}
-            />
-
-            <ActionIcon
-              variant="outline"
-              color={organizationConfig.organization_theme.theme.color}
-              radius="xl"
-              size="lg"
-              onClick={() => navigateDateRange('next', dateRange, setDateRange)}
-            >
-              <IconChevronRight size={18} />
-            </ActionIcon>
-          </Group>
-        </Grid.Col>
-
-        <Grid.Col span={{ xs: 12, md: 4 }}>
-          <Group justify="flex-end" gap="sm">
-            <Button
-              onClick={toggleSearch}
-              variant="outline"
-              color="gray"
-              radius="md"
-              size="sm"
-              leftSection={
-                openedSearch ? <IconX size={16} /> : <IconSearch size={16} />
-              }
-            >
-              {openedSearch ? 'Close' : 'Search'}
-            </Button>
-
-            <Button
-              onClick={openLeaveModal}
-              color="green"
-              radius="md"
-              size="sm"
-              leftSection={<IconCalendarOff size={16} />}
-            >
-              Apply Leave
-            </Button>
-          </Group>
-        </Grid.Col>
-      </Grid>
-
-      <Collapse in={openedSearch} mb="md">
-        <TextInput
-          placeholder="Search projects or tasks..."
-          value={searchQuery}
-          onChange={e => setSearchQuery(e.currentTarget.value)}
-          rightSection={
-            searchQuery && (
-              <ActionIcon onClick={() => setSearchQuery('')}>
-                <IconX size={16} />
-              </ActionIcon>
-            )
-          }
-        />
-      </Collapse>
-      {changesMade.length > 0 && (
-        <Box
-          mt="md"
-          mb="md"
-          style={{ display: 'flex', justifyContent: 'flex-end' }}
-        >
-          <Button
-            leftSection={<IconCheck size={16} />}
-            color="green"
-            onClick={openSubmitModal}
-          >
-            Submit Changes
-          </Button>
-        </Box>
-      )}
-
-      {isLoading ? (
-        <Box
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            height: '200px'
-          }}
-        >
-          <Loader
-            size="xl"
-            color={organizationConfig.organization_theme.theme.button.color}
-          />
-        </Box>
-      ) : (
-        <div
-          className="flex max-w-full shadow-lg rounded-lg"
-          ref={scrollRef}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          style={{ userSelect: 'none', overflowX: 'hidden', cursor: 'grab' }}
-        >
-          <Table striped highlightOnHover>
-            <thead
-              className="text-xs"
-              style={{
-                backgroundColor:
-                  organizationConfig.organization_theme.theme.backgroundColor,
-                color: organizationConfig.organization_theme.theme.color
-              }}
-            >
-              <tr
-                style={{
-                  backgroundColor:
-                    organizationConfig.organization_theme.theme.backgroundColor,
-                  color: organizationConfig.organization_theme.theme.color
-                }}
-              >
-                <th
-                  className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis"
-                  style={{ minWidth: '150px' }}
-                >
-                  Project
-                </th>
-                <th
-                  className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis"
-                  style={{ minWidth: '150px' }}
-                >
-                  Task
-                </th>
-                {dateRangeArray.map(date => (
-                  <th
-                    key={date}
-                    className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis"
-                    style={{ minWidth: '80px', textAlign: 'center' }}
+            {/* Date Controls */}
+            <Grid gutter="md">
+              <Grid.Col span={{ base: 12, md: 7 }}>
+                <Group wrap="nowrap">
+                  <ActionIcon
+                    variant="outline"
+                    radius="xl"
+                    size={isMobile ? 'md' : 'lg'}
+                    onClick={() =>
+                      navigateDateRange('previous', dateRange, setDateRange)
+                    }
+                    bg={currentThemeConfig.color}
                   >
-                    {formatDisplayDate(date)}
-                  </th>
-                ))}
-                <th
-                  className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis"
-                  style={{ minWidth: '80px' }}
-                >
-                  Total
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredProjects.map(project => {
-                const tasks = getTasksByProject(
-                  project.id,
-                  timeEntries,
-                  debouncedSearchQuery
-                );
-                if (tasks.length === 0) return null;
+                    <IconChevronLeft size={isMobile ? 16 : 18} />
+                  </ActionIcon>
 
-                return tasks.map((task, taskIndex) => (
-                  <tr key={`${project.id}-${task.id}`}>
-                    {taskIndex === 0 && (
-                      <td
-                        className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis "
-                        rowSpan={tasks.length}
-                        style={{ verticalAlign: 'middle' }}
+                  <DatePickerInput
+                    type="range"
+                    onChange={value => setDateRange(value)}
+                    leftSection={<IconCalendar size={16} />}
+                    size={isMobile ? 'xs' : 'sm'}
+                    minDate={moment().subtract(3, 'month').toDate()}
+                    maxDate={
+                      moment().date() >= 26
+                        ? moment().add(1, 'month').toDate()
+                        : moment().endOf('month').toDate()
+                    }
+                    value={dateRange}
+                    placeholder="Pick date range"
+                    allowSingleDateInRange={false}
+                  />
+
+                  <ActionIcon
+                    variant="outline"
+                    radius="xl"
+                    size={isMobile ? 'md' : 'lg'}
+                    onClick={() =>
+                      navigateDateRange('next', dateRange, setDateRange)
+                    }
+                    bg={currentThemeConfig.color}
+                  >
+                    <IconChevronRight size={isMobile ? 16 : 18} />
+                  </ActionIcon>
+                </Group>
+              </Grid.Col>
+
+              <Grid.Col span={{ base: 12, md: 5 }}>
+                <Group
+                  justify={isMobile ? 'stretch' : 'flex-end'}
+                  gap="xs"
+                  grow={isMobile}
+                >
+                  <Button
+                    onClick={toggleSearch}
+                    variant="outline"
+                    color="gray"
+                    radius="md"
+                    size={isMobile ? 'sm' : 'sm'}
+                    leftSection={
+                      openedSearch ? (
+                        <IconX size={16} />
+                      ) : (
+                        <IconSearch size={16} />
+                      )
+                    }
+                    fullWidth={isMobile}
+                  >
+                    {openedSearch ? 'Close' : 'Search'}
+                  </Button>
+
+                  <Button
+                    onClick={openLeaveModal}
+                    color="green"
+                    radius="md"
+                    size={isMobile ? 'sm' : 'sm'}
+                    leftSection={<IconCalendarOff size={16} />}
+                    fullWidth={isMobile}
+                  >
+                    Apply Leave
+                  </Button>
+                </Group>
+              </Grid.Col>
+            </Grid>
+
+            {/* Search Collapse */}
+            <Collapse in={openedSearch}>
+              <TextInput
+                placeholder="Search projects or tasks..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.currentTarget.value)}
+                leftSection={<IconSearch size={16} />}
+                rightSection={
+                  searchQuery && (
+                    <ActionIcon
+                      onClick={() => setSearchQuery('')}
+                      variant="subtle"
+                    >
+                      <IconX size={16} />
+                    </ActionIcon>
+                  )
+                }
+                size={isMobile ? 'sm' : 'md'}
+              />
+            </Collapse>
+
+            {/* Submit Changes Button */}
+            {changesMade.length > 0 && (
+              <>
+                <Divider />
+                <Group justify="flex-end">
+                  <Button
+                    leftSection={<IconCheck size={16} />}
+                    color="green"
+                    onClick={openSubmitModal}
+                    size={isMobile ? 'sm' : 'md'}
+                    fullWidth={isMobile}
+                  >
+                    Submit {changesMade.length} Change
+                    {changesMade.length !== 1 ? 's' : ''}
+                  </Button>
+                </Group>
+              </>
+            )}
+          </Stack>
+        </Card>
+
+        {/* Timesheet Table Card */}
+        <Card shadow="sm" p={0} radius="md" withBorder>
+          {isLoading ? (
+            <Center p="xl">
+              <Stack align="center" gap="md">
+                <Loader size="xl" />
+                <Text>Loading timesheet data...</Text>
+              </Stack>
+            </Center>
+          ) : filteredProjects.length === 0 ? (
+            <Card p="xl">
+              <Stack align="center" gap="md">
+                <IconClock size={48} opacity={0.5} />
+                <Text size="lg" ta="center">
+                  No timesheet entries found
+                </Text>
+                <Text size="sm" ta="center" c="dimmed">
+                  {searchQuery
+                    ? 'Try adjusting your search filters'
+                    : 'Start by logging your hours for the selected date range'}
+                </Text>
+              </Stack>
+            </Card>
+          ) : (
+            <div
+              ref={scrollRef}
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseUp}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              style={{
+                overflowX: 'auto',
+                cursor: 'grab'
+              }}
+            >
+              <Table withTableBorder withColumnBorders stickyHeader>
+                <Table.Thead
+                  style={{
+                    backgroundColor: currentThemeConfig.backgroundColor,
+                    color: currentThemeConfig.color
+                  }}
+                >
+                  <Table.Tr>
+                    <Table.Th
+                      className="p-2 border"
+                      style={{ minWidth: '150px' }}
+                    >
+                      <Text size="sm" fw={600}>
+                        Project
+                      </Text>
+                    </Table.Th>
+                    <Table.Th
+                      className="p-2 border"
+                      style={{ minWidth: '150px' }}
+                    >
+                      <Text size="sm" fw={600}>
+                        Task
+                      </Text>
+                    </Table.Th>
+                    {dateRangeArray.map(date => (
+                      <Table.Th
+                        key={date}
+                        className="p-2 border"
+                        style={{ minWidth: '80px', textAlign: 'center' }}
                       >
-                        <Center>
-                          <Text fw={500} lineClamp={2}>
-                            {project.title}
-                          </Text>
-                        </Center>
-                      </td>
-                    )}
-                    <td className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis">
-                      <Center>
-                        <TaskPopover
-                          short={task.title}
-                          full={task.title}
-                          bgColor={[
-                            organizationConfig.organization_theme.theme
-                              .backgroundColor,
-                            organizationConfig.organization_theme.theme.color
-                          ]}
-                        />
-                      </Center>
-                    </td>
-                    {getDateRangeArray(...dateRange).map(date => {
-                      const entry = timeEntries.find(
-                        e =>
-                          e.project_id === project.id &&
-                          e.task_id === task.id &&
-                          e.date === moment(date).format('YYYY-MM-DD')
-                      );
-                      return (
-                        <td
-                          className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis"
-                          key={`${project.id}-${task.id}-${date}`}
-                        >
-                          {entry
-                            ? renderHoursCell(entry)
-                            : renderHoursCell({
-                                date: moment(date).format('YYYY-MM-DD'),
-                                isVacation: false,
-                                isHoliday: false,
-                                isWeekOff: false,
-                                project_id: project.id,
-                                task_id: task.id,
-                                hours: 0,
-                                project_name: project.title,
-                                task_name: task.title,
-                                comments: '',
-                                leaveReason: '',
-                                id: '',
-                                status: 'Not Submitted' as TimesheetStatus
-                              })}
-                        </td>
-                      );
-                    })}
-                    {taskIndex === 0 && (
-                      <td
-                        className="px-1 py-1 border whitespace-nowrap overflow-hidden text-ellipsis"
-                        rowSpan={tasks.length}
-                        style={{ textAlign: 'center', verticalAlign: 'middle' }}
-                      >
-                        {getProjectTotalHours(
-                          project.id,
-                          timeEntries,
-                          dateRange,
-                          filteredTasksIds
+                        <Text size="xs" fw={500}>
+                          {formatDisplayDate(date)}
+                        </Text>
+                      </Table.Th>
+                    ))}
+                    <Table.Th
+                      className="p-2 border"
+                      style={{ minWidth: '80px', textAlign: 'center' }}
+                    >
+                      <Text size="sm" fw={600}>
+                        Total
+                      </Text>
+                    </Table.Th>
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>
+                  {filteredProjects.map(project => {
+                    const tasks = getTasksByProject(
+                      project.id,
+                      timeEntries,
+                      debouncedSearchQuery
+                    );
+                    if (tasks.length === 0) return null;
+
+                    return tasks.map((task, taskIndex) => (
+                      <Table.Tr key={`${project.id}-${task.id}`}>
+                        {taskIndex === 0 && (
+                          <Table.Td
+                            className="p-2 border"
+                            rowSpan={tasks.length}
+                            style={{ verticalAlign: 'middle' }}
+                          >
+                            <Center>
+                              <Text fw={500} size="sm" lineClamp={2}>
+                                {project.title}
+                              </Text>
+                            </Center>
+                          </Table.Td>
                         )}
-                      </td>
-                    )}
-                  </tr>
-                ));
-              })}
-            </tbody>
-          </Table>
-        </div>
-      )}
+                        <Table.Td className="p-2 border">
+                          <Center>
+                            <TaskPopover
+                              short={task.title}
+                              full={task.title}
+                              bgColor={[
+                                currentThemeConfig.backgroundColor,
+                                currentThemeConfig.color
+                              ]}
+                            />
+                          </Center>
+                        </Table.Td>
+                        {getDateRangeArray(...dateRange).map(date => {
+                          const entry = timeEntries.find(
+                            e =>
+                              e.project_id === project.id &&
+                              e.task_id === task.id &&
+                              e.date === moment(date).format('YYYY-MM-DD')
+                          );
+                          return (
+                            <Table.Td
+                              className="p-2 border"
+                              key={`${project.id}-${task.id}-${date}`}
+                            >
+                              {entry
+                                ? renderHoursCell(entry)
+                                : renderHoursCell({
+                                    date: moment(date).format('YYYY-MM-DD'),
+                                    isVacation: false,
+                                    isHoliday: false,
+                                    isWeekOff: false,
+                                    project_id: project.id,
+                                    task_id: task.id,
+                                    hours: 0,
+                                    project_name: project.title,
+                                    task_name: task.title,
+                                    comments: '',
+                                    leaveReason: '',
+                                    id: '',
+                                    status: 'Not Submitted' as TimesheetStatus
+                                  })}
+                            </Table.Td>
+                          );
+                        })}
+                        {taskIndex === 0 && (
+                          <Table.Td
+                            className="p-2 border"
+                            rowSpan={tasks.length}
+                            style={{
+                              textAlign: 'center',
+                              verticalAlign: 'middle'
+                            }}
+                          >
+                            <Text fw={600} size="sm">
+                              {getProjectTotalHours(
+                                project.id,
+                                timeEntries,
+                                dateRange,
+                                filteredTasksIds
+                              )}
+                            </Text>
+                          </Table.Td>
+                        )}
+                      </Table.Tr>
+                    ));
+                  })}
+                </Table.Tbody>
+              </Table>
+            </div>
+          )}
+        </Card>
+
+        {/* Time Entries Summary */}
+        <TimeEntriesTable
+          organizationConfig={organizationConfig}
+          pendingChanges={changesMade.length}
+          changesMade={timeEntries.filter(time => time.hours > 0)}
+        />
+      </Stack>
+
+      {/* Modals */}
       {currentEntry && (
         <EditTimeEntryModal
           openedEntryModal={openedEntryModal}
@@ -638,17 +717,12 @@ const DateTableComponent = () => {
           handleEntrySubmit={handleEntrySubmit}
         />
       )}
+
       <ApplyLeaveTimesheetModal
         openedLeaveModal={openedLeaveModal}
         closeLeaveModal={closeLeaveModal}
         timeEntries={timeEntries}
         fetchTimesheetData={fetchTimesheetData}
-      />
-
-      <TimeEntriesTable
-        organizationConfig={organizationConfig}
-        pendingChanges={changesMade.length}
-        changesMade={timeEntries.filter(time => time.hours > 0)}
       />
 
       {changesMade.length > 0 && (
@@ -659,7 +733,7 @@ const DateTableComponent = () => {
           setChangesMade={setChangesMade}
         />
       )}
-    </ColorDiv>
+    </Container>
   );
 };
 

@@ -1,12 +1,23 @@
-import { toast } from "react-toastify";
-import { IconCircleDashedCheck, IconX } from "@tabler/icons-react";
-import { useRecoilValue } from "recoil";
-import { organizationThemeAtom } from "../../atoms/organization-atom";
-import { useMantineTheme } from "@mantine/core";
+import { toast } from 'react-toastify';
+import {
+  IconCircleDashedCheck,
+  IconExclamationCircleFilled,
+  IconX
+} from '@tabler/icons-react';
+import { useRecoilValue } from 'recoil';
+import { organizationThemeAtom } from '../../atoms/organization-atom';
+import { themeAtom } from '../../atoms/theme';
+import { useMemo } from 'react';
 
 export const useCustomToast = () => {
-  const theme = useMantineTheme();
   const organizationConfig = useRecoilValue(organizationThemeAtom);
+  const isDarkTheme = useRecoilValue(themeAtom);
+
+  // Get current theme configuration
+  const currentThemeConfig = useMemo(() => {
+    const orgTheme = organizationConfig.organization_theme;
+    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+  }, [organizationConfig, isDarkTheme]);
 
   const showSuccessToast = (
     message: string,
@@ -14,25 +25,50 @@ export const useCustomToast = () => {
   ) => {
     toast(message, {
       style: {
-        color: theme.colors.primary[2],
-
-        backgroundColor:
-          organizationConfig.organization_theme.theme.backgroundColor,
+        color: currentThemeConfig.color,
+        backgroundColor: currentThemeConfig.headerBackgroundColor
       },
       progressStyle: {
-        background: theme.colors.primary[2],
+        background: currentThemeConfig.button.color,
+        accentColor: currentThemeConfig.button.textColor,
+        borderColor: currentThemeConfig.borderColor
       },
       icon,
       closeButton: (
         <IconX
-          style={{ cursor: "pointer" }}
+          style={{ cursor: 'pointer' }}
           width={20}
           height={20}
           onClick={() => toast.dismiss()}
         />
-      ),
+      )
     });
   };
 
-  return { showSuccessToast };
+  const showErrorToast = (
+    message: string,
+    icon = <IconExclamationCircleFilled width={32} height={32} color="red" />
+  ) => {
+    toast(message, {
+      style: {
+        color: currentThemeConfig.color,
+        backgroundColor: currentThemeConfig.headerBackgroundColor
+      },
+      progressStyle: {
+        background: 'red',
+        accentColor: 'red',
+        borderColor: 'red'
+      },
+      icon,
+      closeButton: (
+        <IconX
+          style={{ cursor: 'pointer' }}
+          width={20}
+          height={20}
+          onClick={() => toast.dismiss()}
+        />
+      )
+    });
+  };
+  return { showSuccessToast, showErrorToast };
 };

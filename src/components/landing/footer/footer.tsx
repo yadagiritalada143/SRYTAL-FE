@@ -1,14 +1,14 @@
-import { IconBrandLinkedin, IconBrandFacebook } from "@tabler/icons-react";
-import TechIcon from "../../common/tech-icons/tech-icons";
-import { HashLink as Link } from "react-router-hash-link";
+import { IconBrandLinkedin, IconBrandFacebook } from '@tabler/icons-react';
+import TechIcon from '../../common/tech-icons/tech-icons';
+import { HashLink as Link } from 'react-router-hash-link';
 
 const SocialIcons = [
   {
-    name: "Follow us on LinkedIn",
+    name: 'Follow us on LinkedIn',
     icon: IconBrandLinkedin,
-    link: "https://www.linkedin.com/company/srytal-systems-india-pvt-ltd ",
+    link: 'https://www.linkedin.com/company/srytal-systems-india-pvt-ltd '
   },
-  { name: "Follow us on Facebook", icon: IconBrandFacebook, link: "" },
+  { name: 'Follow us on Facebook', icon: IconBrandFacebook, link: '' }
   // {
   //   name: "Watch us on YouTube",
   //   icon: IconBrandYoutube,
@@ -107,7 +107,8 @@ const Footer = () => {
         </div>
       </div>
       <p className="text-xs text-gray-400">
-        &copy; SRYTAL Systems India Pvt Ltd 2024 - 2025 | All Rights Reserved
+        &copy; SRYTAL Systems India Pvt Ltd 2024 - {new Date().getFullYear()} |
+        All Rights Reserved
       </p>
     </div>
   );

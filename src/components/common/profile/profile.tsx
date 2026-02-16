@@ -1,129 +1,531 @@
-import { Code, Tabs } from "@mantine/core";
-import { EmployeeInterface } from "../../../interfaces/employee";
-import ProfileImageUploader from "../profile-image/profile-image";
-import { useMantineTheme } from "@mantine/core";
-import { organizationThemeAtom } from "../../../atoms/organization-atom";
-import { useRecoilValue } from "recoil";
-import { ColorDiv } from "../style-components/c-div";
+import {
+  Card,
+  Tabs,
+  Stack,
+  Grid,
+  Text,
+  Badge,
+  Group,
+  Container,
+  Divider,
+  Paper,
+  Title
+} from '@mantine/core';
+import { EmployeeInterface } from '../../../interfaces/employee';
+import ProfileImageUploader from '../profile-image/profile-image';
+import { useMediaQuery } from '@mantine/hooks';
+import {
+  IconUser,
+  IconMail,
+  IconPhone,
+  IconCalendar,
+  IconDroplet,
+  IconId,
+  IconMapPin,
+  IconBriefcase,
+  IconBuildingBank
+} from '@tabler/icons-react';
+import { useMemo } from 'react';
+import { organizationThemeAtom } from '../../../atoms/organization-atom';
+import { useRecoilValue } from 'recoil';
+import { themeAtom } from '../../../atoms/theme';
+
+// Info Item Component
+const InfoItem: React.FC<{
+  icon: React.ReactNode;
+  label: string;
+  value: string | undefined;
+  mutedTextColor: string;
+  iconColor: string;
+  isMobile?: boolean;
+}> = ({ icon, label, value, mutedTextColor, iconColor, isMobile = false }) => (
+  <Paper p={isMobile ? 'xs' : 'sm'} withBorder radius="md">
+    <Group gap="xs" wrap="nowrap">
+      <div style={{ color: iconColor }}>{icon}</div>
+      <Stack gap={2} style={{ flex: 1 }}>
+        <Text size="xs" c={mutedTextColor} fw={500}>
+          {label}
+        </Text>
+        <Text size="sm" fw={500} lineClamp={1}>
+          {value || 'N/A'}
+        </Text>
+      </Stack>
+    </Group>
+  </Paper>
+);
 
 const Profile = ({ details }: { details: EmployeeInterface }) => {
-  const theme = useMantineTheme();
   const organizationConfig = useRecoilValue(organizationThemeAtom);
+  const isDarkTheme = useRecoilValue(themeAtom);
+  // Responsive breakpoints
+  const isMobile = useMediaQuery('(max-width: 768px)');
+  const isSmallMobile = useMediaQuery('(max-width: 500px)');
+  const currentThemeConfig = useMemo(() => {
+    const orgTheme = organizationConfig.organization_theme;
+    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+  }, [organizationConfig, isDarkTheme]);
+  console.log('THEME:', currentThemeConfig);
 
   return (
-    <ColorDiv>
-      <div className="flex flex-col sm:flex-row mx-4 my-4 gap-4">
-        <ProfileImageUploader organizationConfig={organizationConfig} />
-        <div className="flex-1 p-2">
-          <div className=" sm:grid-cols-2 gap-x-4 gap-y-2 ">
-            {details?.employeeId && (
-              <div className="flex items-center">
-                <div className="font-bold w-1/3">Employee Id:</div>
-                <div>{details.employeeId}</div>
-              </div>
-            )}
-            {details?.firstName && (
-              <div className="flex items-center">
-                <div className="font-bold w-1/3">First Name:</div>
-                <div>{details.firstName}</div>
-              </div>
-            )}
-            {details?.lastName && (
-              <div className="flex items-center">
-                <div className="font-bold w-1/3">Last Name:</div>
-                <div>{details.lastName}</div>
-              </div>
-            )}
-            {details?.dob && (
-              <div className="flex items-center">
-                <div className="font-bold w-1/3">Date Of Birth:</div>
-                <div>{details.dob}</div>
-              </div>
-            )}
-            {details?.bloodGroup?.type && (
-              <div className="flex items-center">
-                <div className="font-bold w-1/3">Blood Group:</div>
-                <div>{details.bloodGroup.type}</div>
-              </div>
-            )}
-            {details?.email && (
-              <div className="flex items-center">
-                <div className="font-bold w-1/3">Email:</div>
-                <div>{details.email}</div>
-              </div>
-            )}
-            {details?.mobileNumber && (
-              <div className="flex items-center">
-                <div className="font-bold w-1/3">Mobile:</div>
-                <div>{details.mobileNumber}</div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-      <div className="p-2">
-        <Tabs
-          mt="md"
-          variant="pills"
-          defaultValue="employment"
-          color={theme.colors.primary[4]}
+    <Container size="xl" py="md" my="xl" px={isSmallMobile ? 'xs' : 'md'}>
+      <Stack gap="md">
+        {/* Header Card with Profile Image */}
+        <Card
+          shadow="sm"
+          p={isMobile ? 'md' : 'lg'}
+          radius="md"
+          withBorder
+          mt="xl"
+          style={{
+            color: currentThemeConfig.color,
+            borderColor: currentThemeConfig.borderColor
+          }}
         >
-          <Tabs.List className="mb-4" grow>
-            <Tabs.Tab className="font-bold" value="address">
-              Address
-            </Tabs.Tab>
-            <Tabs.Tab className="font-bold" value="employment">
-              Employment Details
-            </Tabs.Tab>
-            <Tabs.Tab className="font-bold" value="bankDetails">
-              Bank Details
-            </Tabs.Tab>
-          </Tabs.List>
-
-          <Tabs.Panel className="py-2" value="address">
-            <div className="flex justify-start">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-left ">
-                <div className="font-bold">Present Address:</div>
-                <div>{details?.presentAddress}</div>
-                <div className="font-bold">Permanent Address:</div>
-                <div>{details?.permanentAddress}</div>
-              </div>
-            </div>
-          </Tabs.Panel>
-          <Tabs.Panel className="py-2" value="employment">
-            <div className="flex justify-center">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-left">
-                <div className="font-bold">Employment Type:</div>
-                <div>{details.employmentType?.employmentType || "N/A"}</div>
-                <div className="font-bold">Employment Roles:</div>
-                <div className="flex flex-col">
-                  {details.employeeRole.length > 0
-                    ? details.employeeRole.map((role) => (
-                        <Code key={role._id} className="mb-1">
-                          {role.designation}
-                        </Code>
-                      ))
-                    : "N/A"}
+          <Stack gap="lg">
+            <Group
+              justify="space-between"
+              wrap={isMobile ? 'wrap' : 'nowrap'}
+              align={isMobile ? 'flex-start' : 'center'}
+            >
+              <Group gap="md">
+                <div
+                  style={{
+                    width: 100,
+                    height: 100,
+                    borderRadius: '29px',
+                    overflow: 'hidden'
+                  }}
+                >
+                  <ProfileImageUploader />
                 </div>
-              </div>
-            </div>
-          </Tabs.Panel>
+                <Stack gap={4}>
+                  <Title order={isMobile ? 4 : 2}>
+                    {details.firstName} {details.lastName}
+                  </Title>
+                  {details.employeeId && (
+                    <Group gap="xs">
+                      <IconId size={16} />
+                      <Text size="sm" c={currentThemeConfig.mutedTextColor}>
+                        {details.employeeId}
+                      </Text>
+                    </Group>
+                  )}
+                  {isMobile && (
+                    <Badge
+                      size={isMobile ? 'sm' : 'md'}
+                      variant="light"
+                      color="blue"
+                      w="fit-content"
+                    >
+                      {details.userRole}
+                    </Badge>
+                  )}
+                </Stack>
+              </Group>
+              {!isMobile && details.userRole && (
+                <Badge size="md" variant="light" color="blue">
+                  {details.userRole}
+                </Badge>
+              )}
+            </Group>
+          </Stack>
+        </Card>
 
-          <Tabs.Panel className="py-2" value="bankDetails">
-            <div className="flex justify-center md:justify-end">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-left">
-                <div className="font-bold">Account Number:</div>
-                <div>{details.bankDetailsInfo?.accountNumber || "N/A"}</div>
-                <div className="font-bold">Account Holder Name:</div>
-                <div>{details.bankDetailsInfo?.accountHolderName || "N/A"}</div>
-                <div className="font-bold">IFSC Code:</div>
-                <div>{details.bankDetailsInfo?.ifscCode || "N/A"}</div>
-              </div>
-            </div>
-          </Tabs.Panel>
-        </Tabs>
-      </div>
-    </ColorDiv>
+        {/* Basic Information Card */}
+        <Card
+          shadow="sm"
+          p={isMobile ? 'md' : 'lg'}
+          radius="md"
+          withBorder
+          style={{
+            color: currentThemeConfig.color,
+            borderColor: currentThemeConfig.borderColor
+          }}
+        >
+          <Stack gap="md">
+            <Text size="lg" fw={600}>
+              Basic Information
+            </Text>
+            <Divider />
+            <Grid gutter="md">
+              <Grid.Col span={{ base: 12, xs: 6, sm: 6, md: 4 }}>
+                <InfoItem
+                  icon={<IconUser size={20} stroke={1.8} />}
+                  label="First Name"
+                  value={details.firstName}
+                  isMobile={isMobile}
+                  mutedTextColor={currentThemeConfig.mutedTextColor}
+                  iconColor={currentThemeConfig.accentColor}
+                />
+              </Grid.Col>
+              <Grid.Col span={{ base: 12, xs: 6, sm: 6, md: 4 }}>
+                <InfoItem
+                  icon={<IconUser size={20} stroke={1.8} />}
+                  label="Last Name"
+                  value={details.lastName}
+                  isMobile={isMobile}
+                  mutedTextColor={currentThemeConfig.mutedTextColor}
+                  iconColor={currentThemeConfig.accentColor}
+                />
+              </Grid.Col>
+              <Grid.Col span={{ base: 12, xs: 6, sm: 6, md: 4 }}>
+                <InfoItem
+                  icon={<IconCalendar size={18} />}
+                  label="Date of Birth"
+                  value={details.dob}
+                  isMobile={isMobile}
+                  mutedTextColor={currentThemeConfig.mutedTextColor}
+                  iconColor={currentThemeConfig.accentColor}
+                />
+              </Grid.Col>
+              <Grid.Col span={{ base: 12, xs: 6, sm: 6, md: 4 }}>
+                <InfoItem
+                  icon={<IconDroplet size={18} />}
+                  label="Blood Group"
+                  value={details.bloodGroup?.type}
+                  isMobile={isMobile}
+                  mutedTextColor={currentThemeConfig.mutedTextColor}
+                  iconColor={currentThemeConfig.accentColor}
+                />
+              </Grid.Col>
+              <Grid.Col span={{ base: 12, xs: 6, sm: 6, md: 4 }}>
+                <InfoItem
+                  icon={<IconMail size={18} />}
+                  label="Email"
+                  value={details.email}
+                  isMobile={isMobile}
+                  mutedTextColor={currentThemeConfig.mutedTextColor}
+                  iconColor={currentThemeConfig.accentColor}
+                />
+              </Grid.Col>
+              <Grid.Col span={{ base: 12, xs: 6, sm: 6, md: 4 }}>
+                <InfoItem
+                  icon={<IconPhone size={18} />}
+                  label="Mobile"
+                  value={details.mobileNumber}
+                  isMobile={isMobile}
+                  mutedTextColor={currentThemeConfig.mutedTextColor}
+                  iconColor={currentThemeConfig.accentColor}
+                />
+              </Grid.Col>
+            </Grid>
+          </Stack>
+        </Card>
+
+        {/* Tabbed Information */}
+        <Card
+          shadow="sm"
+          p={0}
+          radius="md"
+          withBorder
+          style={{
+            color: currentThemeConfig.color,
+            borderColor: currentThemeConfig.borderColor
+          }}
+        >
+          <Tabs
+            defaultValue="employment"
+            orientation={isMobile ? 'horizontal' : 'horizontal'}
+            styles={{
+              tab: {
+                color: currentThemeConfig.mutedTextColor
+              },
+              tabLabel: {
+                color: currentThemeConfig.mutedTextColor
+              },
+              tabSection: {
+                color: currentThemeConfig.accentColor
+              },
+              list: {
+                borderColor: currentThemeConfig.borderColor
+              }
+            }}
+          >
+            <Tabs.List
+              p="md"
+              style={{
+                display: 'flex',
+                flexWrap: isMobile ? 'wrap' : 'nowrap',
+                justifyContent: 'flex-start'
+              }}
+            >
+              <Tabs.Tab
+                value="employment"
+                leftSection={
+                  <IconBriefcase
+                    size={16}
+                    color={currentThemeConfig.iconColor}
+                  />
+                }
+                w={isMobile ? '50%' : 'auto'}
+              >
+                Employment
+              </Tabs.Tab>
+              <Tabs.Tab
+                value="address"
+                leftSection={<IconMapPin size={16} />}
+                w={isMobile ? '40%' : 'auto'}
+              >
+                Address
+              </Tabs.Tab>
+              <Tabs.Tab
+                value="bankDetails"
+                leftSection={<IconBuildingBank size={16} />}
+                w={isMobile ? '50%' : 'auto'}
+                mt={isMobile ? 'sm' : '0'}
+              >
+                Bank Details
+              </Tabs.Tab>
+            </Tabs.List>
+
+            <Tabs.Panel value="employment" p={isMobile ? 'md' : 'lg'}>
+              <Stack gap="md">
+                <Grid gutter="md">
+                  <Grid.Col span={{ base: 12, sm: 6 }}>
+                    <Paper
+                      p="md"
+                      withBorder
+                      radius="md"
+                      style={{
+                        color: currentThemeConfig.color,
+                        borderColor: currentThemeConfig.borderColor
+                      }}
+                    >
+                      <Stack gap="xs">
+                        <Group gap="xs" align="center">
+                          <IconBriefcase
+                            size={16}
+                            color={currentThemeConfig.iconColor}
+                          />
+                          <Text
+                            size="xs"
+                            c={currentThemeConfig.mutedTextColor}
+                            fw={500}
+                          >
+                            Employment Type
+                          </Text>
+                        </Group>
+                        <Badge size="lg" variant="light" color="teal">
+                          {details.employmentType?.employmentType || 'N/A'}
+                        </Badge>
+                      </Stack>
+                    </Paper>
+                  </Grid.Col>
+                  <Grid.Col span={{ base: 12, sm: 6 }}>
+                    <Paper
+                      p="md"
+                      withBorder
+                      radius="md"
+                      style={{
+                        color: currentThemeConfig.color,
+                        borderColor: currentThemeConfig.borderColor
+                      }}
+                    >
+                      <Stack gap="xs">
+                        <Group gap="xs" align="center">
+                          <IconBriefcase
+                            size={16}
+                            color={currentThemeConfig.iconColor}
+                          />
+                          <Text
+                            size="xs"
+                            c={currentThemeConfig.mutedTextColor}
+                            fw={500}
+                          >
+                            Designations
+                          </Text>
+                        </Group>
+                        <Group gap="xs" wrap="wrap">
+                          {details.employeeRole &&
+                          details.employeeRole.length > 0 ? (
+                            details.employeeRole.map(role => (
+                              <Badge
+                                key={role._id}
+                                size="md"
+                                variant="outline"
+                                color="blue"
+                              >
+                                {role.designation}
+                              </Badge>
+                            ))
+                          ) : (
+                            <Text
+                              size="sm"
+                              c={currentThemeConfig.mutedTextColor}
+                            >
+                              N/A
+                            </Text>
+                          )}
+                        </Group>
+                      </Stack>
+                    </Paper>
+                  </Grid.Col>
+                </Grid>
+              </Stack>
+            </Tabs.Panel>
+
+            <Tabs.Panel value="address" p={isMobile ? 'md' : 'lg'}>
+              <Grid>
+                <Grid.Col span={{ base: 12, sm: 6 }}>
+                  <Paper
+                    p="md"
+                    withBorder
+                    radius="md"
+                    style={{
+                      color: currentThemeConfig.color,
+                      borderColor: currentThemeConfig.borderColor
+                    }}
+                  >
+                    <Stack gap="xs">
+                      <Group gap="xs">
+                        <IconMapPin
+                          size={18}
+                          color={currentThemeConfig.iconColor}
+                        />
+                        <Text
+                          size="sm"
+                          fw={600}
+                          c={currentThemeConfig.mutedTextColor}
+                        >
+                          Present Address
+                        </Text>
+                      </Group>
+                      <Text size="sm">{details.presentAddress || 'N/A'}</Text>
+                    </Stack>
+                  </Paper>
+                </Grid.Col>
+
+                <Grid.Col span={{ base: 12, sm: 6 }}>
+                  <Paper
+                    p="md"
+                    withBorder
+                    radius="md"
+                    style={{
+                      color: currentThemeConfig.color,
+                      borderColor: currentThemeConfig.borderColor
+                    }}
+                  >
+                    <Stack gap="xs">
+                      <Group gap="xs">
+                        <IconMapPin
+                          size={18}
+                          color={currentThemeConfig.successColor}
+                        />
+                        <Text
+                          size="sm"
+                          fw={600}
+                          c={currentThemeConfig.mutedTextColor}
+                        >
+                          Permanent Address
+                        </Text>
+                      </Group>
+                      <Text size="sm">{details.permanentAddress || 'N/A'}</Text>
+                    </Stack>
+                  </Paper>
+                </Grid.Col>
+              </Grid>
+            </Tabs.Panel>
+
+            <Tabs.Panel value="bankDetails" p={isMobile ? 'md' : 'lg'}>
+              <Stack gap="md">
+                <Grid gutter="md">
+                  <Grid.Col span={{ base: 12, sm: 6 }}>
+                    <Paper
+                      p="md"
+                      withBorder
+                      radius="md"
+                      style={{
+                        color: currentThemeConfig.color,
+                        borderColor: currentThemeConfig.borderColor
+                      }}
+                    >
+                      <Stack gap="xs">
+                        <Group gap="xs" align="center">
+                          <IconBuildingBank
+                            size={16}
+                            color={currentThemeConfig.iconColor}
+                          />
+                          <Text
+                            size="xs"
+                            c={currentThemeConfig.mutedTextColor}
+                            fw={500}
+                          >
+                            Account Number
+                          </Text>
+                        </Group>
+                        <Text size="sm" fw={500}>
+                          {details.bankDetailsInfo?.accountNumber || 'N/A'}
+                        </Text>
+                      </Stack>
+                    </Paper>
+                  </Grid.Col>
+                  <Grid.Col span={{ base: 12, sm: 6 }}>
+                    <Paper
+                      p="md"
+                      withBorder
+                      radius="md"
+                      style={{
+                        color: currentThemeConfig.color,
+                        borderColor: currentThemeConfig.borderColor
+                      }}
+                    >
+                      <Stack gap="xs">
+                        <Group gap="xs" align="center">
+                          <IconUser
+                            size={16}
+                            color={currentThemeConfig.iconColor}
+                          />
+                          <Text
+                            size="xs"
+                            c={currentThemeConfig.mutedTextColor}
+                            fw={500}
+                          >
+                            Account Holder Name
+                          </Text>
+                        </Group>
+                        <Text size="sm" fw={500}>
+                          {details.bankDetailsInfo?.accountHolderName || 'N/A'}
+                        </Text>
+                      </Stack>
+                    </Paper>
+                  </Grid.Col>
+                  <Grid.Col span={{ base: 12, sm: 6 }}>
+                    <Paper
+                      p="md"
+                      withBorder
+                      radius="md"
+                      style={{
+                        color: currentThemeConfig.color,
+                        borderColor: currentThemeConfig.borderColor
+                      }}
+                    >
+                      <Stack gap="xs">
+                        <Group gap="xs" align="center">
+                          <IconBuildingBank
+                            size={16}
+                            color={currentThemeConfig.iconColor}
+                          />
+                          <Text
+                            size="xs"
+                            c={currentThemeConfig.mutedTextColor}
+                            fw={500}
+                          >
+                            IFSC Code
+                          </Text>
+                        </Group>
+                        <Text size="sm" fw={500}>
+                          {details.bankDetailsInfo?.ifscCode || 'N/A'}
+                        </Text>
+                      </Stack>
+                    </Paper>
+                  </Grid.Col>
+                </Grid>
+              </Stack>
+            </Tabs.Panel>
+          </Tabs>
+        </Card>
+      </Stack>
+    </Container>
   );
 };
 

@@ -1,14 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Outlet } from 'react-router-dom';
-import { IconMenu2, IconX } from '@tabler/icons-react';
 import AdminNavbar from '../../../components/UI/navbar/navbar';
 import { adminNavLinks } from '../../../utils/admin/nav-links/admin-nav-links';
-import { BgDiv } from '../../../components/common/style-components/bg-div';
 import { organizationThemeAtom } from '../../../atoms/organization-atom';
 import { useRecoilValue } from 'recoil';
 import { useDisclosure } from '@mantine/hooks';
 import { userDetailsAtom } from '../../../atoms/user';
 import { ChangePasswordPopup } from '../../../components/UI/Models/updatePassword';
+import { ThemeBackground } from '../../../components/UI/Theme-background/background';
 
 const AdminDashboard = () => {
   const [isDrawerOpen, setDrawerOpen] = useState(false);
@@ -26,38 +25,7 @@ const AdminDashboard = () => {
     }
   }, [user, open]);
   return (
-    <BgDiv className="flex min-h-screen relative">
-      <div className="lg:hidden fixed top-4 left-4 z-50">
-        <button
-          onClick={toggleDrawer}
-          className="p-2 rounded-md"
-          style={{
-            backgroundColor:
-              organizationConfig.organization_theme.theme.button.color,
-            color: organizationConfig.organization_theme.theme.button.textColor,
-          }}
-        >
-          <IconMenu2 size={24} />
-        </button>
-      </div>
-
-      {isDrawerOpen && (
-        <div className="lg:hidden fixed top-4 left-[75%] z-50">
-          <button
-            onClick={toggleDrawer}
-            className="p-2 rounded-md"
-            style={{
-              backgroundColor:
-                organizationConfig.organization_theme.theme.button.color,
-              color:
-                organizationConfig.organization_theme.theme.button.textColor,
-            }}
-          >
-            <IconX size={24} />
-          </button>
-        </div>
-      )}
-
+    <ThemeBackground className="flex min-h-screen ">
       <AdminNavbar
         navLinks={adminNavLinks}
         organizationConfig={organizationConfig}
@@ -65,15 +33,13 @@ const AdminDashboard = () => {
         setIsDrawerOpen={toggleDrawer}
       />
 
-      <div
-        className={`flex-grow p-6 transition-all duration-300 ${isDrawerOpen ? 'ml-[15%]' : 'lg:ml-[4%]'} overflow-hidden`}
-      >
+      <div className={`flex-grow transition-all duration-300 overflow-hidden`}>
         <div>
           <Outlet />
         </div>
       </div>
       <ChangePasswordPopup opened={opened} close={close} forceUpdate={true} />
-    </BgDiv>
+    </ThemeBackground>
   );
 };
 
