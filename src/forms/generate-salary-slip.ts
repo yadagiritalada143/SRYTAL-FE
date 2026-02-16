@@ -44,7 +44,11 @@ export const generateSalarySlipSchema = z.object({
       })
     )
     .optional()
-    .default([])
+    .default([]),
+
+  payDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, {
+    message: 'Pay date must be in YYYY-MM-DD format'
+  })
 });
 
 export type GenerateSalarySlipForm = z.infer<typeof generateSalarySlipSchema>;
