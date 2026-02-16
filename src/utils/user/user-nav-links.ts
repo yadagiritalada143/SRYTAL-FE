@@ -9,7 +9,8 @@ import {
   // IconMessageCircle,
   // IconTool,
   IconUserEdit,
-  IconUsersGroup
+  IconUsersGroup,
+  IconNotebook
 } from '@tabler/icons-react';
 
 export const NavLinks = [
@@ -66,19 +67,40 @@ export const NavLinks = [
     url: 'employee/dashboard/content-writer',
     icon: IconBook,
     name: 'Content Writer'
+  },
+  {
+    role: 'recruiter',
+    name: 'Reports',
+    icon: IconNotebook,
+    children: [
+      {
+        name: 'Salary Slip',
+        url: 'employee/dashboard/reports/salary-slip'
+      }
+    ]
+  },
+  {
+    role: 'employee',
+    name: 'Reports',
+    icon: IconNotebook,
+    children: [
+      {
+        name: 'Salary Slip',
+        url: 'employee/dashboard/reports/salary-slip'
+      }
+    ]
+  },
+  {
+    role: 'content-writer',
+    name: 'Reports',
+    icon: IconNotebook,
+    children: [
+      {
+        name: 'Salary Slip',
+        url: 'employee/dashboard/reports/salary-slip'
+      }
+    ]
   }
-  // {
-  //   role: 'recruiter',
-  //   url: 'employee/dashboard/employee',
-  //   icon: IconCurrencyDollar,
-  //   name: 'Payslip'
-  // },
-  // {
-  //   role: 'employee',
-  //   url: 'employee/dashboard/payslip',
-  //   icon: IconCurrencyDollar,
-  //   name: 'Payslip'
-  // },
   // {
   //   role: 'employee',
   //   url: 'employee/dashboard/announcements',

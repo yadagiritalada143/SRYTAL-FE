@@ -70,6 +70,7 @@ const AddCompany = () => {
       size="xl"
       py="md"
       my="xl"
+      mt={70}
       px={isSmallMobile ? 'xs' : 'md'}
       style={{
         backgroundColor: currentThemeConfig.backgroundColor
@@ -78,7 +79,7 @@ const AddCompany = () => {
       <Stack gap="md">
         {/* Header Card */}
         <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder>
-          <Group justify="space-between" wrap={isMobile ? 'wrap' : 'nowrap'}>
+          <Group justify="space-between" wrap="wrap">
             <Group gap="sm">
               <IconBuilding size={isMobile ? 24 : 28} />
               <Text
@@ -94,7 +95,6 @@ const AddCompany = () => {
               onClick={handleGoBack}
               variant="light"
               size={isMobile ? 'sm' : 'md'}
-              fullWidth={isMobile}
             >
               Go Back
             </Button>
