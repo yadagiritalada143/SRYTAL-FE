@@ -281,7 +281,7 @@ const UpdateEmployee = () => {
   }
 
   return (
-    <Container size="xl" py="md">
+    <Container size="xl" py="md" mt="xl">
       <Card shadow="sm" p="lg" radius="md" withBorder>
         <Group justify="space-between" align="center">
           <Group gap="md">
@@ -516,8 +516,8 @@ const UpdateEmployee = () => {
 
                   <Grid.Col span={{ base: 12, sm: 6 }}>
                     <TextInput
-                      label="PANCard Number"
-                      placeholder="Enter PANCard number"
+                      label="PAN Card Number"
+                      placeholder="Enter PAN Card number"
                       type="text"
                       leftSection={
                         <IconId

@@ -114,6 +114,7 @@ const AddPoolCandidate = () => {
       size="xl"
       py="md"
       my="xl"
+      mt={70}
       px={isSmallMobile ? 'xs' : 'md'}
       style={{
         backgroundColor: currentThemeConfig.backgroundColor
@@ -139,6 +140,12 @@ const AddPoolCandidate = () => {
               variant="light"
               size={isMobile ? 'sm' : 'md'}
               fullWidth={isMobile}
+              style={{
+                position: isMobile ? 'absolute' : 'static',
+                top: isMobile ? 12 : 'auto',
+                right: isMobile ? 12 : 'auto',
+                width: isMobile ? 'auto' : undefined
+              }}
             >
               Go Back
             </Button>
