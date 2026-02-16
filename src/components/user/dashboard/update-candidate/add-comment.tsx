@@ -89,7 +89,7 @@ const AddComment = ({
                         {...field}
                         value={field.value ? new Date(field.value) : null}
                         onChange={date =>
-                          field.onChange(date ? date.toISOString() : null)
+                          field.onChange(date ? new Date(date).toISOString() : null)
                         }
                         clearable
                         label="Call Start Time"
@@ -109,7 +109,7 @@ const AddComment = ({
                         {...field}
                         value={field.value ? new Date(field.value) : null}
                         onChange={date =>
-                          field.onChange(date ? date.toISOString() : null)
+                          field.onChange(date ? new Date(date).toISOString() : null)
                         }
                         clearable
                         label="Call End Time"

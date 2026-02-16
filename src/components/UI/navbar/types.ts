@@ -9,7 +9,7 @@ export interface ChildNavLink {
 export interface NavbarLinkProps {
   icon: any;
   name: string;
-  url: string;
+  url?: string;
   role: string;
   organization: OrganizationConfig;
   isActive: boolean;
@@ -21,7 +21,7 @@ export interface NavbarLinkProps {
 export interface NavbarProps {
   navLinks: {
     role: string;
-    url: string;
+    url?: string;
     icon: Icon;
     name: string;
     children?: ChildNavLink[];
