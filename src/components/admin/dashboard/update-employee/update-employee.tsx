@@ -495,7 +495,7 @@ const UpdateEmployee = () => {
 
                   <Grid.Col span={{ base: 12, sm: 6 }}>
                     <TextInput
-                      label="AadharCard Number"
+                      label="Aadhar Number"
                       placeholder="Enter Aadhaar number"
                       type="tel"
                       leftSection={

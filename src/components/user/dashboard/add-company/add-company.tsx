@@ -79,7 +79,7 @@ const AddCompany = () => {
       <Stack gap="md">
         {/* Header Card */}
         <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder>
-          <Group justify="space-between" wrap={isMobile ? 'wrap' : 'nowrap'}>
+          <Group justify="space-between" wrap="wrap">
             <Group gap="sm">
               <IconBuilding size={isMobile ? 24 : 28} />
               <Text
@@ -95,13 +95,6 @@ const AddCompany = () => {
               onClick={handleGoBack}
               variant="light"
               size={isMobile ? 'sm' : 'md'}
-              fullWidth={isMobile}
-              style={{
-                position: isMobile ? 'absolute' : 'static',
-                top: isMobile ? 12 : 'auto',
-                right: isMobile ? 12 : 'auto',
-                width: isMobile ? 'auto' : undefined
-              }}
             >
               Go Back
             </Button>
