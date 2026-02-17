@@ -347,7 +347,7 @@ const PackagesFormComponent = ({
       <ThemeBackground>
         <Stack gap={isMobile ? 'md' : 'xl'}>
           {/* Header */}
-          <Card shadow="sm" p="lg" radius="md" withBorder>
+          <Card shadow="sm" p="lg" radius="md" withBorder mt="xl">
             <Group
               justify="space-between"
               align="flex-start"
