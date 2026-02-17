@@ -167,7 +167,8 @@ const GenerateSalarySlipReport = () => {
       medicalAllowance: 0,
       otherAllowances: 0,
       additionalAllowances: [],
-      payDate: new Date().toISOString().split('T')[0]
+      payDate: new Date().toISOString().split('T')[0],
+      transactionId: ''
     }
   });
   const selectedMonth = watch('selectedMonth');
@@ -181,6 +182,7 @@ const GenerateSalarySlipReport = () => {
   const medical = watch('medicalAllowance') || 0;
   const other = watch('otherAllowances') || 0;
   const payDate = watch('payDate');
+  const transactionId = watch('transactionId');
 
   // Watch all form values to detect changes
   const allValues = watch();
@@ -309,6 +311,13 @@ const GenerateSalarySlipReport = () => {
       if (!isValid) return;
       setActiveStep(current => (current < 2 ? current + 1 : current));
     } else if (activeStep === 1) {
+      const isValid = await trigger([
+        'basicSalary',
+        'payDate',
+        'transactionId'
+      ]);
+
+      if (!isValid) return;
       try {
         setIsPreviewLoading(true);
         const values = watch();
@@ -347,7 +356,7 @@ const GenerateSalarySlipReport = () => {
           IFSCCODE: empDetails.ifsc,
           bankAccountNumber: empDetails.bankAccount,
           transactionType: 'NEFT',
-          transactionId: 'TBD',
+          transactionId: values.transactionId || undefined,
           panNumber: empDetails.pan,
           uanNumber: empDetails.uan,
 
@@ -437,7 +446,7 @@ const GenerateSalarySlipReport = () => {
         IFSCCODE: empDetails.ifsc,
         bankAccountNumber: empDetails.bankAccount,
         transactionType: 'NEFT',
-        transactionId: 'TBD',
+        transactionId: data.transactionId,
         panNumber: empDetails.pan,
         uanNumber: empDetails.uan,
 
@@ -801,6 +810,19 @@ const GenerateSalarySlipReport = () => {
                       )}
                     />
                   </Grid.Col>
+
+                  <Grid.Col span={{ base: 12, sm: 6 }}>
+                    <TextInput
+                      label="Transaction ID"
+                      required
+                      placeholder="Enter transaction ID"
+                      {...register('transactionId')}
+                      onChange={e =>
+                        setValue('transactionId', e.target.value.toUpperCase())
+                      }
+                      error={errors.transactionId?.message}
+                    />
+                  </Grid.Col>
                 </Grid>
               </Card>
 
@@ -1072,9 +1094,7 @@ const GenerateSalarySlipReport = () => {
                           </Text>
                         </Group>
                         <Group justify="space-between">
-                          <Text size="sm" opacity={0.7}>
-                            Pay Date
-                          </Text>
+                          <Text size="sm">Pay Date</Text>
                           <Text
                             size="sm"
                             fw={600}
@@ -1087,6 +1107,18 @@ const GenerateSalarySlipReport = () => {
                                   day: '2-digit'
                                 })
                               : '-'}
+                          </Text>
+                        </Group>
+                        <Group justify="space-between">
+                          <Text size="sm">Transaction ID</Text>
+                          <Text
+                            size="sm"
+                            fw={600}
+                            c={currentThemeConfig.accentColor}
+                          >
+                            {previewData?.data?.transactionId ??
+                              transactionId ??
+                              '-'}
                           </Text>
                         </Group>
                       </Stack>
