@@ -53,11 +53,10 @@ export const generateSalarySlipSchema = z.object({
   transactionId: z
     .string()
     .trim()
+    .min(1, 'Transaction ID is required')
     .regex(/^[A-Z]{4,10}[0-9]{6,20}$/, {
       message: 'Invalid bank transaction reference'
     })
-    .or(z.literal(''))
-    .optional()
 });
 
 export type GenerateSalarySlipForm = z.infer<typeof generateSalarySlipSchema>;
