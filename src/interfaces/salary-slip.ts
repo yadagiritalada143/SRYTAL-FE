@@ -41,6 +41,7 @@ export interface SalarySlipCalculations {
   totalDeductions: number;
   netPay: number;
   netPayInWords: string;
+  lossOfPayAmount: number;
 }
 
 export interface PreviewSalarySlipResponse {

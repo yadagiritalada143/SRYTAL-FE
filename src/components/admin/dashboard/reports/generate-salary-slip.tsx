@@ -41,6 +41,7 @@ import { useMediaQuery } from '@mantine/hooks';
 import { useCustomToast } from '../../../../utils/common/toast';
 import DynamicStepper from '../../../common/reports-salary-slip/dynamicstepper';
 import { getThemeConfig } from '../../../../utils/common/theme-utils';
+import GlobalLoader from '../../../UI/Loaders/GlobalLoader';
 
 type ReadOnlyFieldProps = {
   label: string;
@@ -220,11 +221,6 @@ const GenerateSalarySlipReport = () => {
     medical +
     other +
     additionalTotal;
-
-  const perDaySalary =
-    daysInMonth && daysInMonth > 0 ? grossSalary / daysInMonth : 0;
-
-  const lopDeduction = lopDays && lopDays > 0 ? perDaySalary * lopDays : 0;
 
   // Fetch Employees List
   useEffect(() => {
@@ -504,6 +500,7 @@ const GenerateSalarySlipReport = () => {
 
   return (
     <Container size="lg" py="xl" px="sm" mt="xl">
+      <GlobalLoader visible={isPreviewLoading} />
       <Card shadow="sm" radius="md" p={isMobile ? 'md' : 'xl'} withBorder>
         <Title order={2} ta="center" mb="xl">
           Generate Salary Slip
@@ -1210,44 +1207,44 @@ const GenerateSalarySlipReport = () => {
                         </Text>
                         <Text size="sm" fw={700}>
                           ₹{' '}
-                          {(
-                            previewData?.data?.calculations?.grossEarnings ??
-                            grossSalary
-                          ).toFixed(2)}
+                          {previewData?.data?.calculations?.grossEarnings?.toFixed(
+                            2
+                          )}
                         </Text>
                       </Group>
 
-                      {(lopDeduction > 0 ||
-                        (previewData?.data?.calculations?.providentFund ?? 0) >
-                          0 ||
-                        (previewData?.data?.calculations?.professionalTax ??
-                          0) > 0 ||
-                        (previewData?.data?.calculations?.incomeTax ?? 0) > 0 ||
-                        (previewData?.data?.calculations?.otherDeductions ??
-                          0) > 0) && (
+                      {(previewData?.data?.calculations?.lossOfPayAmount ||
+                        previewData?.data?.calculations?.professionalTax ||
+                        previewData?.data?.calculations?.incomeTax ||
+                        previewData?.data?.calculations?.otherDeductions) && (
                         <>
                           <Divider
                             my="xs"
                             label="Deductions"
                             labelPosition="center"
                           />
-                          {lopDeduction > 0 && (
-                            <Group justify="space-between">
-                              <Text
-                                size="sm"
-                                c={currentThemeConfig.lightDangerColor}
-                              >
-                                LOP Deduction ({lopDays} days)
-                              </Text>
-                              <Text
-                                size="sm"
-                                fw={600}
-                                c={currentThemeConfig.lightDangerColor}
-                              >
-                                − ₹ {lopDeduction.toFixed(2)}
-                              </Text>
-                            </Group>
-                          )}
+                          {previewData?.data?.calculations?.lossOfPayAmount &&
+                            previewData?.data?.calculations?.lossOfPayAmount >
+                              0 && (
+                              <Group justify="space-between">
+                                <Text
+                                  size="sm"
+                                  c={currentThemeConfig.lightDangerColor}
+                                >
+                                  LOP Deduction ({lopDays} days)
+                                </Text>
+                                <Text
+                                  size="sm"
+                                  fw={600}
+                                  c={currentThemeConfig.lightDangerColor}
+                                >
+                                  − ₹{' '}
+                                  {previewData?.data?.calculations?.lossOfPayAmount?.toFixed(
+                                    2
+                                  )}
+                                </Text>
+                              </Group>
+                            )}
                           {previewData?.data?.calculations ? (
                             <>
                               {previewData.data.calculations.providentFund >
