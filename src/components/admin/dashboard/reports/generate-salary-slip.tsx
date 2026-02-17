@@ -167,7 +167,8 @@ const GenerateSalarySlipReport = () => {
       medicalAllowance: 0,
       otherAllowances: 0,
       additionalAllowances: [],
-      payDate: new Date().toISOString().split('T')[0]
+      payDate: new Date().toISOString().split('T')[0],
+      transactionId: ''
     }
   });
   const selectedMonth = watch('selectedMonth');
@@ -181,6 +182,7 @@ const GenerateSalarySlipReport = () => {
   const medical = watch('medicalAllowance') || 0;
   const other = watch('otherAllowances') || 0;
   const payDate = watch('payDate');
+  const transactionId = watch('transactionId');
 
   // Watch all form values to detect changes
   const allValues = watch();
@@ -347,7 +349,7 @@ const GenerateSalarySlipReport = () => {
           IFSCCODE: empDetails.ifsc,
           bankAccountNumber: empDetails.bankAccount,
           transactionType: 'NEFT',
-          transactionId: 'TBD',
+          transactionId: values.transactionId || undefined,
           panNumber: empDetails.pan,
           uanNumber: empDetails.uan,
 
@@ -437,7 +439,7 @@ const GenerateSalarySlipReport = () => {
         IFSCCODE: empDetails.ifsc,
         bankAccountNumber: empDetails.bankAccount,
         transactionType: 'NEFT',
-        transactionId: 'TBD',
+        transactionId: data.transactionId || undefined,
         panNumber: empDetails.pan,
         uanNumber: empDetails.uan,
 
@@ -495,13 +497,7 @@ const GenerateSalarySlipReport = () => {
 
   return (
     <Container size="lg" py="xl" px="sm">
-      <Card
-        shadow="sm"
-        radius="md"
-        p={isMobile ? 'md' : 'xl'}
-        withBorder
-
-      >
+      <Card shadow="sm" radius="md" p={isMobile ? 'md' : 'xl'} withBorder>
         <Title order={2} ta="center" mb="xl">
           Generate Salary Slip
         </Title>
@@ -807,6 +803,16 @@ const GenerateSalarySlipReport = () => {
                       )}
                     />
                   </Grid.Col>
+
+                  <Grid.Col span={{ base: 12, sm: 6 }}>
+                    <TextInput
+                      label="Transaction ID"
+                      type="text"
+                      placeholder="Enter transaction ID"
+                      {...register('transactionId')}
+                      error={errors.transactionId?.message}
+                    />
+                  </Grid.Col>
                 </Grid>
               </Card>
 
@@ -1078,9 +1084,7 @@ const GenerateSalarySlipReport = () => {
                           </Text>
                         </Group>
                         <Group justify="space-between">
-                          <Text size="sm" opacity={0.7}>
-                            Pay Date
-                          </Text>
+                          <Text size="sm">Pay Date</Text>
                           <Text
                             size="sm"
                             fw={600}
@@ -1093,6 +1097,18 @@ const GenerateSalarySlipReport = () => {
                                   day: '2-digit'
                                 })
                               : '-'}
+                          </Text>
+                        </Group>
+                        <Group justify="space-between">
+                          <Text size="sm">Transaction ID</Text>
+                          <Text
+                            size="sm"
+                            fw={600}
+                            c={currentThemeConfig.accentColor}
+                          >
+                            {previewData?.data?.transactionId ??
+                              transactionId ??
+                              '-'}
                           </Text>
                         </Group>
                       </Stack>

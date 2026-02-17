@@ -50,5 +50,6 @@ export interface PreviewSalarySlipResponse {
     fileName: string;
     pdfBase64: string;
     calculations: SalarySlipCalculations;
+    transactionId: string;
   };
 }
