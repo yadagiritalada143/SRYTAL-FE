@@ -48,7 +48,15 @@ export const generateSalarySlipSchema = z.object({
 
   payDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, {
     message: 'Pay date must be in YYYY-MM-DD format'
-  })
+  }),
+
+  transactionId: z
+    .string()
+    .trim()
+    .min(1, 'Transaction ID is required')
+    .regex(/^[A-Z]{4,10}[0-9]{6,20}$/, {
+      message: 'Invalid bank transaction reference'
+    })
 });
 
 export type GenerateSalarySlipForm = z.infer<typeof generateSalarySlipSchema>;
