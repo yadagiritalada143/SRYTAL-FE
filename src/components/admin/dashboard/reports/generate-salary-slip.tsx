@@ -503,7 +503,7 @@ const GenerateSalarySlipReport = () => {
   };
 
   return (
-    <Container size="lg" py="xl" px="sm">
+    <Container size="lg" py="xl" px="sm" mt="xl">
       <Card shadow="sm" radius="md" p={isMobile ? 'md' : 'xl'} withBorder>
         <Title order={2} ta="center" mb="xl">
           Generate Salary Slip
