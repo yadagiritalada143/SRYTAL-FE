@@ -372,38 +372,56 @@ const PackagesFormComponent = ({
                 </Text>
               </Stack>
 
-              <Box style={{ marginTop: isMobile ? '1rem' : 0 }}>
-                {progressStats.packages > 0 && (
-                  <Group
-                    gap="xs"
-                    justify={isMobile ? 'flex-start' : 'flex-end'}
-                    wrap="wrap"
-                  >
-                    <Badge
-                      variant="light"
-                      color={currentThemeConfig.button.color}
-                      size={isMobile ? 'sm' : 'md'}
-                    >
-                      {progressStats.packages} Package
-                      {progressStats.packages !== 1 ? 's' : ''}
-                    </Badge>
-                    <Badge
-                      variant="light"
-                      color="blue"
-                      size={isMobile ? 'sm' : 'md'}
-                    >
-                      {progressStats.selectedTasksCount}/
-                      {progressStats.totalTasks} Tasks
-                    </Badge>
+              <Box
+                style={{
+                  marginTop: isMobile ? '1rem' : 0,
+                  width: isMobile ? '100%' : 'auto'
+                }}
+              >
+                {isMobile ? (
+                  <Group justify="space-between" align="center" wrap="nowrap">
+                    <Group gap="xs">
+                      {progressStats.packages > 0 && (
+                        <>
+                          <Badge
+                            variant="light"
+                            color={currentThemeConfig.button.color}
+                            size="sm"
+                          >
+                            {progressStats.packages} Package
+                            {progressStats.packages !== 1 ? 's' : ''}
+                          </Badge>
+                          <Badge variant="light" color="blue" size="sm">
+                            {progressStats.selectedTasksCount}/
+                            {progressStats.totalTasks} Tasks
+                          </Badge>
+                        </>
+                      )}
+                    </Group>
+                    <BackButton id={employeeId} />
                   </Group>
+                ) : (
+                  <>
+                    {progressStats.packages > 0 && (
+                      <Group gap="xs" justify="flex-end" wrap="wrap">
+                        <Badge
+                          variant="light"
+                          color={currentThemeConfig.button.color}
+                        >
+                          {progressStats.packages} Package
+                          {progressStats.packages !== 1 ? 's' : ''}
+                        </Badge>
+                        <Badge variant="light" color="blue">
+                          {progressStats.selectedTasksCount}/
+                          {progressStats.totalTasks} Tasks
+                        </Badge>
+                      </Group>
+                    )}
+                    <Group mt="md" justify="center">
+                      <BackButton id={employeeId} />
+                    </Group>
+                  </>
                 )}
-                <Group
-                  mt="md"
-                  gap="xs"
-                  justify={isMobile ? 'flex-start' : 'center'}
-                >
-                  <BackButton id={employeeId} />
-                </Group>
               </Box>
             </Group>
           </Card>
