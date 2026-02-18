@@ -657,11 +657,11 @@ export const EmployeeTimesheetAdminView = () => {
       px={isSmallMobile ? 'xs' : isMobile ? 'sm' : 'md'}
     >
       <Stack gap={isMobile ? 'sm' : 'md'}>
-        <Card shadow="sm" p="lg" radius="md" withBorder>
+        <Card shadow="sm" p="lg" radius="md" withBorder mt="xl">
           <Group
             justify="space-between"
             align={isMobile ? 'flex-start' : 'center'}
-            wrap={isMobile ? 'wrap' : 'nowrap'}
+            wrap="nowrap"
             gap="sm"
           >
             <Stack

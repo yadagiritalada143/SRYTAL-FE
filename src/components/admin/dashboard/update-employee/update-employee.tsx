@@ -282,8 +282,8 @@ const UpdateEmployee = () => {
 
   return (
     <Container size="xl" py="md" mt="xl">
-      <Card shadow="sm" p="lg" radius="md" withBorder>
-        <Group justify="space-between" align="center">
+      <Card shadow="sm" p="lg" radius="md" withBorder mt="xl">
+        <Group justify="space-between" align="center" wrap="nowrap">
           <Group gap="md">
             <div>
               <Text size="xl" fw={700} c={currentThemeConfig.color}>
@@ -818,7 +818,7 @@ const UpdateEmployee = () => {
                 }}
               >
                 <Group justify="space-between">
-                  <Button variant="subtle" onClick={handleBack} radius="lg">
+                  <Button variant="subtle" onClick={handleBack} radius="md">
                     Cancel
                   </Button>
 
@@ -826,7 +826,7 @@ const UpdateEmployee = () => {
                     type="submit"
                     loading={isSubmitting}
                     disabled={isSubmitting}
-                    radius="lg"
+                    radius="md"
                     leftSection={
                       !isSubmitting && <IconDeviceFloppy size={16} />
                     }
