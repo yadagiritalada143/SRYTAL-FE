@@ -42,6 +42,7 @@ import { ThemeToggleButton } from '../components/UI/Theme-toggle-button/button';
 import WriterDashboard from '../components/user/dashboard/content-writer/content-writer';
 import { ContentWriterAddCourse } from '../components/user/dashboard/add-course/add-course';
 import ContentWriterEditCourse from '../components/user/dashboard/edit-course/edit-course';
+import SalarySlipReport from '../components/common/reports/salary-slip';
 
 const EmployeeRoutes = () => {
   const { organization } = useParams<{ organization: string }>();
@@ -529,6 +530,10 @@ const EmployeeRoutes = () => {
               <Route path="content-writer" element={<WriterDashboard />} />
               <Route path="add-course" element={<ContentWriterAddCourse />} />
               <Route path="course/:id" element={<ContentWriterEditCourse />} />
+              <Route
+                path="common/reports/salary-slip"
+                element={<SalarySlipReport />}
+              />
             </Route>
           </Route>
         </Route>
