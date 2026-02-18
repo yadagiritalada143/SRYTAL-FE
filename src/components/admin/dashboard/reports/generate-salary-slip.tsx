@@ -274,7 +274,7 @@ const GenerateSalarySlipReport = () => {
       designation: selectedEmployee.employeeRole?.[0]?.designation || '',
       department: 'Engineering',
       doj: '2024-01-15',
-      email: selectedEmployee.email || '',
+      email: selectedEmployee.email ?? '',
       dob: formatDate(selectedEmployee.dateOfBirth || ''),
       bankAccount: selectedEmployee.bankDetailsInfo?.accountNumber || '',
       ifsc: selectedEmployee.bankDetailsInfo?.ifscCode || '',
@@ -314,6 +314,10 @@ const GenerateSalarySlipReport = () => {
       ]);
 
       if (!isValid) return;
+      if (!empDetails.email) {
+        toast.error('Employee email is missing');
+        return;
+      }
       try {
         setIsPreviewLoading(true);
         const values = watch();
@@ -341,6 +345,7 @@ const GenerateSalarySlipReport = () => {
         const payload = {
           employeeId: values.employeeId,
           employeeName: empDetails.empName,
+          employeeEmail: empDetails.email,
           designation: empDetails.designation,
           department: empDetails.department,
           dateOfJoining: empDetails.doj,
@@ -392,6 +397,10 @@ const GenerateSalarySlipReport = () => {
 
   const onSubmit = async (data: GenerateSalarySlipForm) => {
     try {
+      if (!empDetails.email) {
+        toast.error('Employee email is missing');
+        return;
+      }
       if (generatedPdf) {
         const url = window.URL.createObjectURL(generatedPdf);
         const link = document.createElement('a');
@@ -433,6 +442,7 @@ const GenerateSalarySlipReport = () => {
       const payload = {
         employeeId: data.employeeId,
         employeeName: empDetails.empName,
+        employeeEmail: empDetails.email,
         designation: empDetails.designation,
         department: empDetails.department,
         dateOfJoining: empDetails.doj,
