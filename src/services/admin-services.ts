@@ -4,12 +4,14 @@ import { EmployeeUpdateForm } from '../forms/update-employee';
 import { AddPackageForm } from '../forms/add-package';
 import { PackageUpdateForm } from '../forms/update-package';
 import moment from 'moment';
+import { updatefeedbackForm } from '../forms/update-feedback';
+import { AddfeedbackForm } from '../forms/add-feedback';
 
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 const apiClient = axios.create({
   baseURL: BASE_URL,
-  headers: { 'Content-Type': 'application/json' },
+  headers: { 'Content-Type': 'application/json' }
 });
 
 const refreshAccessToken = async () => {
@@ -20,7 +22,7 @@ const refreshAccessToken = async () => {
     }
 
     const response = await apiClient.get('/admin/refreshToken', {
-      headers: { refresh_token: refreshToken },
+      headers: { refresh_token: refreshToken }
     });
 
     const { token: newAccessToken } = response.data;
@@ -128,7 +130,7 @@ export const registerPackage = async (packageDetails: AddPackageForm) => {
       {
         ...packageDetails,
         startDate: moment(packageDetails.startDate).format('YYYY-MM-DD'),
-        endDate: moment(packageDetails.endDate).format('YYYY-MM-DD'),
+        endDate: moment(packageDetails.endDate).format('YYYY-MM-DD')
       },
       { headers: { Auth_token: `Bearer ${token}` } }
     );
@@ -168,8 +170,8 @@ export const updatePackageByAdmin = async (
         detailsToUpdate: {
           ...packageDetails,
           startDate: moment(packageDetails.startDate).format('YYYY-MM-DD'),
-          endDate: moment(packageDetails.endDate).format('YYYY-MM-DD'),
-        },
+          endDate: moment(packageDetails.endDate).format('YYYY-MM-DD')
+        }
       },
       { headers: { auth_token: `Bearer ${adminToken}` } }
     );
@@ -187,7 +189,7 @@ export const handlePasswordResetByAdmin = async (id: string) => {
       '/admin/employeePasswordResetByAdmin',
       { employeeId: id },
       {
-        headers: { auth_token: token },
+        headers: { auth_token: token }
       }
     );
 
@@ -207,7 +209,7 @@ export const deleteEmployeeByAdmin = async (data: {
       '/admin/deleteEmployeeByAdmin',
       data,
       {
-        headers: { auth_token: token },
+        headers: { auth_token: token }
       }
     );
     return response.data;
@@ -223,7 +225,7 @@ export const deletePackageByAdmin = async (id: string, hardDelete: boolean) => {
       `/admin/deletePackageByAdmin/${id}`,
       {
         headers: { auth_token: token },
-        data: { confirmDelete: hardDelete },
+        data: { confirmDelete: hardDelete }
       }
     );
     return response.data;
@@ -242,7 +244,7 @@ export const deleteTaskByAdmin = async (
       `/admin/deleteTaskByAdmin/${taskId}`,
       {
         headers: { auth_token: `Bearer ${token}` },
-        data: { confirmDelete: hardDelete },
+        data: { confirmDelete: hardDelete }
       }
     );
     return response.data;
@@ -263,8 +265,8 @@ export const deleteEmployeePackagesByAdmin = async (
         headers: { auth_token: `Bearer ${token}` },
         data: {
           employeeId,
-          packageId,
-        },
+          packageId
+        }
       }
     );
     return response.data;
@@ -287,8 +289,8 @@ export const deleteEmployeeTasksByAdmin = async (
         data: {
           employeeId,
           packageId,
-          taskId,
-        },
+          taskId
+        }
       }
     );
     return response.data;
@@ -307,7 +309,7 @@ export const deletePoolCandidatesByAdmin = async (data: {
       `/admin/deletePoolCandidatesByAdmin/${data.candidateId}`,
       {
         headers: { auth_token: token },
-        data: { confirmDelete: data.confirmDelete },
+        data: { confirmDelete: data.confirmDelete }
       }
     );
     return response.data;
@@ -326,7 +328,7 @@ export const deletePoolCompanyByAdmin = async (data: {
       `/admin/deletePoolCompanyByAdmin/${data.companyId}`,
       {
         headers: { auth_token: token },
-        data: { confirmDelete: data.confirmDelete },
+        data: { confirmDelete: data.confirmDelete }
       }
     );
     return response.data;
@@ -341,7 +343,7 @@ export const getEmployeeDetailsByAdmin = async (id: string) => {
     const response = await apiClient.get(
       `/admin/getEmployeeDetailsByAdmin/${id}`,
       {
-        headers: { auth_token: adminToken },
+        headers: { auth_token: adminToken }
       }
     );
     return response.data.userDetails;
@@ -357,7 +359,7 @@ export const getAllEmployeeDetailsByAdmin = async () => {
       throw 'Not authorized to access';
     }
     const response = await apiClient('/admin/getAllEmployeeDetailsByAdmin', {
-      headers: { auth_token: token },
+      headers: { auth_token: token }
     });
     return response.data.usersList;
   } catch (error) {
@@ -372,7 +374,7 @@ export const getAllPackagesByAdmin = async () => {
       throw 'Not authorized to access';
     }
     const response = await apiClient('/admin/getAllPackagesByAdmin', {
-      headers: { auth_token: `Bearer ${token}` },
+      headers: { auth_token: `Bearer ${token}` }
     });
     return response.data.packagesList;
   } catch (error) {
@@ -389,7 +391,7 @@ export const getPackageDetailsByAdmin = async (packageId: string) => {
     const response = await apiClient.get(
       `/admin/getPackageDetailsByAdmin/${packageId}`,
       {
-        headers: { auth_token: token },
+        headers: { auth_token: token }
       }
     );
     return response.data.packageDetails;
@@ -407,7 +409,7 @@ export const getEmployeePackagesByAdmin = async (employeeId: string) => {
     const response = await apiClient.get(
       `/admin/getEmployeePackagesByAdmin/${employeeId}`,
       {
-        headers: { auth_token: token },
+        headers: { auth_token: token }
       }
     );
 
@@ -428,7 +430,7 @@ export const getAllBloodGroupByAdmin = async () => {
       throw 'Not authorized to access';
     }
     const response = await apiClient('/admin/getAllBloodGroupsByAdmin', {
-      headers: { auth_token: token },
+      headers: { auth_token: token }
     });
     return response.data.bloodGroupList;
   } catch (error) {
@@ -440,7 +442,7 @@ export const addBloodGroupByAdmin = async (data: { type: string }) => {
   const token = localStorage.getItem('token');
   try {
     const response = await apiClient.post('/admin/addBloodGroupByAdmin', data, {
-      headers: { auth_token: token },
+      headers: { auth_token: token }
     });
 
     return response.data.bloodGroupList;
@@ -458,7 +460,7 @@ export const addEmploymentTypeByAdmin = async (data: {
       '/admin/addEmploymentTypeByAdmin',
       data,
       {
-        headers: { auth_token: token },
+        headers: { auth_token: token }
       }
     );
 
@@ -475,7 +477,7 @@ export const addEmployeeRoleByAdmin = async (data: { designation: string }) => {
       '/admin/addEmployeeRoleByAdmin',
       data,
       {
-        headers: { auth_token: token },
+        headers: { auth_token: token }
       }
     );
 
@@ -495,7 +497,7 @@ export const addPackagetoEmployeeByAdmin = async (data: any) => {
       '/admin/addPackagetoEmployeeByAdmin',
       data,
       {
-        headers: { auth_token: `Bearer ${token}` },
+        headers: { auth_token: `Bearer ${token}` }
       }
     );
     return response.data;
@@ -511,7 +513,7 @@ export const updateBloodGroupByAdmin = async (id: string, type: string) => {
       `/admin/updateBloodGroupByAdmin`,
       { id, type },
       {
-        headers: { auth_token: token },
+        headers: { auth_token: token }
       }
     );
 
@@ -531,7 +533,7 @@ export const updateEmployeeRoleByAdmin = async (
       `/admin/updateEmployeeRoleByAdmin`,
       { id, designation },
       {
-        headers: { auth_token: token },
+        headers: { auth_token: token }
       }
     );
 
@@ -551,7 +553,7 @@ export const updateEmploymentTypeByAdmin = async (
       `/admin/updateEmploymentTypeByAdmin`,
       { id, employmentType },
       {
-        headers: { auth_token: token },
+        headers: { auth_token: token }
       }
     );
 
@@ -578,7 +580,7 @@ export const addTasksByAdmin = async (packageId: string, title: string) => {
   try {
     const response = await apiClient.post('/admin/addTaskByAdmin', {
       packageId,
-      title,
+      title
     });
     return response.data;
   } catch (error) {
@@ -593,7 +595,7 @@ export const updateTaskByAdmin = async (id: string, title: string) => {
       `/admin/updateTaskByAdmin`,
       { id, title },
       {
-        headers: { auth_token: token },
+        headers: { auth_token: token }
       }
     );
 
@@ -607,7 +609,7 @@ export const getAllEmployeeRoleByAdmin = async () => {
   const token = localStorage.getItem('token');
   try {
     const response = await apiClient.get('/admin/getAllEmployeeRoleByAdmin', {
-      headers: { auth_token: token },
+      headers: { auth_token: token }
     });
     return response.data.employeeRoles;
   } catch (error) {
@@ -624,7 +626,7 @@ export const getAllApproversByAdmin = async () => {
     const response = await apiClient.get(
       '/admin/getAllEmployeeDetailsByAdmin',
       {
-        headers: { auth_token: token },
+        headers: { auth_token: token }
       }
     );
     return response.data.approvers;
@@ -639,7 +641,7 @@ export const deleteEmployeeRoleByAdmin = async (id: string) => {
     const response = await apiClient.delete(
       `/admin/deleteEmployeeRoleByAdmin/${id}`,
       {
-        headers: { auth_token: token },
+        headers: { auth_token: token }
       }
     );
 
@@ -655,7 +657,7 @@ export const deleteBloodGroupByAdmin = async (id: string) => {
     const response = await apiClient.delete(
       `/admin/deleteBloodGroupByAdmin/${id}`,
       {
-        headers: { auth_token: token },
+        headers: { auth_token: token }
       }
     );
 
@@ -671,7 +673,7 @@ export const deleteEmploymentTypeByAdmin = async (id: string) => {
     const response = await apiClient.delete(
       `/admin/deleteEmploymentTypeByAdmin/${id}`,
       {
-        headers: { auth_token: token },
+        headers: { auth_token: token }
       }
     );
 
@@ -683,7 +685,7 @@ export const deleteEmploymentTypeByAdmin = async (id: string) => {
 
 export const updateEmployeePackageByAdmin = async ({
   employeeId,
-  packages,
+  packages
 }: {
   employeeId: string;
   packages: {
@@ -697,7 +699,7 @@ export const updateEmployeePackageByAdmin = async ({
       `/admin/addPackageToEmployeeByAdmin`,
       { employeeId, packages },
       {
-        headers: { auth_token: token },
+        headers: { auth_token: token }
       }
     );
 
@@ -710,7 +712,7 @@ export const previewSalarySlip = async (data: any) => {
   const token = localStorage.getItem('token');
   try {
     const response = await apiClient.post('/admin/previewSalarySlip', data, {
-      headers: { auth_token: token },
+      headers: { auth_token: token }
     });
     return response.data;
   } catch (error) {
@@ -730,3 +732,72 @@ export const generateSalarySlip = async (data: any) => {
     throw error;
   }
 };
+// export const getAllFeedbackByAdmin = async () => {
+//   const token = localStorage.getItem('token');
+
+//   try {
+//     const response = await apiClient.get('/admin/getAllFeedbackByAdmin', {
+//       headers: { auth_token: token }
+//     });
+
+//     return response.data;
+//   } catch (error) {
+//     throw error;
+//   }
+// };
+
+export const addFeedbackByAdmin = async (data: AddfeedbackForm) => {
+  const token = localStorage.getItem('token');
+
+  try {
+    const response = await apiClient.post(
+      '/admin/addfeedbackattributebyadmin',
+      data,
+      {
+        headers: { auth_token: token }
+      }
+    );
+
+    return response.data.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// export const updateFeedbackByAdmin = async (
+//   id: string,
+//   data: updatefeedbackForm
+// ) => {
+//   const token = localStorage.getItem('token');
+
+//   try {
+//     const response = await apiClient.put(
+//       `/admin/updateFeedbackByAdmin/${id}`,
+//       data,
+//       {
+//         headers: { auth_token: token }
+//       }
+//     );
+
+//     return response.data;
+//   } catch (error) {
+//     throw error;
+//   }
+// };
+
+// export const deleteFeedbackByAdmin = async (id: string) => {
+//   const token = localStorage.getItem('token');
+
+//   try {
+//     const response = await apiClient.delete(
+//       `/admin/deleteFeedbackByAdmin/${id}`,
+//       {
+//         headers: { auth_token: token }
+//       }
+//     );
+
+//     return response.data;
+//   } catch (error) {
+//     throw error;
+//   }
+// };
