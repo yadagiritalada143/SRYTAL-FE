@@ -46,9 +46,9 @@ import { getThemeConfig } from '../../../../utils/common/theme-utils';
 
 // Constants
 const USER_ROLES = [
-  { label: 'Employee', value: 'employee' },
-  { label: 'Recruiter', value: 'recruiter' },
-  { label: ' Content Writer', value: 'content-writer' }
+  { label: 'Employee', value: 'Employee' },
+  { label: 'Recruiter', value: 'Recruiter' },
+  { label: 'Content Writer', value: 'ContentWriter' }
   // { label: 'Manager', value: 'manager' },
   // { label: 'Admin', value: 'admin' }
 ];
