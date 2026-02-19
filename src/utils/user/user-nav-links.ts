@@ -75,7 +75,7 @@ export const NavLinks = [
     children: [
       {
         name: 'Salary Slip',
-        url: 'employee/dashboard/common/reports/salary-slip'
+        url: 'employee/dashboard/reports/salary-slip'
       }
     ]
   },
@@ -86,7 +86,7 @@ export const NavLinks = [
     children: [
       {
         name: 'Salary Slip',
-        url: 'employee/dashboard/common/reports/salary-slip'
+        url: 'employee/dashboard/reports/salary-slip'
       }
     ]
   },
@@ -97,7 +97,7 @@ export const NavLinks = [
     children: [
       {
         name: 'Salary Slip',
-        url: 'employee/dashboard/common/reports/salary-slip'
+        url: 'employee/dashboard/reports/salary-slip'
       }
     ]
   }

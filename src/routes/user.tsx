@@ -531,7 +531,7 @@ const EmployeeRoutes = () => {
               <Route path="add-course" element={<ContentWriterAddCourse />} />
               <Route path="course/:id" element={<ContentWriterEditCourse />} />
               <Route
-                path="common/reports/salary-slip"
+                path="reports/salary-slip"
                 element={<SalarySlipReport />}
               />
             </Route>
