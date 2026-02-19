@@ -1,35 +1,38 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
-  Button,
-  Group,
-  Text,
-  Loader,
-  Pagination,
-  Modal,
-  TextInput,
-  Center,
-  Container,
   Card,
-  Stack,
-  Table,
-  Badge,
-  ActionIcon,
+  Button,
+  Loader,
   Tooltip,
-  Select,
+  Center,
+  Pagination,
+  Stack,
+  Text,
+  TextInput,
+  Group,
+  Badge,
+  Table,
   ScrollArea,
   Flex,
-  Divider
+  ActionIcon,
+  Select,
+  Modal
 } from '@mantine/core';
-import { useDisclosure, useMediaQuery } from '@mantine/hooks';
+
 import {
   IconEdit,
   IconPlus,
-  IconTrash,
   IconSearch,
+  IconTrash,
   IconAlertTriangle,
-  IconDeviceFloppy,
-  IconMessage
+  IconDeviceFloppy
 } from '@tabler/icons-react';
+
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMediaQuery, useDisclosure } from '@mantine/hooks';
+
+import { useRecoilState, useRecoilValue } from 'recoil';
+
+import type { Feedback } from '../../../../interfaces/feedback';
 
 import {
   getallfeedbackattributesbyadmin,
@@ -38,7 +41,6 @@ import {
   deleteFeedbackAttributeByAdmin
 } from '../../../../services/admin-services';
 
-import { useRecoilState, useRecoilValue } from 'recoil';
 import { organizationThemeAtom } from '../../../../atoms/organization-atom';
 import { themeAtom } from '../../../../atoms/theme';
 import { feedbackAtom } from '../../../../atoms/feedback-atom';
@@ -50,127 +52,67 @@ import { getThemeConfig } from '../../../../utils/common/theme-utils';
 const ITEMS_PER_PAGE_OPTIONS = ['5', '10', '20', '50'];
 const DEFAULT_ITEMS_PER_PAGE = 10;
 
-const isValidFeedback = (name: string) => name.trim().length > 0;
-
-/* ---------------- ACTIONS ---------------- */
-const FeedbackActions: React.FC<{
-  item: any;
-  onEdit: (item: any) => void;
-}> = ({ item, onEdit }) => (
-  <Group gap="xs" justify="center">
-    <Tooltip label="Edit Feedback">
-      <ActionIcon variant="subtle" color="blue" onClick={() => onEdit(item)}>
-        <IconEdit size={16} />
-      </ActionIcon>
-    </Tooltip>
-  </Group>
-);
-
-/* ---------------- MOBILE CARD ---------------- */
-const MobileFeedbackCard: React.FC<any> = ({
-  item,
-  index,
-  activePage,
-  itemsPerPage,
-  onEdit
-}) => (
-  <Card shadow="sm" p="md" mb="sm" withBorder>
-    <Stack gap="sm">
-      <Group justify="space-between">
-        <Badge>#{index + 1 + (activePage - 1) * itemsPerPage}</Badge>
-        <ActionIcon variant="subtle" onClick={() => onEdit(item)}>
-          <IconEdit size={18} />
-        </ActionIcon>
-      </Group>
-
-      <Divider />
-
-      <Group>
-        <IconMessage size={20} />
-        <Text fw={600}>{item.name}</Text>
-      </Group>
-    </Stack>
-  </Card>
-);
-
-/* ---------------- HEADER ---------------- */
-const HeadingComponent: React.FC<any> = ({ count, onAdd, isMobile }) => (
-  <Card shadow="sm" p={isMobile ? 'md' : 'lg'} withBorder>
-    <Flex
-      direction={isMobile ? 'column' : 'row'}
-      justify="space-between"
-      align="center"
-      gap="md"
-    >
-      <Text size={isMobile ? 'lg' : 'xl'} fw={700}>
-        Manage Feedback ({count})
-      </Text>
-
-      <Button
-        leftSection={<IconPlus size={16} />}
-        onClick={onAdd}
-        fullWidth={isMobile}
-      >
-        Add Feedback
-      </Button>
-    </Flex>
-  </Card>
-);
-
-/* ================= MAIN TABLE ================= */
 export default function FeedbackTable() {
-  const { showSuccessToast, showErrorToast } = useCustomToast();
+  const { showErrorToast, showSuccessToast } = useCustomToast();
 
   const [feedbacks, setFeedbacks] = useRecoilState(feedbackAtom);
-  const [filtered, setFiltered] = useState<any[]>([]);
+  const [filtered, setFiltered] = useState<Feedback[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const [activePage, setActivePage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(DEFAULT_ITEMS_PER_PAGE);
 
-  const [selected, setSelected] = useState<any | null>(null);
+  const [selected, setSelected] = useState<Feedback | null>(null);
   const [newName, setNewName] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+
+  const [addOpened, { open: openAdd, close: closeAdd }] = useDisclosure(false);
+  const [editOpened, { open: openEdit, close: closeEdit }] =
+    useDisclosure(false);
+  const [deleteOpened, { open: openDelete, close: closeDelete }] =
+    useDisclosure(false);
 
   const organizationConfig = useRecoilValue(organizationThemeAtom);
   const isDarkTheme = useRecoilValue(themeAtom);
 
   const isMobile = useMediaQuery('(max-width: 768px)');
-  const isSmallMobile = useMediaQuery('(max-width: 500px)');
 
   const currentThemeConfig = useMemo(
     () => getThemeConfig(organizationConfig, isDarkTheme),
     [organizationConfig, isDarkTheme]
   );
 
-  const [editOpened, { open: openEdit, close: closeEdit }] =
-    useDisclosure(false);
-  const [deleteOpened, { open: openDelete, close: closeDelete }] =
-    useDisclosure(false);
-  const [addOpened, { open: openAdd, close: closeAdd }] = useDisclosure(false);
+  const isMountedRef = useRef(false);
 
-  /* ---------------- FETCH ---------------- */
-  const fetchFeedback = useCallback(async () => {
+  const fetchFeedback = async () => {
     setIsLoading(true);
     try {
-      const data = await getallfeedbackattributesbyadmin();
-      setFeedbacks(data);
-      setFiltered(data);
+      const res = await getallfeedbackattributesbyadmin();
+
+      const list = Array.isArray(res)
+        ? res
+        : Array.isArray((res as any)?.data?.data)
+          ? (res as any).data.data
+          : [];
+
+      if (isMountedRef.current) {
+        setFeedbacks([...list]);
+        setFiltered([...list]);
+      }
     } catch {
       showErrorToast('Failed to fetch feedback');
     } finally {
       setIsLoading(false);
     }
-  }, [setFeedbacks, showErrorToast]);
+  };
 
   useEffect(() => {
-    if (feedbacks.length === 0) {
-      fetchFeedback();
-    } else {
-      setFiltered(feedbacks);
-      setIsLoading(false);
-    }
-  }, [feedbacks, fetchFeedback]);
+    isMountedRef.current = true;
+    fetchFeedback();
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   /* ---------------- SEARCH ---------------- */
   const debouncedSearch = useMemo(
@@ -193,16 +135,16 @@ export default function FeedbackTable() {
 
   /* ---------------- ADD ---------------- */
   const handleAdd = async () => {
-    if (!isValidFeedback(newName))
-      return showErrorToast('Feedback name required');
+    if (!newName.trim())
+      return showErrorToast('Feedback attribute is required');
 
     setIsLoading(true);
     try {
-      await addFeedbackAttributeByAdmin({ name: newName.trim() });
-      showSuccessToast('Added successfully');
-      closeAdd();
+      await addFeedbackAttributeByAdmin({ name: newName.trim() } as any);
+      showSuccessToast('Feedback attribute added successfully !!');
       setNewName('');
-      fetchFeedback();
+      closeAdd();
+      await fetchFeedback();
     } catch {
       showErrorToast('Failed to add');
     } finally {
@@ -211,20 +153,20 @@ export default function FeedbackTable() {
   };
 
   /* ---------------- EDIT ---------------- */
-  const handleEdit = (item: any) => {
+  const handleEdit = (item: Feedback) => {
     setSelected(item);
     openEdit();
   };
 
   const confirmEdit = async () => {
-    if (!isValidFeedback(selected?.name)) return showErrorToast('Required');
+    if (!selected?.name.trim()) return showErrorToast('Required');
 
     setIsLoading(true);
     try {
       await updateFeedbackAttributeByAdmin(selected.id, selected.name.trim());
-      showSuccessToast('Updated successfully');
+      showSuccessToast('Feedback attribute updated successfully !!');
       closeEdit();
-      fetchFeedback();
+      await fetchFeedback();
     } catch {
       showErrorToast('Failed to update');
     } finally {
@@ -239,10 +181,10 @@ export default function FeedbackTable() {
     setIsLoading(true);
     try {
       await deleteFeedbackAttributeByAdmin(selected.id);
-      showSuccessToast('Deleted successfully');
+      showSuccessToast('Feedback attribute deleted successfully !!');
       closeDelete();
       closeEdit();
-      fetchFeedback();
+      await fetchFeedback();
     } catch {
       showErrorToast('Failed to delete');
     } finally {
@@ -263,19 +205,35 @@ export default function FeedbackTable() {
 
   useEffect(() => setActivePage(1), [itemsPerPage]);
 
-  /* ================= UI ================= */
   return (
-    <Container size="xl" py="md" my="xl" px={isSmallMobile ? 'xs' : 'md'}>
+    <div>
       <Stack gap="md">
-        <HeadingComponent
-          count={filtered.length}
-          onAdd={openAdd}
-          isMobile={isMobile}
-        />
+        {/* HEADER */}
+        <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder>
+          <Flex
+            direction={isMobile ? 'column' : 'row'}
+            justify="space-between"
+            align="center"
+            gap="md"
+          >
+            <Text size={isMobile ? 'lg' : 'xl'} fw={700}>
+              Manage Feedback ({filtered.length})
+            </Text>
+
+            <Button
+              leftSection={<IconPlus size={16} />}
+              onClick={openAdd}
+              fullWidth={isMobile}
+              radius="md"
+            >
+              Add Feedback Attribute
+            </Button>
+          </Flex>
+        </Card>
 
         {/* SEARCH */}
-        <Card shadow="sm" p="md" withBorder>
-          <Stack>
+        <Card shadow="sm" p="md" radius="md" withBorder>
+          <Stack gap="md">
             <TextInput
               placeholder="Search feedback..."
               leftSection={<IconSearch size={16} />}
@@ -298,7 +256,7 @@ export default function FeedbackTable() {
               </Group>
 
               {filtered.length !== feedbacks.length && (
-                <Badge variant="light">
+                <Badge variant="light" color="blue">
                   {filtered.length} of {feedbacks.length}
                 </Badge>
               )}
@@ -306,27 +264,14 @@ export default function FeedbackTable() {
           </Stack>
         </Card>
 
-        {/* TABLE / MOBILE */}
-        <Card shadow="sm" p={0} withBorder>
+        {/* TABLE */}
+        <Card shadow="sm" p={0} radius="md" withBorder>
           {isLoading ? (
             <Center p="xl">
-              <Loader />
-            </Center>
-          ) : isMobile ? (
-            <ScrollArea p="md">
-              <Stack>
-                {paginatedData.map((item, index) => (
-                  <MobileFeedbackCard
-                    key={item.id}
-                    item={item}
-                    index={index}
-                    activePage={activePage}
-                    itemsPerPage={itemsPerPage}
-                    onEdit={handleEdit}
-                  />
-                ))}
+              <Stack align="center" gap="md">
+                <Loader size="xl" />
               </Stack>
-            </ScrollArea>
+            </Center>
           ) : (
             <ScrollArea>
               <Table stickyHeader withTableBorder withColumnBorders>
@@ -337,21 +282,49 @@ export default function FeedbackTable() {
                   }}
                 >
                   <Table.Tr>
-                    <Table.Th>S.No</Table.Th>
-                    <Table.Th>Feedback</Table.Th>
-                    <Table.Th className="text-center">Actions</Table.Th>
+                    <Table.Th
+                      className="p-3 text-center"
+                      style={{ width: '100px' }}
+                    >
+                      <Text size="sm" fw={500}>
+                        S.No
+                      </Text>
+                    </Table.Th>
+                    <Table.Th className="p-3 ">
+                      <Text size="sm" fw={500}>
+                        Feedback
+                      </Text>
+                    </Table.Th>
+                    <Table.Th
+                      className="p-3 text-center"
+                      style={{ width: '120px' }}
+                    >
+                      <Text size="sm" fw={500}>
+                        Actions
+                      </Text>
+                    </Table.Th>
                   </Table.Tr>
                 </Table.Thead>
 
                 <Table.Tbody>
                   {paginatedData.map((item, index) => (
                     <Table.Tr key={item.id}>
-                      <Table.Td>
+                      <Table.Td className="text-center">
                         {index + 1 + (activePage - 1) * itemsPerPage}
                       </Table.Td>
                       <Table.Td>{item.name}</Table.Td>
                       <Table.Td className="text-center">
-                        <FeedbackActions item={item} onEdit={handleEdit} />
+                        <Group justify="center">
+                          <Tooltip label="Edit">
+                            <ActionIcon
+                              color={currentThemeConfig.button.color}
+                              variant="subtle"
+                              onClick={() => handleEdit(item)}
+                            >
+                              <IconEdit size={16} />
+                            </ActionIcon>
+                          </Tooltip>
+                        </Group>
                       </Table.Td>
                     </Table.Tr>
                   ))}
@@ -376,20 +349,29 @@ export default function FeedbackTable() {
       <Modal
         opened={addOpened}
         onClose={closeAdd}
-        title="Add Feedback"
+        title={
+          <Group gap="xs">
+            <Text fw={600} size="lg">
+              Add New Feedback
+            </Text>
+          </Group>
+        }
         centered
+        size="md"
       >
         <Stack>
           <TextInput
-            label="Feedback"
+            mt="md"
+            label="Feedback Attribute"
             value={newName}
             onChange={e => setNewName(e.target.value)}
+            placeholder="Enter the feedback attribute"
           />
           <Group justify="flex-end">
-            <Button variant="default" onClick={closeAdd}>
+            <Button variant="default" onClick={closeAdd} radius="md">
               Cancel
             </Button>
-            <Button onClick={handleAdd} disabled={!newName.trim()}>
+            <Button onClick={handleAdd} disabled={!newName.trim()} radius="md">
               Add
             </Button>
           </Group>
@@ -400,31 +382,54 @@ export default function FeedbackTable() {
       <Modal
         opened={editOpened}
         onClose={closeEdit}
-        title="Edit Feedback"
+        title={
+          <Group gap="xs">
+            <IconEdit size={20} color={currentThemeConfig.button.color} />
+            <Text fw={600} size="lg">
+              Edit Feedback
+            </Text>
+          </Group>
+        }
         centered
+        size="md"
       >
         <Stack>
           <TextInput
-            label="Feedback"
+            mt="md"
+            label="Feedback Attribute"
             value={selected?.name || ''}
             onChange={e =>
-              setSelected({
-                ...selected!,
-                name: e.target.value
-              })
+              setSelected(prev =>
+                prev ? { ...prev, name: e.target.value } : prev
+              )
             }
+            required
+            size="md"
           />
 
           <Group justify="space-between">
-            <Button color="red" variant="outline" onClick={openDelete}>
+            <Button
+              color="red"
+              variant="outline"
+              onClick={openDelete}
+              radius="md"
+              leftSection={<IconTrash size={16} />}
+            >
               Delete
             </Button>
 
             <Group>
-              <Button variant="default" onClick={closeEdit}>
+              <Button variant="default" onClick={closeEdit} radius="md">
                 Cancel
               </Button>
-              <Button onClick={confirmEdit}>Save</Button>
+              <Button
+                onClick={confirmEdit}
+                leftSection={<IconDeviceFloppy size={16} />}
+                disabled={isLoading}
+                radius="md"
+              >
+                {isLoading ? 'Saving...' : 'Save'}
+              </Button>
             </Group>
           </Group>
         </Stack>
@@ -434,21 +439,38 @@ export default function FeedbackTable() {
       <Modal
         opened={deleteOpened}
         onClose={closeDelete}
-        title="Delete Feedback"
+        title={
+          <Group gap="xs">
+            <IconAlertTriangle size={24} color="red" />
+            <Text fw={600} size="lg" c="red">
+              Delete Feedback Attributes
+            </Text>
+          </Group>
+        }
         centered
+        size="md"
       >
-        <Stack>
-          <Text>Are you sure you want to delete this feedback?</Text>
-          <Group justify="flex-end">
-            <Button variant="default" onClick={closeDelete}>
+        <Stack gap="md">
+          <Text size="md" mt="sm">
+            Are you sure you want to delete this blood group? This action cannot
+            be undone.
+          </Text>
+          <Group justify="flex-end" mt="md">
+            <Button variant="default" onClick={closeDelete} radius="md">
               Cancel
             </Button>
-            <Button color="red" onClick={confirmDelete}>
-              Delete
+            <Button
+              color="red"
+              onClick={confirmDelete}
+              disabled={isLoading}
+              leftSection={<IconTrash size={16} />}
+              radius="md"
+            >
+              {isLoading ? 'Deleting...' : 'Delete'}
             </Button>
           </Group>
         </Stack>
       </Modal>
-    </Container>
+    </div>
   );
 }

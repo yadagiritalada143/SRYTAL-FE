@@ -740,7 +740,7 @@ export const getallfeedbackattributesbyadmin = async () => {
     const response = await apiClient('/admin/getallfeedbackattributesbyadmin', {
       headers: { auth_token: token }
     });
-    return response.data.data;
+    return response.data.data.feedbackAttributeResponse;
   } catch (error) {
     throw error;
   }
