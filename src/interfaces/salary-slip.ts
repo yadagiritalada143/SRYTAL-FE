@@ -1,6 +1,7 @@
 export interface PreviewSalarySlipRequest {
   employeeId: string;
   employeeName: string;
+  employeeEmail: string;
   designation: string;
   department: string;
   dateOfJoining: string;
@@ -18,7 +19,10 @@ export interface PreviewSalarySlipRequest {
   basicSalary: number;
   hraPercentage: number;
   specialAllowance: number;
+  conveyanceAllowance: number;
+  medicalAllowance: number;
   otherAllowances: number;
+  additionalAllowances?: AdditionalAllowance[];
   pfPercentage: number;
   professionalTax: number;
   incomeTax: number;
@@ -52,5 +56,11 @@ export interface PreviewSalarySlipResponse {
     pdfBase64: string;
     calculations: SalarySlipCalculations;
     transactionId: string;
+    additionalAllowances?: AdditionalAllowance[];
   };
+}
+export interface AdditionalAllowance {
+  name: string;
+  amount: number;
+  type: 'Add' | 'Deduct';
 }

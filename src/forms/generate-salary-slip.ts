@@ -38,9 +38,9 @@ export const generateSalarySlipSchema = z.object({
   additionalAllowances: z
     .array(
       z.object({
-        label: z.string().min(1),
+        name: z.string().min(1),
         amount: z.number().min(0),
-        type: z.enum(['add', 'deduct']).default('add')
+        type: z.enum(['Add', 'Deduct']).default('Add')
       })
     )
     .optional()

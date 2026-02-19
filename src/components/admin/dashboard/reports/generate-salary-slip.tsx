@@ -33,7 +33,10 @@ import {
   generateSalarySlipSchema,
   GenerateSalarySlipForm
 } from '../../../../forms/generate-salary-slip';
-import { PreviewSalarySlipResponse } from '../../../../interfaces/salary-slip';
+import {
+  AdditionalAllowance,
+  PreviewSalarySlipResponse
+} from '../../../../interfaces/salary-slip';
 import { useRecoilValue } from 'recoil';
 import { organizationThemeAtom } from '../../../../atoms/organization-atom';
 import { themeAtom } from '../../../../atoms/theme';
@@ -201,26 +204,8 @@ const GenerateSalarySlipReport = () => {
 
   const additionalAllowances = watch('additionalAllowances') || [];
 
-  const additionalTotal = additionalAllowances.reduce(
-    (sum: number, item: any) => {
-      if (item.type === 'deduct') {
-        return sum - (item.amount || 0);
-      }
-      return sum + (item.amount || 0);
-    },
-    0
-  );
-
-  const hraAmount = (basic * hra) / 100;
-
-  const grossSalary =
-    basic +
-    hraAmount +
-    special +
-    conveyance +
-    medical +
-    other +
-    additionalTotal;
+  const previewAllowances: AdditionalAllowance[] =
+    previewData?.data?.additionalAllowances ?? additionalAllowances;
 
   // Fetch Employees List
   useEffect(() => {
@@ -371,7 +356,7 @@ const GenerateSalarySlipReport = () => {
           conveyanceAllowance: values.conveyanceAllowance,
           medicalAllowance: values.medicalAllowance,
           otherAllowances: values.otherAllowances,
-          additionalAllowances: values.additionalAllowances,
+          additionalAllowances: values.additionalAllowances || [],
           pfPercentage: 0,
           professionalTax: 0,
           incomeTax: 0,
@@ -466,7 +451,7 @@ const GenerateSalarySlipReport = () => {
         conveyanceAllowance: data.conveyanceAllowance,
         medicalAllowance: data.medicalAllowance,
         otherAllowances: data.otherAllowances,
-        additionalAllowances: data.additionalAllowances,
+        additionalAllowances: data.additionalAllowances || [],
         pfPercentage: 0,
         professionalTax: 0,
         incomeTax: 0,
@@ -850,9 +835,7 @@ const GenerateSalarySlipReport = () => {
                     type="button"
                     variant="light"
                     radius="lg"
-                    onClick={() =>
-                      append({ label: '', amount: 0, type: 'add' })
-                    }
+                    onClick={() => append({ name: '', amount: 0, type: 'Add' })}
                   >
                     + Add More
                   </Button>
@@ -865,7 +848,7 @@ const GenerateSalarySlipReport = () => {
                         <Grid.Col span={4}>
                           <TextInput
                             placeholder="Allowance Name"
-                            {...register(`additionalAllowances.${index}.label`)}
+                            {...register(`additionalAllowances.${index}.name`)}
                           />
                         </Grid.Col>
                         <Grid.Col span={3}>
@@ -888,15 +871,15 @@ const GenerateSalarySlipReport = () => {
                         <Grid.Col span={3}>
                           <Select
                             data={[
-                              { value: 'add', label: 'Add' },
-                              { value: 'deduct', label: 'Deduct' }
+                              { value: 'Add', label: 'Add' },
+                              { value: 'Deduct', label: 'Deduct' }
                             ]}
                             {...register(`additionalAllowances.${index}.type`)}
-                            defaultValue="add"
+                            defaultValue="Add"
                             onChange={value =>
                               setValue(
                                 `additionalAllowances.${index}.type`,
-                                value as 'add' | 'deduct'
+                                value as 'Add' | 'Deduct'
                               )
                             }
                           />
@@ -1211,6 +1194,42 @@ const GenerateSalarySlipReport = () => {
                         </Group>
                       </Stack>
 
+                      {/* Extra allowances from local state are likely already included in 'otherAllowances' in API response */}
+                      {previewAllowances.length > 0 && (
+                        <>
+                          <Divider
+                            my="xs"
+                            label="Additional Earnings"
+                            labelPosition="center"
+                          />
+
+                          {previewAllowances.map((item, i) => (
+                            <Group
+                              key={i}
+                              justify="space-between"
+                              style={{ minHeight: 25 }}
+                            >
+                              <Text size="sm">{item.name}</Text>
+
+                              <Text
+                                size="sm"
+                                fw={600}
+                                c={
+                                  item.type === 'Deduct'
+                                    ? currentThemeConfig.lightDangerColor
+                                    : currentThemeConfig.color
+                                }
+                              >
+                                {item.type === 'Deduct' ? '− ' : '+ '}₹{' '}
+                                {item.amount.toFixed(2)}
+                              </Text>
+                            </Group>
+                          ))}
+                        </>
+                      )}
+
+                      <Divider my="xs" />
+
                       <Group justify="space-between" pt="sm">
                         <Text size="sm" fw={600}>
                           Gross Salary:
@@ -1223,10 +1242,13 @@ const GenerateSalarySlipReport = () => {
                         </Text>
                       </Group>
 
-                      {(previewData?.data?.calculations?.lossOfPayAmount ||
-                        previewData?.data?.calculations?.professionalTax ||
-                        previewData?.data?.calculations?.incomeTax ||
-                        previewData?.data?.calculations?.otherDeductions) && (
+                      {((previewData?.data?.calculations?.lossOfPayAmount ??
+                        0) > 0 ||
+                        (previewData?.data?.calculations?.professionalTax ??
+                          0) > 0 ||
+                        (previewData?.data?.calculations?.incomeTax ?? 0) > 0 ||
+                        (previewData?.data?.calculations?.otherDeductions ??
+                          0) > 0) && (
                         <>
                           <Divider
                             my="xs"
@@ -1309,23 +1331,6 @@ const GenerateSalarySlipReport = () => {
                         </>
                       )}
 
-                      {/* Extra allowances from local state are likely already included in 'otherAllowances' in API response */}
-                      {!previewData &&
-                        additionalAllowances.map((item, i) => (
-                          <Group key={i} justify="space-between">
-                            <Text>
-                              {item.label} ({item.type === 'deduct' ? '-' : '+'}
-                              )
-                            </Text>
-                            <Text
-                              fw={600}
-                              c={item.type === 'deduct' ? 'red' : 'inherit'}
-                            >
-                              {item.type === 'deduct' ? '− ' : ''}₹{' '}
-                              {item.amount}
-                            </Text>
-                          </Group>
-                        ))}
                       <Card
                         p="md"
                         mt="md"
