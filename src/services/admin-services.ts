@@ -4,8 +4,6 @@ import { EmployeeUpdateForm } from '../forms/update-employee';
 import { AddPackageForm } from '../forms/add-package';
 import { PackageUpdateForm } from '../forms/update-package';
 import moment from 'moment';
-import { updatefeedbackForm } from '../forms/update-feedback';
-import { AddfeedbackForm } from '../forms/add-feedback';
 
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -732,23 +730,24 @@ export const generateSalarySlip = async (data: any) => {
     throw error;
   }
 };
-// export const getAllFeedbackByAdmin = async () => {
-//   const token = localStorage.getItem('token');
 
-//   try {
-//     const response = await apiClient.get('/admin/getAllFeedbackByAdmin', {
-//       headers: { auth_token: token }
-//     });
-
-//     return response.data;
-//   } catch (error) {
-//     throw error;
-//   }
-// };
-
-export const addFeedbackByAdmin = async (data: AddfeedbackForm) => {
+export const getallfeedbackattributesbyadmin = async () => {
   const token = localStorage.getItem('token');
+  try {
+    if (!token) {
+      throw 'Not authorized to access';
+    }
+    const response = await apiClient('/admin/getallfeedbackattributesbyadmin', {
+      headers: { auth_token: token }
+    });
+    return response.data.data;
+  } catch (error) {
+    throw error;
+  }
+};
 
+export const addFeedbackAttributeByAdmin = async (data: { name: string }) => {
+  const token = localStorage.getItem('token');
   try {
     const response = await apiClient.post(
       '/admin/addfeedbackattributebyadmin',
@@ -764,40 +763,38 @@ export const addFeedbackByAdmin = async (data: AddfeedbackForm) => {
   }
 };
 
-// export const updateFeedbackByAdmin = async (
-//   id: string,
-//   data: updatefeedbackForm
-// ) => {
-//   const token = localStorage.getItem('token');
+export const updateFeedbackAttributeByAdmin = async (
+  id: string,
+  name: string
+) => {
+  const token = localStorage.getItem('token');
+  try {
+    const response = await apiClient.put(
+      `/admin/updatefeedbackattributebyadmin`,
+      { id, name },
+      {
+        headers: { auth_token: token }
+      }
+    );
 
-//   try {
-//     const response = await apiClient.put(
-//       `/admin/updateFeedbackByAdmin/${id}`,
-//       data,
-//       {
-//         headers: { auth_token: token }
-//       }
-//     );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
 
-//     return response.data;
-//   } catch (error) {
-//     throw error;
-//   }
-// };
+export const deleteFeedbackAttributeByAdmin = async (id: string) => {
+  const token = localStorage.getItem('token');
+  try {
+    const response = await apiClient.delete(
+      `/admin/deletefeedbackattributebyadmin/${id}`,
+      {
+        headers: { auth_token: token }
+      }
+    );
 
-// export const deleteFeedbackByAdmin = async (id: string) => {
-//   const token = localStorage.getItem('token');
-
-//   try {
-//     const response = await apiClient.delete(
-//       `/admin/deleteFeedbackByAdmin/${id}`,
-//       {
-//         headers: { auth_token: token }
-//       }
-//     );
-
-//     return response.data;
-//   } catch (error) {
-//     throw error;
-//   }
-// };
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};

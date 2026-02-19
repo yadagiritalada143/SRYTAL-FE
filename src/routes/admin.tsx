@@ -39,8 +39,8 @@ import { EmployeeTimesheetAdminView } from '../components/admin/dashboard/employ
 import { ThemeToggleButton } from '../components/UI/Theme-toggle-button/button';
 import { themeAtom } from '../atoms/theme';
 import { getThemeConfig } from '../utils/common/theme-utils';
-import SettingsPage from '../components/admin/dashboard/settings/settings';
-
+import SettingsPage from '../components/admin/dashboard/settings/all-feedback';
+import FeedbackTable from '../components/admin/dashboard/settings/all-feedback';
 const AdminRoutes = () => {
   const { organization } = useParams<{ organization: string }>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -495,6 +495,7 @@ const AdminRoutes = () => {
               element={<EmploymentTypes />}
             />
             <Route path="Settings" element={<SettingsPage />} />
+            <Route path="Settings" element={<FeedbackTable />} />
           </Route>
         </Route>
       </Routes>
