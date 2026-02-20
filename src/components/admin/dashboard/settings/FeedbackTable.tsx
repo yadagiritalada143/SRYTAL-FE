@@ -217,7 +217,7 @@ export default function FeedbackTable() {
             gap="md"
           >
             <Text size={isMobile ? 'lg' : 'xl'} fw={700}>
-              Manage Feedback ({filtered.length})
+              Manage Feedback Attributes ({filtered.length})
             </Text>
 
             <Button
@@ -235,7 +235,7 @@ export default function FeedbackTable() {
         <Card shadow="sm" p="md" radius="md" withBorder>
           <Stack gap="md">
             <TextInput
-              placeholder="Search feedback..."
+              placeholder="Search feedback attribute..."
               leftSection={<IconSearch size={16} />}
               value={searchQuery}
               onChange={handleSearch}
@@ -292,7 +292,7 @@ export default function FeedbackTable() {
                     </Table.Th>
                     <Table.Th className="p-3 ">
                       <Text size="sm" fw={500}>
-                        Feedback
+                        Feedback Attributes
                       </Text>
                     </Table.Th>
                     <Table.Th
@@ -352,7 +352,7 @@ export default function FeedbackTable() {
         title={
           <Group gap="xs">
             <Text fw={600} size="lg">
-              Add New Feedback
+              Add New Feedback Attribute
             </Text>
           </Group>
         }
@@ -366,6 +366,7 @@ export default function FeedbackTable() {
             value={newName}
             onChange={e => setNewName(e.target.value)}
             placeholder="Enter the feedback attribute"
+            required
           />
           <Group justify="flex-end">
             <Button variant="default" onClick={closeAdd} radius="md">
@@ -386,7 +387,7 @@ export default function FeedbackTable() {
           <Group gap="xs">
             <IconEdit size={20} color={currentThemeConfig.button.color} />
             <Text fw={600} size="lg">
-              Edit Feedback
+              Edit Feedback Attribute
             </Text>
           </Group>
         }
@@ -397,6 +398,7 @@ export default function FeedbackTable() {
           <TextInput
             mt="md"
             label="Feedback Attribute"
+            placeholder="Enter the feedback attribute"
             value={selected?.name || ''}
             onChange={e =>
               setSelected(prev =>
@@ -408,15 +410,28 @@ export default function FeedbackTable() {
           />
 
           <Group justify="space-between">
-            <Button
-              color="red"
-              variant="outline"
-              onClick={openDelete}
-              radius="md"
-              leftSection={<IconTrash size={16} />}
-            >
-              Delete
-            </Button>
+            {isMobile ? (
+              <Tooltip label="Delete">
+                <Button
+                  onClick={openDelete}
+                  p="xs"
+                  radius="md"
+                  variant="outline"
+                >
+                  <IconTrash size={16} />
+                </Button>
+              </Tooltip>
+            ) : (
+              <Button
+                color="red"
+                variant="outline"
+                onClick={openDelete}
+                radius="md"
+                leftSection={<IconTrash size={16} />}
+              >
+                Delete
+              </Button>
+            )}
 
             <Group>
               <Button variant="default" onClick={closeEdit} radius="md">
@@ -443,7 +458,7 @@ export default function FeedbackTable() {
           <Group gap="xs">
             <IconAlertTriangle size={24} color="red" />
             <Text fw={600} size="lg" c="red">
-              Delete Feedback Attributes
+              Delete Feedback Attribute
             </Text>
           </Group>
         }
@@ -452,8 +467,8 @@ export default function FeedbackTable() {
       >
         <Stack gap="md">
           <Text size="md" mt="sm">
-            Are you sure you want to delete this blood group? This action cannot
-            be undone.
+            Are you sure you want to delete this feedback attribute? This action
+            cannot be undone.
           </Text>
           <Group justify="flex-end" mt="md">
             <Button variant="default" onClick={closeDelete} radius="md">
