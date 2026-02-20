@@ -45,9 +45,9 @@ const EmployeeLogin = () => {
     const userRole = localStorage.getItem('userRole');
 
     if (token) {
-      if (userRole === 'recruiter') {
+      if (userRole === 'Recruiter') {
         navigate(`/${organization}/employee/dashboard/pool-companies`);
-      } else if (userRole === 'employee') {
+      } else if (userRole === 'Employee') {
         navigate(`/${organization}/employee/dashboard/profile`);
       }
     }
@@ -63,7 +63,7 @@ const EmployeeLogin = () => {
         passwordResetRequired: data.passwordResetRequired
       });
 
-      if (data.userRole === 'recruiter') {
+      if (data.userRole === 'Recruiter') {
         navigate(
           `${organizationEmployeeUrls(
             organizationConfig.organization_name
