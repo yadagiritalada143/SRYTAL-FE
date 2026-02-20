@@ -154,12 +154,7 @@ const UpdatePoolCandidateForm = () => {
       <Stack gap="md">
         {/* Header Card */}
         <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder>
-          <Flex
-            direction={isMobile ? 'column' : 'row'}
-            justify="space-between"
-            align="center"
-            gap="md"
-          >
+          <Flex direction="row" justify="space-between" align="center" gap="md">
             <Text
               size={isMobile ? 'lg' : 'xl'}
               fw={700}
