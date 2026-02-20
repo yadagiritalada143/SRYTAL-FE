@@ -88,6 +88,7 @@ const formatDate = (isoDate: string): string => {
 };
 
 type Employee = {
+  _id: string;
   employeeId: string;
   firstName: string;
   lastName?: string;
@@ -130,6 +131,7 @@ const GenerateSalarySlipReport = () => {
     : currentThemeConfig.lightDangerColor;
 
   const [empDetails, setEmpDetails] = useState({
+    _id: '',
     empId: '',
     empName: '',
     designation: '',
@@ -230,6 +232,7 @@ const GenerateSalarySlipReport = () => {
     setValue('employeeId', selectedEmpId || '');
     if (!selectedEmpId) {
       setEmpDetails({
+        _id: '',
         empId: '',
         empName: '',
         designation: '',
@@ -253,6 +256,7 @@ const GenerateSalarySlipReport = () => {
     if (!selectedEmployee) return;
 
     setEmpDetails({
+      _id: selectedEmployee._id,
       empId: selectedEmployee.employeeId,
       empName:
         selectedEmployee.firstName + ' ' + (selectedEmployee.lastName || ''),
@@ -425,6 +429,7 @@ const GenerateSalarySlipReport = () => {
       const payPeriod = `${monthNames[d.getMonth()]} ${d.getFullYear()}`;
 
       const payload = {
+        _id: empDetails._id,
         employeeId: data.employeeId,
         employeeName: empDetails.empName,
         employeeEmail: empDetails.email,
