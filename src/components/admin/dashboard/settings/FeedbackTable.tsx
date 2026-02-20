@@ -235,7 +235,7 @@ export default function FeedbackTable() {
         <Card shadow="sm" p="md" radius="md" withBorder>
           <Stack gap="md">
             <TextInput
-              placeholder="Search Feedback Attribute..."
+              placeholder="Search feedback attribute..."
               leftSection={<IconSearch size={16} />}
               value={searchQuery}
               onChange={handleSearch}
@@ -410,15 +410,28 @@ export default function FeedbackTable() {
           />
 
           <Group justify="space-between">
-            <Button
-              color="red"
-              variant="outline"
-              onClick={openDelete}
-              radius="md"
-              leftSection={<IconTrash size={16} />}
-            >
-              Delete
-            </Button>
+            {isMobile ? (
+              <Tooltip label="Delete">
+                <Button
+                  onClick={openDelete}
+                  p="xs"
+                  radius="md"
+                  variant="outline"
+                >
+                  <IconTrash size={16} />
+                </Button>
+              </Tooltip>
+            ) : (
+              <Button
+                color="red"
+                variant="outline"
+                onClick={openDelete}
+                radius="md"
+                leftSection={<IconTrash size={16} />}
+              >
+                Delete
+              </Button>
+            )}
 
             <Group>
               <Button variant="default" onClick={closeEdit} radius="md">
