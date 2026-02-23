@@ -432,12 +432,15 @@ const BloodGroupTable = () => {
                   }}
                 >
                   <Table.Tr>
-                    <Table.Th className="p-3 border" style={{ width: '100px' }}>
+                    <Table.Th
+                      className="p-3 border text-center"
+                      style={{ width: '100px' }}
+                    >
                       <Text size="sm" fw={500}>
                         S.No
                       </Text>
                     </Table.Th>
-                    <Table.Th className="p-3 border text-center">
+                    <Table.Th className="p-3 border">
                       <Text size="sm" fw={500}>
                         Blood Group
                       </Text>
