@@ -673,7 +673,6 @@ const GenerateSalarySlipReport = () => {
               <Group justify="flex-end" mt="xl">
                 <Button
                   onClick={nextStep}
-                  //radius="lg"
                   variant="filled"
                   fullWidth={isMobile}
                   size={isMobile ? 'md' : 'sm'}
@@ -1381,7 +1380,6 @@ const GenerateSalarySlipReport = () => {
                   <Button
                     variant="subtle"
                     color="gray"
-                    //variant="filled"
                     fullWidth={isMobile}
                     size={isMobile ? 'md' : 'sm'}
                     onClick={prevStep}

@@ -446,7 +446,7 @@ const EmploymentTypes = () => {
                         S.No
                       </Text>
                     </Table.Th>
-                    <Table.Th className="p-3 border text-center">
+                    <Table.Th className="p-3 border">
                       <Text size="sm" fw={500}>
                         Employment Type
                       </Text>
@@ -470,7 +470,7 @@ const EmploymentTypes = () => {
                             {index + 1 + (activePage - 1) * itemsPerPage}
                           </Text>
                         </Table.Td>
-                        <Table.Td className="p-3 text-center">
+                        <Table.Td className="p-3">
                           <Text size="sm" fw={500}>
                             {type.employmentType}
                           </Text>

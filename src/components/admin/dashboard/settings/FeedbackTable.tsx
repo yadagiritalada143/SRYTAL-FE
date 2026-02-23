@@ -290,7 +290,7 @@ export default function FeedbackTable() {
                         S.No
                       </Text>
                     </Table.Th>
-                    <Table.Th className="p-3 text-center">
+                    <Table.Th className="p-3">
                       <Text size="sm" fw={500}>
                         Feedback Attributes
                       </Text>
@@ -312,7 +312,7 @@ export default function FeedbackTable() {
                       <Table.Td className="text-center">
                         {index + 1 + (activePage - 1) * itemsPerPage}
                       </Table.Td>
-                      <Table.Td className="text-center">{item.name}</Table.Td>
+                      <Table.Td>{item.name}</Table.Td>
                       <Table.Td className="text-center">
                         <Group justify="center">
                           <Tooltip label="Edit">
