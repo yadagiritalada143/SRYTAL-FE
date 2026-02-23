@@ -671,7 +671,13 @@ const GenerateSalarySlipReport = () => {
               </Grid>
 
               <Group justify="flex-end" mt="xl">
-                <Button onClick={nextStep} radius="lg">
+                <Button
+                  onClick={nextStep}
+                  //radius="lg"
+                  variant="filled"
+                  fullWidth={isMobile}
+                  size={isMobile ? 'md' : 'sm'}
+                >
                   Next
                 </Button>
               </Group>
@@ -854,7 +860,8 @@ const GenerateSalarySlipReport = () => {
                   <Button
                     type="button"
                     variant="light"
-                    radius="lg"
+                    fullWidth={isMobile}
+                    size={isMobile ? 'md' : 'sm'}
                     onClick={() =>
                       append({ label: '', amount: 0, type: 'add' })
                     }
@@ -924,14 +931,21 @@ const GenerateSalarySlipReport = () => {
               </Card>
 
               <Group justify="space-between" mt="xl">
-                <Button variant="default" radius="lg" onClick={prevStep}>
+                <Button
+                  variant="default"
+                  fullWidth={isMobile}
+                  size={isMobile ? 'md' : 'sm'}
+                  onClick={prevStep}
+                >
                   Back
                 </Button>
 
                 <Button
                   loading={isPreviewLoading}
                   onClick={nextStep}
-                  radius="lg"
+                  variant="filled"
+                  fullWidth={isMobile}
+                  size={isMobile ? 'md' : 'sm'}
                 >
                   Preview
                 </Button>
@@ -1367,7 +1381,9 @@ const GenerateSalarySlipReport = () => {
                   <Button
                     variant="subtle"
                     color="gray"
-                    radius="lg"
+                    //variant="filled"
+                    fullWidth={isMobile}
+                    size={isMobile ? 'md' : 'sm'}
                     onClick={prevStep}
                     disabled={activeStep === 3}
                   >
@@ -1376,7 +1392,9 @@ const GenerateSalarySlipReport = () => {
 
                   <Button
                     type="submit"
-                    radius="lg"
+                    variant="filled"
+                    fullWidth={isMobile}
+                    size={isMobile ? 'md' : 'sm'}
                     loading={isGenerating}
                     leftSection={
                       activeStep === 3 ? <IconCheck size={16} /> : null

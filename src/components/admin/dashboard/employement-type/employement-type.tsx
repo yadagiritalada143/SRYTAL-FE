@@ -326,7 +326,12 @@ const EmploymentTypes = () => {
   }, [itemsPerPage]);
 
   return (
-    <Container size="xl" py="md" my="xl" px={isSmallMobile ? 'xs' : 'md'}>
+    <Container
+      size={isMobile ? 'xl' : 'md'}
+      py="md"
+      my="xl"
+      px={isSmallMobile ? 'xs' : 'md'}
+    >
       <Stack gap="md">
         {/* Header */}
         <HeadingComponent
@@ -441,7 +446,7 @@ const EmploymentTypes = () => {
                         S.No
                       </Text>
                     </Table.Th>
-                    <Table.Th className="p-3 border">
+                    <Table.Th className="p-3 border text-center">
                       <Text size="sm" fw={500}>
                         Employment Type
                       </Text>
@@ -465,7 +470,7 @@ const EmploymentTypes = () => {
                             {index + 1 + (activePage - 1) * itemsPerPage}
                           </Text>
                         </Table.Td>
-                        <Table.Td className="p-3">
+                        <Table.Td className="p-3 text-center">
                           <Text size="sm" fw={500}>
                             {type.employmentType}
                           </Text>
@@ -594,15 +599,28 @@ const EmploymentTypes = () => {
             required
             size="md"
           />
-          <Group justify="space-between" mt="md">
-            <Button
-              color="red"
-              variant="outline"
-              leftSection={<IconTrash size={16} />}
-              onClick={() => handleDelete(selectedType.id)}
-            >
-              Delete
-            </Button>
+          <Group justify="space-between">
+            {isMobile ? (
+              <Tooltip label="Delete Type">
+                <Button
+                  onClick={openDeleteModal}
+                  p="xs"
+                  radius="md"
+                  variant="outline"
+                >
+                  <IconTrash size={16} />
+                </Button>
+              </Tooltip>
+            ) : (
+              <Button
+                color="red"
+                variant="outline"
+                leftSection={<IconTrash size={16} />}
+                onClick={() => handleDelete(selectedType.id)}
+              >
+                Delete
+              </Button>
+            )}
             <Group>
               <Button variant="default" onClick={closeEditModal}>
                 Cancel
@@ -612,7 +630,7 @@ const EmploymentTypes = () => {
                 disabled={isLoading}
                 leftSection={<IconDeviceFloppy size={16} />}
               >
-                {isLoading ? 'Saving...' : 'Save Changes'}
+                {isLoading ? 'Saving...' : 'Save'}
               </Button>
             </Group>
           </Group>

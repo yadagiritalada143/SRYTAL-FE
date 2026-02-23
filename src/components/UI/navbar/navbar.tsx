@@ -257,6 +257,11 @@ function NavbarMenu({ navLinks, isDrawerOpen, setIsDrawerOpen }: NavbarProps) {
             src={organizationConfig.organization_theme.logo}
             alt="Organization Logo"
             className={classes.logoExpanded}
+            style={{
+              width: 130,
+              height: 55,
+              borderRadius: 16
+            }}
           />
           <div onClick={toggleDrawer} className={classes.fabX}>
             <IconX color={currentThemeConfig.color} />

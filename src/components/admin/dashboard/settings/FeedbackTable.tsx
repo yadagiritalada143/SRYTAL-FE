@@ -223,8 +223,8 @@ export default function FeedbackTable() {
             <Button
               leftSection={<IconPlus size={16} />}
               onClick={openAdd}
-              fullWidth={isMobile}
-              radius="md"
+              variant="filled"
+              size={isMobile ? 'md' : 'sm'}
             >
               Add Feedback Attribute
             </Button>
@@ -290,7 +290,7 @@ export default function FeedbackTable() {
                         S.No
                       </Text>
                     </Table.Th>
-                    <Table.Th className="p-3 ">
+                    <Table.Th className="p-3 text-center">
                       <Text size="sm" fw={500}>
                         Feedback Attributes
                       </Text>
@@ -312,7 +312,7 @@ export default function FeedbackTable() {
                       <Table.Td className="text-center">
                         {index + 1 + (activePage - 1) * itemsPerPage}
                       </Table.Td>
-                      <Table.Td>{item.name}</Table.Td>
+                      <Table.Td className="text-center">{item.name}</Table.Td>
                       <Table.Td className="text-center">
                         <Group justify="center">
                           <Tooltip label="Edit">
@@ -369,10 +369,18 @@ export default function FeedbackTable() {
             required
           />
           <Group justify="flex-end">
-            <Button variant="default" onClick={closeAdd} radius="md">
+            <Button
+              variant="default"
+              onClick={closeAdd}
+              size={isMobile ? 'md' : 'sm'}
+            >
               Cancel
             </Button>
-            <Button onClick={handleAdd} disabled={!newName.trim()} radius="md">
+            <Button
+              onClick={handleAdd}
+              disabled={!newName.trim()}
+              size={isMobile ? 'md' : 'sm'}
+            >
               Add
             </Button>
           </Group>
@@ -415,7 +423,7 @@ export default function FeedbackTable() {
                 <Button
                   onClick={openDelete}
                   p="xs"
-                  radius="md"
+                  size={isMobile ? 'md' : 'sm'}
                   variant="outline"
                 >
                   <IconTrash size={16} />
@@ -426,7 +434,7 @@ export default function FeedbackTable() {
                 color="red"
                 variant="outline"
                 onClick={openDelete}
-                radius="md"
+                size={isMobile ? 'md' : 'sm'}
                 leftSection={<IconTrash size={16} />}
               >
                 Delete
@@ -434,14 +442,19 @@ export default function FeedbackTable() {
             )}
 
             <Group>
-              <Button variant="default" onClick={closeEdit} radius="md">
+              <Button
+                variant="default"
+                onClick={closeEdit}
+                size={isMobile ? 'md' : 'sm'}
+              >
                 Cancel
               </Button>
               <Button
                 onClick={confirmEdit}
                 leftSection={<IconDeviceFloppy size={16} />}
                 disabled={isLoading}
-                radius="md"
+                variant="filled"
+                size={isMobile ? 'md' : 'sm'}
               >
                 {isLoading ? 'Saving...' : 'Save'}
               </Button>
@@ -471,7 +484,11 @@ export default function FeedbackTable() {
             cannot be undone.
           </Text>
           <Group justify="flex-end" mt="md">
-            <Button variant="default" onClick={closeDelete} radius="md">
+            <Button
+              variant="default"
+              onClick={closeDelete}
+              size={isMobile ? 'md' : 'sm'}
+            >
               Cancel
             </Button>
             <Button
@@ -479,7 +496,8 @@ export default function FeedbackTable() {
               onClick={confirmDelete}
               disabled={isLoading}
               leftSection={<IconTrash size={16} />}
-              radius="md"
+              variant="filled"
+              size={isMobile ? 'md' : 'sm'}
             >
               {isLoading ? 'Deleting...' : 'Delete'}
             </Button>
