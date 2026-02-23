@@ -290,7 +290,7 @@ export default function FeedbackTable() {
                         S.No
                       </Text>
                     </Table.Th>
-                    <Table.Th className="p-3 ">
+                    <Table.Th className="p-3">
                       <Text size="sm" fw={500}>
                         Feedback Attributes
                       </Text>

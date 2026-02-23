@@ -139,6 +139,7 @@ const HeadingComponent: React.FC<{
         variant="filled"
         fullWidth={isMobile}
         size={isMobile ? 'md' : 'sm'}
+        radius="md"
       >
         Add Blood Group
       </Button>
@@ -321,7 +322,12 @@ const BloodGroupTable = () => {
   }, [itemsPerPage]);
 
   return (
-    <Container size="xl" py="md" my="xl" px={isSmallMobile ? 'xs' : 'md'}>
+    <Container
+      size={isMobile ? 'xl' : 'md'}
+      py="md"
+      my="xl"
+      px={isSmallMobile ? 'xs' : 'md'}
+    >
       <Stack gap="md">
         {/* Header */}
         <HeadingComponent
@@ -554,13 +560,14 @@ const BloodGroupTable = () => {
             description="Valid formats: A+, B-, AB+, O-, etc."
           />
           <Group justify="flex-end" mt="md">
-            <Button variant="default" onClick={closeAddModal}>
+            <Button variant="default" onClick={closeAddModal} radius="md">
               Cancel
             </Button>
             <Button
               onClick={handleAdd}
               disabled={isLoading || !newGroupName.trim()}
               leftSection={<IconDeviceFloppy size={16} />}
+              radius="md"
             >
               {isLoading ? 'Adding...' : 'Add Blood Group'}
             </Button>
@@ -604,25 +611,40 @@ const BloodGroupTable = () => {
             size="md"
             description="Valid formats: A+, B-, AB+, O-, etc."
           />
-          <Group justify="space-between" mt="md">
-            <Button
-              color="red"
-              variant="outline"
-              leftSection={<IconTrash size={16} />}
-              onClick={() => handleDelete(selectedGroup.id)}
-            >
-              Delete
-            </Button>
+          <Group justify="space-between">
+            {isMobile ? (
+              <Tooltip label="Delete Blood Group">
+                <Button
+                  onClick={openDeleteModal}
+                  p="xs"
+                  radius="md"
+                  variant="outline"
+                >
+                  <IconTrash size={16} />
+                </Button>
+              </Tooltip>
+            ) : (
+              <Button
+                color="red"
+                variant="outline"
+                leftSection={<IconTrash size={16} />}
+                onClick={() => handleDelete(selectedGroup.id)}
+                radius="md"
+              >
+                Delete
+              </Button>
+            )}
             <Group>
-              <Button variant="default" onClick={closeEditModal}>
+              <Button variant="default" onClick={closeEditModal} radius="md">
                 Cancel
               </Button>
               <Button
                 onClick={confirmEdit}
                 disabled={isLoading}
                 leftSection={<IconDeviceFloppy size={16} />}
+                radius="md"
               >
-                {isLoading ? 'Saving...' : 'Save Changes'}
+                {isLoading ? 'Saving...' : 'Save'}
               </Button>
             </Group>
           </Group>
@@ -650,7 +672,7 @@ const BloodGroupTable = () => {
             be undone.
           </Text>
           <Group justify="flex-end" mt="md">
-            <Button variant="default" onClick={closeDeleteModal}>
+            <Button variant="default" onClick={closeDeleteModal} radius="md">
               Cancel
             </Button>
             <Button
@@ -658,6 +680,7 @@ const BloodGroupTable = () => {
               onClick={confirmDelete}
               disabled={isLoading}
               leftSection={<IconTrash size={16} />}
+              radius="md"
             >
               {isLoading ? 'Deleting...' : 'Delete'}
             </Button>

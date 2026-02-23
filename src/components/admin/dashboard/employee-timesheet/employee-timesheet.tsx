@@ -864,6 +864,7 @@ export const EmployeeTimesheetAdminView = () => {
                       leftSection={<IconX size={14} />}
                       size="xs"
                       fullWidth={isMobile}
+                      radius="md"
                     >
                       {isSmallMobile ? 'Clear' : 'Clear Filters'}
                     </Button>

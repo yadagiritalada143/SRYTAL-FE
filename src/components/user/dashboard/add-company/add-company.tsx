@@ -95,6 +95,7 @@ const AddCompany = () => {
               onClick={handleGoBack}
               variant="light"
               size={isMobile ? 'sm' : 'md'}
+              radius="md"
             >
               Go Back
             </Button>
@@ -251,6 +252,7 @@ const AddCompany = () => {
                   disabled={isSubmitting}
                   size={isMobile ? 'sm' : 'md'}
                   fullWidth={isMobile}
+                  radius="md"
                 >
                   Cancel
                 </Button>
@@ -259,6 +261,7 @@ const AddCompany = () => {
                   disabled={isSubmitting}
                   size={isMobile ? 'sm' : 'md'}
                   fullWidth={isMobile}
+                  radius="md"
                   leftSection={
                     isSubmitting ? (
                       <Loader size="xs" color="white" />

@@ -278,6 +278,7 @@ const UpdatePoolCandidateForm = () => {
                     onClick={handleSkillAdd}
                     leftSection={<IconPlus size={16} />}
                     size={isMobile ? 'sm' : 'md'}
+                    radius="md"
                   >
                     Add
                   </Button>
@@ -318,6 +319,7 @@ const UpdatePoolCandidateForm = () => {
                 onClick={open}
                 fullWidth={isMobile}
                 size={isMobile ? 'md' : 'sm'}
+                radius="md"
               >
                 Delete Candidate
               </Button>
@@ -329,6 +331,7 @@ const UpdatePoolCandidateForm = () => {
                 leftSection={<IconDeviceFloppy size={16} />}
                 fullWidth={isMobile}
                 size={isMobile ? 'md' : 'sm'}
+                radius="md"
               >
                 {isSubmitting ? 'Updating...' : 'Update Candidate'}
               </Button>
@@ -377,10 +380,11 @@ const UpdatePoolCandidateForm = () => {
                 onClick={() => handleDeleteCandidate(candidateId!, agreeTerms)}
                 disabled={!confirmDelete}
                 leftSection={<IconTrash size={16} />}
+                radius="md"
               >
                 Delete
               </Button>
-              <Button variant="default" onClick={close}>
+              <Button variant="default" onClick={close} radius="md">
                 Cancel
               </Button>
             </Group>

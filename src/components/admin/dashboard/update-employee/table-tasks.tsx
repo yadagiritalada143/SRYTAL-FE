@@ -439,6 +439,7 @@ const PackagesTaskTable = ({
             <Button
               variant="light"
               size="sm"
+              radius="md"
               onClick={() => {
                 const allPackageIds = new Set(
                   packagesList.map(pkg => pkg.packageId)
@@ -452,6 +453,7 @@ const PackagesTaskTable = ({
               variant="light"
               size="sm"
               onClick={() => setExpandedPackages(new Set())}
+              radius="md"
             >
               Collapse All
             </Button>
@@ -747,6 +749,7 @@ const PackagesTaskTable = ({
               variant="subtle"
               leftSection={<IconX size={16} />}
               onClick={closeEditModal}
+              radius="md"
             >
               Cancel
             </Button>
@@ -759,6 +762,7 @@ const PackagesTaskTable = ({
                 backgroundColor: currentThemeConfig.button.color,
                 color: currentThemeConfig.button.textColor
               }}
+              radius="md"
             >
               Save Changes
             </Button>
@@ -828,6 +832,7 @@ const PackagesTaskTable = ({
               variant="subtle"
               leftSection={<IconX size={16} />}
               onClick={closeDeleteModal}
+              radius="md"
             >
               Cancel
             </Button>
@@ -836,6 +841,7 @@ const PackagesTaskTable = ({
               color="red"
               leftSection={<IconTrash size={16} />}
               onClick={handleDeleteConfirm}
+              radius="md"
             >
               Delete {itemToDelete?.type}
             </Button>

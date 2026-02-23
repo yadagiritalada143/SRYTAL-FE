@@ -671,7 +671,7 @@ const GenerateSalarySlipReport = () => {
               </Grid>
 
               <Group justify="flex-end" mt="xl">
-                <Button onClick={nextStep} radius="lg">
+                <Button onClick={nextStep} radius="md">
                   Next
                 </Button>
               </Group>
@@ -854,7 +854,7 @@ const GenerateSalarySlipReport = () => {
                   <Button
                     type="button"
                     variant="light"
-                    radius="lg"
+                    radius="md"
                     onClick={() =>
                       append({ label: '', amount: 0, type: 'add' })
                     }
@@ -924,14 +924,14 @@ const GenerateSalarySlipReport = () => {
               </Card>
 
               <Group justify="space-between" mt="xl">
-                <Button variant="default" radius="lg" onClick={prevStep}>
+                <Button variant="default" radius="md" onClick={prevStep}>
                   Back
                 </Button>
 
                 <Button
                   loading={isPreviewLoading}
                   onClick={nextStep}
-                  radius="lg"
+                  radius="md"
                 >
                   Preview
                 </Button>
@@ -1367,7 +1367,7 @@ const GenerateSalarySlipReport = () => {
                   <Button
                     variant="subtle"
                     color="gray"
-                    radius="lg"
+                    radius="md"
                     onClick={prevStep}
                     disabled={activeStep === 3}
                   >
@@ -1376,7 +1376,7 @@ const GenerateSalarySlipReport = () => {
 
                   <Button
                     type="submit"
-                    radius="lg"
+                    radius="md"
                     loading={isGenerating}
                     leftSection={
                       activeStep === 3 ? <IconCheck size={16} /> : null
@@ -1407,7 +1407,7 @@ const GenerateSalarySlipReport = () => {
 
               <Button
                 variant="light"
-                radius="lg"
+                radius="md"
                 onClick={() => window.location.reload()}
               >
                 Generate Another Salary Slip
