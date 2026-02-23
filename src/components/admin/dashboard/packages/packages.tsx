@@ -292,6 +292,7 @@ const HeadingComponent = ({
         variant="filled"
         fullWidth={isMobile}
         size={isMobile ? 'md' : 'sm'}
+        radius="md"
       >
         Add Package
       </Button>

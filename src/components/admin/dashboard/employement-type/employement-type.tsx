@@ -136,6 +136,7 @@ const HeadingComponent: React.FC<{
         variant="filled"
         fullWidth={isMobile}
         size={isMobile ? 'md' : 'sm'}
+        radius="md"
       >
         Add Type
       </Button>
@@ -554,13 +555,14 @@ const EmploymentTypes = () => {
             size="md"
           />
           <Group justify="flex-end" mt="md">
-            <Button variant="default" onClick={closeAddModal}>
+            <Button variant="default" onClick={closeAddModal} radius="md">
               Cancel
             </Button>
             <Button
               onClick={handleAdd}
               disabled={isLoading || !newTypeName.trim()}
               leftSection={<IconDeviceFloppy size={16} />}
+              radius="md"
             >
               {isLoading ? 'Adding...' : 'Add Type'}
             </Button>
@@ -617,18 +619,20 @@ const EmploymentTypes = () => {
                 variant="outline"
                 leftSection={<IconTrash size={16} />}
                 onClick={() => handleDelete(selectedType.id)}
+                radius="md"
               >
                 Delete
               </Button>
             )}
             <Group>
-              <Button variant="default" onClick={closeEditModal}>
+              <Button variant="default" onClick={closeEditModal} radius="md">
                 Cancel
               </Button>
               <Button
                 onClick={confirmEdit}
                 disabled={isLoading}
                 leftSection={<IconDeviceFloppy size={16} />}
+                radius="md"
               >
                 {isLoading ? 'Saving...' : 'Save'}
               </Button>
@@ -658,7 +662,7 @@ const EmploymentTypes = () => {
             cannot be undone.
           </Text>
           <Group justify="flex-end" mt="md">
-            <Button variant="default" onClick={closeDeleteModal}>
+            <Button variant="default" onClick={closeDeleteModal} radius="md">
               Cancel
             </Button>
             <Button
@@ -666,6 +670,7 @@ const EmploymentTypes = () => {
               onClick={confirmDelete}
               disabled={isLoading}
               leftSection={<IconTrash size={16} />}
+              radius="md"
             >
               {isLoading ? 'Deleting...' : 'Delete'}
             </Button>

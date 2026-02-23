@@ -281,6 +281,7 @@ const UpdatePackage = () => {
                     leftSection={<IconTrash size={16} />}
                     onClick={open}
                     fullWidth={isMobile}
+                    radius="md"
                   >
                     Delete Package
                   </Button>
@@ -289,6 +290,7 @@ const UpdatePackage = () => {
                     disabled={isLoading}
                     leftSection={<IconDeviceFloppy size={16} />}
                     fullWidth={isMobile}
+                    radius="md"
                   >
                     {isLoading ? 'Updating...' : 'Update Package'}
                   </Button>

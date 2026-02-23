@@ -220,6 +220,7 @@ export const EmployeeTimesheetUpdateByAdmin = () => {
             size="sm"
             onClick={resetFilters}
             leftSection={<IconX size={16} />}
+            radius="md"
           >
             Clear Filters
           </Button>

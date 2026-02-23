@@ -77,6 +77,7 @@ const AddTasksPackage = ({
             disabled={isLoading || (required && !newTasks.trim())}
             leftSection={<IconPlus size={16} />}
             fullWidth={isSmallMobile}
+            radius="md"
           >
             {isLoading ? 'Adding...' : 'Add Task'}
           </Button>

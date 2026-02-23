@@ -139,6 +139,7 @@ const AddPoolCandidate = () => {
               onClick={handleGoBack}
               variant="light"
               size={isMobile ? 'sm' : 'md'}
+              radius="md"
             >
               Go Back
             </Button>
@@ -316,6 +317,7 @@ const AddPoolCandidate = () => {
                         leftSection={<IconPlus size={16} />}
                         size={isMobile ? 'sm' : 'md'}
                         disabled={!skillInput.trim()}
+                        radius="md"
                       >
                         Add
                       </Button>
@@ -398,7 +400,9 @@ const AddPoolCandidate = () => {
                             {...field}
                             value={field.value ? new Date(field.value) : null}
                             onChange={date =>
-                              field.onChange(date ? new Date(date).toISOString() : null)
+                              field.onChange(
+                                date ? new Date(date).toISOString() : null
+                              )
                             }
                             clearable
                             label="Call Start Time"
@@ -419,7 +423,9 @@ const AddPoolCandidate = () => {
                             {...field}
                             value={field.value ? new Date(field.value) : null}
                             onChange={date =>
-                              field.onChange(date ? new Date(date).toISOString() : null)
+                              field.onChange(
+                                date ? new Date(date).toISOString() : null
+                              )
                             }
                             clearable
                             label="Call End Time"
@@ -446,6 +452,7 @@ const AddPoolCandidate = () => {
                   disabled={isSubmitting}
                   size={isMobile ? 'sm' : 'md'}
                   fullWidth={isMobile}
+                  radius="md"
                 >
                   Cancel
                 </Button>
@@ -454,6 +461,7 @@ const AddPoolCandidate = () => {
                   disabled={isSubmitting}
                   size={isMobile ? 'sm' : 'md'}
                   fullWidth={isMobile}
+                  radius="md"
                   leftSection={
                     isSubmitting ? (
                       <Loader size="xs" color="white" />

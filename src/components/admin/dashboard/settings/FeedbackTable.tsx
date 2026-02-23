@@ -223,8 +223,8 @@ export default function FeedbackTable() {
             <Button
               leftSection={<IconPlus size={16} />}
               onClick={openAdd}
-              variant="filled"
-              size={isMobile ? 'md' : 'sm'}
+              fullWidth={isMobile}
+              radius="md"
             >
               Add Feedback Attribute
             </Button>
@@ -369,18 +369,10 @@ export default function FeedbackTable() {
             required
           />
           <Group justify="flex-end">
-            <Button
-              variant="default"
-              onClick={closeAdd}
-              size={isMobile ? 'md' : 'sm'}
-            >
+            <Button variant="default" onClick={closeAdd} radius="md">
               Cancel
             </Button>
-            <Button
-              onClick={handleAdd}
-              disabled={!newName.trim()}
-              size={isMobile ? 'md' : 'sm'}
-            >
+            <Button onClick={handleAdd} disabled={!newName.trim()} radius="md">
               Add
             </Button>
           </Group>
@@ -423,7 +415,7 @@ export default function FeedbackTable() {
                 <Button
                   onClick={openDelete}
                   p="xs"
-                  size={isMobile ? 'md' : 'sm'}
+                  radius="md"
                   variant="outline"
                 >
                   <IconTrash size={16} />
@@ -434,7 +426,7 @@ export default function FeedbackTable() {
                 color="red"
                 variant="outline"
                 onClick={openDelete}
-                size={isMobile ? 'md' : 'sm'}
+                radius="md"
                 leftSection={<IconTrash size={16} />}
               >
                 Delete
@@ -442,19 +434,14 @@ export default function FeedbackTable() {
             )}
 
             <Group>
-              <Button
-                variant="default"
-                onClick={closeEdit}
-                size={isMobile ? 'md' : 'sm'}
-              >
+              <Button variant="default" onClick={closeEdit} radius="md">
                 Cancel
               </Button>
               <Button
                 onClick={confirmEdit}
                 leftSection={<IconDeviceFloppy size={16} />}
                 disabled={isLoading}
-                variant="filled"
-                size={isMobile ? 'md' : 'sm'}
+                radius="md"
               >
                 {isLoading ? 'Saving...' : 'Save'}
               </Button>
@@ -484,11 +471,7 @@ export default function FeedbackTable() {
             cannot be undone.
           </Text>
           <Group justify="flex-end" mt="md">
-            <Button
-              variant="default"
-              onClick={closeDelete}
-              size={isMobile ? 'md' : 'sm'}
-            >
+            <Button variant="default" onClick={closeDelete} radius="md">
               Cancel
             </Button>
             <Button
@@ -496,8 +479,7 @@ export default function FeedbackTable() {
               onClick={confirmDelete}
               disabled={isLoading}
               leftSection={<IconTrash size={16} />}
-              variant="filled"
-              size={isMobile ? 'md' : 'sm'}
+              radius="md"
             >
               {isLoading ? 'Deleting...' : 'Delete'}
             </Button>

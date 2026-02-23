@@ -469,6 +469,7 @@ const HeadingComponent: React.FC<{
         variant="filled"
         fullWidth={isMobile}
         size={isMobile ? 'md' : 'sm'}
+        radius="md"
       >
         Add Company
       </Button>
