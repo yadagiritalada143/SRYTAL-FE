@@ -41,6 +41,8 @@ import { themeAtom } from '../atoms/theme';
 import { getThemeConfig } from '../utils/common/theme-utils';
 import SettingsLayout from '../components/admin/dashboard/settings/SettingsLayout';
 import FeedbackTable from '../components/admin/dashboard/settings/FeedbackTable';
+import EmployeeReports from '../components/admin/dashboard/reports/all-employee-reports';
+
 const AdminRoutes = () => {
   const { organization } = useParams<{ organization: string }>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -461,6 +463,10 @@ const AdminRoutes = () => {
               <Route
                 path="generate-salary-slip"
                 element={<GenerateSalarySlipReport />}
+              />
+              <Route
+                path="all-employee-reports"
+                element={<EmployeeReports />}
               />
             </Route>
             <Route path="timesheet" element={<DateTableComponent />} />

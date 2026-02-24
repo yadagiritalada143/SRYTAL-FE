@@ -28,7 +28,7 @@ export const adminNavLinks = [
     role: 'admin',
     url: 'admin/dashboard/reports',
     icon: IconNotebook,
-    name: 'Reports',
+    name: 'Payroll Management',
     children: [
       //{
       //name: 'Generate Offer',
@@ -37,6 +37,10 @@ export const adminNavLinks = [
       {
         name: 'Generate Salary Slip',
         url: 'admin/dashboard/reports/generate-salary-slip'
+      },
+      {
+        name: 'Payroll Reports',
+        url: 'admin/dashboard/reports/all-employee-reports'
       }
     ]
   },
