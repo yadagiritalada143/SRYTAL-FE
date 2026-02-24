@@ -153,6 +153,7 @@ const EmployeeActions: React.FC<{
         color="green"
         onClick={() => onPackage(employeeId)}
         size={isMobile ? 'md' : 'sm'}
+        radius="md"
       >
         <IconPackage size={isMobile ? 18 : 16} />
       </ActionIcon>
@@ -424,6 +425,7 @@ const HeadingComponent: React.FC<{
         variant="filled"
         fullWidth={isMobile}
         size={isMobile ? 'md' : 'sm'}
+        radius="md"
       >
         Add Employee
       </Button>

@@ -135,6 +135,7 @@ const HeadingComponent: React.FC<{
         variant="filled"
         fullWidth={isMobile}
         size={isMobile ? 'md' : 'sm'}
+        radius="md"
       >
         Add Role
       </Button>
@@ -326,7 +327,12 @@ const EmploymentRoles = () => {
   }, [itemsPerPage]);
 
   return (
-    <Container size="xl" py="md" my="xl" px={isSmallMobile ? 'xs' : 'md'}>
+    <Container
+      size={isMobile ? 'xl' : 'md'}
+      py="md"
+      my="xl"
+      px={isSmallMobile ? 'xs' : 'md'}
+    >
       <Stack gap="md">
         {/* Header */}
         <HeadingComponent
@@ -413,6 +419,7 @@ const EmploymentRoles = () => {
                           leftSection={<IconPlus size={16} />}
                           onClick={openAddModal}
                           fullWidth={isSmallMobile}
+                          radius="md"
                         >
                           Add Role
                         </Button>
@@ -549,13 +556,14 @@ const EmploymentRoles = () => {
             size="md"
           />
           <Group justify="flex-end" mt="md">
-            <Button variant="default" onClick={closeAddModal}>
+            <Button variant="default" onClick={closeAddModal} radius="md">
               Cancel
             </Button>
             <Button
               onClick={handleAdd}
               disabled={isLoading || !newRoleName.trim()}
               leftSection={<IconDeviceFloppy size={16} />}
+              radius="md"
             >
               {isLoading ? 'Adding...' : 'Add Role'}
             </Button>
@@ -595,24 +603,39 @@ const EmploymentRoles = () => {
             size="md"
           />
           <Group justify="space-between" mt="md">
-            <Button
-              color="red"
-              variant="outline"
-              leftSection={<IconTrash size={16} />}
-              onClick={() => handleDelete(selectedRole.id)}
-            >
-              Delete
-            </Button>
+            {isMobile ? (
+              <Tooltip label="Delete Role">
+                <Button
+                  onClick={openDeleteModal}
+                  p="xs"
+                  radius="md"
+                  variant="outline"
+                >
+                  <IconTrash size={16} />
+                </Button>
+              </Tooltip>
+            ) : (
+              <Button
+                color="red"
+                variant="outline"
+                leftSection={<IconTrash size={16} />}
+                onClick={() => handleDelete(selectedRole.id)}
+                radius="md"
+              >
+                Delete
+              </Button>
+            )}
             <Group>
-              <Button variant="default" onClick={closeEditModal}>
+              <Button variant="default" onClick={closeEditModal} radius="md">
                 Cancel
               </Button>
               <Button
                 onClick={confirmEdit}
                 disabled={isLoading}
                 leftSection={<IconDeviceFloppy size={16} />}
+                radius="md"
               >
-                {isLoading ? 'Saving...' : 'Save Changes'}
+                {isLoading ? 'Saving...' : 'Save'}
               </Button>
             </Group>
           </Group>
@@ -640,7 +663,7 @@ const EmploymentRoles = () => {
             cannot be undone.
           </Text>
           <Group justify="flex-end" mt="md">
-            <Button variant="default" onClick={closeDeleteModal}>
+            <Button variant="default" onClick={closeDeleteModal} radius="md">
               Cancel
             </Button>
             <Button
@@ -648,6 +671,7 @@ const EmploymentRoles = () => {
               onClick={confirmDelete}
               disabled={isLoading}
               leftSection={<IconTrash size={16} />}
+              radius="md"
             >
               {isLoading ? 'Deleting...' : 'Delete'}
             </Button>

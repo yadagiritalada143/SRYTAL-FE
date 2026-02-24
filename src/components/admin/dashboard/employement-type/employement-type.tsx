@@ -136,6 +136,7 @@ const HeadingComponent: React.FC<{
         variant="filled"
         fullWidth={isMobile}
         size={isMobile ? 'md' : 'sm'}
+        radius="md"
       >
         Add Type
       </Button>
@@ -326,7 +327,12 @@ const EmploymentTypes = () => {
   }, [itemsPerPage]);
 
   return (
-    <Container size="xl" py="md" my="xl" px={isSmallMobile ? 'xs' : 'md'}>
+    <Container
+      size={isMobile ? 'xl' : 'md'}
+      py="md"
+      my="xl"
+      px={isSmallMobile ? 'xs' : 'md'}
+    >
       <Stack gap="md">
         {/* Header */}
         <HeadingComponent
@@ -549,13 +555,14 @@ const EmploymentTypes = () => {
             size="md"
           />
           <Group justify="flex-end" mt="md">
-            <Button variant="default" onClick={closeAddModal}>
+            <Button variant="default" onClick={closeAddModal} radius="md">
               Cancel
             </Button>
             <Button
               onClick={handleAdd}
               disabled={isLoading || !newTypeName.trim()}
               leftSection={<IconDeviceFloppy size={16} />}
+              radius="md"
             >
               {isLoading ? 'Adding...' : 'Add Type'}
             </Button>
@@ -594,25 +601,40 @@ const EmploymentTypes = () => {
             required
             size="md"
           />
-          <Group justify="space-between" mt="md">
-            <Button
-              color="red"
-              variant="outline"
-              leftSection={<IconTrash size={16} />}
-              onClick={() => handleDelete(selectedType.id)}
-            >
-              Delete
-            </Button>
+          <Group justify="space-between">
+            {isMobile ? (
+              <Tooltip label="Delete Type">
+                <Button
+                  onClick={openDeleteModal}
+                  p="xs"
+                  radius="md"
+                  variant="outline"
+                >
+                  <IconTrash size={16} />
+                </Button>
+              </Tooltip>
+            ) : (
+              <Button
+                color="red"
+                variant="outline"
+                leftSection={<IconTrash size={16} />}
+                onClick={() => handleDelete(selectedType.id)}
+                radius="md"
+              >
+                Delete
+              </Button>
+            )}
             <Group>
-              <Button variant="default" onClick={closeEditModal}>
+              <Button variant="default" onClick={closeEditModal} radius="md">
                 Cancel
               </Button>
               <Button
                 onClick={confirmEdit}
                 disabled={isLoading}
                 leftSection={<IconDeviceFloppy size={16} />}
+                radius="md"
               >
-                {isLoading ? 'Saving...' : 'Save Changes'}
+                {isLoading ? 'Saving...' : 'Save'}
               </Button>
             </Group>
           </Group>
@@ -640,7 +662,7 @@ const EmploymentTypes = () => {
             cannot be undone.
           </Text>
           <Group justify="flex-end" mt="md">
-            <Button variant="default" onClick={closeDeleteModal}>
+            <Button variant="default" onClick={closeDeleteModal} radius="md">
               Cancel
             </Button>
             <Button
@@ -648,6 +670,7 @@ const EmploymentTypes = () => {
               onClick={confirmDelete}
               disabled={isLoading}
               leftSection={<IconTrash size={16} />}
+              radius="md"
             >
               {isLoading ? 'Deleting...' : 'Delete'}
             </Button>

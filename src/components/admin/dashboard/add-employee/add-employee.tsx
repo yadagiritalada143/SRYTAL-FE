@@ -297,6 +297,7 @@ const AddEmployee = () => {
                     variant="subtle"
                     leftSection={<IconArrowLeft size={16} />}
                     onClick={handleCancel}
+                    radius="md"
                   >
                     Cancel
                   </Button>
@@ -306,6 +307,7 @@ const AddEmployee = () => {
                       variant="light"
                       color="orange"
                       onClick={handleReset}
+                      radius="md"
                     >
                       Reset Form
                     </Button>
@@ -315,6 +317,7 @@ const AddEmployee = () => {
                     type="submit"
                     loading={isSubmitting}
                     disabled={!isValid || isSubmitting}
+                    radius="md"
                     leftSection={
                       !isSubmitting && <IconCircleDashedCheck size={16} />
                     }
