@@ -153,6 +153,7 @@ const PayrollManagement = () => {
     <Container
       p="xl"
       size="lg"
+      mt="xl"
       style={{
         backgroundColor: currentThemeConfig.backgroundColor,
         transition: 'all 0.15s ease'
@@ -161,9 +162,9 @@ const PayrollManagement = () => {
       {' '}
       <Stack gap="xl">
         {/* HEADER */}
-        <Group justify="space-between" align="flex-end">
-          <Box>
-            <Title order={1} fw={800}>
+        <Group justify="space-between" align="flex-start">
+          <Box style={{ flex: 1, minWidth: 0 }}>
+            <Title order={1} fw={700}>
               Payroll Administration
             </Title>
             <Text c={currentThemeConfig.mutedTextColor} size="sm">
@@ -228,10 +229,10 @@ const PayrollManagement = () => {
                           style={{
                             cursor: 'pointer',
                             backgroundColor: isActive
-                              ? rgba(currentThemeConfig.accentColor, 0.15)
+                              ? rgba(currentThemeConfig.button.color, 0.3)
                               : 'transparent',
                             border: isActive
-                              ? `1px solid ${currentThemeConfig.accentColor}`
+                              ? `1px solid ${currentThemeConfig.button.color}`
                               : '1px solid transparent',
                             transition: 'all 0.15s ease'
                           }}
@@ -241,7 +242,7 @@ const PayrollManagement = () => {
                               <Avatar
                                 style={{
                                   backgroundColor: isActive
-                                    ? currentThemeConfig.accentColor
+                                    ? currentThemeConfig.color
                                     : currentThemeConfig.borderColor
                                 }}
                               >
@@ -263,7 +264,11 @@ const PayrollManagement = () => {
 
                                 <Text
                                   size="xs"
-                                  c="blue"
+                                  c={
+                                    isActive
+                                      ? currentThemeConfig.mutedTextColor
+                                      : currentThemeConfig.button.color
+                                  }
                                   tt="capitalize"
                                   fw={500}
                                 >
@@ -304,7 +309,7 @@ const PayrollManagement = () => {
                       <Avatar
                         size={60}
                         radius="md"
-                        color="blue"
+                        color={currentThemeConfig.button.color}
                         variant="light"
                       >
                         {selectedEmployee.firstName.charAt(0)}
@@ -348,23 +353,27 @@ const PayrollManagement = () => {
                   <Paper withBorder p="md" mb="xl">
                     <Stack gap="md">
                       <Box>
-                        <Text fw={600} mb="xs">
+                        <Text
+                          fw={600}
+                          mb="xs"
+                          c={currentThemeConfig.button.color}
+                        >
                           Employment Details
                         </Text>
                         <Grid>
-                          <Grid.Col span={6}>
+                          <Grid.Col span={{ base: 12, md: 6 }}>
                             <Text
                               size="xs"
                               c={currentThemeConfig.mutedTextColor}
                             >
                               Employee ID
                             </Text>
-                            <Text fw={600} c={currentThemeConfig.color}>
+                            <Text fw={400} c={currentThemeConfig.color}>
                               {selectedEmployee.employeeId}
                             </Text>
                           </Grid.Col>
 
-                          <Grid.Col span={6}>
+                          <Grid.Col span={{ base: 12, md: 6 }}>
                             <Text
                               size="xs"
                               c={currentThemeConfig.mutedTextColor}
@@ -373,7 +382,7 @@ const PayrollManagement = () => {
                             </Text>
                             <Text
                               tt="capitalize"
-                              fw={600}
+                              fw={400}
                               c={currentThemeConfig.color}
                             >
                               {selectedEmployee.userRole}
@@ -386,18 +395,22 @@ const PayrollManagement = () => {
 
                       {/* Personal Info */}
                       <Box>
-                        <Text fw={600} mb="xs">
+                        <Text
+                          fw={600}
+                          mb="xs"
+                          c={currentThemeConfig.button.color}
+                        >
                           Personal Information
                         </Text>
                         <Grid>
-                          <Grid.Col span={6}>
+                          <Grid.Col span={{ base: 12, md: 6 }}>
                             <Text
                               size="xs"
                               c={currentThemeConfig.mutedTextColor}
                             >
                               Date of Birth
                             </Text>
-                            <Text fw={600} c={currentThemeConfig.color}>
+                            <Text fw={400} c={currentThemeConfig.color}>
                               {formatDate(selectedEmployee.dateOfBirth)}
                             </Text>
                           </Grid.Col>
@@ -409,7 +422,7 @@ const PayrollManagement = () => {
                             >
                               Email
                             </Text>
-                            <Text fw={600} c={currentThemeConfig.color}>
+                            <Text fw={400} c={currentThemeConfig.color}>
                               {selectedEmployee.email}
                             </Text>
                           </Grid.Col>
@@ -420,18 +433,22 @@ const PayrollManagement = () => {
 
                       {/* Identification Details */}
                       <Box>
-                        <Text fw={600} mb="xs">
+                        <Text
+                          fw={600}
+                          mb="xs"
+                          c={currentThemeConfig.button.color}
+                        >
                           Identification Details{' '}
                         </Text>
                         <Grid>
-                          <Grid.Col span={6}>
+                          <Grid.Col span={{ base: 12, md: 6 }}>
                             <Text
                               size="xs"
                               c={currentThemeConfig.mutedTextColor}
                             >
                               PAN
                             </Text>
-                            <Text fw={600} c={currentThemeConfig.color}>
+                            <Text fw={400} c={currentThemeConfig.color}>
                               {selectedEmployee.panCardNumber || '—'}
                             </Text>
                           </Grid.Col>
@@ -443,7 +460,7 @@ const PayrollManagement = () => {
                             >
                               UAN / Aadhar
                             </Text>
-                            <Text fw={600} c={currentThemeConfig.color}>
+                            <Text fw={400} c={currentThemeConfig.color}>
                               {selectedEmployee.aadharNumber || '—'}
                             </Text>
                           </Grid.Col>
@@ -456,7 +473,7 @@ const PayrollManagement = () => {
                     label="Payroll Records"
                     labelPosition="center"
                     styles={{
-                      label: { color: currentThemeConfig.accentColor }
+                      label: { color: currentThemeConfig.button.color }
                     }}
                   />
 
@@ -538,7 +555,7 @@ const PayrollManagement = () => {
                           size={48}
                           color={currentThemeConfig.mutedTextColor}
                         />
-                        <Text c={currentThemeConfig.accentColor}>
+                        <Text c={currentThemeConfig.button.color}>
                           {' '}
                           No payroll record for selected month
                         </Text>
