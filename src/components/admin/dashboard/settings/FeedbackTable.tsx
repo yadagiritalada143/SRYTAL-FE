@@ -231,17 +231,23 @@ export default function FeedbackTable() {
           </Flex>
         </Card>
 
-        {/* SEARCH */}
         <Card shadow="sm" p="md" radius="md" withBorder>
-          <Stack gap="md">
+          <Flex
+            direction={isMobile ? 'column' : 'row'}
+            justify="space-between"
+            align={isMobile ? 'stretch' : 'center'}
+            gap="md"
+          >
             <TextInput
               placeholder="Search feedback attribute..."
               leftSection={<IconSearch size={16} />}
               value={searchQuery}
               onChange={handleSearch}
+              radius="md"
+              style={{ flex: 1 }}
             />
 
-            <Group justify="space-between">
+            <Group wrap="nowrap" gap="md">
               <Group gap="xs">
                 <Text size="sm">Items per page:</Text>
                 <Select
@@ -261,7 +267,7 @@ export default function FeedbackTable() {
                 </Badge>
               )}
             </Group>
-          </Stack>
+          </Flex>
         </Card>
 
         {/* TABLE */}
@@ -358,6 +364,12 @@ export default function FeedbackTable() {
         }
         centered
         size="md"
+        styles={{
+          header: {
+            paddingBottom: 4,
+            paddingTop: 5
+          }
+        }}
       >
         <Stack>
           <TextInput
@@ -393,6 +405,12 @@ export default function FeedbackTable() {
         }
         centered
         size="md"
+        styles={{
+          header: {
+            paddingBottom: 4,
+            paddingTop: 5
+          }
+        }}
       >
         <Stack>
           <TextInput
