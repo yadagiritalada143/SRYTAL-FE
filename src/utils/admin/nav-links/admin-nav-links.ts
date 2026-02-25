@@ -60,24 +60,6 @@ export const adminNavLinks = [
   },
   {
     role: 'admin',
-    url: 'admin/dashboard/blood-group-management',
-    icon: IconDroplet,
-    name: 'Blood Groups'
-  },
-  {
-    role: 'admin',
-    url: 'admin/dashboard/employment-type-management',
-    icon: IconNetwork,
-    name: 'Employment Types'
-  },
-  {
-    role: 'admin',
-    url: 'admin/dashboard/employment-role-management',
-    icon: IconWorldCheck,
-    name: 'Employment Roles'
-  },
-  {
-    role: 'admin',
     url: 'admin/dashboard/settings',
     icon: IconSettings,
     name: 'Settings'
