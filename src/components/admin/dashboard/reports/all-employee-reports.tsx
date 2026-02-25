@@ -41,14 +41,8 @@ import { toast } from 'react-toastify';
 import { EmployeeInterface } from '../../../../interfaces/employee';
 import { themeAtom } from '../../../../atoms/theme';
 import { getThemeConfig } from '../../../../utils/common/theme-utils';
-
-interface PayrollRecord {
-  id: number;
-  employeeId: string;
-  month: number;
-  year: number;
-  pdfUrl: string;
-}
+import { downloadSalarySlip } from '../../../../services/common-services';
+import { useMediaQuery } from '@mantine/hooks';
 
 const PayrollManagement = () => {
   const navigate = useNavigate();
@@ -68,30 +62,10 @@ const PayrollManagement = () => {
     useState<EmployeeInterface | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<Date | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [slipError, setSlipError] = useState<string | null>(null);
 
-  const payrollData: PayrollRecord[] = [
-    {
-      id: 1,
-      employeeId: 'EMP001',
-      month: 0,
-      year: 2026,
-      pdfUrl: '/static-slips/EMP001_Jan_2026.pdf'
-    },
-    {
-      id: 2,
-      employeeId: 'EMP002',
-      month: 1,
-      year: 2026,
-      pdfUrl: '/static-slips/EMP001_Feb_2026.pdf'
-    },
-    {
-      id: 3,
-      employeeId: 'EMP002',
-      month: 1,
-      year: 2026,
-      pdfUrl: '/static-slips/EMP002_Feb_2026.pdf'
-    }
-  ];
+  const isMobile = useMediaQuery('(max-width: 768px)');
 
   useEffect(() => {
     if (employees.length > 0) {
@@ -128,19 +102,44 @@ const PayrollManagement = () => {
     );
   }, [search, employees]);
 
-  const filteredSlips = useMemo(() => {
-    if (!selectedEmployee || !selectedMonth) return [];
+  useEffect(() => {
+    const fetchSlipOnMonthChange = async () => {
+      if (!selectedEmployee || !selectedMonth) return;
 
-    const selectedYear = selectedMonth.getFullYear();
-    const selectedMonthIndex = selectedMonth.getMonth();
+      setSlipError(null);
+      setPreviewUrl(null);
+      setPreviewLoading(true);
 
-    return payrollData.filter(
-      slip =>
-        slip.employeeId === selectedEmployee.employeeId &&
-        slip.year === selectedYear &&
-        slip.month === selectedMonthIndex
-    );
+      const formattedMonth = selectedMonth.toLocaleString('en-US', {
+        month: 'short'
+      });
+
+      const formattedYear = selectedMonth.getFullYear().toString();
+
+      try {
+        const res = await downloadSalarySlip({
+          mongoId: selectedEmployee._id,
+          fullName: `${selectedEmployee.firstName} ${selectedEmployee.lastName}`,
+          month: formattedMonth,
+          year: formattedYear
+        });
+
+        if (!res?.success) throw new Error();
+
+        setPreviewUrl(res.data.downloadUrl);
+      } catch {
+        setSlipError('Salary slip not available for selected pay period.');
+      } finally {
+        setPreviewLoading(false);
+      }
+    };
+
+    fetchSlipOnMonthChange();
   }, [selectedEmployee, selectedMonth]);
+
+  useEffect(() => {
+    setSlipError(null);
+  }, [selectedMonth, selectedEmployee]);
 
   const formatDate = (date: string) =>
     new Date(date).toLocaleDateString('en-IN', {
@@ -240,6 +239,7 @@ const PayrollManagement = () => {
                           <Group justify="space-between" wrap="nowrap">
                             <Group gap="sm" wrap="nowrap">
                               <Avatar
+                                radius={6}
                                 style={{
                                   backgroundColor: isActive
                                     ? currentThemeConfig.color
@@ -356,7 +356,7 @@ const PayrollManagement = () => {
                         <Text
                           fw={600}
                           mb="xs"
-                          c={currentThemeConfig.button.color}
+                          c={currentThemeConfig.mutedTextColor}
                         >
                           Employment Details
                         </Text>
@@ -398,7 +398,7 @@ const PayrollManagement = () => {
                         <Text
                           fw={600}
                           mb="xs"
-                          c={currentThemeConfig.button.color}
+                          c={currentThemeConfig.mutedTextColor}
                         >
                           Personal Information
                         </Text>
@@ -436,7 +436,7 @@ const PayrollManagement = () => {
                         <Text
                           fw={600}
                           mb="xs"
-                          c={currentThemeConfig.button.color}
+                          c={currentThemeConfig.mutedTextColor}
                         >
                           Identification Details{' '}
                         </Text>
@@ -477,90 +477,76 @@ const PayrollManagement = () => {
                     }}
                   />
 
-                  {filteredSlips.length > 0 ? (
-                    <Stack gap="sm">
-                      {filteredSlips.map(slip => (
-                        <Paper
-                          key={slip.id}
-                          withBorder
-                          p="lg"
-                          style={{
-                            backgroundColor: currentThemeConfig.cardBackground,
-                            borderColor: currentThemeConfig.borderColor,
-                            transition: 'all 0.15s ease'
-                          }}
-                        >
-                          <Group justify="space-between">
-                            <Group gap="sm">
-                              <Box
-                                style={{
-                                  backgroundColor: rgba(
-                                    currentThemeConfig.successColor,
-                                    0.15
-                                  ),
-                                  padding: 8,
-                                  borderRadius: 6
-                                }}
-                              >
-                                <IconFileText
-                                  size={18}
-                                  color={currentThemeConfig.successColor}
-                                />
-                              </Box>
+                  {selectedMonth && previewLoading && (
+                    <Center py="xl">
+                      <Text>Loading salary slip...</Text>
+                    </Center>
+                  )}
 
-                              <Box>
-                                <Text fw={600} c={currentThemeConfig.color}>
-                                  {new Date(
-                                    slip.year,
-                                    slip.month
-                                  ).toLocaleDateString('en-IN', {
-                                    month: 'short',
-                                    year: 'numeric'
-                                  })}
-                                </Text>
-                                <Text
-                                  size="xs"
-                                  c={currentThemeConfig.mutedTextColor}
-                                >
-                                  Ref: {slip.id}
-                                </Text>
-                              </Box>
-                            </Group>
-
-                            <Group gap="xs">
-                              <ActionIcon
-                                variant="light"
-                                onClick={() => setPreviewUrl(slip.pdfUrl)}
-                              >
-                                <IconEye size={16} />
-                              </ActionIcon>
-
-                              <ActionIcon
-                                component="a"
-                                href={slip.pdfUrl}
-                                target="_blank"
-                                variant="light"
-                              >
-                                <IconDownload size={16} />
-                              </ActionIcon>
-                            </Group>
-                          </Group>
-                        </Paper>
-                      ))}
-                    </Stack>
-                  ) : (
+                  {selectedMonth && slipError && !previewLoading && (
                     <Center py="xl">
                       <Stack align="center" gap="xs">
-                        <IconFileText
-                          size={48}
-                          color={currentThemeConfig.mutedTextColor}
-                        />
-                        <Text c={currentThemeConfig.button.color}>
-                          {' '}
-                          No payroll record for selected month
+                        <IconFileText size={48} />
+                        <Text c={currentThemeConfig.dangerColor} fw={500}>
+                          Salary slip not available for selected pay period.
                         </Text>
                       </Stack>
                     </Center>
+                  )}
+
+                  {selectedMonth && previewUrl && !previewLoading && (
+                    <Paper
+                      withBorder
+                      p={isMobile ? 'sm' : 'lg'}
+                      mt="md"
+                      style={{
+                        backgroundColor: currentThemeConfig.cardBackground,
+                        borderColor: currentThemeConfig.borderColor,
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      <Group
+                        justify="space-between"
+                        mb="md"
+                        wrap={isMobile ? 'wrap' : 'nowrap'}
+                        gap="sm"
+                      >
+                        <Text fw={600} c={currentThemeConfig.color}>
+                          Preview :{' '}
+                          {selectedMonth.toLocaleDateString('en-IN', {
+                            month: 'short',
+                            year: 'numeric'
+                          })}
+                        </Text>
+
+                        <ActionIcon
+                          variant="light"
+                          onClick={() => window.open(previewUrl, '_blank')}
+                        >
+                          <IconDownload
+                            size={16}
+                            color={currentThemeConfig.button.color}
+                          />
+                        </ActionIcon>
+                      </Group>
+
+                      <Box
+                        style={{
+                          width: '100%',
+                          height: isMobile ? '65vh' : '500px',
+                          borderRadius: 8,
+                          overflow: 'hidden'
+                        }}
+                      >
+                        <iframe
+                          src={`${previewUrl}#toolbar=0&navpanes=0`}
+                          width="100%"
+                          height="100%"
+                          style={{ border: 'none' }}
+                          title="Salary Slip Preview"
+                        />
+                      </Box>
+                    </Paper>
                   )}
                 </Paper>
               </Stack>
@@ -592,31 +578,6 @@ const PayrollManagement = () => {
               </Paper>
             )}
           </Grid.Col>
-          <Modal
-            styles={{
-              header: {
-                backgroundColor: currentThemeConfig.headerBackgroundColor,
-                color: currentThemeConfig.color
-              },
-              body: {
-                backgroundColor: currentThemeConfig.cardBackground,
-                color: currentThemeConfig.color
-              }
-            }}
-            opened={!!previewUrl}
-            onClose={() => setPreviewUrl(null)}
-            size="xl"
-            title="Salary Slip Preview"
-          >
-            {previewUrl && (
-              <iframe
-                src={previewUrl}
-                width="100%"
-                height="600px"
-                style={{ border: 'none' }}
-              />
-            )}
-          </Modal>
         </Grid>
       </Stack>
     </Container>
