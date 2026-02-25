@@ -1,4 +1,10 @@
-import { Routes, Route, useNavigate, useParams } from 'react-router-dom';
+import {
+  Routes,
+  Route,
+  useNavigate,
+  useParams,
+  Navigate
+} from 'react-router-dom';
 import AddEmployee from '../components/admin/dashboard/add-employee/add-employee';
 import { OrganizationConfig } from '../interfaces/organization';
 import AdminDashboard from '../pages/admin/dashboard/dashboard';
@@ -488,20 +494,11 @@ const AdminRoutes = () => {
               path="update-pool-company/:companyId"
               element={<UpdateCompany />}
             />
-            <Route
-              path="blood-group-management"
-              element={<BloodGroupTable />}
-            />
-            <Route
-              path="employment-role-management"
-              element={<EmploymentRoles />}
-            />
-            <Route
-              path="employment-type-management"
-              element={<EmploymentTypes />}
-            />
             <Route path="settings" element={<SettingsLayout />}>
-              <Route index element={<FeedbackTable />} />
+              <Route index element={<Navigate to="blood-groups" replace />} />
+              <Route path="blood-groups" element={<BloodGroupTable />} />
+              <Route path="employment-types" element={<EmploymentTypes />} />
+              <Route path="employment-roles" element={<EmploymentRoles />} />
               <Route path="feedback" element={<FeedbackTable />} />
             </Route>
           </Route>

@@ -53,13 +53,14 @@ const isValidDesignation = (designation: string) =>
 const RoleActions: React.FC<{
   role: any;
   onEdit: (role: any) => void;
+  color: string;
   isMobile?: boolean;
-}> = ({ role, onEdit, isMobile = false }) => (
+}> = ({ role, onEdit, color, isMobile = false }) => (
   <Group gap="xs" justify="center">
     <Tooltip label="Edit Role">
       <ActionIcon
         variant="subtle"
-        color="blue"
+        color={color}
         onClick={() => onEdit(role)}
         size={isMobile ? 'md' : 'sm'}
       >
@@ -115,7 +116,7 @@ const HeadingComponent: React.FC<{
   onAdd: () => void;
   isMobile?: boolean;
 }> = ({ filteredCount, onAdd, isMobile = false }) => (
-  <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder mt="xl">
+  <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder>
     <Flex
       direction={isMobile ? 'column' : 'row'}
       justify="space-between"
@@ -194,13 +195,8 @@ const EmploymentRoles = () => {
   }, [setEmploymentRoles, showErrorToast]);
 
   useEffect(() => {
-    if (employmentRoles.length === 0) {
-      fetchEmploymentRoles();
-    } else {
-      setFilteredEmploymentRole(employmentRoles);
-      setIsLoading(false);
-    }
-  }, [employmentRoles, fetchEmploymentRoles]);
+    fetchEmploymentRoles();
+  }, []);
 
   // Debounced search
   const debouncedSearch = useMemo(
@@ -327,12 +323,7 @@ const EmploymentRoles = () => {
   }, [itemsPerPage]);
 
   return (
-    <Container
-      size={isMobile ? 'xl' : 'md'}
-      py="md"
-      my="xl"
-      px={isSmallMobile ? 'xs' : 'md'}
-    >
+    <div>
       <Stack gap="md">
         {/* Header */}
         <HeadingComponent
@@ -341,19 +332,23 @@ const EmploymentRoles = () => {
           isMobile={isMobile}
         />
 
-        {/* Filters */}
         <Card shadow="sm" p={isMobile ? 'sm' : 'md'} radius="md" withBorder>
-          <Stack gap="md">
+          <Flex
+            direction={isMobile ? 'column' : 'row'}
+            justify="space-between"
+            align={isMobile ? 'stretch' : 'center'}
+            gap="md"
+          >
             <TextInput
               placeholder="Search by employment role..."
               leftSection={<IconSearch size={16} />}
               value={searchQuery}
               onChange={handleSearch}
               radius="md"
-              size={isMobile ? 'sm' : 'md'}
+              style={{ flex: 1 }}
             />
 
-            <Group justify="space-between" wrap={isMobile ? 'wrap' : 'nowrap'}>
+            <Group wrap="nowrap" gap="md">
               <Group gap="xs">
                 <Text size="sm">Items per page:</Text>
                 <Select
@@ -374,7 +369,7 @@ const EmploymentRoles = () => {
                 </Badge>
               )}
             </Group>
-          </Stack>
+          </Flex>
         </Card>
 
         {/* Table or Cards */}
@@ -467,18 +462,20 @@ const EmploymentRoles = () => {
                   {paginatedData.length > 0 ? (
                     paginatedData.map((role, index) => (
                       <Table.Tr key={role.id} className="transition-colors">
-                        <Table.Td className="text-center p-3">
+                        <Table.Td className="text-center">
                           <Text size="sm">
                             {index + 1 + (activePage - 1) * itemsPerPage}
                           </Text>
                         </Table.Td>
                         <Table.Td className="p-3">
-                          <Text size="sm" fw={500}>
-                            {role.designation}
-                          </Text>
+                          <Text size="sm">{role.designation}</Text>
                         </Table.Td>
                         <Table.Td className="p-3">
-                          <RoleActions role={role} onEdit={handleEdit} />
+                          <RoleActions
+                            role={role}
+                            onEdit={handleEdit}
+                            color={currentThemeConfig.button.color}
+                          />
                         </Table.Td>
                       </Table.Tr>
                     ))
@@ -540,9 +537,16 @@ const EmploymentRoles = () => {
         }
         centered
         size="md"
+        styles={{
+          header: {
+            paddingBottom: 4,
+            paddingTop: 5
+          }
+        }}
       >
         <Stack gap="md">
           <TextInput
+            mt="md"
             label="Role Name"
             value={newRoleName}
             onChange={e => {
@@ -577,7 +581,7 @@ const EmploymentRoles = () => {
         onClose={closeEditModal}
         title={
           <Group gap="xs">
-            <IconEdit size={20} />
+            <IconEdit size={20} color={currentThemeConfig.button.color} />
             <Text fw={600} size="lg">
               Edit Employment Role
             </Text>
@@ -585,9 +589,16 @@ const EmploymentRoles = () => {
         }
         centered
         size="md"
+        styles={{
+          header: {
+            paddingBottom: 4,
+            paddingTop: 5
+          }
+        }}
       >
         <Stack gap="md">
           <TextInput
+            mt="md"
             label="Role Name"
             value={selectedRole?.designation || ''}
             onChange={e => {
@@ -678,7 +689,7 @@ const EmploymentRoles = () => {
           </Group>
         </Stack>
       </Modal>
-    </Container>
+    </div>
   );
 };
 
