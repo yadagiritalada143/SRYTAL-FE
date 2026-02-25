@@ -15,7 +15,8 @@ import {
   Flex,
   ActionIcon,
   Select,
-  Modal
+  Modal,
+  Divider
 } from '@mantine/core';
 
 import {
@@ -24,7 +25,8 @@ import {
   IconSearch,
   IconTrash,
   IconAlertTriangle,
-  IconDeviceFloppy
+  IconDeviceFloppy,
+  IconCategory
 } from '@tabler/icons-react';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -76,6 +78,7 @@ export default function FeedbackTable() {
   const isDarkTheme = useRecoilValue(themeAtom);
 
   const isMobile = useMediaQuery('(max-width: 768px)');
+  const isSmallMobile = useMediaQuery('(max-width: 500px)');
 
   const currentThemeConfig = useMemo(
     () => getThemeConfig(organizationConfig, isDarkTheme),
@@ -205,6 +208,44 @@ export default function FeedbackTable() {
 
   useEffect(() => setActivePage(1), [itemsPerPage]);
 
+  const MobileTypeCard: React.FC<{
+    type: Feedback;
+    index: number;
+    activePage: number;
+    itemsPerPage: number;
+    onEdit: (type: any) => void;
+  }> = ({ type, index, activePage, itemsPerPage, onEdit }) => {
+    return (
+      <Card shadow="sm" p="md" mb="sm" withBorder>
+        <Stack gap="sm">
+          <Group justify="space-between" align="center">
+            <Badge variant="filled" color="blue">
+              #{index + 1 + (activePage - 1) * itemsPerPage}
+            </Badge>
+            <ActionIcon
+              variant="subtle"
+              color="blue"
+              onClick={() => onEdit(type)}
+              size="md"
+            >
+              <IconEdit size={18} />
+            </ActionIcon>
+          </Group>
+
+          <Divider />
+
+          <Stack gap={2}>
+            <Text size="xs" fw={600} c="dimmed">
+              Employment Type
+            </Text>
+            <Text size="lg" fw={600}>
+              {type.name}
+            </Text>
+          </Stack>
+        </Stack>
+      </Card>
+    );
+  };
   return (
     <div>
       <Stack gap="md">
@@ -278,6 +319,47 @@ export default function FeedbackTable() {
                 <Loader size="xl" />
               </Stack>
             </Center>
+          ) : isMobile ? (
+            <ScrollArea p="md">
+              <Stack gap="sm">
+                {filtered.length === 0 ? (
+                  <Card p="xl" withBorder>
+                    <Stack align="center" gap="md">
+                      <IconCategory size={48} opacity={0.5} />
+                      <Text size="lg" ta="center">
+                        No feedback attributes found
+                      </Text>
+                      <Text size="sm" ta="center">
+                        {searchQuery
+                          ? 'Try adjusting your search'
+                          : 'Start by adding your first feedback attribute'}
+                      </Text>
+                      {!searchQuery && (
+                        <Button
+                          variant="light"
+                          leftSection={<IconPlus size={16} />}
+                          onClick={openAdd}
+                          fullWidth={isSmallMobile}
+                        >
+                          Add Feedback Attribute
+                        </Button>
+                      )}
+                    </Stack>
+                  </Card>
+                ) : (
+                  paginatedData.map((type, index) => (
+                    <MobileTypeCard
+                      key={type.id}
+                      type={type}
+                      index={index}
+                      activePage={activePage}
+                      itemsPerPage={itemsPerPage}
+                      onEdit={handleEdit}
+                    />
+                  ))
+                )}
+              </Stack>
+            </ScrollArea>
           ) : (
             <ScrollArea>
               <Table stickyHeader withTableBorder withColumnBorders>
@@ -313,27 +395,54 @@ export default function FeedbackTable() {
                 </Table.Thead>
 
                 <Table.Tbody>
-                  {paginatedData.map((item, index) => (
-                    <Table.Tr key={item.id}>
-                      <Table.Td className="text-center">
-                        {index + 1 + (activePage - 1) * itemsPerPage}
-                      </Table.Td>
-                      <Table.Td>{item.name}</Table.Td>
-                      <Table.Td className="text-center">
-                        <Group justify="center">
-                          <Tooltip label="Edit">
-                            <ActionIcon
-                              color={currentThemeConfig.button.color}
-                              variant="subtle"
-                              onClick={() => handleEdit(item)}
-                            >
-                              <IconEdit size={16} />
-                            </ActionIcon>
-                          </Tooltip>
-                        </Group>
+                  {filtered.length === 0 ? (
+                    <Table.Tr>
+                      <Table.Td colSpan={3}>
+                        <Center py="xl">
+                          <Stack align="center" gap="xs">
+                            <IconCategory size={40} opacity={0.5} />
+                            <Text>No feedback attributes found</Text>
+                            <Text size="sm">
+                              {searchQuery
+                                ? 'Try adjusting your search'
+                                : 'Start by adding your first feedback attribute'}
+                            </Text>
+                            {!searchQuery && (
+                              <Button
+                                variant="light"
+                                leftSection={<IconPlus size={16} />}
+                                onClick={openAdd}
+                              >
+                                Add Feedback Attribute
+                              </Button>
+                            )}
+                          </Stack>
+                        </Center>
                       </Table.Td>
                     </Table.Tr>
-                  ))}
+                  ) : (
+                    paginatedData.map((item, index) => (
+                      <Table.Tr key={item.id}>
+                        <Table.Td className="text-center">
+                          {index + 1 + (activePage - 1) * itemsPerPage}
+                        </Table.Td>
+                        <Table.Td>{item.name}</Table.Td>
+                        <Table.Td className="text-center">
+                          <Group justify="center">
+                            <Tooltip label="Edit">
+                              <ActionIcon
+                                color={currentThemeConfig.button.color}
+                                variant="subtle"
+                                onClick={() => handleEdit(item)}
+                              >
+                                <IconEdit size={16} />
+                              </ActionIcon>
+                            </Tooltip>
+                          </Group>
+                        </Table.Td>
+                      </Table.Tr>
+                    ))
+                  )}
                 </Table.Tbody>
               </Table>
             </ScrollArea>
