@@ -26,6 +26,24 @@ export const adminNavLinks = [
   },
   {
     role: 'admin',
+    url: 'admin/dashboard/packages',
+    icon: IconPackage,
+    name: 'Packages'
+  },
+  {
+    role: 'admin',
+    url: 'admin/dashboard/pool-candidates',
+    icon: IconUsersGroup,
+    name: 'Pool Candidates'
+  },
+  {
+    role: 'admin',
+    url: 'admin/dashboard/pool-companies',
+    icon: IconBuildings,
+    name: 'Pool Companies'
+  },
+  {
+    role: 'admin',
     url: 'admin/dashboard/reports',
     icon: IconNotebook,
     name: 'Payroll Management',
@@ -43,24 +61,6 @@ export const adminNavLinks = [
         url: 'admin/dashboard/reports/all-employee-reports'
       }
     ]
-  },
-  {
-    role: 'admin',
-    url: 'admin/dashboard/packages',
-    icon: IconPackage,
-    name: 'Packages'
-  },
-  {
-    role: 'admin',
-    url: 'admin/dashboard/pool-candidates',
-    icon: IconUsersGroup,
-    name: 'Pool Candidates'
-  },
-  {
-    role: 'admin',
-    url: 'admin/dashboard/pool-companies',
-    icon: IconBuildings,
-    name: 'Pool Companies'
   },
   {
     role: 'admin',
