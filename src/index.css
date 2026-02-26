@@ -58,6 +58,7 @@ h1 {
   font-weight: 500;
   padding: 10px 16px;
   border: none !important;
+  margin-bottom: 12px;
 }
 
 .mantine-Tabs-tab::after {
@@ -65,7 +66,7 @@ h1 {
   position: absolute;
   left: 16px;
   right: 16px;
-  bottom: -5px;
+  bottom: -2px;
   height: 2px;
   background-color: transparent;
   transition: all 0.2s ease;
@@ -82,6 +83,14 @@ h1 {
   border-bottom: none !important;
 }
 
-.mantine-Tabs-tab:hover::after {
-  background-color: rgba(124, 58, 237, 0.4);
+.settings-tabs .mantine-Tabs-tab[data-active] svg {
+  color: #ffffff !important;
+}
+
+.settings-tabs .mantine-Tabs-tab[data-active] {
+  color: #ffffff !important;
+}
+
+.settings-tab:hover {
+  background-color: transparent !important;
 }
