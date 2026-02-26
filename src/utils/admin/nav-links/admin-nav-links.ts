@@ -8,6 +8,7 @@ import {
   IconUserEdit,
   IconUsers,
   IconUsersGroup,
+  IconUserStar,
   IconWorldCheck
 } from '@tabler/icons-react';
 
@@ -29,6 +30,12 @@ export const adminNavLinks = [
     url: 'admin/dashboard/packages',
     icon: IconPackage,
     name: 'Packages'
+  },
+  {
+    role: 'admin',
+    url: 'admin/TalentPool',
+    icon: IconUserStar,
+    name: 'Talent Pool'
   },
   {
     role: 'admin',

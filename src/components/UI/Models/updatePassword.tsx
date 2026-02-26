@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 import { StandardModal } from './base-model';
 import {
   updatePasswordSchema,
-  UpdatePasswordForm,
+  UpdatePasswordForm
 } from '../../../forms/update-password';
 import { updatePasswordForEmployee } from '../../../services/user-services';
 import { useCustomToast } from '../../../utils/common/toast';
@@ -24,7 +24,7 @@ interface UpdatePasswordResponse {
 export const ChangePasswordPopup: React.FC<ChangePasswordPopupProps> = ({
   opened,
   close,
-  forceUpdate = false,
+  forceUpdate = false
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const { showSuccessToast } = useCustomToast();
@@ -32,9 +32,9 @@ export const ChangePasswordPopup: React.FC<ChangePasswordPopupProps> = ({
     register,
     formState: { errors },
     handleSubmit,
-    reset,
+    reset
   } = useForm<UpdatePasswordForm>({
-    resolver: zodResolver(updatePasswordSchema),
+    resolver: zodResolver(updatePasswordSchema)
   });
 
   const onSubmit = async (data: UpdatePasswordForm) => {
@@ -108,7 +108,12 @@ export const ChangePasswordPopup: React.FC<ChangePasswordPopupProps> = ({
                 Cancel
               </Button>
             )}
-            <Button type="submit" loading={isLoading} disabled={isLoading}>
+            <Button
+              type="submit"
+              loading={isLoading}
+              disabled={isLoading}
+              radius="md"
+            >
               Update Password
             </Button>
           </div>

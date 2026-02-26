@@ -185,6 +185,7 @@ const ForgotPassword = ({ closeModal }: ForgotPasswordProps) => {
             size="md"
             label="Cancel"
             variant="subtle"
+            style={{ borderRadius: 8 }}
             onClick={(e: { preventDefault: () => void }) => {
               e.preventDefault();
               closeModal();
@@ -197,6 +198,7 @@ const ForgotPassword = ({ closeModal }: ForgotPasswordProps) => {
 
           <Button
             type="submit"
+            radius="md"
             disabled={isSubmitting}
             loading={isSubmitting}
             style={{
