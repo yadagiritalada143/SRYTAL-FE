@@ -1,6 +1,6 @@
 import { IconX } from '@tabler/icons-react';
 import { memo, useMemo, useState, useEffect, useRef } from 'react';
-import { Avatar, Stack, UnstyledButton } from '@mantine/core';
+import { Stack, UnstyledButton } from '@mantine/core';
 import { useLocation } from 'react-router-dom';
 import classes from './navbar.module.css';
 import { NavbarLink } from './nav-link';
@@ -257,6 +257,11 @@ function NavbarMenu({ navLinks, isDrawerOpen, setIsDrawerOpen }: NavbarProps) {
             src={organizationConfig.organization_theme.logo}
             alt="Organization Logo"
             className={classes.logoExpanded}
+            style={{
+              width: 130,
+              height: 35,
+              borderRadius: 8
+            }}
           />
           <div onClick={toggleDrawer} className={classes.fabX}>
             <IconX color={currentThemeConfig.color} />

@@ -26,22 +26,6 @@ export const adminNavLinks = [
   },
   {
     role: 'admin',
-    url: 'admin/dashboard/reports',
-    icon: IconNotebook,
-    name: 'Reports',
-    children: [
-      //{
-      //name: 'Generate Offer',
-      //url: 'admin/dashboard/reports/generate-offer'
-      //},
-      {
-        name: 'Generate Salary Slip',
-        url: 'admin/dashboard/reports/generate-salary-slip'
-      }
-    ]
-  },
-  {
-    role: 'admin',
     url: 'admin/dashboard/packages',
     icon: IconPackage,
     name: 'Packages'
@@ -57,6 +41,26 @@ export const adminNavLinks = [
     url: 'admin/dashboard/pool-companies',
     icon: IconBuildings,
     name: 'Pool Companies'
+  },
+  {
+    role: 'admin',
+    url: 'admin/dashboard/reports',
+    icon: IconNotebook,
+    name: 'Payroll Management',
+    children: [
+      //{
+      //name: 'Generate Offer',
+      //url: 'admin/dashboard/reports/generate-offer'
+      //},
+      {
+        name: 'Generate Salary Slip',
+        url: 'admin/dashboard/reports/generate-salary-slip'
+      },
+      {
+        name: 'Payroll Reports',
+        url: 'admin/dashboard/reports/all-employee-reports'
+      }
+    ]
   },
   {
     role: 'admin',
