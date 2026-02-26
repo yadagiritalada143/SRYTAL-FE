@@ -338,7 +338,7 @@ const PayrollManagement = () => {
                           color: currentThemeConfig.color
                         }
                       }}
-                      label="Salary Period"
+                      label="Salary Month"
                       placeholder="Select month"
                       value={selectedMonth}
                       onChange={value =>

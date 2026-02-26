@@ -196,7 +196,8 @@ const EmployeeLogin = () => {
             className="w-full rounded-full font-semibold transition-all duration-200"
             disabled={isSubmitting}
             style={{
-              color: button.textColor
+              color: button.textColor,
+              borderRadius: 8
             }}
             styles={{
               root: {

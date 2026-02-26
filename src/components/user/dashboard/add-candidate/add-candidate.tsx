@@ -331,7 +331,10 @@ const AddPoolCandidate = () => {
                           <Text size="sm" fw={500}>
                             Added Skills
                           </Text>
-                          <Badge variant="filled" color="blue">
+                          <Badge
+                            variant="filled"
+                            color={currentThemeConfig.button.color}
+                          >
                             {skills.length}{' '}
                             {skills.length === 1 ? 'skill' : 'skills'}
                           </Badge>
@@ -340,7 +343,7 @@ const AddPoolCandidate = () => {
                           {skills.map(skill => (
                             <Badge
                               key={skill}
-                              color="blue"
+                              color={currentThemeConfig.button.color}
                               size="md"
                               variant="filled"
                               onClick={() => handleSkillRemove(skill)}

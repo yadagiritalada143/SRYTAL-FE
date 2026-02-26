@@ -18,7 +18,7 @@ import {
   Center
 } from '@mantine/core';
 import { useCustomToast } from '../../../../utils/common/toast';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import {
   UpdateCandidateSchema,
   updateCandidateSchema
@@ -47,13 +47,14 @@ import {
   IconTrash,
   IconDeviceFloppy
 } from '@tabler/icons-react';
+import { themeAtom } from '../../../../atoms/theme';
+import { getThemeConfig } from '../../../../utils/common/theme-utils';
 
 const UpdatePoolCandidateForm = () => {
   const [skills, setSkills] = useState<string[]>([]);
   const [skillInput, setSkillInput] = useState('');
   const [loading, setLoading] = useState(true);
   const [comments, setComments] = useState<PoolCandidatesComments[]>([]);
-  const organizationConfig = useRecoilValue(organizationThemeAtom);
   const [opened, { open, close }] = useDisclosure(false);
   const { showSuccessToast } = useCustomToast();
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -61,7 +62,11 @@ const UpdatePoolCandidateForm = () => {
 
   const isMobile = useMediaQuery('(max-width: 768px)');
   const isSmallMobile = useMediaQuery('(max-width: 500px)');
-
+  const isDarkTheme = useRecoilValue(themeAtom);
+  const organizationConfig = useRecoilValue(organizationThemeAtom);
+  const currentThemeConfig = useMemo(() => {
+    return getThemeConfig(organizationConfig, isDarkTheme);
+  }, [organizationConfig, isDarkTheme]);
   const {
     control,
     formState: { errors, isSubmitting },
@@ -291,7 +296,8 @@ const UpdatePoolCandidateForm = () => {
                     <Badge
                       key={skill}
                       size="lg"
-                      variant="light"
+                      variant="filled"
+                      color={currentThemeConfig.button.color}
                       rightSection={
                         <IconX
                           size={14}
