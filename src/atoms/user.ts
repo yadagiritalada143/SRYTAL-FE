@@ -7,6 +7,7 @@ export const userDetailsAtom = atom<UserDetails>({
     firstName: '',
     lastName: '',
     userRole: '',
-    passwordResetRequired: 'false'
+    passwordResetRequired: 'false',
+    id: ''
   }
 });

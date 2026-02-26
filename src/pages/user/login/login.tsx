@@ -60,7 +60,8 @@ const EmployeeLogin = () => {
         firstName: data.firstName,
         lastName: data.lastName,
         userRole: data.userRole,
-        passwordResetRequired: data.passwordResetRequired
+        passwordResetRequired: data.passwordResetRequired,
+        id: data.id
       });
 
       if (data.userRole === 'recruiter') {
