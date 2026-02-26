@@ -54,13 +54,14 @@ const isValidEmploymentType = (name: string) =>
 const TypeActions: React.FC<{
   type: any;
   onEdit: (type: any) => void;
+  color: string;
   isMobile?: boolean;
-}> = ({ type, onEdit, isMobile = false }) => (
+}> = ({ type, onEdit, color, isMobile = false }) => (
   <Group gap="xs" justify="center">
     <Tooltip label="Edit Type">
       <ActionIcon
         variant="subtle"
-        color="blue"
+        color={color}
         onClick={() => onEdit(type)}
         size={isMobile ? 'md' : 'sm'}
       >
@@ -116,7 +117,7 @@ const HeadingComponent: React.FC<{
   onAdd: () => void;
   isMobile?: boolean;
 }> = ({ filteredCount, onAdd, isMobile = false }) => (
-  <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder mt="xl">
+  <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder>
     <Flex
       direction={isMobile ? 'column' : 'row'}
       justify="space-between"
@@ -193,13 +194,8 @@ const EmploymentTypes = () => {
   }, [setEmploymentTypes, showErrorToast]);
 
   useEffect(() => {
-    if (employmentTypes.length === 0) {
-      fetchEmploymentTypes();
-    } else {
-      setFilteredEmploymentType(employmentTypes);
-      setIsLoading(false);
-    }
-  }, [employmentTypes, fetchEmploymentTypes]);
+    fetchEmploymentTypes();
+  }, []);
   // Debounced search
   const debouncedSearch = useMemo(
     () =>
@@ -327,12 +323,7 @@ const EmploymentTypes = () => {
   }, [itemsPerPage]);
 
   return (
-    <Container
-      size={isMobile ? 'xl' : 'md'}
-      py="md"
-      my="xl"
-      px={isSmallMobile ? 'xs' : 'md'}
-    >
+    <div>
       <Stack gap="md">
         {/* Header */}
         <HeadingComponent
@@ -343,17 +334,22 @@ const EmploymentTypes = () => {
 
         {/* Filters */}
         <Card shadow="sm" p={isMobile ? 'sm' : 'md'} radius="md" withBorder>
-          <Stack gap="md">
+          <Flex
+            direction={isMobile ? 'column' : 'row'}
+            justify="space-between"
+            align={isMobile ? 'stretch' : 'center'}
+            gap="md"
+          >
             <TextInput
               placeholder="Search by employment type..."
               leftSection={<IconSearch size={16} />}
               value={searchQuery}
               onChange={handleSearch}
               radius="md"
-              size={isMobile ? 'sm' : 'md'}
+              style={{ flex: 1 }}
             />
 
-            <Group justify="space-between" wrap={isMobile ? 'wrap' : 'nowrap'}>
+            <Group wrap="nowrap" gap="md">
               <Group gap="xs">
                 <Text size="sm">Items per page:</Text>
                 <Select
@@ -374,7 +370,7 @@ const EmploymentTypes = () => {
                 </Badge>
               )}
             </Group>
-          </Stack>
+          </Flex>
         </Card>
 
         {/* Table or Cards */}
@@ -466,18 +462,20 @@ const EmploymentTypes = () => {
                   {paginatedData.length > 0 ? (
                     paginatedData.map((type, index) => (
                       <Table.Tr key={type.id} className="transition-colors">
-                        <Table.Td className="text-center p-3">
+                        <Table.Td className="text-center">
                           <Text size="sm">
                             {index + 1 + (activePage - 1) * itemsPerPage}
                           </Text>
                         </Table.Td>
                         <Table.Td className="p-3">
-                          <Text size="sm" fw={500}>
-                            {type.employmentType}
-                          </Text>
+                          <Text size="sm">{type.employmentType}</Text>
                         </Table.Td>
                         <Table.Td className="p-3">
-                          <TypeActions type={type} onEdit={handleEdit} />
+                          <TypeActions
+                            type={type}
+                            onEdit={handleEdit}
+                            color={currentThemeConfig.button.color}
+                          />
                         </Table.Td>
                       </Table.Tr>
                     ))
@@ -539,9 +537,16 @@ const EmploymentTypes = () => {
         }
         centered
         size="md"
+        styles={{
+          header: {
+            paddingBottom: 4,
+            paddingTop: 5
+          }
+        }}
       >
         <Stack gap="md">
           <TextInput
+            mt="md"
             label="Type Name"
             value={newTypeName}
             onChange={e => {
@@ -576,7 +581,7 @@ const EmploymentTypes = () => {
         onClose={closeEditModal}
         title={
           <Group gap="xs">
-            <IconEdit size={20} />
+            <IconEdit size={20} color={currentThemeConfig.button.color} />
             <Text fw={600} size="lg">
               Edit Employment Type
             </Text>
@@ -584,9 +589,16 @@ const EmploymentTypes = () => {
         }
         centered
         size="md"
+        styles={{
+          header: {
+            paddingBottom: 4,
+            paddingTop: 5
+          }
+        }}
       >
         <Stack gap="md">
           <TextInput
+            mt="md"
             label="Type Name"
             value={selectedType?.employmentType || ''}
             onChange={e => {
@@ -677,7 +689,7 @@ const EmploymentTypes = () => {
           </Group>
         </Stack>
       </Modal>
-    </Container>
+    </div>
   );
 };
 

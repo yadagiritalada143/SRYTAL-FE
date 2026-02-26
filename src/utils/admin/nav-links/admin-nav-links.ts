@@ -26,22 +26,6 @@ export const adminNavLinks = [
   },
   {
     role: 'admin',
-    url: 'admin/dashboard/reports',
-    icon: IconNotebook,
-    name: 'Reports',
-    children: [
-      //{
-      //name: 'Generate Offer',
-      //url: 'admin/dashboard/reports/generate-offer'
-      //},
-      {
-        name: 'Generate Salary Slip',
-        url: 'admin/dashboard/reports/generate-salary-slip'
-      }
-    ]
-  },
-  {
-    role: 'admin',
     url: 'admin/dashboard/packages',
     icon: IconPackage,
     name: 'Packages'
@@ -60,21 +44,23 @@ export const adminNavLinks = [
   },
   {
     role: 'admin',
-    url: 'admin/dashboard/blood-group-management',
-    icon: IconDroplet,
-    name: 'Blood Groups'
-  },
-  {
-    role: 'admin',
-    url: 'admin/dashboard/employment-type-management',
-    icon: IconNetwork,
-    name: 'Employment Types'
-  },
-  {
-    role: 'admin',
-    url: 'admin/dashboard/employment-role-management',
-    icon: IconWorldCheck,
-    name: 'Employment Roles'
+    url: 'admin/dashboard/reports',
+    icon: IconNotebook,
+    name: 'Payroll Management',
+    children: [
+      //{
+      //name: 'Generate Offer',
+      //url: 'admin/dashboard/reports/generate-offer'
+      //},
+      {
+        name: 'Generate Salary Slip',
+        url: 'admin/dashboard/reports/generate-salary-slip'
+      },
+      {
+        name: 'Payroll Reports',
+        url: 'admin/dashboard/reports/all-employee-reports'
+      }
+    ]
   },
   {
     role: 'admin',
