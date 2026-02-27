@@ -18,12 +18,15 @@ import { IconRefresh } from '@tabler/icons-react';
 const AdminProfile = () => {
   const [adminDetails, setAdminDetails] = useState<EmployeeInterface>({
     _id: '',
+    id: '',
     employeeId: '',
     firstName: '',
     lastName: '',
     email: '',
     mobileNumber: '',
-    dob: '',
+    dateOfBirth: '',
+    panCardNumber: '',
+    aadharNumber: '',
     presentAddress: '',
     permanentAddress: '',
     userRole: '',
@@ -57,7 +60,7 @@ const AdminProfile = () => {
       .then(user => {
         setAdminDetails({
           ...user,
-          dob: user.dateOfBirth ? formatDate(user.dateOfBirth) : ''
+          dateOfBirth: user.dateOfBirth ? formatDate(user.dateOfBirth) : ''
         });
       })
       .catch(error => {
