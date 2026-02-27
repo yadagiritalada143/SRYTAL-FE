@@ -123,6 +123,13 @@ const SalarySlipReport = () => {
     year: 'numeric'
   });
 
+  const currentMonth = new Date();
+  const maxSelectableMonth = new Date(
+    currentMonth.getFullYear(),
+    currentMonth.getMonth() + 1,
+    1
+  );
+
   return (
     <Box style={{ minHeight: '100vh' }} py="xl" m="xl">
       <Container size="lg">
@@ -203,7 +210,7 @@ const SalarySlipReport = () => {
                     placeholder="Choose month"
                     leftSection={<IconCalendar size={16} stroke={1.5} />}
                     value={month}
-                    maxDate={new Date()}
+                    maxDate={maxSelectableMonth}
                     onChange={value => {
                       setMonth(value ? new Date(value) : null);
                       // Reset state when user picks a new month
