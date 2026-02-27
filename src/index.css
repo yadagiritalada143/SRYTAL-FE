@@ -49,22 +49,27 @@ h1 {
 }
 
 .mantine-Tabs-list {
-  border-bottom: none;
+  border-bottom: none !important;
   overflow: visible;
 }
 
 .mantine-Tabs-tab {
   position: relative;
+  font-weight: 500;
+  padding: 10px 16px;
+  border: none !important;
+  margin-bottom: 12px;
 }
 
 .mantine-Tabs-tab::after {
   content: '';
   position: absolute;
-  left: 12px;
-  right: 12px;
-  bottom: -6px;
+  left: 16px;
+  right: 16px;
+  bottom: -2px;
   height: 2px;
   background-color: transparent;
+  transition: all 0.2s ease;
 }
 
 .mantine-Tabs-tab[data-active]::after {
@@ -76,4 +81,16 @@ h1 {
 
 .mantine-Tabs-tab[data-active] {
   border-bottom: none !important;
+}
+
+.settings-tabs .mantine-Tabs-tab[data-active] svg {
+  color: #ffffff !important;
+}
+
+.settings-tabs .mantine-Tabs-tab[data-active] {
+  color: #ffffff !important;
+}
+
+.settings-tab:hover {
+  background-color: transparent !important;
 }

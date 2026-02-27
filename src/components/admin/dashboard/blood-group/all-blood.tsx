@@ -54,13 +54,14 @@ const isValidBloodGroup = (group: string) =>
 const BloodGroupActions: React.FC<{
   group: any;
   onEdit: (group: any) => void;
+  color: string;
   isMobile?: boolean;
-}> = ({ group, onEdit, isMobile = false }) => (
+}> = ({ group, onEdit, color, isMobile = false }) => (
   <Group gap="xs" justify="center">
     <Tooltip label="Edit Blood Group">
       <ActionIcon
         variant="subtle"
-        color="blue"
+        color={color}
         onClick={() => onEdit(group)}
         size={isMobile ? 'md' : 'sm'}
       >
@@ -75,19 +76,20 @@ const MobileBloodGroupCard: React.FC<{
   group: any;
   index: number;
   activePage: number;
+  color: string;
   itemsPerPage: number;
   onEdit: (group: any) => void;
-}> = ({ group, index, activePage, itemsPerPage, onEdit }) => {
+}> = ({ group, index, activePage, itemsPerPage, color, onEdit }) => {
   return (
     <Card shadow="sm" p="md" mb="sm" withBorder>
       <Stack gap="sm">
         <Group justify="space-between" align="center">
-          <Badge variant="filled" color="red">
+          <Badge variant="filled" color={color}>
             #{index + 1 + (activePage - 1) * itemsPerPage}
           </Badge>
           <ActionIcon
             variant="subtle"
-            color="blue"
+            color={color}
             onClick={() => onEdit(group)}
             size="md"
           >
@@ -119,7 +121,7 @@ const HeadingComponent: React.FC<{
   onAdd: () => void;
   isMobile?: boolean;
 }> = ({ filteredCount, onAdd, isMobile = false }) => (
-  <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder mt="xl">
+  <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder>
     <Flex
       direction={isMobile ? 'column' : 'row'}
       justify="space-between"
@@ -193,13 +195,8 @@ const BloodGroupTable = () => {
   }, [setBloodGroups, showErrorToast]);
 
   useEffect(() => {
-    if (bloodGroups.length === 0) {
-      fetchBloodGroups();
-    } else {
-      setFilteredBloodGroups(bloodGroups);
-      setIsLoading(false);
-    }
-  }, [bloodGroups, fetchBloodGroups]);
+    fetchBloodGroups();
+  }, []);
 
   // Debounced search
   const debouncedSearch = useMemo(
@@ -322,371 +319,430 @@ const BloodGroupTable = () => {
   }, [itemsPerPage]);
 
   return (
-    <Container
-      size={isMobile ? 'xl' : 'md'}
-      py="md"
-      my="xl"
-      px={isSmallMobile ? 'xs' : 'md'}
-    >
-      <Stack gap="md">
-        {/* Header */}
-        <HeadingComponent
-          filteredCount={filteredBloodGroups.length}
-          onAdd={openAddModal}
-          isMobile={isMobile}
-        />
+    <Container size="lg">
+      <Card
+        radius="lg"
+        p="lg"
+        withBorder
+        shadow={isDarkTheme ? 'xs' : 'sm'}
+        style={{
+          backgroundColor: currentThemeConfig.backgroundColor,
+          border: `1px solid ${currentThemeConfig.borderColor}`
+        }}
+      >
+        <Stack gap="lg">
+          {/* Header */}
+          <HeadingComponent
+            filteredCount={filteredBloodGroups.length}
+            onAdd={openAddModal}
+            isMobile={isMobile}
+          />
 
-        {/* Filters */}
-        <Card shadow="sm" p={isMobile ? 'sm' : 'md'} radius="md" withBorder>
-          <Stack gap="md">
-            <TextInput
-              placeholder="Search by blood group..."
-              leftSection={<IconSearch size={16} />}
-              value={searchQuery}
-              onChange={handleSearch}
-              radius="md"
-              size={isMobile ? 'sm' : 'md'}
-            />
+          {/* Filters */}
+          <Card shadow="sm" p={isMobile ? 'sm' : 'md'} radius="md">
+            <Flex
+              direction={isMobile ? 'column' : 'row'}
+              justify="space-between"
+              align={isMobile ? 'stretch' : 'center'}
+              gap="md"
+            >
+              <TextInput
+                placeholder="Search by blood group..."
+                leftSection={<IconSearch size={16} />}
+                value={searchQuery}
+                onChange={handleSearch}
+                radius="md"
+                style={{ flex: 1 }}
+              />
 
-            <Group justify="space-between" wrap={isMobile ? 'wrap' : 'nowrap'}>
-              <Group gap="xs">
-                <Text size="sm">Items per page:</Text>
-                <Select
-                  data={ITEMS_PER_PAGE_OPTIONS}
-                  value={itemsPerPage.toString()}
-                  onChange={value =>
-                    setItemsPerPage(Number(value) || DEFAULT_ITEMS_PER_PAGE)
-                  }
-                  w={80}
-                  size="sm"
-                />
-              </Group>
+              <Group justify="space-between" wrap="nowrap">
+                <Group gap="xs">
+                  <Text size="sm">Items per page:</Text>
+                  <Select
+                    data={ITEMS_PER_PAGE_OPTIONS}
+                    value={itemsPerPage.toString()}
+                    onChange={value =>
+                      setItemsPerPage(Number(value) || DEFAULT_ITEMS_PER_PAGE)
+                    }
+                    w={80}
+                    size="sm"
+                  />
+                </Group>
 
-              {filteredBloodGroups.length !== bloodGroups.length && (
-                <Badge variant="light" color="red">
-                  {filteredBloodGroups.length} of {bloodGroups.length} groups
-                </Badge>
-              )}
-            </Group>
-          </Stack>
-        </Card>
-
-        {/* Table or Cards */}
-        <Card shadow="sm" p={0} radius="md" withBorder>
-          {isLoading ? (
-            <Center p="xl">
-              <Stack align="center" gap="md">
-                <Loader size="xl" />
-                <Text>Loading blood groups...</Text>
-              </Stack>
-            </Center>
-          ) : isMobile ? (
-            // Mobile Card View
-            <ScrollArea p="md">
-              <Stack gap="sm">
-                {paginatedData.length > 0 ? (
-                  paginatedData.map((group, index) => (
-                    <MobileBloodGroupCard
-                      key={group.id}
-                      group={group}
-                      index={index}
-                      activePage={activePage}
-                      itemsPerPage={itemsPerPage}
-                      onEdit={handleEdit}
-                    />
-                  ))
-                ) : (
-                  <Card p="xl" withBorder>
-                    <Stack align="center" gap="md">
-                      <IconDroplet size={48} opacity={0.5} color="red" />
-                      <Text size="lg" ta="center">
-                        No blood groups found
-                      </Text>
-                      <Text size="sm" ta="center">
-                        {searchQuery
-                          ? 'Try adjusting your search'
-                          : 'Start by adding your first blood group'}
-                      </Text>
-                      {!searchQuery && (
-                        <Button
-                          variant="light"
-                          leftSection={<IconPlus size={16} />}
-                          onClick={openAddModal}
-                          fullWidth={isSmallMobile}
-                        >
-                          Add Blood Group
-                        </Button>
-                      )}
-                    </Stack>
-                  </Card>
+                {filteredBloodGroups.length !== bloodGroups.length && (
+                  <Badge variant="light" color={currentThemeConfig.dangerColor}>
+                    {filteredBloodGroups.length} of {bloodGroups.length} groups
+                  </Badge>
                 )}
-              </Stack>
-            </ScrollArea>
-          ) : (
-            // Desktop Table View
-            <ScrollArea>
-              <Table stickyHeader withTableBorder withColumnBorders>
-                <Table.Thead
-                  style={{
-                    backgroundColor: currentThemeConfig.backgroundColor,
-                    color: currentThemeConfig.color
-                  }}
-                >
-                  <Table.Tr>
-                    <Table.Th
-                      className="p-3 border text-center"
-                      style={{ width: '100px' }}
-                    >
-                      <Text size="sm" fw={500}>
-                        S.No
-                      </Text>
-                    </Table.Th>
-                    <Table.Th className="p-3 border">
-                      <Text size="sm" fw={500}>
-                        Blood Group
-                      </Text>
-                    </Table.Th>
-                    <Table.Th
-                      className="p-3 border text-center"
-                      style={{ width: '120px' }}
-                    >
-                      <Text size="sm" fw={500}>
-                        Actions
-                      </Text>
-                    </Table.Th>
-                  </Table.Tr>
-                </Table.Thead>
-                <Table.Tbody>
+              </Group>
+            </Flex>
+          </Card>
+
+          {/* Table or Cards */}
+          <Card shadow="sm" p={0} radius="md">
+            {isLoading ? (
+              <Center p="xl">
+                <Stack align="center" gap="md">
+                  <Loader size="xl" />
+                  <Text>Loading blood groups...</Text>
+                </Stack>
+              </Center>
+            ) : isMobile ? (
+              // Mobile Card View
+              <ScrollArea p="md">
+                <Stack gap="sm">
                   {paginatedData.length > 0 ? (
                     paginatedData.map((group, index) => (
-                      <Table.Tr key={group.id} className="transition-colors">
-                        <Table.Td className="text-center p-3">
-                          <Text size="sm">
-                            {index + 1 + (activePage - 1) * itemsPerPage}
-                          </Text>
-                        </Table.Td>
-                        <Table.Td className="p-3">
-                          <Group gap="xs">
-                            <IconDroplet size={18} color="red" />
-                            <Text size="sm" fw={500}>
-                              {group.type}
-                            </Text>
-                          </Group>
-                        </Table.Td>
-                        <Table.Td className="p-3">
-                          <BloodGroupActions
-                            group={group}
-                            onEdit={handleEdit}
-                          />
-                        </Table.Td>
-                      </Table.Tr>
+                      <MobileBloodGroupCard
+                        key={group.id}
+                        color={currentThemeConfig.button.color}
+                        group={group}
+                        index={index}
+                        activePage={activePage}
+                        itemsPerPage={itemsPerPage}
+                        onEdit={handleEdit}
+                      />
                     ))
                   ) : (
-                    <Table.Tr>
-                      <Table.Td colSpan={3} className="text-center p-8">
-                        <Stack align="center" gap="md">
-                          <IconDroplet size={48} opacity={0.5} color="red" />
-                          <Text size="lg">No blood groups found</Text>
-                          <Text size="sm">
-                            {searchQuery
-                              ? 'Try adjusting your search'
-                              : 'Start by adding your first blood group'}
-                          </Text>
-                          {!searchQuery && (
-                            <Button
-                              variant="light"
-                              leftSection={<IconPlus size={16} />}
-                              onClick={openAddModal}
-                            >
-                              Add Blood Group
-                            </Button>
-                          )}
-                        </Stack>
-                      </Table.Td>
-                    </Table.Tr>
+                    <Card p="xl" withBorder>
+                      <Stack align="center" gap="md">
+                        <IconDroplet
+                          size={48}
+                          opacity={0.5}
+                          color={currentThemeConfig.dangerColor}
+                        />
+                        <Text size="lg" ta="center">
+                          No blood groups found
+                        </Text>
+                        <Text size="sm" ta="center">
+                          {searchQuery
+                            ? 'Try adjusting your search'
+                            : 'Start by adding your first blood group'}
+                        </Text>
+                        {!searchQuery && (
+                          <Button
+                            variant="light"
+                            leftSection={<IconPlus size={16} />}
+                            onClick={openAddModal}
+                            fullWidth={isSmallMobile}
+                          >
+                            Add Blood Group
+                          </Button>
+                        )}
+                      </Stack>
+                    </Card>
                   )}
-                </Table.Tbody>
-              </Table>
-            </ScrollArea>
-          )}
-        </Card>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <Center>
-            <Pagination
-              value={activePage}
-              onChange={setActivePage}
-              total={totalPages}
-              size={isMobile ? 'sm' : 'md'}
-              radius="md"
-              withEdges
-            />
-          </Center>
-        )}
-      </Stack>
-
-      {/* Add Modal */}
-      <Modal
-        opened={addModalOpened}
-        onClose={closeAddModal}
-        title={
-          <Group gap="xs">
-            <Text fw={600} size="lg">
-              Add New Blood Group
-            </Text>
-          </Group>
-        }
-        centered
-        size="md"
-      >
-        <Stack gap="md">
-          <TextInput
-            label="Blood Group"
-            value={newGroupName}
-            onChange={e => {
-              const value = e.target.value;
-              if (
-                value === '' ||
-                isValidBloodGroup(value) ||
-                value.length < 5
-              ) {
-                setNewGroupName(value);
-              }
-            }}
-            placeholder="e.g., A+, B-, AB+, O-"
-            required
-            size="md"
-            description="Valid formats: A+, B-, AB+, O-, etc."
-          />
-          <Group justify="flex-end" mt="md">
-            <Button variant="default" onClick={closeAddModal} radius="md">
-              Cancel
-            </Button>
-            <Button
-              onClick={handleAdd}
-              disabled={isLoading || !newGroupName.trim()}
-              leftSection={<IconDeviceFloppy size={16} />}
-              radius="md"
-            >
-              {isLoading ? 'Adding...' : 'Add Blood Group'}
-            </Button>
-          </Group>
-        </Stack>
-      </Modal>
-
-      {/* Edit Modal */}
-      <Modal
-        opened={editModalOpened}
-        onClose={closeEditModal}
-        title={
-          <Group gap="xs">
-            <IconEdit size={20} />
-            <Text fw={600} size="lg">
-              Edit Blood Group
-            </Text>
-          </Group>
-        }
-        centered
-        size="md"
-      >
-        <Stack gap="md">
-          <TextInput
-            label="Blood Group"
-            value={selectedGroup?.type || ''}
-            onChange={e => {
-              const value = e.target.value;
-              if (
-                value === '' ||
-                isValidBloodGroup(value) ||
-                value.length < 5
-              ) {
-                setSelectedGroup({
-                  ...selectedGroup,
-                  type: value
-                });
-              }
-            }}
-            required
-            size="md"
-            description="Valid formats: A+, B-, AB+, O-, etc."
-          />
-          <Group justify="space-between">
-            {isMobile ? (
-              <Tooltip label="Delete Blood Group">
-                <Button
-                  onClick={openDeleteModal}
-                  p="xs"
-                  radius="md"
-                  variant="outline"
-                >
-                  <IconTrash size={16} />
-                </Button>
-              </Tooltip>
+                </Stack>
+              </ScrollArea>
             ) : (
-              <Button
-                color="red"
-                variant="outline"
-                leftSection={<IconTrash size={16} />}
-                onClick={() => handleDelete(selectedGroup.id)}
-                radius="md"
-              >
-                Delete
-              </Button>
+              // Desktop Table View
+              <ScrollArea>
+                <Table
+                  stickyHeader
+                  styles={{
+                    table: {
+                      border: `1px solid ${currentThemeConfig.borderColor}`
+                    },
+                    th: {
+                      borderBottom: `1px solid ${currentThemeConfig.borderColor}`
+                    },
+                    td: {
+                      borderBottom: `1px solid ${currentThemeConfig.borderColor}`,
+                      borderRight: `1px solid ${currentThemeConfig.borderColor}`
+                    }
+                  }}
+                >
+                  <Table.Thead
+                    style={{
+                      backgroundColor: currentThemeConfig.backgroundColor,
+                      color: currentThemeConfig.color
+                    }}
+                  >
+                    <Table.Tr>
+                      <Table.Th
+                        className="p-3 border text-center"
+                        style={{ width: '100px' }}
+                      >
+                        <Text size="sm" fw={500}>
+                          S.No
+                        </Text>
+                      </Table.Th>
+                      <Table.Th className="p-3 border">
+                        <Text size="sm" fw={500}>
+                          Blood Group
+                        </Text>
+                      </Table.Th>
+                      <Table.Th
+                        className="p-3 border text-center"
+                        style={{ width: '120px' }}
+                      >
+                        <Text size="sm" fw={500}>
+                          Actions
+                        </Text>
+                      </Table.Th>
+                    </Table.Tr>
+                  </Table.Thead>
+                  <Table.Tbody>
+                    {paginatedData.length > 0 ? (
+                      paginatedData.map((group, index) => (
+                        <Table.Tr key={group.id} className="transition-colors">
+                          <Table.Td className="text-center">
+                            <Text size="sm">
+                              {index + 1 + (activePage - 1) * itemsPerPage}
+                            </Text>
+                          </Table.Td>
+                          <Table.Td className="p-3">
+                            <Group gap="xs">
+                              <IconDroplet
+                                size={18}
+                                color={currentThemeConfig.dangerColor}
+                              />
+                              <Text size="sm">{group.type}</Text>
+                            </Group>
+                          </Table.Td>
+                          <Table.Td className="p-3">
+                            <BloodGroupActions
+                              group={group}
+                              onEdit={handleEdit}
+                              color={currentThemeConfig.button.color}
+                            />
+                          </Table.Td>
+                        </Table.Tr>
+                      ))
+                    ) : (
+                      <Table.Tr>
+                        <Table.Td colSpan={3} className="text-center p-8">
+                          <Stack align="center" gap="md">
+                            <IconDroplet
+                              size={48}
+                              opacity={0.5}
+                              color={currentThemeConfig.dangerColor}
+                            />
+                            <Text size="lg">No blood groups found</Text>
+                            <Text size="sm">
+                              {searchQuery
+                                ? 'Try adjusting your search'
+                                : 'Start by adding your first blood group'}
+                            </Text>
+                            {!searchQuery && (
+                              <Button
+                                variant="light"
+                                leftSection={<IconPlus size={16} />}
+                                onClick={openAddModal}
+                              >
+                                Add Blood Group
+                              </Button>
+                            )}
+                          </Stack>
+                        </Table.Td>
+                      </Table.Tr>
+                    )}
+                  </Table.Tbody>
+                </Table>
+              </ScrollArea>
             )}
-            <Group>
-              <Button variant="default" onClick={closeEditModal} radius="md">
+          </Card>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <Center>
+              <Pagination
+                value={activePage}
+                onChange={setActivePage}
+                total={totalPages}
+                color={currentThemeConfig.button.color}
+                size={isMobile ? 'sm' : 'md'}
+                radius="md"
+                withEdges
+              />
+            </Center>
+          )}
+        </Stack>
+
+        {/* Add Modal */}
+        <Modal
+          opened={addModalOpened}
+          onClose={closeAddModal}
+          title={
+            <Group gap="xs">
+              <IconDroplet
+                size={20}
+                stroke={1.8}
+                color={currentThemeConfig.button.color}
+              />
+              <Text fw={600} size="lg">
+                Add New Blood Group
+              </Text>
+            </Group>
+          }
+          centered
+          size="md"
+          styles={{
+            header: {
+              paddingBottom: 4,
+              paddingTop: 5
+            }
+          }}
+        >
+          <Stack gap="md">
+            <TextInput
+              mt="md"
+              label="Blood Group"
+              value={newGroupName}
+              onChange={e => {
+                const value = e.target.value;
+                if (
+                  value === '' ||
+                  isValidBloodGroup(value) ||
+                  value.length < 5
+                ) {
+                  setNewGroupName(value);
+                }
+              }}
+              placeholder="e.g., A+, B-, AB+, O-"
+              required
+              size="md"
+              description="Valid formats: A+, B-, AB+, O-, etc."
+            />
+            <Group justify="flex-end" mt="xs">
+              <Button variant="default" onClick={closeAddModal} radius="md">
                 Cancel
               </Button>
               <Button
-                onClick={confirmEdit}
-                disabled={isLoading}
+                onClick={handleAdd}
+                disabled={isLoading || !newGroupName.trim()}
                 leftSection={<IconDeviceFloppy size={16} />}
                 radius="md"
               >
-                {isLoading ? 'Saving...' : 'Save'}
+                {isLoading ? 'Adding...' : 'Add Blood Group'}
               </Button>
             </Group>
-          </Group>
-        </Stack>
-      </Modal>
+          </Stack>
+        </Modal>
 
-      {/* Delete Confirmation Modal */}
-      <Modal
-        opened={deleteModalOpened}
-        onClose={closeDeleteModal}
-        title={
-          <Group gap="xs">
-            <IconAlertTriangle size={24} color="red" />
-            <Text fw={600} size="lg" c="red">
-              Delete Blood Group
+        {/* Edit Modal */}
+        <Modal
+          opened={editModalOpened}
+          onClose={closeEditModal}
+          title={
+            <Group gap="xs">
+              <IconEdit size={20} color={currentThemeConfig.button.color} />
+              <Text fw={600} size="lg">
+                Edit Blood Group
+              </Text>
+            </Group>
+          }
+          centered
+          size="md"
+          styles={{
+            header: {
+              paddingBottom: 4,
+              paddingTop: 5
+            }
+          }}
+        >
+          <Stack gap="md">
+            <TextInput
+              mt="md"
+              label="Blood Group"
+              value={selectedGroup?.type || ''}
+              onChange={e => {
+                const value = e.target.value;
+                if (
+                  value === '' ||
+                  isValidBloodGroup(value) ||
+                  value.length < 5
+                ) {
+                  setSelectedGroup({
+                    ...selectedGroup,
+                    type: value
+                  });
+                }
+              }}
+              required
+              size="md"
+              description="Valid formats: A+, B-, AB+, O-, etc."
+            />
+            <Group justify="space-between">
+              {isMobile ? (
+                <Tooltip label="Delete Blood Group">
+                  <Button
+                    onClick={openDeleteModal}
+                    p="xs"
+                    radius="md"
+                    variant="outline"
+                  >
+                    <IconTrash size={16} />
+                  </Button>
+                </Tooltip>
+              ) : (
+                <Button
+                  color={currentThemeConfig.dangerColor}
+                  variant="outline"
+                  leftSection={<IconTrash size={16} />}
+                  onClick={() => handleDelete(selectedGroup.id)}
+                  radius="md"
+                >
+                  Delete
+                </Button>
+              )}
+              <Group>
+                <Button variant="default" onClick={closeEditModal} radius="md">
+                  Cancel
+                </Button>
+                <Button
+                  onClick={confirmEdit}
+                  disabled={isLoading}
+                  leftSection={<IconDeviceFloppy size={16} />}
+                  radius="md"
+                >
+                  {isLoading ? 'Saving...' : 'Save'}
+                </Button>
+              </Group>
+            </Group>
+          </Stack>
+        </Modal>
+
+        {/* Delete Confirmation Modal */}
+        <Modal
+          opened={deleteModalOpened}
+          onClose={closeDeleteModal}
+          title={
+            <Group gap="xs">
+              <IconAlertTriangle
+                size={24}
+                color={currentThemeConfig.dangerColor}
+              />
+              <Text fw={600} size="lg" c={currentThemeConfig.dangerColor}>
+                Delete Blood Group
+              </Text>
+            </Group>
+          }
+          centered
+          size="md"
+        >
+          <Stack gap="md">
+            <Text size="sm" mt="md">
+              Are you sure you want to delete this blood group? This action
+              cannot be undone.
             </Text>
-          </Group>
-        }
-        centered
-        size="md"
-      >
-        <Stack gap="md">
-          <Text size="sm">
-            Are you sure you want to delete this blood group? This action cannot
-            be undone.
-          </Text>
-          <Group justify="flex-end" mt="md">
-            <Button variant="default" onClick={closeDeleteModal} radius="md">
-              Cancel
-            </Button>
-            <Button
-              color="red"
-              onClick={confirmDelete}
-              disabled={isLoading}
-              leftSection={<IconTrash size={16} />}
-              radius="md"
-            >
-              {isLoading ? 'Deleting...' : 'Delete'}
-            </Button>
-          </Group>
-        </Stack>
-      </Modal>
+            <Group justify="flex-end" mt="md">
+              <Button variant="default" onClick={closeDeleteModal} radius="md">
+                Cancel
+              </Button>
+              <Button
+                color={currentThemeConfig.dangerColor}
+                onClick={confirmDelete}
+                disabled={isLoading}
+                leftSection={<IconTrash size={16} />}
+                radius="md"
+              >
+                {isLoading ? 'Deleting...' : 'Delete'}
+              </Button>
+            </Group>
+          </Stack>
+        </Modal>
+      </Card>
     </Container>
   );
 };

@@ -203,3 +203,29 @@ export const submitTimeSheet = async (data: any, employeeId?: string) => {
     throw error;
   }
 };
+
+export const downloadSalarySlip = async ({
+  mongoId,
+  fullName,
+  month,
+  year
+}: {
+  mongoId: string;
+  fullName: string;
+  month: string;
+  year: string;
+}) => {
+  try {
+    const response = await apiClient.post('/downloadSalarySlip', {
+      mongoId,
+      fullName,
+      month,
+      year
+    });
+    return response.data;
+  } catch (error: any) {
+    if (error?.response?.data) {
+      return error.response.data;
+    }
+  }
+};

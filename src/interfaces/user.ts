@@ -3,4 +3,5 @@ export interface UserDetails {
   lastName: string;
   userRole: string;
   passwordResetRequired: string;
+  id: string;
 }

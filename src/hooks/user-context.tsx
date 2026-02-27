@@ -1,9 +1,9 @@
-import { ReactNode, useEffect } from "react";
-import { useRecoilState } from "recoil";
-import { userDetailsAtom } from "../atoms/user";
-import { getUserDetails } from "../services/user-services";
-import { toast } from "react-toastify";
-import { EmployeeInterface } from "../interfaces/employee";
+import { ReactNode, useEffect } from 'react';
+import { useRecoilState } from 'recoil';
+import { userDetailsAtom } from '../atoms/user';
+import { getUserDetails } from '../services/user-services';
+import { toast } from 'react-toastify';
+import { EmployeeInterface } from '../interfaces/employee';
 
 interface UserProviderProps {
   children: ReactNode;
@@ -14,7 +14,7 @@ const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem('token');
 
       if (!token) {
         return;
@@ -26,14 +26,15 @@ const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
           lastName: data.lastName,
           userRole: data.userRole,
           passwordResetRequired: data.passwordResetRequired,
+          id: data.id
         });
       } catch (error: any) {
         console.log(error);
-        toast.error(error?.response?.data?.message || "Something went wrong");
+        toast.error(error?.response?.data?.message || 'Something went wrong');
       }
     };
 
-    if (user.firstName === "") {
+    if (user.firstName === '') {
       fetchUser();
     }
   }, [user, setUser]);

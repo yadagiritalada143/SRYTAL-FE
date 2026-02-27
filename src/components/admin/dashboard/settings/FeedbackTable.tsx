@@ -15,7 +15,9 @@ import {
   Flex,
   ActionIcon,
   Select,
-  Modal
+  Modal,
+  Divider,
+  Container
 } from '@mantine/core';
 
 import {
@@ -24,7 +26,8 @@ import {
   IconSearch,
   IconTrash,
   IconAlertTriangle,
-  IconDeviceFloppy
+  IconDeviceFloppy,
+  IconCategory
 } from '@tabler/icons-react';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -76,6 +79,7 @@ export default function FeedbackTable() {
   const isDarkTheme = useRecoilValue(themeAtom);
 
   const isMobile = useMediaQuery('(max-width: 768px)');
+  const isSmallMobile = useMediaQuery('(max-width: 500px)');
 
   const currentThemeConfig = useMemo(
     () => getThemeConfig(organizationConfig, isDarkTheme),
@@ -205,287 +209,454 @@ export default function FeedbackTable() {
 
   useEffect(() => setActivePage(1), [itemsPerPage]);
 
-  return (
-    <div>
-      <Stack gap="md">
-        {/* HEADER */}
-        <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder>
-          <Flex
-            direction={isMobile ? 'column' : 'row'}
-            justify="space-between"
-            align="center"
-            gap="md"
-          >
-            <Text size={isMobile ? 'lg' : 'xl'} fw={700}>
-              Manage Feedback Attributes ({filtered.length})
-            </Text>
-
-            <Button
-              leftSection={<IconPlus size={16} />}
-              onClick={openAdd}
-              fullWidth={isMobile}
-              radius="md"
+  const MobileTypeCard: React.FC<{
+    type: Feedback;
+    index: number;
+    activePage: number;
+    color: string;
+    itemsPerPage: number;
+    onEdit: (type: any) => void;
+  }> = ({ type, index, activePage, color, itemsPerPage, onEdit }) => {
+    return (
+      <Card shadow="sm" p="md" mb="sm">
+        <Stack gap="sm">
+          <Group justify="space-between" align="center">
+            <Badge variant="filled" color={color}>
+              #{index + 1 + (activePage - 1) * itemsPerPage}
+            </Badge>
+            <ActionIcon
+              variant="subtle"
+              color={color}
+              onClick={() => onEdit(type)}
+              size="md"
             >
-              Add Feedback Attribute
-            </Button>
-          </Flex>
-        </Card>
+              <IconEdit size={18} />
+            </ActionIcon>
+          </Group>
 
-        {/* SEARCH */}
-        <Card shadow="sm" p="md" radius="md" withBorder>
-          <Stack gap="md">
-            <TextInput
-              placeholder="Search feedback attribute..."
-              leftSection={<IconSearch size={16} />}
-              value={searchQuery}
-              onChange={handleSearch}
-            />
+          <Divider />
 
-            <Group justify="space-between">
-              <Group gap="xs">
-                <Text size="sm">Items per page:</Text>
-                <Select
-                  data={ITEMS_PER_PAGE_OPTIONS}
-                  value={itemsPerPage.toString()}
-                  onChange={v =>
-                    setItemsPerPage(Number(v) || DEFAULT_ITEMS_PER_PAGE)
-                  }
-                  w={80}
-                  size="sm"
-                />
-              </Group>
-
-              {filtered.length !== feedbacks.length && (
-                <Badge variant="light" color="blue">
-                  {filtered.length} of {feedbacks.length}
-                </Badge>
-              )}
-            </Group>
+          <Stack gap={2}>
+            <Text size="xs" fw={600} c="dimmed">
+              Employment Type
+            </Text>
+            <Text size="lg" fw={600}>
+              {type.name}
+            </Text>
           </Stack>
-        </Card>
+        </Stack>
+      </Card>
+    );
+  };
 
-        {/* TABLE */}
-        <Card shadow="sm" p={0} radius="md" withBorder>
-          {isLoading ? (
-            <Center p="xl">
-              <Stack align="center" gap="md">
-                <Loader size="xl" />
-              </Stack>
-            </Center>
-          ) : (
-            <ScrollArea>
-              <Table stickyHeader withTableBorder withColumnBorders>
-                <Table.Thead
-                  style={{
-                    backgroundColor: currentThemeConfig.backgroundColor,
-                    color: currentThemeConfig.color
+  return (
+    <Container size="lg">
+      <Card
+        radius="lg"
+        p="lg"
+        withBorder
+        shadow={isDarkTheme ? 'xs' : 'sm'}
+        style={{
+          backgroundColor: currentThemeConfig.backgroundColor,
+          border: `1px solid ${currentThemeConfig.borderColor}`
+        }}
+      >
+        <Stack gap="lg">
+          {/* HEADER */}
+          <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md">
+            <Flex
+              direction={isMobile ? 'column' : 'row'}
+              justify="space-between"
+              align="center"
+              gap="md"
+            >
+              <Text size={isMobile ? 'lg' : 'xl'} fw={700}>
+                Manage Feedback Attributes ({filtered.length})
+              </Text>
+
+              <Button
+                leftSection={<IconPlus size={16} />}
+                onClick={openAdd}
+                fullWidth={isMobile}
+                radius="md"
+              >
+                Add Feedback Attribute
+              </Button>
+            </Flex>
+          </Card>
+
+          <Card shadow="sm" p="md" radius="md">
+            <Flex
+              direction={isMobile ? 'column' : 'row'}
+              justify="space-between"
+              align={isMobile ? 'stretch' : 'center'}
+              gap="md"
+            >
+              <TextInput
+                placeholder="Search feedback attribute..."
+                leftSection={<IconSearch size={16} />}
+                value={searchQuery}
+                onChange={handleSearch}
+                radius="md"
+                style={{ flex: 1 }}
+              />
+
+              <Group wrap="nowrap" gap="md">
+                <Group gap="xs">
+                  <Text size="sm">Items per page:</Text>
+                  <Select
+                    data={ITEMS_PER_PAGE_OPTIONS}
+                    value={itemsPerPage.toString()}
+                    onChange={v =>
+                      setItemsPerPage(Number(v) || DEFAULT_ITEMS_PER_PAGE)
+                    }
+                    w={80}
+                    size="sm"
+                  />
+                </Group>
+
+                {filtered.length !== feedbacks.length && (
+                  <Badge variant="light" color="blue">
+                    {filtered.length} of {feedbacks.length}
+                  </Badge>
+                )}
+              </Group>
+            </Flex>
+          </Card>
+
+          {/* TABLE */}
+          <Card shadow="sm" p={0} radius="md">
+            {isLoading ? (
+              <Center p="xl">
+                <Stack align="center" gap="md">
+                  <Loader size="xl" />
+                </Stack>
+              </Center>
+            ) : isMobile ? (
+              <ScrollArea p="md">
+                <Stack gap="sm">
+                  {filtered.length === 0 ? (
+                    <Card p="xl" withBorder>
+                      <Stack align="center" gap="md">
+                        <IconCategory size={48} opacity={0.5} />
+                        <Text size="lg" ta="center">
+                          No feedback attributes found
+                        </Text>
+                        <Text size="sm" ta="center">
+                          {searchQuery
+                            ? 'Try adjusting your search'
+                            : 'Start by adding your first feedback attribute'}
+                        </Text>
+                        {!searchQuery && (
+                          <Button
+                            variant="light"
+                            leftSection={<IconPlus size={16} />}
+                            onClick={openAdd}
+                            fullWidth={isSmallMobile}
+                          >
+                            Add Feedback Attribute
+                          </Button>
+                        )}
+                      </Stack>
+                    </Card>
+                  ) : (
+                    paginatedData.map((type, index) => (
+                      <MobileTypeCard
+                        color={currentThemeConfig.button.color}
+                        key={type.id}
+                        type={type}
+                        index={index}
+                        activePage={activePage}
+                        itemsPerPage={itemsPerPage}
+                        onEdit={handleEdit}
+                      />
+                    ))
+                  )}
+                </Stack>
+              </ScrollArea>
+            ) : (
+              <ScrollArea>
+                <Table
+                  stickyHeader
+                  styles={{
+                    table: {
+                      border: `1px solid ${currentThemeConfig.borderColor}`
+                    },
+                    th: {
+                      borderBottom: `1px solid ${currentThemeConfig.borderColor}`
+                    },
+                    td: {
+                      borderBottom: `1px solid ${currentThemeConfig.borderColor}`,
+                      borderRight: `1px solid ${currentThemeConfig.borderColor}`
+                    }
                   }}
                 >
-                  <Table.Tr>
-                    <Table.Th
-                      className="p-3 text-center"
-                      style={{ width: '100px' }}
-                    >
-                      <Text size="sm" fw={500}>
-                        S.No
-                      </Text>
-                    </Table.Th>
-                    <Table.Th className="p-3">
-                      <Text size="sm" fw={500}>
-                        Feedback Attributes
-                      </Text>
-                    </Table.Th>
-                    <Table.Th
-                      className="p-3 text-center"
-                      style={{ width: '120px' }}
-                    >
-                      <Text size="sm" fw={500}>
-                        Actions
-                      </Text>
-                    </Table.Th>
-                  </Table.Tr>
-                </Table.Thead>
-
-                <Table.Tbody>
-                  {paginatedData.map((item, index) => (
-                    <Table.Tr key={item.id}>
-                      <Table.Td className="text-center">
-                        {index + 1 + (activePage - 1) * itemsPerPage}
-                      </Table.Td>
-                      <Table.Td>{item.name}</Table.Td>
-                      <Table.Td className="text-center">
-                        <Group justify="center">
-                          <Tooltip label="Edit">
-                            <ActionIcon
-                              color={currentThemeConfig.button.color}
-                              variant="subtle"
-                              onClick={() => handleEdit(item)}
-                            >
-                              <IconEdit size={16} />
-                            </ActionIcon>
-                          </Tooltip>
-                        </Group>
-                      </Table.Td>
+                  <Table.Thead
+                    style={{
+                      backgroundColor: currentThemeConfig.backgroundColor,
+                      color: currentThemeConfig.color
+                    }}
+                  >
+                    <Table.Tr>
+                      <Table.Th
+                        className="p-3 text-center"
+                        style={{ width: '100px' }}
+                      >
+                        <Text size="sm" fw={500}>
+                          S.No
+                        </Text>
+                      </Table.Th>
+                      <Table.Th className="p-3">
+                        <Text size="sm" fw={500}>
+                          Feedback Attributes
+                        </Text>
+                      </Table.Th>
+                      <Table.Th
+                        className="p-3 text-center"
+                        style={{ width: '120px' }}
+                      >
+                        <Text size="sm" fw={500}>
+                          Actions
+                        </Text>
+                      </Table.Th>
                     </Table.Tr>
-                  ))}
-                </Table.Tbody>
-              </Table>
-            </ScrollArea>
-          )}
-        </Card>
+                  </Table.Thead>
 
-        {totalPages > 1 && (
-          <Center>
-            <Pagination
-              value={activePage}
-              onChange={setActivePage}
-              total={totalPages}
-            />
-          </Center>
-        )}
-      </Stack>
-
-      {/* ADD MODAL */}
-      <Modal
-        opened={addOpened}
-        onClose={closeAdd}
-        title={
-          <Group gap="xs">
-            <Text fw={600} size="lg">
-              Add New Feedback Attribute
-            </Text>
-          </Group>
-        }
-        centered
-        size="md"
-      >
-        <Stack>
-          <TextInput
-            mt="md"
-            label="Feedback Attribute"
-            value={newName}
-            onChange={e => setNewName(e.target.value)}
-            placeholder="Enter the feedback attribute"
-            required
-          />
-          <Group justify="flex-end">
-            <Button variant="default" onClick={closeAdd} radius="md">
-              Cancel
-            </Button>
-            <Button onClick={handleAdd} disabled={!newName.trim()} radius="md">
-              Add
-            </Button>
-          </Group>
-        </Stack>
-      </Modal>
-
-      {/* EDIT MODAL */}
-      <Modal
-        opened={editOpened}
-        onClose={closeEdit}
-        title={
-          <Group gap="xs">
-            <IconEdit size={20} color={currentThemeConfig.button.color} />
-            <Text fw={600} size="lg">
-              Edit Feedback Attribute
-            </Text>
-          </Group>
-        }
-        centered
-        size="md"
-      >
-        <Stack>
-          <TextInput
-            mt="md"
-            label="Feedback Attribute"
-            placeholder="Enter the feedback attribute"
-            value={selected?.name || ''}
-            onChange={e =>
-              setSelected(prev =>
-                prev ? { ...prev, name: e.target.value } : prev
-              )
-            }
-            required
-            size="md"
-          />
-
-          <Group justify="space-between">
-            {isMobile ? (
-              <Tooltip label="Delete">
-                <Button
-                  onClick={openDelete}
-                  p="xs"
-                  radius="md"
-                  variant="outline"
-                >
-                  <IconTrash size={16} />
-                </Button>
-              </Tooltip>
-            ) : (
-              <Button
-                color="red"
-                variant="outline"
-                onClick={openDelete}
-                radius="md"
-                leftSection={<IconTrash size={16} />}
-              >
-                Delete
-              </Button>
+                  <Table.Tbody>
+                    {filtered.length === 0 ? (
+                      <Table.Tr>
+                        <Table.Td colSpan={3}>
+                          <Center py="xl">
+                            <Stack align="center" gap="xs">
+                              <IconCategory size={40} opacity={0.5} />
+                              <Text>No feedback attributes found</Text>
+                              <Text size="sm">
+                                {searchQuery
+                                  ? 'Try adjusting your search'
+                                  : 'Start by adding your first feedback attribute'}
+                              </Text>
+                              {!searchQuery && (
+                                <Button
+                                  leftSection={<IconPlus size={16} />}
+                                  onClick={openAdd}
+                                  fullWidth={isMobile}
+                                  radius="md"
+                                  color={currentThemeConfig.button.color}
+                                >
+                                  Add Feedback Attribute
+                                </Button>
+                              )}
+                            </Stack>
+                          </Center>
+                        </Table.Td>
+                      </Table.Tr>
+                    ) : (
+                      paginatedData.map((item, index) => (
+                        <Table.Tr key={item.id}>
+                          <Table.Td className="text-center">
+                            {index + 1 + (activePage - 1) * itemsPerPage}
+                          </Table.Td>
+                          <Table.Td>{item.name}</Table.Td>
+                          <Table.Td className="text-center">
+                            <Group justify="center">
+                              <Tooltip label="Edit">
+                                <ActionIcon
+                                  color={currentThemeConfig.button.color}
+                                  variant="subtle"
+                                  onClick={() => handleEdit(item)}
+                                >
+                                  <IconEdit size={16} />
+                                </ActionIcon>
+                              </Tooltip>
+                            </Group>
+                          </Table.Td>
+                        </Table.Tr>
+                      ))
+                    )}
+                  </Table.Tbody>
+                </Table>
+              </ScrollArea>
             )}
+          </Card>
 
-            <Group>
-              <Button variant="default" onClick={closeEdit} radius="md">
+          {totalPages > 1 && (
+            <Center>
+              <Pagination
+                value={activePage}
+                onChange={setActivePage}
+                total={totalPages}
+                color={currentThemeConfig.button.color}
+                size={isMobile ? 'sm' : 'md'}
+                radius="md"
+                withEdges
+              />
+            </Center>
+          )}
+        </Stack>
+
+        {/* ADD MODAL */}
+        <Modal
+          opened={addOpened}
+          onClose={closeAdd}
+          title={
+            <Group gap="xs">
+              <IconCategory
+                size={20}
+                stroke={1.8}
+                color={currentThemeConfig.button.color}
+              />
+              <Text fw={600} size="lg">
+                Add New Feedback Attribute
+              </Text>
+            </Group>
+          }
+          centered
+          size="md"
+          styles={{
+            header: {
+              paddingBottom: 4,
+              paddingTop: 5
+            }
+          }}
+        >
+          <Stack>
+            <TextInput
+              mt="md"
+              label="Feedback Attribute"
+              value={newName}
+              onChange={e => setNewName(e.target.value)}
+              placeholder="Enter the feedback attribute"
+              required
+            />
+            <Group justify="flex-end">
+              <Button variant="default" onClick={closeAdd} radius="md">
                 Cancel
               </Button>
               <Button
-                onClick={confirmEdit}
-                leftSection={<IconDeviceFloppy size={16} />}
-                disabled={isLoading}
+                onClick={handleAdd}
+                disabled={!newName.trim()}
                 radius="md"
               >
-                {isLoading ? 'Saving...' : 'Save'}
+                Add
               </Button>
             </Group>
-          </Group>
-        </Stack>
-      </Modal>
+          </Stack>
+        </Modal>
 
-      {/* DELETE MODAL */}
-      <Modal
-        opened={deleteOpened}
-        onClose={closeDelete}
-        title={
-          <Group gap="xs">
-            <IconAlertTriangle size={24} color="red" />
-            <Text fw={600} size="lg" c="red">
-              Delete Feedback Attribute
+        {/* EDIT MODAL */}
+        <Modal
+          opened={editOpened}
+          onClose={closeEdit}
+          title={
+            <Group gap="xs">
+              <IconEdit size={20} color={currentThemeConfig.button.color} />
+              <Text fw={600} size="lg">
+                Edit Feedback Attribute
+              </Text>
+            </Group>
+          }
+          centered
+          size="md"
+          styles={{
+            header: {
+              paddingBottom: 4,
+              paddingTop: 5
+            }
+          }}
+        >
+          <Stack>
+            <TextInput
+              mt="md"
+              label="Feedback Attribute"
+              placeholder="Enter the feedback attribute"
+              value={selected?.name || ''}
+              onChange={e =>
+                setSelected(prev =>
+                  prev ? { ...prev, name: e.target.value } : prev
+                )
+              }
+              required
+              size="md"
+            />
+
+            <Group justify="space-between">
+              {isMobile ? (
+                <Tooltip label="Delete">
+                  <Button
+                    onClick={openDelete}
+                    p="xs"
+                    radius="md"
+                    variant="outline"
+                  >
+                    <IconTrash size={16} />
+                  </Button>
+                </Tooltip>
+              ) : (
+                <Button
+                  color="red"
+                  variant="outline"
+                  onClick={openDelete}
+                  radius="md"
+                  leftSection={<IconTrash size={16} />}
+                >
+                  Delete
+                </Button>
+              )}
+
+              <Group>
+                <Button variant="default" onClick={closeEdit} radius="md">
+                  Cancel
+                </Button>
+                <Button
+                  onClick={confirmEdit}
+                  leftSection={<IconDeviceFloppy size={16} />}
+                  disabled={isLoading}
+                  radius="md"
+                >
+                  {isLoading ? 'Saving...' : 'Save'}
+                </Button>
+              </Group>
+            </Group>
+          </Stack>
+        </Modal>
+
+        {/* DELETE MODAL */}
+        <Modal
+          opened={deleteOpened}
+          onClose={closeDelete}
+          title={
+            <Group gap="xs">
+              <IconAlertTriangle size={24} color="red" />
+              <Text fw={600} size="lg" c="red">
+                Delete Feedback Attribute
+              </Text>
+            </Group>
+          }
+          centered
+          size="md"
+        >
+          <Stack gap="md">
+            <Text size="md" mt="sm">
+              Are you sure you want to delete this feedback attribute? This
+              action cannot be undone.
             </Text>
-          </Group>
-        }
-        centered
-        size="md"
-      >
-        <Stack gap="md">
-          <Text size="md" mt="sm">
-            Are you sure you want to delete this feedback attribute? This action
-            cannot be undone.
-          </Text>
-          <Group justify="flex-end" mt="md">
-            <Button variant="default" onClick={closeDelete} radius="md">
-              Cancel
-            </Button>
-            <Button
-              color="red"
-              onClick={confirmDelete}
-              disabled={isLoading}
-              leftSection={<IconTrash size={16} />}
-              radius="md"
-            >
-              {isLoading ? 'Deleting...' : 'Delete'}
-            </Button>
-          </Group>
-        </Stack>
-      </Modal>
-    </div>
+            <Group justify="flex-end" mt="md">
+              <Button variant="default" onClick={closeDelete} radius="md">
+                Cancel
+              </Button>
+              <Button
+                color="red"
+                onClick={confirmDelete}
+                disabled={isLoading}
+                leftSection={<IconTrash size={16} />}
+                radius="md"
+              >
+                {isLoading ? 'Deleting...' : 'Delete'}
+              </Button>
+            </Group>
+          </Stack>
+        </Modal>
+      </Card>
+    </Container>
   );
 }
