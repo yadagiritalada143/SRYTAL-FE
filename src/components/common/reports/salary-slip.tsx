@@ -245,8 +245,8 @@ const SalarySlipReport = () => {
                       style={{ marginTop: 1, flexShrink: 0 }}
                     />
                     <Text fz="xs" c={currentThemeConfig.mutedTextColor}>
-                      Salary slips are typically available after the 25th of
-                      each month.
+                      Salary slips are available after monthly payroll
+                      processing is completed.
                     </Text>
                   </Group>
                 </Stack>
@@ -358,8 +358,11 @@ const SalarySlipReport = () => {
                       radius="md"
                       maw={380}
                     >
-                      Salary slips are available after the 25th. If you believe
-                      this is an error, please contact HR.
+                      <Text size="sm" c={currentThemeConfig.mutedTextColor}>
+                        Salary slips are available after the completion of the
+                        monthly payroll process.. If you believe this is an
+                        error, please contact HR.
+                      </Text>
                     </Alert>
                   </Stack>
                 )}
@@ -383,7 +386,7 @@ const SalarySlipReport = () => {
                       maw={400}
                     >
                       {errorMessage ||
-                        'Unable to fetch your salary slip. Please try again later.'}
+                        'Salary slip not found for the specified month and year.'}
                     </Alert>
                     <Button
                       variant="outline"
