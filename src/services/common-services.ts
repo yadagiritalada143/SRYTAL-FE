@@ -223,7 +223,9 @@ export const downloadSalarySlip = async ({
       year
     });
     return response.data;
-  } catch (error) {
-    console.log(error);
+  } catch (error: any) {
+    if (error?.response?.data) {
+      return error.response.data;
+    }
   }
 };
