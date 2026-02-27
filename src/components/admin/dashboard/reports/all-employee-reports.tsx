@@ -93,13 +93,17 @@ const PayrollManagement = () => {
   }, [employees.length, setEmployees]);
 
   const filteredEmployees = useMemo(() => {
-    return employees.filter(
-      emp =>
-        `${emp.firstName} ${emp.lastName}`
-          .toLowerCase()
-          .includes(search.toLowerCase()) ||
-        emp.employeeId.toLowerCase().includes(search.toLowerCase())
-    );
+    return employees.filter(emp => {
+      const firstName = emp.firstName?.toLowerCase() || '';
+      const lastName = emp.lastName?.toLowerCase() || '';
+      const employeeId = emp.employeeId?.toLowerCase() || '';
+      const searchValue = search.toLowerCase();
+
+      return (
+        `${firstName} ${lastName}`.includes(searchValue) ||
+        employeeId.includes(searchValue)
+      );
+    });
   }, [search, employees]);
 
   useEffect(() => {
