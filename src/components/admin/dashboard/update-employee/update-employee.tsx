@@ -209,6 +209,7 @@ const UpdateEmployee = () => {
       if (
         !data.bankDetailsInfo?.accountNumber &&
         !data.bankDetailsInfo?.accountHolderName &&
+        !data.bankDetailsInfo?.bankName &&
         !data.bankDetailsInfo?.ifscCode
       ) {
         delete updatedData.bankDetailsInfo;
@@ -762,6 +763,7 @@ const UpdateEmployee = () => {
                 <Grid>
                   <Grid.Col span={12}>
                     <TextInput
+                      label="Account Number"
                       placeholder="Enter account number"
                       leftSection={
                         <IconCreditCard
@@ -788,6 +790,22 @@ const UpdateEmployee = () => {
                       autoComplete="off"
                       {...register('bankDetailsInfo.accountHolderName')}
                       error={errors.bankDetailsInfo?.accountHolderName?.message}
+                    />
+                  </Grid.Col>
+
+                  <Grid.Col span={12}>
+                    <TextInput
+                      label="Bank Name"
+                      placeholder="Enter bank name"
+                      leftSection={
+                        <IconBuildingBank
+                          size={16}
+                          color={currentThemeConfig.accentColor}
+                        />
+                      }
+                      {...register('bankDetailsInfo.bankName')}
+                      error={errors.bankDetailsInfo?.bankName?.message}
+                      autoComplete="off"
                     />
                   </Grid.Col>
 

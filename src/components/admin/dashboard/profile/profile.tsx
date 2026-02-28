@@ -37,6 +37,7 @@ const AdminProfile = () => {
     bankDetailsInfo: {
       accountNumber: '',
       accountHolderName: '',
+      bankName: '',
       ifscCode: ''
     }
   });

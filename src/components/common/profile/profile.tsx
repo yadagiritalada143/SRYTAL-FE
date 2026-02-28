@@ -23,7 +23,8 @@ import {
   IconId,
   IconMapPin,
   IconBriefcase,
-  IconBuildingBank
+  IconBuildingBank,
+  IconFingerprint
 } from '@tabler/icons-react';
 import { useMemo } from 'react';
 import { organizationThemeAtom } from '../../../atoms/organization-atom';
@@ -217,6 +218,28 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                   icon={<IconPhone size={18} />}
                   label="Mobile"
                   value={details.mobileNumber}
+                  isMobile={isMobile}
+                  mutedTextColor={currentThemeConfig.mutedTextColor}
+                  iconColor={currentThemeConfig.accentColor}
+                />
+              </Grid.Col>
+
+              <Grid.Col span={{ base: 12, xs: 6, sm: 6, md: 4 }}>
+                <InfoItem
+                  icon={<IconFingerprint size={18} />}
+                  label="Aadhar Number"
+                  value={details.aadharNumber}
+                  isMobile={isMobile}
+                  mutedTextColor={currentThemeConfig.mutedTextColor}
+                  iconColor={currentThemeConfig.accentColor}
+                />
+              </Grid.Col>
+
+              <Grid.Col span={{ base: 12, xs: 6, sm: 6, md: 4 }}>
+                <InfoItem
+                  icon={<IconId size={18} />}
+                  label="PAN Card Number"
+                  value={details.panCardNumber}
                   isMobile={isMobile}
                   mutedTextColor={currentThemeConfig.mutedTextColor}
                   iconColor={currentThemeConfig.accentColor}
@@ -499,6 +522,36 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                         </Group>
                         <Text size="sm" fw={500}>
                           {details.bankDetailsInfo?.accountHolderName || 'N/A'}
+                        </Text>
+                      </Stack>
+                    </Paper>
+                  </Grid.Col>
+                  <Grid.Col span={{ base: 12, sm: 6 }}>
+                    <Paper
+                      p="md"
+                      withBorder
+                      radius="md"
+                      style={{
+                        color: currentThemeConfig.color,
+                        borderColor: currentThemeConfig.borderColor
+                      }}
+                    >
+                      <Stack gap="xs">
+                        <Group gap="xs" align="center">
+                          <IconBuildingBank
+                            size={16}
+                            color={currentThemeConfig.iconColor}
+                          />
+                          <Text
+                            size="xs"
+                            c={currentThemeConfig.mutedTextColor}
+                            fw={500}
+                          >
+                            Bank Name
+                          </Text>
+                        </Group>
+                        <Text size="sm" fw={500}>
+                          {details.bankDetailsInfo?.bankName || 'N/A'}
                         </Text>
                       </Stack>
                     </Paper>

@@ -94,8 +94,10 @@ type Employee = {
   panCardNumber?: string;
   bankDetailsInfo?: {
     accountNumber?: string;
+    bankName?: string;
     ifscCode?: string;
   };
+  aadharNumber?: string;
   employeeRole?: { designation?: string }[];
 };
 
@@ -132,15 +134,15 @@ const GenerateSalarySlipReport = () => {
     empId: '',
     empName: '',
     designation: '',
-    department: 'Engineering',
+    department: '',
     doj: '',
     email: '',
     dob: '',
     bankAccount: '',
     ifsc: '',
-    bankName: 'HDFC Bank',
+    bankName: '',
     pan: '',
-    uan: 'N/A'
+    aadharNumber: ''
   });
 
   const [previewData, setPreviewData] =
@@ -251,15 +253,15 @@ const GenerateSalarySlipReport = () => {
         empId: '',
         empName: '',
         designation: '',
-        department: 'Engineering',
+        department: '',
         doj: '',
         email: '',
         dob: '',
         bankAccount: '',
         ifsc: '',
-        bankName: 'HDFC Bank',
+        bankName: '',
         pan: '',
-        uan: 'N/A'
+        aadharNumber: ''
       });
       return;
     }
@@ -282,9 +284,9 @@ const GenerateSalarySlipReport = () => {
       dob: formatDate(selectedEmployee.dateOfBirth || ''),
       bankAccount: selectedEmployee.bankDetailsInfo?.accountNumber || '',
       ifsc: selectedEmployee.bankDetailsInfo?.ifscCode || '',
-      bankName: 'HDFC Bank',
+      bankName: selectedEmployee.bankDetailsInfo?.bankName || '',
       pan: selectedEmployee.panCardNumber || '',
-      uan: 'N/A'
+      aadharNumber: selectedEmployee.aadharNumber || ''
     });
   };
 
@@ -363,7 +365,7 @@ const GenerateSalarySlipReport = () => {
           transactionType: 'NEFT',
           transactionId: values.transactionId || undefined,
           panNumber: empDetails.pan,
-          uanNumber: empDetails.uan,
+          uanNumber: empDetails.aadharNumber,
 
           totalWorkingDays: values.daysInMonth,
           daysWorked: values.daysInMonth - (values.lopDays || 0),
@@ -459,7 +461,7 @@ const GenerateSalarySlipReport = () => {
         transactionType: 'NEFT',
         transactionId: data.transactionId,
         panNumber: empDetails.pan,
-        uanNumber: empDetails.uan,
+        uanNumber: empDetails.aadharNumber,
 
         totalWorkingDays: data.daysInMonth,
         daysWorked: data.daysInMonth - (data.lopDays || 0),
@@ -587,6 +589,14 @@ const GenerateSalarySlipReport = () => {
                   <ReadOnlyField
                     label="Bank Account Number"
                     value={empDetails.bankAccount}
+                    color={currentThemeConfig.color}
+                  />
+                </Grid.Col>
+
+                <Grid.Col span={{ base: 12, sm: 6 }}>
+                  <ReadOnlyField
+                    label="Bank Name"
+                    value={empDetails.bankName}
                     color={currentThemeConfig.color}
                   />
                 </Grid.Col>

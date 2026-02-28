@@ -19,6 +19,7 @@ export interface EmployeeInterface {
   bankDetailsInfo: {
     accountNumber: string;
     accountHolderName: string;
+    bankName: string;
     ifscCode: string;
   };
 }
