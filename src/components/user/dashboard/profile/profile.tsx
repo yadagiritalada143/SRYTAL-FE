@@ -26,6 +26,7 @@ const EmployeeProfile = () => {
     bankDetailsInfo: {
       accountNumber: '',
       accountHolderName: '',
+      bankName: '',
       ifscCode: ''
     }
   });
