@@ -57,6 +57,7 @@ export const employeeSchema = z.object({
         z.string().min(1, 'Account Holder Name is required').optional(),
         z.literal('').optional()
       ]),
+      bankName: z.string().trim().optional(),
       ifscCode: z.union([
         z.string().min(1, 'IFSC Code is required').optional(),
         z.literal('').optional()

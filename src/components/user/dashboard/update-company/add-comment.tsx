@@ -70,6 +70,7 @@ const AddCommentPoolCompany = ({
           fullWidth={isMobile}
           style={{ alignSelf: isMobile ? 'stretch' : 'flex-end' }}
           size={isMobile ? 'md' : 'sm'}
+          radius="md"
         >
           {isSubmitting ? 'Adding...' : 'Add Comment'}
         </Button>

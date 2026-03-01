@@ -1,4 +1,10 @@
-import { Routes, Route, useNavigate, useParams } from 'react-router-dom';
+import {
+  Routes,
+  Route,
+  useNavigate,
+  useParams,
+  Navigate
+} from 'react-router-dom';
 import AddEmployee from '../components/admin/dashboard/add-employee/add-employee';
 import { OrganizationConfig } from '../interfaces/organization';
 import AdminDashboard from '../pages/admin/dashboard/dashboard';
@@ -39,6 +45,9 @@ import { EmployeeTimesheetAdminView } from '../components/admin/dashboard/employ
 import { ThemeToggleButton } from '../components/UI/Theme-toggle-button/button';
 import { themeAtom } from '../atoms/theme';
 import { getThemeConfig } from '../utils/common/theme-utils';
+import SettingsLayout from '../components/admin/dashboard/settings/SettingsLayout';
+import FeedbackTable from '../components/admin/dashboard/settings/FeedbackTable';
+import EmployeeReports from '../components/admin/dashboard/reports/all-employee-reports';
 
 const AdminRoutes = () => {
   const { organization } = useParams<{ organization: string }>();
@@ -461,6 +470,10 @@ const AdminRoutes = () => {
                 path="generate-salary-slip"
                 element={<GenerateSalarySlipReport />}
               />
+              <Route
+                path="all-employee-reports"
+                element={<EmployeeReports />}
+              />
             </Route>
             <Route path="timesheet" element={<DateTableComponent />} />
             <Route
@@ -481,18 +494,13 @@ const AdminRoutes = () => {
               path="update-pool-company/:companyId"
               element={<UpdateCompany />}
             />
-            <Route
-              path="blood-group-management"
-              element={<BloodGroupTable />}
-            />
-            <Route
-              path="employment-role-management"
-              element={<EmploymentRoles />}
-            />
-            <Route
-              path="employment-type-management"
-              element={<EmploymentTypes />}
-            />
+            <Route path="settings" element={<SettingsLayout />}>
+              <Route index element={<Navigate to="blood-groups" replace />} />
+              <Route path="blood-groups" element={<BloodGroupTable />} />
+              <Route path="employment-types" element={<EmploymentTypes />} />
+              <Route path="employment-roles" element={<EmploymentRoles />} />
+              <Route path="feedback" element={<FeedbackTable />} />
+            </Route>
           </Route>
         </Route>
       </Routes>

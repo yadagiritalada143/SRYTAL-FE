@@ -18,7 +18,7 @@ import {
   Center
 } from '@mantine/core';
 import { useCustomToast } from '../../../../utils/common/toast';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import {
   UpdateCandidateSchema,
   updateCandidateSchema
@@ -47,13 +47,14 @@ import {
   IconTrash,
   IconDeviceFloppy
 } from '@tabler/icons-react';
+import { themeAtom } from '../../../../atoms/theme';
+import { getThemeConfig } from '../../../../utils/common/theme-utils';
 
 const UpdatePoolCandidateForm = () => {
   const [skills, setSkills] = useState<string[]>([]);
   const [skillInput, setSkillInput] = useState('');
   const [loading, setLoading] = useState(true);
   const [comments, setComments] = useState<PoolCandidatesComments[]>([]);
-  const organizationConfig = useRecoilValue(organizationThemeAtom);
   const [opened, { open, close }] = useDisclosure(false);
   const { showSuccessToast } = useCustomToast();
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -61,7 +62,11 @@ const UpdatePoolCandidateForm = () => {
 
   const isMobile = useMediaQuery('(max-width: 768px)');
   const isSmallMobile = useMediaQuery('(max-width: 500px)');
-
+  const isDarkTheme = useRecoilValue(themeAtom);
+  const organizationConfig = useRecoilValue(organizationThemeAtom);
+  const currentThemeConfig = useMemo(() => {
+    return getThemeConfig(organizationConfig, isDarkTheme);
+  }, [organizationConfig, isDarkTheme]);
   const {
     control,
     formState: { errors, isSubmitting },
@@ -154,12 +159,7 @@ const UpdatePoolCandidateForm = () => {
       <Stack gap="md">
         {/* Header Card */}
         <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder>
-          <Flex
-            direction={isMobile ? 'column' : 'row'}
-            justify="space-between"
-            align="center"
-            gap="md"
-          >
+          <Flex direction="row" justify="space-between" align="center" gap="md">
             <Text
               size={isMobile ? 'lg' : 'xl'}
               fw={700}
@@ -283,6 +283,7 @@ const UpdatePoolCandidateForm = () => {
                     onClick={handleSkillAdd}
                     leftSection={<IconPlus size={16} />}
                     size={isMobile ? 'sm' : 'md'}
+                    radius="md"
                   >
                     Add
                   </Button>
@@ -295,7 +296,8 @@ const UpdatePoolCandidateForm = () => {
                     <Badge
                       key={skill}
                       size="lg"
-                      variant="light"
+                      variant="filled"
+                      color={currentThemeConfig.button.color}
                       rightSection={
                         <IconX
                           size={14}
@@ -323,6 +325,7 @@ const UpdatePoolCandidateForm = () => {
                 onClick={open}
                 fullWidth={isMobile}
                 size={isMobile ? 'md' : 'sm'}
+                radius="md"
               >
                 Delete Candidate
               </Button>
@@ -334,6 +337,7 @@ const UpdatePoolCandidateForm = () => {
                 leftSection={<IconDeviceFloppy size={16} />}
                 fullWidth={isMobile}
                 size={isMobile ? 'md' : 'sm'}
+                radius="md"
               >
                 {isSubmitting ? 'Updating...' : 'Update Candidate'}
               </Button>
@@ -382,10 +386,11 @@ const UpdatePoolCandidateForm = () => {
                 onClick={() => handleDeleteCandidate(candidateId!, agreeTerms)}
                 disabled={!confirmDelete}
                 leftSection={<IconTrash size={16} />}
+                radius="md"
               >
                 Delete
               </Button>
-              <Button variant="default" onClick={close}>
+              <Button variant="default" onClick={close} radius="md">
                 Cancel
               </Button>
             </Group>

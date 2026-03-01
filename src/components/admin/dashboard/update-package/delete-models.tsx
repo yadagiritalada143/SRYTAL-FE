@@ -60,7 +60,7 @@ export const DeletePackageModel: React.FC<DeletePackageModalProps> = ({
         </Stack>
 
         <Group justify="flex-end" mt="lg">
-          <Button variant="default" onClick={close}>
+          <Button variant="default" onClick={close} radius="md">
             Cancel
           </Button>
           <Button
@@ -68,6 +68,7 @@ export const DeletePackageModel: React.FC<DeletePackageModalProps> = ({
             onClick={() => handleDeletePackage(agreeTerms)}
             disabled={!confirmDelete}
             leftSection={<IconTrash size={16} />}
+            radius="md"
           >
             Delete Package
           </Button>

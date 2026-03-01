@@ -85,6 +85,7 @@ const formatDate = (isoDate: string): string => {
 };
 
 type Employee = {
+  _id: string;
   employeeId: string;
   firstName: string;
   lastName?: string;
@@ -93,8 +94,10 @@ type Employee = {
   panCardNumber?: string;
   bankDetailsInfo?: {
     accountNumber?: string;
+    bankName?: string;
     ifscCode?: string;
   };
+  aadharNumber?: string;
   employeeRole?: { designation?: string }[];
 };
 
@@ -127,18 +130,19 @@ const GenerateSalarySlipReport = () => {
     : currentThemeConfig.lightDangerColor;
 
   const [empDetails, setEmpDetails] = useState({
+    _id: '',
     empId: '',
     empName: '',
     designation: '',
-    department: 'Engineering',
+    department: '',
     doj: '',
     email: '',
     dob: '',
     bankAccount: '',
     ifsc: '',
-    bankName: 'HDFC Bank',
+    bankName: '',
     pan: '',
-    uan: 'N/A'
+    aadharNumber: ''
   });
 
   const [previewData, setPreviewData] =
@@ -245,18 +249,19 @@ const GenerateSalarySlipReport = () => {
     setValue('employeeId', selectedEmpId || '');
     if (!selectedEmpId) {
       setEmpDetails({
+        _id: '',
         empId: '',
         empName: '',
         designation: '',
-        department: 'Engineering',
+        department: '',
         doj: '',
         email: '',
         dob: '',
         bankAccount: '',
         ifsc: '',
-        bankName: 'HDFC Bank',
+        bankName: '',
         pan: '',
-        uan: 'N/A'
+        aadharNumber: ''
       });
       return;
     }
@@ -268,6 +273,7 @@ const GenerateSalarySlipReport = () => {
     if (!selectedEmployee) return;
 
     setEmpDetails({
+      _id: selectedEmployee._id,
       empId: selectedEmployee.employeeId,
       empName:
         selectedEmployee.firstName + ' ' + (selectedEmployee.lastName || ''),
@@ -278,9 +284,9 @@ const GenerateSalarySlipReport = () => {
       dob: formatDate(selectedEmployee.dateOfBirth || ''),
       bankAccount: selectedEmployee.bankDetailsInfo?.accountNumber || '',
       ifsc: selectedEmployee.bankDetailsInfo?.ifscCode || '',
-      bankName: 'HDFC Bank',
+      bankName: selectedEmployee.bankDetailsInfo?.bankName || '',
       pan: selectedEmployee.panCardNumber || '',
-      uan: 'N/A'
+      aadharNumber: selectedEmployee.aadharNumber || ''
     });
   };
 
@@ -359,7 +365,7 @@ const GenerateSalarySlipReport = () => {
           transactionType: 'NEFT',
           transactionId: values.transactionId || undefined,
           panNumber: empDetails.pan,
-          uanNumber: empDetails.uan,
+          uanNumber: empDetails.aadharNumber,
 
           totalWorkingDays: values.daysInMonth,
           daysWorked: values.daysInMonth - (values.lopDays || 0),
@@ -440,6 +446,7 @@ const GenerateSalarySlipReport = () => {
       const payPeriod = `${monthNames[d.getMonth()]} ${d.getFullYear()}`;
 
       const payload = {
+        _id: empDetails._id,
         employeeId: data.employeeId,
         employeeName: empDetails.empName,
         employeeEmail: empDetails.email,
@@ -454,7 +461,7 @@ const GenerateSalarySlipReport = () => {
         transactionType: 'NEFT',
         transactionId: data.transactionId,
         panNumber: empDetails.pan,
-        uanNumber: empDetails.uan,
+        uanNumber: empDetails.aadharNumber,
 
         totalWorkingDays: data.daysInMonth,
         daysWorked: data.daysInMonth - (data.lopDays || 0),
@@ -588,6 +595,14 @@ const GenerateSalarySlipReport = () => {
 
                 <Grid.Col span={{ base: 12, sm: 6 }}>
                   <ReadOnlyField
+                    label="Bank Name"
+                    value={empDetails.bankName}
+                    color={currentThemeConfig.color}
+                  />
+                </Grid.Col>
+
+                <Grid.Col span={{ base: 12, sm: 6 }}>
+                  <ReadOnlyField
                     label="IFSC Code"
                     value={empDetails.ifsc}
                     color={currentThemeConfig.color}
@@ -666,7 +681,7 @@ const GenerateSalarySlipReport = () => {
               </Grid>
 
               <Group justify="flex-end" mt="xl">
-                <Button onClick={nextStep} radius="lg">
+                <Button onClick={nextStep} radius="md">
                   Next
                 </Button>
               </Group>
@@ -849,7 +864,7 @@ const GenerateSalarySlipReport = () => {
                   <Button
                     type="button"
                     variant="light"
-                    radius="lg"
+                    radius="md"
                     onClick={() =>
                       append({ label: '', amount: 0, type: 'add' })
                     }
@@ -919,14 +934,14 @@ const GenerateSalarySlipReport = () => {
               </Card>
 
               <Group justify="space-between" mt="xl">
-                <Button variant="default" radius="lg" onClick={prevStep}>
+                <Button variant="default" radius="md" onClick={prevStep}>
                   Back
                 </Button>
 
                 <Button
                   loading={isPreviewLoading}
                   onClick={nextStep}
-                  radius="lg"
+                  radius="md"
                 >
                   Preview
                 </Button>
@@ -1362,7 +1377,7 @@ const GenerateSalarySlipReport = () => {
                   <Button
                     variant="subtle"
                     color="gray"
-                    radius="lg"
+                    radius="md"
                     onClick={prevStep}
                     disabled={activeStep === 3}
                   >
@@ -1371,7 +1386,7 @@ const GenerateSalarySlipReport = () => {
 
                   <Button
                     type="submit"
-                    radius="lg"
+                    radius="md"
                     loading={isGenerating}
                     leftSection={
                       activeStep === 3 ? <IconCheck size={16} /> : null
@@ -1402,7 +1417,7 @@ const GenerateSalarySlipReport = () => {
 
               <Button
                 variant="light"
-                radius="lg"
+                radius="md"
                 onClick={() => window.location.reload()}
               >
                 Generate Another Salary Slip

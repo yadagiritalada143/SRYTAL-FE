@@ -148,6 +148,7 @@ const AdminLogin = () => {
               className="w-1/2 md:w-auto"
               style={{ minWidth: '200px' }}
               disabled={isSubmitting}
+              radius="md"
               leftSection={
                 isSubmitting && (
                   <Loader

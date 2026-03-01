@@ -316,6 +316,7 @@ const UpdateCompany = () => {
                   color="red"
                   variant="filled"
                   leftSection={<IconTrash size={16} />}
+                  radius="md"
                   onClick={e => {
                     e.preventDefault();
                     open();
@@ -331,6 +332,7 @@ const UpdateCompany = () => {
                   leftSection={<IconDeviceFloppy size={16} />}
                   fullWidth={isMobile}
                   size={isMobile ? 'md' : 'sm'}
+                  radius="md"
                 >
                   {isSubmitting ? 'Updating...' : 'Update Company'}
                 </Button>
@@ -400,10 +402,11 @@ const UpdateCompany = () => {
               onClick={() => handleDeleteCompany(companyId!, agreeTerms)}
               disabled={!confirmDelete}
               leftSection={<IconTrash size={16} />}
+              radius="md"
             >
               Delete
             </Button>
-            <Button variant="default" onClick={close}>
+            <Button variant="default" onClick={close} radius="md">
               Cancel
             </Button>
           </Group>

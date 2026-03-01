@@ -25,7 +25,8 @@ import {
   IconPlus,
   IconSortAscending,
   IconSortDescending,
-  IconFilter
+  IconFilter,
+  IconEdit
 } from '@tabler/icons-react';
 import React, {
   useCallback,
@@ -141,19 +142,18 @@ const CompanyActions: React.FC<{
   companyId: string;
   onEdit: (id: string) => void;
   isMobile?: boolean;
-}> = ({ companyId, onEdit, isMobile = false }) => (
+  color: string;
+}> = ({ companyId, onEdit, color, isMobile = false }) => (
   <Group gap="xs" justify="center">
     <Tooltip label="Edit Company Details">
       <ActionIcon
         variant="subtle"
-        color="blue"
+        color={color}
         onClick={() => onEdit(companyId)}
         size={isMobile ? 'md' : 'sm'}
       >
-        <Group gap={4}>
-          <IconBuildings size={isMobile ? 18 : 16} />
-          <IconUserEdit size={isMobile ? 18 : 16} />
-        </Group>
+        {/* <IconBuildings size={isMobile ? 18 : 20} /> */}
+        <IconEdit size={isMobile ? 18 : 16} />
       </ActionIcon>
     </Tooltip>
   </Group>
@@ -165,8 +165,9 @@ const MobileCompanyCard: React.FC<{
   index: number;
   activePage: number;
   itemsPerPage: number;
+  color: string;
   onEdit: (id: string) => void;
-}> = ({ company, index, activePage, itemsPerPage, onEdit }) => {
+}> = ({ company, index, activePage, color, itemsPerPage, onEdit }) => {
   return (
     <Card
       key={company.id}
@@ -179,7 +180,7 @@ const MobileCompanyCard: React.FC<{
       <Stack gap="sm">
         {/* Header Section */}
         <Group justify="space-between" align="center">
-          <Badge variant="filled" color="blue">
+          <Badge variant="filled" color={color}>
             #{index + 1 + (activePage - 1) * itemsPerPage}
           </Badge>
           <Badge size="sm" color="teal" variant="light">
@@ -308,7 +309,12 @@ const MobileCompanyCard: React.FC<{
 
         {/* Actions */}
         <Card.Section withBorder mt="sm" p="md" style={{ borderRadius: '8px' }}>
-          <CompanyActions companyId={company.id} onEdit={onEdit} isMobile />
+          <CompanyActions
+            companyId={company.id}
+            onEdit={onEdit}
+            isMobile
+            color={color}
+          />
         </Card.Section>
       </Stack>
     </Card>
@@ -469,6 +475,7 @@ const HeadingComponent: React.FC<{
         variant="filled"
         fullWidth={isMobile}
         size={isMobile ? 'md' : 'sm'}
+        radius="md"
       >
         Add Company
       </Button>
@@ -716,6 +723,7 @@ const Companies = () => {
                   paginatedCompanies.map((company, index) => (
                     <MobileCompanyCard
                       key={company.id}
+                      color={currentThemeConfig.button.color}
                       company={company}
                       index={index}
                       activePage={activePage}
@@ -851,6 +859,7 @@ const Companies = () => {
                         </Table.Td>
                         <Table.Td className="p-3">
                           <CompanyActions
+                            color={currentThemeConfig.button.color}
                             companyId={company.id}
                             onEdit={handleCompanyEdit}
                           />

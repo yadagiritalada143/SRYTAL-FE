@@ -601,6 +601,7 @@ const PackagesFormComponent = ({
                     backgroundColor: currentThemeConfig.button.color,
                     color: currentThemeConfig.button.textColor
                   }}
+                  radius="md"
                 >
                   Next: Select Tasks
                 </Button>
@@ -819,6 +820,7 @@ const PackagesFormComponent = ({
                     backgroundColor: currentThemeConfig.button.color,
                     color: currentThemeConfig.button.textColor
                   }}
+                  radius="md"
                 >
                   {isSubmitting ? 'Saving Changes...' : 'Save Changes'}
                 </Button>

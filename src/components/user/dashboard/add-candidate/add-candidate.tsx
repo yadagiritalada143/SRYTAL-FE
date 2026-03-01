@@ -139,6 +139,7 @@ const AddPoolCandidate = () => {
               onClick={handleGoBack}
               variant="light"
               size={isMobile ? 'sm' : 'md'}
+              radius="md"
             >
               Go Back
             </Button>
@@ -316,6 +317,7 @@ const AddPoolCandidate = () => {
                         leftSection={<IconPlus size={16} />}
                         size={isMobile ? 'sm' : 'md'}
                         disabled={!skillInput.trim()}
+                        radius="md"
                       >
                         Add
                       </Button>
@@ -329,7 +331,10 @@ const AddPoolCandidate = () => {
                           <Text size="sm" fw={500}>
                             Added Skills
                           </Text>
-                          <Badge variant="filled" color="blue">
+                          <Badge
+                            variant="filled"
+                            color={currentThemeConfig.button.color}
+                          >
                             {skills.length}{' '}
                             {skills.length === 1 ? 'skill' : 'skills'}
                           </Badge>
@@ -338,7 +343,7 @@ const AddPoolCandidate = () => {
                           {skills.map(skill => (
                             <Badge
                               key={skill}
-                              color="blue"
+                              color={currentThemeConfig.button.color}
                               size="md"
                               variant="filled"
                               onClick={() => handleSkillRemove(skill)}
@@ -398,7 +403,9 @@ const AddPoolCandidate = () => {
                             {...field}
                             value={field.value ? new Date(field.value) : null}
                             onChange={date =>
-                              field.onChange(date ? new Date(date).toISOString() : null)
+                              field.onChange(
+                                date ? new Date(date).toISOString() : null
+                              )
                             }
                             clearable
                             label="Call Start Time"
@@ -419,7 +426,9 @@ const AddPoolCandidate = () => {
                             {...field}
                             value={field.value ? new Date(field.value) : null}
                             onChange={date =>
-                              field.onChange(date ? new Date(date).toISOString() : null)
+                              field.onChange(
+                                date ? new Date(date).toISOString() : null
+                              )
                             }
                             clearable
                             label="Call End Time"
@@ -446,6 +455,7 @@ const AddPoolCandidate = () => {
                   disabled={isSubmitting}
                   size={isMobile ? 'sm' : 'md'}
                   fullWidth={isMobile}
+                  radius="md"
                 >
                   Cancel
                 </Button>
@@ -454,6 +464,7 @@ const AddPoolCandidate = () => {
                   disabled={isSubmitting}
                   size={isMobile ? 'sm' : 'md'}
                   fullWidth={isMobile}
+                  radius="md"
                   leftSection={
                     isSubmitting ? (
                       <Loader size="xs" color="white" />

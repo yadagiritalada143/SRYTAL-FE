@@ -132,13 +132,14 @@ const useCandidateFilters = (candidates: CandidateInterface[]) => {
 const CandidateActions: React.FC<{
   candidateId: string;
   onEdit: (id: string) => void;
+  color: string;
   isMobile?: boolean;
-}> = ({ candidateId, onEdit, isMobile = false }) => (
+}> = ({ candidateId, onEdit, color, isMobile = false }) => (
   <Group gap="xs" justify="center">
     <Tooltip label="Edit Candidate">
       <ActionIcon
         variant="subtle"
-        color="blue"
+        color={color}
         onClick={() => onEdit(candidateId)}
         size={isMobile ? 'md' : 'sm'}
       >
@@ -153,9 +154,10 @@ const MobileCandidateCard: React.FC<{
   candidate: any;
   index: number;
   activePage: number;
+  color: string;
   itemsPerPage: number;
   onEdit: (id: string) => void;
-}> = ({ candidate, index, activePage, itemsPerPage, onEdit }) => {
+}> = ({ candidate, index, color, activePage, itemsPerPage, onEdit }) => {
   return (
     <Card
       key={candidate._id}
@@ -167,12 +169,12 @@ const MobileCandidateCard: React.FC<{
     >
       <Stack gap="sm">
         <Group justify="space-between" align="center">
-          <Badge variant="filled" color="blue">
+          <Badge variant="filled" color={color}>
             #{index + 1 + (activePage - 1) * itemsPerPage}
           </Badge>
           <ActionIcon
             variant="subtle"
-            color="blue"
+            color={color}
             onClick={() => onEdit(candidate._id)}
             size="md"
           >
@@ -387,6 +389,7 @@ const HeadingComponent: React.FC<{
         variant="filled"
         fullWidth={isMobile}
         size={isMobile ? 'md' : 'sm'}
+        radius="md"
       >
         Add Candidate
       </Button>
@@ -624,6 +627,7 @@ const PoolCandidateList = () => {
                 {paginatedCandidates.length > 0 ? (
                   paginatedCandidates.map((candidate: any, index: number) => (
                     <MobileCandidateCard
+                      color={currentThemeConfig.button.color}
                       key={candidate._id}
                       candidate={candidate}
                       index={index}
@@ -753,6 +757,7 @@ const PoolCandidateList = () => {
                         )}
                         <Table.Td className="p-3">
                           <CandidateActions
+                            color={currentThemeConfig.button.color}
                             candidateId={candidate._id}
                             onEdit={handleCandidateEdit}
                           />

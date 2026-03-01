@@ -153,6 +153,7 @@ const EmployeeActions: React.FC<{
         color="green"
         onClick={() => onPackage(employeeId)}
         size={isMobile ? 'md' : 'sm'}
+        radius="md"
       >
         <IconPackage size={isMobile ? 18 : 16} />
       </ActionIcon>
@@ -424,6 +425,7 @@ const HeadingComponent: React.FC<{
         variant="filled"
         fullWidth={isMobile}
         size={isMobile ? 'md' : 'sm'}
+        radius="md"
       >
         Add Employee
       </Button>
@@ -742,10 +744,31 @@ const Employees = () => {
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
               style={{
-                overflowX: 'auto'
+                overflowX: 'auto',
+                overflowY: 'scroll',
+                maxHeight: '600px'
               }}
             >
-              <Table stickyHeader withTableBorder withColumnBorders>
+              <Table
+                stickyHeader
+                withTableBorder
+                withColumnBorders
+                style={{ tableLayout: 'fixed' }}
+              >
+                <colgroup>
+                  <col style={{ width: '70px' }} />
+                  <col style={{ width: '120px' }} />
+                  <col style={{ width: '140px' }} />
+                  {!isTablet && <col style={{ width: '140px' }} />}
+                  <col style={{ width: '225px' }} />
+                  {!isTablet && <col style={{ width: '120px' }} />}
+                  <col style={{ width: '130px' }} />
+                  {!isTablet && <col style={{ width: '150px' }} />}
+                  {!isTablet && <col style={{ width: '100px' }} />}
+                  <col style={{ width: '170px' }} />
+                  <col style={{ width: '120px' }} />
+                </colgroup>
+
                 <TableHeader
                   sortConfig={sortConfig}
                   onSort={handleSort}
@@ -760,7 +783,7 @@ const Employees = () => {
                         id={`employee-${employee._id}`}
                         className="transition-colors"
                       >
-                        <Table.Td className="text-center p-3">
+                        <Table.Td className="text-center py-2 px-1">
                           <Text size="sm">
                             {index + 1 + (activePage - 1) * itemsPerPage}
                           </Text>
@@ -779,10 +802,14 @@ const Employees = () => {
                           </Table.Td>
                         )}
                         <Table.Td className="p-3">
-                          <Text size="sm" truncate>
-                            {isTablet
-                              ? employee.email.slice(0, 15) + '...'
-                              : employee.email.slice(0, 20)}
+                          <Text
+                            size="sm"
+                            style={{
+                              whiteSpace: 'normal',
+                              wordBreak: 'break-word'
+                            }}
+                          >
+                            {employee.email}
                           </Text>
                         </Table.Td>
                         {!isTablet && (

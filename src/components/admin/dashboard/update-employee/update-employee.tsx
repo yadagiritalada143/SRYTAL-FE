@@ -173,7 +173,7 @@ const UpdateEmployee = () => {
           employeeRole: emp.employeeRole.map((role: any) => role.id),
           dateOfBirth: emp.dateOfBirth
             ? new Date(emp.dateOfBirth).toISOString().split('T')[0]
-            : '',
+            : undefined,
           presentAddress: emp.presentAddress ?? '',
           permanentAddress: emp.permanentAddress ?? '',
           mobileNumber: emp.mobileNumber?.toString()
@@ -209,6 +209,7 @@ const UpdateEmployee = () => {
       if (
         !data.bankDetailsInfo?.accountNumber &&
         !data.bankDetailsInfo?.accountHolderName &&
+        !data.bankDetailsInfo?.bankName &&
         !data.bankDetailsInfo?.ifscCode
       ) {
         delete updatedData.bankDetailsInfo;
@@ -507,9 +508,6 @@ const UpdateEmployee = () => {
                       {...register('aadharNumber')}
                       maxLength={12}
                       error={errors.aadharNumber?.message}
-                      onChange={e => {
-                        e.target.value = e.target.value.replace(/\D/g, '');
-                      }}
                       required
                     />
                   </Grid.Col>
@@ -612,7 +610,7 @@ const UpdateEmployee = () => {
                                 field.onChange(adjustedDate);
                               }
                             } else {
-                              field.onChange(null);
+                              field.onChange(undefined);
                             }
                           }}
                           error={errors.dateOfBirth?.message}
@@ -759,9 +757,10 @@ const UpdateEmployee = () => {
                   </Text>
                 </Group>
 
-                <Grid>
-                  <Grid.Col span={12}>
+                <Grid gutter="md">
+                  <Grid.Col span={{ base: 12, sm: 6 }}>
                     <TextInput
+                      label="Account Number"
                       placeholder="Enter account number"
                       leftSection={
                         <IconCreditCard
@@ -775,7 +774,7 @@ const UpdateEmployee = () => {
                     />
                   </Grid.Col>
 
-                  <Grid.Col span={12}>
+                  <Grid.Col span={{ base: 12, sm: 6 }}>
                     <TextInput
                       label="Account Holder Name"
                       placeholder="Enter account holder name"
@@ -791,7 +790,23 @@ const UpdateEmployee = () => {
                     />
                   </Grid.Col>
 
-                  <Grid.Col span={12}>
+                  <Grid.Col span={{ base: 12, sm: 6 }}>
+                    <TextInput
+                      label="Bank Name"
+                      placeholder="Enter bank name"
+                      leftSection={
+                        <IconBuildingBank
+                          size={16}
+                          color={currentThemeConfig.accentColor}
+                        />
+                      }
+                      {...register('bankDetailsInfo.bankName')}
+                      error={errors.bankDetailsInfo?.bankName?.message}
+                      autoComplete="off"
+                    />
+                  </Grid.Col>
+
+                  <Grid.Col span={{ base: 12, sm: 6 }}>
                     <TextInput
                       label="IFSC Code"
                       placeholder="Enter IFSC code"
