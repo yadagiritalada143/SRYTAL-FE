@@ -5,51 +5,87 @@ import {
   useNavigate,
   useParams
 } from 'react-router-dom';
-import { OrganizationConfig } from '../interfaces/organization';
-import EmployeeLogin from '../pages/user/login/login';
-import EmployeeDashboard from '../pages/user/dashboard/dashboard';
-import Companies from '../components/user/dashboard/companies/companies';
-import AddCompany from '../components/user/dashboard/add-company/add-company';
-import UpdateCompany from '../components/user/dashboard/update-company/update-company';
+import { useEffect, useMemo, useState, lazy, Suspense } from 'react';
 import { toast } from 'react-toastify';
-import { useEffect, useMemo, useState } from 'react';
-import { getOrganizationConfig } from '../services/common-services';
-import { MantineProvider } from '@mantine/core';
+import { MantineProvider, LoadingOverlay } from '@mantine/core';
 import '@mantine/core/styles.css';
-import { LoadingOverlay } from '@mantine/core';
-import Loader from '../components/common/loader/loader';
-import EmployeeProfile from '../components/user/dashboard/profile/profile';
-import Timesheet from '../components/common/timesheet/timesheet';
+import { getOrganizationConfig } from '@services/common-services';
+import Loader from '@components/common/loader/loader';
 import { ModalsProvider } from '@mantine/modals';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
-import { organizationThemeAtom } from '../atoms/organization-atom';
-import { organizationEmployeeUrls } from '../utils/common/constants';
-import PoolCandidateList from '../components/user/dashboard/candidate/candidate';
-import AddPoolCandidate from '../components/user/dashboard/add-candidate/add-candidate';
-import UpdatePoolCandidateForm from '../components/user/dashboard/update-candidate/update-candidate';
-import UserProvider from '../hooks/user-context';
-import { getThemeConfig } from '../utils/common/theme-utils';
-import Dashboard from '../components/common/dashboard/dashboard';
-import PayslipList from '../components/common/payslip/payslip';
-import Support from '../components/common/support/support';
-import MyTasks from '../components/common/mytasks/mytasks';
-import Announcements from '../components/common/announcements/announcements';
-import Mentees from '../components/common/mentees/mentees';
-import UpdateMenteeTasks from '../components/common/update-mentee-task/UpdateMenteeTasks';
-import TaskDetail from '../components/common/mytasks/taskdetails';
-import { themeAtom } from '../atoms/theme';
-import { ThemeToggleButton } from '../components/UI/Theme-toggle-button/button';
-import WriterDashboard from '../components/user/dashboard/content-writer/content-writer';
-import { ContentWriterAddCourse } from '../components/user/dashboard/add-course/add-course';
-import ContentWriterEditCourse from '../components/user/dashboard/edit-course/edit-course';
-import SalarySlipReport from '../components/common/reports/salary-slip';
+import { organizationThemeAtom } from '@atoms/organization-atom';
+import { themeAtom } from '@atoms/theme';
+
+import { organizationEmployeeUrls } from '@utils/common/constants';
+import { ROLES } from '@constants';
+import UserProvider from '@hooks/user-context';
+import { ThemeToggleButton } from '@components/UI/Theme-toggle-button/button';
+import { useAppTheme } from '@hooks/use-app-theme';
+import { OrganizationConfig } from '@interfaces/organization';
+
+// Lazy loaded components
+const EmployeeLogin = lazy(() => import('@user/pages/login/login'));
+const EmployeeDashboard = lazy(() => import('@user/pages/dashboard/dashboard'));
+const Companies = lazy(
+  () => import('@user/components/dashboard/companies/companies')
+);
+const AddCompany = lazy(
+  () => import('@user/components/dashboard/add-company/add-company')
+);
+const UpdateCompany = lazy(
+  () => import('@user/components/dashboard/update-company/update-company')
+);
+const EmployeeProfile = lazy(
+  () => import('@user/components/dashboard/profile/UserProfile')
+);
+const PoolCandidateList = lazy(
+  () => import('@user/components/dashboard/candidate/candidate')
+);
+const AddPoolCandidate = lazy(
+  () => import('@user/components/dashboard/add-candidate/add-candidate')
+);
+const UpdatePoolCandidateForm = lazy(
+  () => import('@user/components/dashboard/update-candidate/update-candidate')
+);
+const WriterDashboard = lazy(
+  () => import('@user/components/dashboard/content-writer/WriterDashboard')
+);
+const AddCourse = lazy(
+  () => import('@user/components/dashboard/add-course/AddCourse')
+);
+const CourseDetails = lazy(
+  () => import('@user/components/dashboard/edit-course/CourseDetails')
+);
+
+// Common components
+const Dashboard = lazy(() => import('@components/common/dashboard/dashboard'));
+const PayslipList = lazy(() => import('@components/common/payslip/payslip'));
+const Support = lazy(() => import('@components/common/support/support'));
+const MyTasks = lazy(() => import('@components/common/mytasks/mytasks'));
+const Announcements = lazy(
+  () => import('@components/common/announcements/announcements')
+);
+const Mentees = lazy(() => import('@components/common/mentees/mentees'));
+const UpdateMenteeTasks = lazy(
+  () => import('@components/common/update-mentee-task/UpdateMenteeTasks')
+);
+const TaskDetail = lazy(() => import('@components/common/mytasks/taskdetails'));
+const Timesheet = lazy(() => import('@components/common/timesheet/timesheet'));
+const SalarySlipReport = lazy(
+  () => import('@components/common/reports/salary-slip')
+);
 
 const EmployeeRoutes = () => {
   const { organization } = useParams<{ organization: string }>();
+  const {
+    themeConfig: currentThemeConfig,
+    organizationConfig,
+    isDarkTheme
+  } = useAppTheme();
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const organizationConfig = useRecoilValue(organizationThemeAtom);
+
   const setOrganizationConfig = useSetRecoilState(organizationThemeAtom);
-  const isDarkTheme = useRecoilValue(themeAtom);
+
   const setTheme = useSetRecoilState(themeAtom);
 
   useEffect(() => {
@@ -65,9 +101,6 @@ const EmployeeRoutes = () => {
   }, [organization, setOrganizationConfig]);
 
   // Get the current theme configuration based on theme mode
-  const currentThemeConfig = useMemo(() => {
-    return getThemeConfig(organizationConfig, isDarkTheme);
-  }, [organizationConfig, isDarkTheme]);
 
   const mantineTheme = useMemo(() => {
     return {
@@ -528,8 +561,8 @@ const EmployeeRoutes = () => {
                 element={<div>{<UpdateMenteeTasks />}</div>}
               />
               <Route path="content-writer" element={<WriterDashboard />} />
-              <Route path="add-course" element={<ContentWriterAddCourse />} />
-              <Route path="course/:id" element={<ContentWriterEditCourse />} />
+              <Route path="add-course" element={<AddCourse />} />
+              <Route path="course/:id" element={<CourseDetails />} />
               <Route
                 path="reports/salary-slip"
                 element={<SalarySlipReport />}
@@ -545,11 +578,13 @@ const EmployeeRoutes = () => {
 const RecruiterProtectedRoutes = () => {
   const token = localStorage.getItem('token');
   const userRole = localStorage.getItem('userRole');
-  const organizationConfig = useRecoilValue(organizationThemeAtom);
+
   const navigate = useNavigate();
 
+  const { organizationConfig } = useAppTheme();
+
   useEffect(() => {
-    if (!userRole || !token || userRole !== 'Recruiter') {
+    if (!userRole || !token || userRole.toLowerCase() !== ROLES.RECRUITER) {
       toast.error('Not authorized to access');
       setTimeout(() => {
         navigate(
@@ -561,7 +596,7 @@ const RecruiterProtectedRoutes = () => {
     }
   }, [navigate, userRole, token, organizationConfig.organization_name]);
 
-  if (!userRole || !token || userRole !== 'Recruiter') {
+  if (!userRole || !token || userRole.toLowerCase() !== ROLES.RECRUITER) {
     return null;
   }
 
@@ -571,8 +606,10 @@ const RecruiterProtectedRoutes = () => {
 const EmployeeProtectedRoutes = () => {
   const token = localStorage.getItem('token');
   const userRole = localStorage.getItem('userRole');
-  const organizationConfig = useRecoilValue(organizationThemeAtom);
+
   const navigate = useNavigate();
+
+  const { organizationConfig } = useAppTheme();
 
   useEffect(() => {
     if (!userRole || !token) {

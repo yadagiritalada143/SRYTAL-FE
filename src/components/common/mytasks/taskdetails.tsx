@@ -12,13 +12,13 @@ import {
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useRecoilState } from 'recoil';
-import ProgressBar from '../../UI/Buttonsanimate/ProgressBar';
-import { taskAtom } from '../../../atoms/mytasks-atom';
-import { Lesson, Task } from '../../../interfaces/mytasks';
+import ProgressBar from '@UI/Buttonsanimate/ProgressBar';
+import { taskAtom } from '@atoms/mytasks-atom';
+import { Lesson, Task } from '@interfaces/mytasks';
 import { useRecoilValue } from 'recoil';
-import { organizationThemeAtom } from '../../../atoms/organization-atom';
-import { themeAtom } from '../../../atoms/theme';
-import { getThemeConfig } from '../../../utils/common/theme-utils';
+
+
+
 import {
   IconArrowLeft,
   IconArrowRight,
@@ -26,10 +26,11 @@ import {
   IconLink,
   IconVideo
 } from '@tabler/icons-react';
-import BackButton from '../../UI/Buttonsanimate/BackButton';
-import { organizationEmployeeUrls } from '../../../utils/common/constants';
+import BackButton from '@UI/Buttonsanimate/BackButton';
+import { organizationEmployeeUrls } from '@utils/common/constants';
 import { toast } from 'react-toastify';
-import { StandardModal } from '../../UI/Models/base-model';
+import { StandardModal } from '@UI/Models/base-model';
+import { useAppTheme } from '@hooks/use-app-theme';
 
 const fakeTask: Task = {
   id: '1',
@@ -90,6 +91,7 @@ const fakeTask: Task = {
 
 const TaskDetail = () => {
   const { taskId } = useParams();
+  const { themeConfig: currentThemeConfig, organizationConfig, isDarkTheme } = useAppTheme();
   const [task, setTask] = useRecoilState<Task | null>(taskAtom);
   const [openSection, setOpenSection] = useState<string | null>(null);
   const [completedLessons, setCompletedLessons] = useState<string[]>([]);
@@ -100,11 +102,8 @@ const TaskDetail = () => {
   );
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const organizationConfig = useRecoilValue(organizationThemeAtom);
-  const isDarkTheme = useRecoilValue(themeAtom);
-  const currentThemeConfig = useMemo(() => {
-    return getThemeConfig(organizationConfig, isDarkTheme);
-  }, [organizationConfig, isDarkTheme]);
+  
+  
 
   useEffect(() => {
     setLoading(true);

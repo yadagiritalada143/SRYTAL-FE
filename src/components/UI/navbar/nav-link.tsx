@@ -2,11 +2,12 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { NavbarLinkProps } from './types';
 import { UnstyledButton } from '@mantine/core';
 import { useCallback, useMemo, useState, useEffect, useRef } from 'react';
-import { organizationThemeAtom } from '../../../atoms/organization-atom';
+
 import { useRecoilValue } from 'recoil';
-import { themeAtom } from '../../../atoms/theme';
+
 import { IconChevronDown, IconChevronUp } from '@tabler/icons-react';
-import { getThemeConfig } from '../../../utils/common/theme-utils';
+import { useAppTheme } from '@hooks/use-app-theme';
+
 
 export function NavbarLink({
   icon: Icon,
@@ -19,9 +20,10 @@ export function NavbarLink({
   children
 }: NavbarLinkProps) {
   const navigate = useNavigate();
+  const { themeConfig: currentThemeConfig, organizationConfig, isDarkTheme } = useAppTheme();
   const location = useLocation();
-  const organizationConfig = useRecoilValue(organizationThemeAtom);
-  const isDarkTheme = useRecoilValue(themeAtom);
+  
+  
   const [isExpanded, setIsExpanded] = useState(false);
   const previousLocationRef = useRef<string>('');
 
@@ -37,9 +39,6 @@ export function NavbarLink({
     }
   }, [isActiveChild, location.pathname]);
 
-  const currentThemeConfig = useMemo(() => {
-    return getThemeConfig(organizationConfig, isDarkTheme);
-  }, [organizationConfig, isDarkTheme]);
 
   const buttonStyles = useMemo(
     () => ({

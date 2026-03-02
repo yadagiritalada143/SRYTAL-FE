@@ -1,4 +1,4 @@
-import { OrganizationConfig } from '../../interfaces/organization';
+import { OrganizationConfig } from '@interfaces/organization';
 
 // Default theme configs as fallback when API response doesn't include themes
 const defaultDarkTheme = {

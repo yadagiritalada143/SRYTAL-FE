@@ -7,32 +7,25 @@ import {
   ScrollArea,
   Group
 } from '@mantine/core';
-import { EmployeeTimesheet } from '../../../interfaces/timesheet';
+import { EmployeeTimesheet } from '@interfaces/timesheet';
 import moment from 'moment';
-import { OrganizationConfig } from '../../../interfaces/organization';
-import { useRecoilValue } from 'recoil';
-import { themeAtom } from '../../../atoms/theme';
+
 import { useMemo } from 'react';
 import { IconClock } from '@tabler/icons-react';
 import { useMediaQuery } from '@mantine/hooks';
-import { getThemeConfig } from '../../../utils/common/theme-utils';
+import { useAppTheme } from '@hooks/use-app-theme';
 
 export const TimeEntriesTable = ({
   changesMade,
-  pendingChanges = 0,
-  organizationConfig
+  pendingChanges = 0
 }: {
   changesMade: EmployeeTimesheet[];
   pendingChanges?: number;
-  organizationConfig: OrganizationConfig;
 }) => {
-  const isDarkTheme = useRecoilValue(themeAtom);
   const isMobile = useMediaQuery('(max-width: 768px)');
+  const { themeConfig: currentThemeConfig } = useAppTheme();
 
   // Get the current theme configuration
-  const currentThemeConfig = useMemo(() => {
-    return getThemeConfig(organizationConfig, isDarkTheme);
-  }, [organizationConfig, isDarkTheme]);
 
   const groupedEntries = useMemo(() => {
     return Object.entries(

@@ -6,14 +6,15 @@ import classes from './navbar.module.css';
 import { NavbarLink } from './nav-link';
 import { NavbarProps } from './types';
 import { useRecoilValue } from 'recoil';
-import { userDetailsAtom } from '../../../atoms/user';
-import { logoutUser } from '../../../services/user-services';
-import { useCustomToast } from '../../../utils/common/toast';
+import { userDetailsAtom } from '@atoms/user';
+import { logoutUser } from '@services/user-services';
+import { useCustomToast } from '@utils/common/toast';
 import { ThemeBackground } from '../Theme-background/background';
-import { organizationThemeAtom } from '../../../atoms/organization-atom';
-import { themeAtom } from '../../../atoms/theme';
+
+
 import { LogoutButton } from '../Buttons/buttons';
-import { getThemeConfig } from '../../../utils/common/theme-utils';
+import { useAppTheme } from '@hooks/use-app-theme';
+
 
 interface Position {
   x: number;
@@ -35,9 +36,10 @@ const getInitialPosition = (): Position => {
 
 function NavbarMenu({ navLinks, isDrawerOpen, setIsDrawerOpen }: NavbarProps) {
   const user = useRecoilValue(userDetailsAtom);
+  const { themeConfig: currentThemeConfig, organizationConfig, isDarkTheme } = useAppTheme();
   const location = useLocation();
-  const organizationConfig = useRecoilValue(organizationThemeAtom);
-  const isDarkTheme = useRecoilValue(themeAtom);
+  
+  
 
   // Draggable FAB state - initialize with localStorage value
   const [fabPosition, setFabPosition] = useState<Position>(getInitialPosition);
@@ -45,9 +47,6 @@ function NavbarMenu({ navLinks, isDrawerOpen, setIsDrawerOpen }: NavbarProps) {
   const [dragOffset, setDragOffset] = useState<Position>({ x: 0, y: 0 });
   const fabRef = useRef<HTMLButtonElement>(null);
 
-  const currentThemeConfig = useMemo(() => {
-    return getThemeConfig(organizationConfig, isDarkTheme);
-  }, [organizationConfig, isDarkTheme]);
 
   const { showSuccessToast } = useCustomToast();
 

@@ -5,7 +5,7 @@ import {
   Package,
   Task,
   TimesheetStatus
-} from '../../../interfaces/timesheet';
+} from '@interfaces/timesheet';
 import { toast } from 'react-toastify';
 
 export const getDateRangeArray = (

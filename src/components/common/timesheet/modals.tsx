@@ -11,18 +11,18 @@ import {
   Divider,
   Card
 } from '@mantine/core';
-import { StandardModal } from '../../UI/Models/base-model';
+import { StandardModal } from '@UI/Models/base-model';
 import moment from 'moment';
 import {
   EmployeeTimesheet,
   TimesheetStatus
-} from '../../../interfaces/timesheet';
+} from '@interfaces/timesheet';
 import { useCallback, useMemo, useState } from 'react';
 import { DatePickerInput, DateValue } from '@mantine/dates';
 import { toast } from 'react-toastify';
 import { prepareSubmitData } from './helper';
-import { submitTimeSheet } from '../../../services/common-services';
-import { useCustomToast } from '../../../utils/common/toast';
+import { submitTimeSheet } from '@services/common-services';
+import { useCustomToast } from '@utils/common/toast';
 import {
   IconCheck,
   IconX,

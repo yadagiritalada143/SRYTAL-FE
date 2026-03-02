@@ -41,14 +41,13 @@ import moment from 'moment-timezone';
 import { toast } from 'react-toastify';
 import { TaskPopover } from './task-popover';
 import { useRecoilValue } from 'recoil';
-import { organizationThemeAtom } from '../../../atoms/organization-atom';
-import { themeAtom } from '../../../atoms/theme';
+
 import {
   EmployeeTimesheet,
   TimesheetStatus
-} from '../../../interfaces/timesheet';
-import { getTimesheetData } from '../../../services/common-services';
-import { getThemeConfig } from '../../../utils/common/theme-utils';
+} from '@interfaces/timesheet';
+import { getTimesheetData } from '@services/common-services';
+
 import {
   formatData,
   formatDisplayDate,
@@ -66,7 +65,8 @@ import {
   EditTimeEntryModal
 } from './modals';
 import { TimeEntriesTable } from './time-entries';
-import useHorizontalScroll from '../../../hooks/horizontal-scroll';
+import useHorizontalScroll from '@hooks/horizontal-scroll';
+import { useAppTheme } from '@hooks/use-app-theme';
 
 const DateTableComponent = () => {
   const [
@@ -78,6 +78,11 @@ const DateTableComponent = () => {
   const [openedEntryModal, { open: openEntryModal, close: closeEntryModal }] =
     useDisclosure(false);
   const [openedSearch, { toggle: toggleSearch }] = useDisclosure(false);
+  const {
+    themeConfig: currentThemeConfig,
+    organizationConfig,
+    isDarkTheme
+  } = useAppTheme();
 
   const [dateRange, setDateRange] = useState<DatesRangeValue>(() => {
     const today = moment().tz('Asia/Kolkata');
@@ -96,17 +101,11 @@ const DateTableComponent = () => {
   );
   const [changesMade, setChangesMade] = useState<EmployeeTimesheet[]>([]);
 
-  const organizationConfig = useRecoilValue(organizationThemeAtom);
-  const isDarkTheme = useRecoilValue(themeAtom);
-
   // Responsive breakpoints
   const isMobile = useMediaQuery('(max-width: 768px)');
   const isSmallMobile = useMediaQuery('(max-width: 500px)');
 
   // Get the current theme configuration
-  const currentThemeConfig = useMemo(() => {
-    return getThemeConfig(organizationConfig, isDarkTheme);
-  }, [organizationConfig, isDarkTheme]);
 
   const {
     scrollRef,
@@ -701,7 +700,6 @@ const DateTableComponent = () => {
 
         {/* Time Entries Summary */}
         <TimeEntriesTable
-          organizationConfig={organizationConfig}
           pendingChanges={changesMade.length}
           changesMade={timeEntries.filter(time => time.hours > 0)}
         />

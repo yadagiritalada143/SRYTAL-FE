@@ -1,0 +1,48 @@
+import { useEffect, useState } from 'react';
+import { Outlet } from 'react-router-dom';
+import AdminNavbar from '@components/UI/navbar/navbar';
+import { adminNavLinks } from '@utils/admin/nav-links/admin-nav-links';
+
+import { useRecoilValue } from 'recoil';
+import { useDisclosure } from '@mantine/hooks';
+import { userDetailsAtom } from '@atoms/user';
+import { ChangePasswordPopup } from '@components/UI/Models/updatePassword';
+import { ThemeBackground } from '@components/UI/Theme-background/background';
+import { useAppTheme } from '@hooks/use-app-theme';
+
+const AdminDashboard = () => {
+  const [isDrawerOpen, setDrawerOpen] = useState(false);
+  const { themeConfig: currentThemeConfig, organizationConfig, isDarkTheme } = useAppTheme();
+  
+  const [opened, { open, close }] = useDisclosure(false);
+  const toggleDrawer = () => setDrawerOpen(!isDrawerOpen);
+  const user = useRecoilValue(userDetailsAtom);
+  useEffect(() => {
+    if (
+      user &&
+      user.passwordResetRequired &&
+      user.passwordResetRequired === 'true'
+    ) {
+      open();
+    }
+  }, [user, open]);
+  return (
+    <ThemeBackground className="flex min-h-screen ">
+      <AdminNavbar
+        navLinks={adminNavLinks}
+        organizationConfig={organizationConfig}
+        isDrawerOpen={isDrawerOpen}
+        setIsDrawerOpen={toggleDrawer}
+      />
+
+      <div className={`flex-grow transition-all duration-300 overflow-hidden`}>
+        <div>
+          <Outlet />
+        </div>
+      </div>
+      <ChangePasswordPopup opened={opened} close={close} forceUpdate={true} />
+    </ThemeBackground>
+  );
+};
+
+export default AdminDashboard;
