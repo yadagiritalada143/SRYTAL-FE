@@ -91,6 +91,7 @@ type Employee = {
   lastName?: string;
   email?: string;
   dateOfBirth?: string;
+  dateOfJoining?: string;
   panCardNumber?: string;
   bankDetailsInfo?: {
     accountNumber?: string;
@@ -135,7 +136,7 @@ const GenerateSalarySlipReport = () => {
     empName: '',
     designation: '',
     department: '',
-    doj: '',
+    dateOfJoining: '',
     email: '',
     dob: '',
     bankAccount: '',
@@ -254,7 +255,7 @@ const GenerateSalarySlipReport = () => {
         empName: '',
         designation: '',
         department: '',
-        doj: '',
+        dateOfJoining: '',
         email: '',
         dob: '',
         bankAccount: '',
@@ -279,7 +280,7 @@ const GenerateSalarySlipReport = () => {
         selectedEmployee.firstName + ' ' + (selectedEmployee.lastName || ''),
       designation: selectedEmployee.employeeRole?.[0]?.designation || '',
       department: 'Engineering',
-      doj: '2024-01-15',
+      dateOfJoining: selectedEmployee.dateOfJoining || '',
       email: selectedEmployee.email ?? '',
       dob: formatDate(selectedEmployee.dateOfBirth || ''),
       bankAccount: selectedEmployee.bankDetailsInfo?.accountNumber || '',
@@ -354,7 +355,7 @@ const GenerateSalarySlipReport = () => {
           employeeEmail: empDetails.email,
           designation: empDetails.designation,
           department: empDetails.department,
-          dateOfJoining: empDetails.doj,
+          dateOfJoining: empDetails.dateOfJoining,
           payPeriod: payPeriod,
           payDate: values.payDate
             ? new Date(values.payDate).toISOString().split('T')[0]
@@ -452,7 +453,7 @@ const GenerateSalarySlipReport = () => {
         employeeEmail: empDetails.email,
         designation: empDetails.designation,
         department: empDetails.department,
-        dateOfJoining: empDetails.doj,
+        dateOfJoining: empDetails.dateOfJoining,
         payPeriod: payPeriod,
         payDate: data.payDate,
         bankName: empDetails.bankName,

@@ -25,6 +25,7 @@ const AdminProfile = () => {
     email: '',
     mobileNumber: '',
     dateOfBirth: '',
+    dateOfJoining: '',
     panCardNumber: '',
     aadharNumber: '',
     presentAddress: '',
