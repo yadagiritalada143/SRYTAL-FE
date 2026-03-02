@@ -245,6 +245,16 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                   iconColor={currentThemeConfig.accentColor}
                 />
               </Grid.Col>
+              <Grid.Col span={{ base: 12, xs: 6, sm: 6, md: 4 }}>
+                <InfoItem
+                  icon={<IconCalendar size={18} />}
+                  label="Date of Joining"
+                  value={formatDate(details.dateOfJoining)}
+                  isMobile={isMobile}
+                  mutedTextColor={currentThemeConfig.mutedTextColor}
+                  iconColor={currentThemeConfig.accentColor}
+                />
+              </Grid.Col>
             </Grid>
           </Stack>
         </Card>

@@ -398,7 +398,7 @@ const UpdateEmployee = () => {
                 </Text>
 
                 <Grid>
-                  <Grid.Col span={12}>
+                  <Grid.Col span={{ base: 12, sm: 6 }}>
                     <TextInput
                       label="Employee ID"
                       placeholder="Enter employee ID"
@@ -423,6 +423,46 @@ const UpdateEmployee = () => {
                       autoComplete="off"
                       required
                       error={errors.employeeId?.message}
+                    />
+                  </Grid.Col>
+                  <Grid.Col span={{ base: 12, sm: 6 }}>
+                    <Controller
+                      name="dateOfJoining"
+                      control={control}
+                      render={({ field }) => (
+                        <DatePickerInput
+                          label="Date of Joining"
+                          placeholder="Select joining date"
+                          value={field.value ? new Date(field.value) : null}
+                          onChange={date => {
+                            if (date) {
+                              const d = new Date(date);
+
+                              const adjustedDate = new Date(
+                                d.getTime() - d.getTimezoneOffset() * 60000
+                              )
+                                .toISOString()
+                                .split('T')[0];
+
+                              field.onChange(adjustedDate);
+                            } else {
+                              field.onChange('');
+                            }
+                          }}
+                          error={errors.dateOfJoining?.message}
+                          styles={{
+                            input: {
+                              backgroundColor:
+                                currentThemeConfig.headerBackgroundColor,
+                              color: currentThemeConfig.color,
+                              borderColor: currentThemeConfig.borderColor
+                            },
+                            label: {
+                              color: currentThemeConfig.color
+                            }
+                          }}
+                        />
+                      )}
                     />
                   </Grid.Col>
                   <Grid.Col span={{ base: 12, md: 6 }}>
