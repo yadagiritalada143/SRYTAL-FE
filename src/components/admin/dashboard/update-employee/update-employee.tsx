@@ -171,6 +171,9 @@ const UpdateEmployee = () => {
           bloodGroup: emp.bloodGroup?.id,
           employmentType: emp.employmentType?.id,
           employeeRole: emp.employeeRole.map((role: any) => role.id),
+          dateOfJoining: emp.dateOfJoining
+            ? new Date(emp.dateOfJoining).toISOString().split('T')[0]
+            : undefined,
           dateOfBirth: emp.dateOfBirth
             ? new Date(emp.dateOfBirth).toISOString().split('T')[0]
             : undefined,
@@ -202,6 +205,7 @@ const UpdateEmployee = () => {
         ...data,
         employeeRole: data.employeeRole?.filter(role => role),
         mobileNumber: Number(data.mobileNumber),
+        dateOfJoining: data.dateOfJoining ?? undefined,
         dateOfBirth: data.dateOfBirth ?? undefined
       };
 
@@ -446,7 +450,7 @@ const UpdateEmployee = () => {
 
                               field.onChange(adjustedDate);
                             } else {
-                              field.onChange('');
+                              field.onChange(undefined);
                             }
                           }}
                           error={errors.dateOfJoining?.message}
