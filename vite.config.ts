@@ -26,6 +26,20 @@ export default defineConfig({
   },
   plugins: [react()],
   publicDir: 'public',
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      '@mantine/core',
+      '@mantine/hooks',
+      '@tabler/icons-react',
+      'axios',
+      'zod',
+      'recoil',
+      'react-hook-form'
+    ]
+  },
   server: {
     watch: {
       ignored: [
