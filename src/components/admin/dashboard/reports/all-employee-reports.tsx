@@ -462,7 +462,7 @@ const PayrollManagement = () => {
                               size="xs"
                               c={currentThemeConfig.mutedTextColor}
                             >
-                              UAN / Aadhar
+                              Aadhar Number
                             </Text>
                             <Text fw={400} c={currentThemeConfig.color}>
                               {selectedEmployee.aadharNumber || '—'}
