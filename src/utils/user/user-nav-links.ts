@@ -10,7 +10,8 @@ import {
   // IconTool,
   IconUserEdit,
   IconUsersGroup,
-  IconNotebook
+  IconNotebook,
+  IconUserStar
 } from '@tabler/icons-react';
 
 export const NavLinks = [
@@ -34,15 +35,18 @@ export const NavLinks = [
   },
   {
     role: 'Recruiter',
-    url: 'employee/dashboard/pool-candidates',
-    icon: IconUsersGroup,
-    name: 'Pool Candidates'
-  },
-  {
-    role: 'Recruiter',
-    url: 'employee/dashboard/pool-companies',
-    icon: IconBuildings,
-    name: 'Pool Companies'
+    icon: IconUserStar,
+    name: 'Talent Pool',
+    children: [
+      {
+        name: 'Pool Candidates',
+        url: 'employee/dashboard/pool-candidates'
+      },
+      {
+        name: 'Pool Companies',
+        url: 'employee/dashboard/pool-companies'
+      }
+    ]
   },
   {
     role: 'Employee',
