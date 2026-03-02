@@ -365,7 +365,7 @@ const GenerateSalarySlipReport = () => {
           transactionType: 'NEFT',
           transactionId: values.transactionId || undefined,
           panNumber: empDetails.pan,
-          uanNumber: empDetails.aadharNumber,
+          uanNumber: 'N/A',
 
           totalWorkingDays: values.daysInMonth,
           daysWorked: values.daysInMonth - (values.lopDays || 0),
@@ -461,7 +461,7 @@ const GenerateSalarySlipReport = () => {
         transactionType: 'NEFT',
         transactionId: data.transactionId,
         panNumber: empDetails.pan,
-        uanNumber: empDetails.aadharNumber,
+        uanNumber: 'N/A',
 
         totalWorkingDays: data.daysInMonth,
         daysWorked: data.daysInMonth - (data.lopDays || 0),
