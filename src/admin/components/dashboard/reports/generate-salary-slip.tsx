@@ -36,7 +36,6 @@ import {
 import { PreviewSalarySlipResponse } from '@interfaces/salary-slip';
 import { useRecoilValue } from 'recoil';
 
-
 import { useMediaQuery } from '@mantine/hooks';
 import { useCustomToast } from '@utils/common/toast';
 import DynamicStepper from '@common/reports-salary-slip/dynamicstepper';
@@ -86,7 +85,7 @@ const formatDate = (isoDate: string): string => {
 };
 
 type Employee = {
-  _id: string;
+  id: string;
   employeeId: string;
   firstName: string;
   lastName?: string;
@@ -115,13 +114,16 @@ const stepsConfig = [
 
 const GenerateSalarySlipReport = () => {
   const [activeStep, setActiveStep] = useState(0);
-  const { themeConfig: currentThemeConfig, organizationConfig, isDarkTheme } = useAppTheme();
+  const {
+    themeConfig: currentThemeConfig,
+    organizationConfig,
+    isDarkTheme
+  } = useAppTheme();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [isLoadingEmployees, setIsLoadingEmployees] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [calculatedDaysInMonth, setCalculatedDaysInMonth] = useState<number>(0);
-  
-  
+
   const isMobile = useMediaQuery('(max-width: 768px)');
   const [generatedPdf, setGeneratedPdf] = useState<Blob | null>(null);
 
@@ -273,7 +275,7 @@ const GenerateSalarySlipReport = () => {
     if (!selectedEmployee) return;
 
     setEmpDetails({
-      _id: selectedEmployee._id,
+      _id: selectedEmployee.id,
       empId: selectedEmployee.employeeId,
       empName:
         selectedEmployee.firstName + ' ' + (selectedEmployee.lastName || ''),
@@ -400,7 +402,6 @@ const GenerateSalarySlipReport = () => {
 
   const prevStep = () =>
     setActiveStep(current => (current > 0 ? current - 1 : current));
-
   const onSubmit = async (data: GenerateSalarySlipForm) => {
     try {
       if (!empDetails.email) {
@@ -516,21 +517,21 @@ const GenerateSalarySlipReport = () => {
   };
 
   return (
-    <Container size="lg" py="xl" px="sm" mt="xl">
+    <Container size='lg' py='xl' px='sm' mt='xl'>
       <GlobalLoader visible={isPreviewLoading} />
-      <Card shadow="sm" radius="md" p={isMobile ? 'md' : 'xl'} withBorder>
-        <Title order={2} ta="center" mb="xl">
+      <Card shadow='sm' radius='md' p={isMobile ? 'md' : 'xl'} withBorder>
+        <Title order={2} ta='center' mb='xl'>
           Generate Salary Slip
         </Title>
         <DynamicStepper steps={stepsConfig} active={activeStep}>
           {[
             //{/* ================= STEP 1 ================= */}
-            <Stack key="step1" mt="lg" gap="lg">
+            <Stack key='step1' mt='lg' gap='lg'>
               <Title order={5}>Employee Information</Title>
               <Grid>
                 <Grid.Col span={{ base: 12, sm: 6 }}>
                   <Select
-                    label="Employee ID"
+                    label='Employee ID'
                     placeholder={
                       isLoadingEmployees ? 'Loading...' : 'Select employee'
                     }
@@ -549,7 +550,7 @@ const GenerateSalarySlipReport = () => {
                 </Grid.Col>
                 <Grid.Col span={{ base: 12, sm: 6 }}>
                   <ReadOnlyField
-                    label="Employee Name"
+                    label='Employee Name'
                     value={empDetails.empName}
                     color={currentThemeConfig.color}
                   />
@@ -557,7 +558,7 @@ const GenerateSalarySlipReport = () => {
 
                 <Grid.Col span={{ base: 12, sm: 6 }}>
                   <ReadOnlyField
-                    label="Email"
+                    label='Email'
                     value={empDetails.email}
                     color={currentThemeConfig.color}
                   />
@@ -565,7 +566,7 @@ const GenerateSalarySlipReport = () => {
 
                 <Grid.Col span={{ base: 12, sm: 6 }}>
                   <ReadOnlyField
-                    label="Designation"
+                    label='Designation'
                     value={empDetails.designation}
                     color={currentThemeConfig.color}
                   />
@@ -573,7 +574,7 @@ const GenerateSalarySlipReport = () => {
 
                 <Grid.Col span={{ base: 12, sm: 6 }}>
                   <ReadOnlyField
-                    label="Date of Birth"
+                    label='Date of Birth'
                     value={empDetails.dob}
                     color={currentThemeConfig.color}
                   />
@@ -587,7 +588,7 @@ const GenerateSalarySlipReport = () => {
               <Grid>
                 <Grid.Col span={{ base: 12, sm: 6 }}>
                   <ReadOnlyField
-                    label="Bank Account Number"
+                    label='Bank Account Number'
                     value={empDetails.bankAccount}
                     color={currentThemeConfig.color}
                   />
@@ -595,7 +596,7 @@ const GenerateSalarySlipReport = () => {
 
                 <Grid.Col span={{ base: 12, sm: 6 }}>
                   <ReadOnlyField
-                    label="Bank Name"
+                    label='Bank Name'
                     value={empDetails.bankName}
                     color={currentThemeConfig.color}
                   />
@@ -603,7 +604,7 @@ const GenerateSalarySlipReport = () => {
 
                 <Grid.Col span={{ base: 12, sm: 6 }}>
                   <ReadOnlyField
-                    label="IFSC Code"
+                    label='IFSC Code'
                     value={empDetails.ifsc}
                     color={currentThemeConfig.color}
                   />
@@ -611,7 +612,7 @@ const GenerateSalarySlipReport = () => {
 
                 <Grid.Col span={{ base: 12, sm: 6 }}>
                   <ReadOnlyField
-                    label="PAN Number"
+                    label='PAN Number'
                     value={empDetails.pan}
                     color={currentThemeConfig.color}
                   />
@@ -621,10 +622,10 @@ const GenerateSalarySlipReport = () => {
               <Divider />
               <Title order={5}>Salary Period</Title>
 
-              <Grid align="flex-end">
+              <Grid align='flex-end'>
                 <Grid.Col span={4}>
                   <Controller
-                    name="selectedMonth"
+                    name='selectedMonth'
                     control={control}
                     render={({ field }) => (
                       <MonthPickerInput
@@ -647,9 +648,9 @@ const GenerateSalarySlipReport = () => {
                             : null
                         }
                         onChange={field.onChange}
-                        label="Select Month"
+                        label='Select Month'
                         required
-                        placeholder="Pick month"
+                        placeholder='Pick month'
                         error={errors.selectedMonth?.message}
                       />
                     )}
@@ -658,7 +659,7 @@ const GenerateSalarySlipReport = () => {
 
                 <Grid.Col span={4}>
                   <ReadOnlyField
-                    label="Total Days"
+                    label='Total Days'
                     value={
                       calculatedDaysInMonth > 0
                         ? String(calculatedDaysInMonth)
@@ -671,25 +672,25 @@ const GenerateSalarySlipReport = () => {
 
                 <Grid.Col span={4}>
                   <TextInput
-                    label="LOP Days"
+                    label='LOP Days'
                     {...register('lopDays', { valueAsNumber: true })}
-                    type="number"
-                    placeholder="0"
+                    type='number'
+                    placeholder='0'
                     error={errors.lopDays?.message}
                   />
                 </Grid.Col>
               </Grid>
 
-              <Group justify="flex-end" mt="xl">
-                <Button onClick={nextStep} radius="md">
+              <Group justify='flex-end' mt='xl'>
+                <Button onClick={nextStep} radius='md'>
                   Next
                 </Button>
               </Group>
             </Stack>,
             //{/* ================= STEP 2 ================= */}
-            <Stack key="step2" mt="lg" gap="md">
+            <Stack key='step2' mt='lg' gap='md'>
               <Card
-                radius="md"
+                radius='md'
                 p={isMobile ? 'md' : 'lg'}
                 withBorder
                 style={{
@@ -697,15 +698,15 @@ const GenerateSalarySlipReport = () => {
                   color: currentThemeConfig.color
                 }}
               >
-                <Title order={5} mb="md">
+                <Title order={5} mb='md'>
                   Earnings Breakdown
                 </Title>
 
                 <Grid>
                   <Grid.Col span={{ base: 12, sm: 6 }}>
                     <TextInput
-                      label="Basic Salary"
-                      type="number"
+                      label='Basic Salary'
+                      type='number'
                       required
                       onKeyDown={e => {
                         if (['e', 'E', '+', '-'].includes(e.key)) {
@@ -720,8 +721,8 @@ const GenerateSalarySlipReport = () => {
 
                   <Grid.Col span={{ base: 12, sm: 6 }}>
                     <TextInput
-                      label="HRA (%)"
-                      type="number"
+                      label='HRA (%)'
+                      type='number'
                       onKeyDown={e => {
                         if (['e', 'E', '+', '-'].includes(e.key)) {
                           e.preventDefault();
@@ -735,8 +736,8 @@ const GenerateSalarySlipReport = () => {
 
                   <Grid.Col span={{ base: 12, sm: 6 }}>
                     <TextInput
-                      label="Special Allowance"
-                      type="number"
+                      label='Special Allowance'
+                      type='number'
                       onKeyDown={e => {
                         if (['e', 'E', '+', '-'].includes(e.key)) {
                           e.preventDefault();
@@ -750,8 +751,8 @@ const GenerateSalarySlipReport = () => {
 
                   <Grid.Col span={{ base: 12, sm: 6 }}>
                     <TextInput
-                      label="Conveyance Allowance"
-                      type="number"
+                      label='Conveyance Allowance'
+                      type='number'
                       onKeyDown={e => {
                         if (['e', 'E', '+', '-'].includes(e.key)) {
                           e.preventDefault();
@@ -765,8 +766,8 @@ const GenerateSalarySlipReport = () => {
 
                   <Grid.Col span={{ base: 12, sm: 6 }}>
                     <TextInput
-                      label="Medical Allowance"
-                      type="number"
+                      label='Medical Allowance'
+                      type='number'
                       onKeyDown={e => {
                         if (['e', 'E', '+', '-'].includes(e.key)) {
                           e.preventDefault();
@@ -780,8 +781,8 @@ const GenerateSalarySlipReport = () => {
 
                   <Grid.Col span={{ base: 12, sm: 6 }}>
                     <TextInput
-                      label="Other Allowances"
-                      type="number"
+                      label='Other Allowances'
+                      type='number'
                       onKeyDown={e => {
                         if (['e', 'E', '+', '-'].includes(e.key)) {
                           e.preventDefault();
@@ -795,12 +796,12 @@ const GenerateSalarySlipReport = () => {
 
                   <Grid.Col span={{ base: 12, sm: 6 }}>
                     <Controller
-                      name="payDate"
+                      name='payDate'
                       control={control}
                       render={({ field }) => (
                         <DatePickerInput
-                          label="Pay Date"
-                          placeholder="Select pay date"
+                          label='Pay Date'
+                          placeholder='Select pay date'
                           required
                           value={field.value ? new Date(field.value) : null}
                           onChange={date => {
@@ -835,9 +836,9 @@ const GenerateSalarySlipReport = () => {
 
                   <Grid.Col span={{ base: 12, sm: 6 }}>
                     <TextInput
-                      label="Transaction ID"
+                      label='Transaction ID'
                       required
-                      placeholder="Enter transaction ID"
+                      placeholder='Enter transaction ID'
                       {...register('transactionId')}
                       onChange={e =>
                         setValue('transactionId', e.target.value.toUpperCase())
@@ -849,8 +850,8 @@ const GenerateSalarySlipReport = () => {
               </Card>
 
               <Card
-                shadow="sm"
-                radius="md"
+                shadow='sm'
+                radius='md'
                 p={isMobile ? 'md' : 'lg'}
                 withBorder
                 style={{
@@ -858,13 +859,13 @@ const GenerateSalarySlipReport = () => {
                   color: currentThemeConfig.color
                 }}
               >
-                <Group justify="space-between" mb="md">
+                <Group justify='space-between' mb='md'>
                   <Title order={6}>Additional Allowances</Title>
 
                   <Button
-                    type="button"
-                    variant="light"
-                    radius="md"
+                    type='button'
+                    variant='light'
+                    radius='md'
                     onClick={() =>
                       append({ label: '', amount: 0, type: 'add' })
                     }
@@ -879,14 +880,14 @@ const GenerateSalarySlipReport = () => {
                       <Grid grow>
                         <Grid.Col span={4}>
                           <TextInput
-                            placeholder="Allowance Name"
+                            placeholder='Allowance Name'
                             {...register(`additionalAllowances.${index}.label`)}
                           />
                         </Grid.Col>
                         <Grid.Col span={3}>
                           <TextInput
-                            type="number"
-                            placeholder="Amount"
+                            type='number'
+                            placeholder='Amount'
                             onKeyDown={e => {
                               if (['e', 'E', '+', '-'].includes(e.key)) {
                                 e.preventDefault();
@@ -907,7 +908,7 @@ const GenerateSalarySlipReport = () => {
                               { value: 'deduct', label: 'Deduct' }
                             ]}
                             {...register(`additionalAllowances.${index}.type`)}
-                            defaultValue="add"
+                            defaultValue='add'
                             onChange={value =>
                               setValue(
                                 `additionalAllowances.${index}.type`,
@@ -918,10 +919,10 @@ const GenerateSalarySlipReport = () => {
                         </Grid.Col>
                         <Grid.Col span={2}>
                           <Button
-                            type="button"
-                            color="red"
-                            radius="md"
-                            variant="subtle"
+                            type='button'
+                            color='red'
+                            radius='md'
+                            variant='subtle'
                             onClick={() => remove(index)}
                           >
                             Remove
@@ -933,15 +934,15 @@ const GenerateSalarySlipReport = () => {
                 </Stack>
               </Card>
 
-              <Group justify="space-between" mt="xl">
-                <Button variant="default" radius="md" onClick={prevStep}>
+              <Group justify='space-between' mt='xl'>
+                <Button variant='default' radius='md' onClick={prevStep}>
                   Back
                 </Button>
 
                 <Button
                   loading={isPreviewLoading}
                   onClick={nextStep}
-                  radius="md"
+                  radius='md'
                 >
                   Preview
                 </Button>
@@ -949,36 +950,36 @@ const GenerateSalarySlipReport = () => {
             </Stack>,
 
             //{/* ================= STEP 3 ================= */}{' '}
-            <form key="step3" onSubmit={handleSubmit(onSubmit)}>
-              <Stack mt="lg" gap="xl">
-                <Group justify="space-between" align="flex-end">
+            <form key='step3' onSubmit={handleSubmit(onSubmit)}>
+              <Stack mt='lg' gap='xl'>
+                <Group justify='space-between' align='flex-end'>
                   <div>
                     <Title order={3}>Salary Slip Summary</Title>
                   </div>
                   <Alert
                     icon={<IconAlertCircle size={16} />}
-                    title="Review Details"
+                    title='Review Details'
                     color={isDarkTheme ? 'cyan' : 'blue'}
                     py={5}
-                    variant="light"
+                    variant='light'
                   ></Alert>
                 </Group>
 
-                <Grid gutter="md">
+                <Grid gutter='md'>
                   <Grid.Col span={{ base: 12, sm: 4 }}>
                     <Card
                       withBorder
-                      radius="md"
+                      radius='md'
                       p={isMobile ? 'xs' : 'sm'}
-                      ta="center"
+                      ta='center'
                       style={{
                         borderLeft: `4px solid ${currentThemeConfig.accentColor}`
                       }}
                     >
                       <Text
-                        size="xs"
+                        size='xs'
                         fw={700}
-                        tt="uppercase"
+                        tt='uppercase'
                         c={currentThemeConfig.accentColor}
                       >
                         Total Days
@@ -995,17 +996,17 @@ const GenerateSalarySlipReport = () => {
                   <Grid.Col span={{ base: 12, sm: 4 }}>
                     <Card
                       withBorder
-                      radius="md"
+                      radius='md'
                       p={isMobile ? 'xs' : 'sm'}
-                      ta="center"
+                      ta='center'
                       style={{
                         borderLeft: `4px solid ${dangerBorderColor}`
                       }}
                     >
                       <Text
-                        size="xs"
+                        size='xs'
                         fw={700}
-                        tt="uppercase"
+                        tt='uppercase'
                         c={currentThemeConfig.lightDangerColor}
                       >
                         LOP Days
@@ -1022,17 +1023,17 @@ const GenerateSalarySlipReport = () => {
                   <Grid.Col span={{ base: 12, sm: 4 }}>
                     <Card
                       withBorder
-                      radius="md"
+                      radius='md'
                       p={isMobile ? 'xs' : 'sm'}
-                      ta="center"
+                      ta='center'
                       style={{
                         borderLeft: `4px solid ${currentThemeConfig.successColor}`
                       }}
                     >
                       <Text
-                        size="xs"
+                        size='xs'
                         fw={700}
-                        tt="uppercase"
+                        tt='uppercase'
                         c={currentThemeConfig.successColor}
                       >
                         Working Days
@@ -1048,59 +1049,59 @@ const GenerateSalarySlipReport = () => {
                   </Grid.Col>
                 </Grid>
 
-                <Grid gutter="xl">
+                <Grid gutter='xl'>
                   <Grid.Col span={{ base: 12, md: 5 }}>
-                    <Card withBorder radius="md" p="lg" h="100%">
-                      <Text fw={700} mb="md" size="sm" tt="uppercase">
+                    <Card withBorder radius='md' p='lg' h='100%'>
+                      <Text fw={700} mb='md' size='sm' tt='uppercase'>
                         Employee Details
                       </Text>
-                      <Stack gap="xs">
-                        <Group justify="space-between">
-                          <Text size="sm">Name</Text>
-                          <Text size="sm" fw={600}>
+                      <Stack gap='xs'>
+                        <Group justify='space-between'>
+                          <Text size='sm'>Name</Text>
+                          <Text size='sm' fw={600}>
                             {empDetails.empName}
                           </Text>
                         </Group>
 
-                        <Group justify="space-between">
-                          <Text size="sm">Employee ID</Text>
-                          <Text size="sm" fw={600}>
+                        <Group justify='space-between'>
+                          <Text size='sm'>Employee ID</Text>
+                          <Text size='sm' fw={600}>
                             {empDetails.empId}
                           </Text>
                         </Group>
 
-                        <Group justify="space-between">
-                          <Text size="sm">Designation</Text>
-                          <Text size="sm" fw={600}>
+                        <Group justify='space-between'>
+                          <Text size='sm'>Designation</Text>
+                          <Text size='sm' fw={600}>
                             {empDetails.designation}
                           </Text>
                         </Group>
 
-                        <Group justify="space-between">
-                          <Text size="sm">Email</Text>
-                          <Text size="sm" fw={600}>
+                        <Group justify='space-between'>
+                          <Text size='sm'>Email</Text>
+                          <Text size='sm' fw={600}>
                             {empDetails.email}
                           </Text>
                         </Group>
 
-                        <Group justify="space-between">
-                          <Text size="sm">Date of Birth</Text>
-                          <Text size="sm" fw={600}>
+                        <Group justify='space-between'>
+                          <Text size='sm'>Date of Birth</Text>
+                          <Text size='sm' fw={600}>
                             {empDetails.dob}
                           </Text>
                         </Group>
 
-                        <Group justify="space-between">
-                          <Text size="sm">PAN</Text>
-                          <Text size="sm" fw={600}>
+                        <Group justify='space-between'>
+                          <Text size='sm'>PAN</Text>
+                          <Text size='sm' fw={600}>
                             {empDetails.pan}
                           </Text>
                         </Group>
-                        <Divider my="xs" />
-                        <Group justify="space-between">
-                          <Text size="sm">Pay Period</Text>
+                        <Divider my='xs' />
+                        <Group justify='space-between'>
+                          <Text size='sm'>Pay Period</Text>
                           <Text
-                            size="sm"
+                            size='sm'
                             fw={700}
                             c={currentThemeConfig.accentColor}
                           >
@@ -1115,10 +1116,10 @@ const GenerateSalarySlipReport = () => {
                             })()}
                           </Text>
                         </Group>
-                        <Group justify="space-between">
-                          <Text size="sm">Pay Date</Text>
+                        <Group justify='space-between'>
+                          <Text size='sm'>Pay Date</Text>
                           <Text
-                            size="sm"
+                            size='sm'
                             fw={600}
                             c={currentThemeConfig.accentColor}
                           >
@@ -1131,10 +1132,10 @@ const GenerateSalarySlipReport = () => {
                               : '-'}
                           </Text>
                         </Group>
-                        <Group justify="space-between">
-                          <Text size="sm">Transaction ID</Text>
+                        <Group justify='space-between'>
+                          <Text size='sm'>Transaction ID</Text>
                           <Text
-                            size="sm"
+                            size='sm'
                             fw={600}
                             c={currentThemeConfig.accentColor}
                           >
@@ -1150,20 +1151,20 @@ const GenerateSalarySlipReport = () => {
                   <Grid.Col span={{ base: 12, md: 7 }}>
                     <Card
                       withBorder
-                      radius="md"
-                      p="lg"
+                      radius='md'
+                      p='lg'
                       style={{
                         backgroundColor:
                           currentThemeConfig.headerBackgroundColor
                       }}
                     >
-                      <Text fw={700} mb="md" size="sm" tt="uppercase">
+                      <Text fw={700} mb='md' size='sm' tt='uppercase'>
                         Salary Breakdown
                       </Text>
-                      <Stack gap="xs">
-                        <Group justify="space-between">
-                          <Text size="sm">Basic Salary</Text>
-                          <Text size="sm" fw={600}>
+                      <Stack gap='xs'>
+                        <Group justify='space-between'>
+                          <Text size='sm'>Basic Salary</Text>
+                          <Text size='sm' fw={600}>
                             ₹{' '}
                             {(
                               previewData?.data?.calculations?.basicSalary ??
@@ -1171,9 +1172,9 @@ const GenerateSalarySlipReport = () => {
                             ).toFixed(2)}
                           </Text>
                         </Group>
-                        <Group justify="space-between">
-                          <Text size="sm">HRA</Text>
-                          <Text size="sm" fw={600}>
+                        <Group justify='space-between'>
+                          <Text size='sm'>HRA</Text>
+                          <Text size='sm' fw={600}>
                             ₹{' '}
                             {(
                               previewData?.data?.calculations?.hra ??
@@ -1181,9 +1182,9 @@ const GenerateSalarySlipReport = () => {
                             ).toFixed(2)}
                           </Text>
                         </Group>
-                        <Group justify="space-between">
-                          <Text size="sm">Special Allowance</Text>
-                          <Text size="sm" fw={600}>
+                        <Group justify='space-between'>
+                          <Text size='sm'>Special Allowance</Text>
+                          <Text size='sm' fw={600}>
                             ₹{' '}
                             {(
                               previewData?.data?.calculations
@@ -1192,9 +1193,9 @@ const GenerateSalarySlipReport = () => {
                           </Text>
                         </Group>
 
-                        <Group justify="space-between">
-                          <Text size="sm">Conveyance</Text>
-                          <Text size="sm" fw={600}>
+                        <Group justify='space-between'>
+                          <Text size='sm'>Conveyance</Text>
+                          <Text size='sm' fw={600}>
                             ₹{' '}
                             {(
                               previewData?.data?.calculations
@@ -1203,9 +1204,9 @@ const GenerateSalarySlipReport = () => {
                           </Text>
                         </Group>
 
-                        <Group justify="space-between">
-                          <Text size="sm">Medical</Text>
-                          <Text size="sm" fw={600}>
+                        <Group justify='space-between'>
+                          <Text size='sm'>Medical</Text>
+                          <Text size='sm' fw={600}>
                             ₹{' '}
                             {(
                               previewData?.data?.calculations
@@ -1214,9 +1215,9 @@ const GenerateSalarySlipReport = () => {
                           </Text>
                         </Group>
 
-                        <Group justify="space-between">
-                          <Text size="sm">Other Allowances</Text>
-                          <Text size="sm" fw={600}>
+                        <Group justify='space-between'>
+                          <Text size='sm'>Other Allowances</Text>
+                          <Text size='sm' fw={600}>
                             ₹{' '}
                             {(
                               previewData?.data?.calculations
@@ -1226,11 +1227,11 @@ const GenerateSalarySlipReport = () => {
                         </Group>
                       </Stack>
 
-                      <Group justify="space-between" pt="sm">
-                        <Text size="sm" fw={600}>
+                      <Group justify='space-between' pt='sm'>
+                        <Text size='sm' fw={600}>
                           Gross Salary:
                         </Text>
-                        <Text size="sm" fw={700}>
+                        <Text size='sm' fw={700}>
                           ₹{' '}
                           {previewData?.data?.calculations?.grossEarnings?.toFixed(
                             2
@@ -1244,22 +1245,22 @@ const GenerateSalarySlipReport = () => {
                         previewData?.data?.calculations?.otherDeductions) && (
                         <>
                           <Divider
-                            my="xs"
-                            label="Deductions"
-                            labelPosition="center"
+                            my='xs'
+                            label='Deductions'
+                            labelPosition='center'
                           />
                           {previewData?.data?.calculations?.lossOfPayAmount &&
                             previewData?.data?.calculations?.lossOfPayAmount >
                               0 && (
-                              <Group justify="space-between">
+                              <Group justify='space-between'>
                                 <Text
-                                  size="sm"
+                                  size='sm'
                                   c={currentThemeConfig.lightDangerColor}
                                 >
                                   LOP Deduction ({lopDays} days)
                                 </Text>
                                 <Text
-                                  size="sm"
+                                  size='sm'
                                   fw={600}
                                   c={currentThemeConfig.lightDangerColor}
                                 >
@@ -1274,9 +1275,9 @@ const GenerateSalarySlipReport = () => {
                             <>
                               {previewData.data.calculations.providentFund >
                                 0 && (
-                                <Group justify="space-between">
+                                <Group justify='space-between'>
                                   <Text>PF</Text>
-                                  <Text fw={600} c="red">
+                                  <Text fw={600} c='red'>
                                     − ₹{' '}
                                     {previewData.data.calculations.providentFund.toFixed(
                                       2
@@ -1286,9 +1287,9 @@ const GenerateSalarySlipReport = () => {
                               )}
                               {previewData.data.calculations.professionalTax >
                                 0 && (
-                                <Group justify="space-between">
+                                <Group justify='space-between'>
                                   <Text>Professional Tax</Text>
-                                  <Text fw={600} c="red">
+                                  <Text fw={600} c='red'>
                                     − ₹{' '}
                                     {previewData.data.calculations.professionalTax.toFixed(
                                       2
@@ -1297,9 +1298,9 @@ const GenerateSalarySlipReport = () => {
                                 </Group>
                               )}
                               {previewData.data.calculations.incomeTax > 0 && (
-                                <Group justify="space-between">
+                                <Group justify='space-between'>
                                   <Text>Income Tax</Text>
-                                  <Text fw={600} c="red">
+                                  <Text fw={600} c='red'>
                                     − ₹{' '}
                                     {previewData.data.calculations.incomeTax.toFixed(
                                       2
@@ -1309,9 +1310,9 @@ const GenerateSalarySlipReport = () => {
                               )}
                               {previewData.data.calculations.otherDeductions >
                                 0 && (
-                                <Group justify="space-between">
+                                <Group justify='space-between'>
                                   <Text>Other Deductions</Text>
-                                  <Text fw={600} c="red">
+                                  <Text fw={600} c='red'>
                                     − ₹{' '}
                                     {previewData.data.calculations.otherDeductions.toFixed(
                                       2
@@ -1327,7 +1328,7 @@ const GenerateSalarySlipReport = () => {
                       {/* Extra allowances from local state are likely already included in 'otherAllowances' in API response */}
                       {!previewData &&
                         additionalAllowances.map((item, i) => (
-                          <Group key={i} justify="space-between">
+                          <Group key={i} justify='space-between'>
                             <Text>
                               {item.label} ({item.type === 'deduct' ? '-' : '+'}
                               )
@@ -1342,9 +1343,9 @@ const GenerateSalarySlipReport = () => {
                           </Group>
                         ))}
                       <Card
-                        p="md"
-                        mt="md"
-                        radius="md"
+                        p='md'
+                        mt='md'
+                        radius='md'
                         style={{
                           border: `1px dashed ${currentThemeConfig.successColor}`,
                           backgroundColor: rgba(
@@ -1353,13 +1354,13 @@ const GenerateSalarySlipReport = () => {
                           )
                         }}
                       >
-                        <Group justify="space-between">
+                        <Group justify='space-between'>
                           <Text fw={700} c={currentThemeConfig.successColor}>
                             Net Payable
                           </Text>
                           <Text
                             fw={800}
-                            size="xl"
+                            size='xl'
                             c={currentThemeConfig.successColor}
                           >
                             ₹{' '}
@@ -1372,12 +1373,12 @@ const GenerateSalarySlipReport = () => {
                     </Card>
                   </Grid.Col>
                 </Grid>
-                <Divider mt="xl" />
-                <Group justify="space-between" pb="md">
+                <Divider mt='xl' />
+                <Group justify='space-between' pb='md'>
                   <Button
-                    variant="subtle"
-                    color="gray"
-                    radius="md"
+                    variant='subtle'
+                    color='gray'
+                    radius='md'
                     onClick={prevStep}
                     disabled={activeStep === 3}
                   >
@@ -1385,8 +1386,8 @@ const GenerateSalarySlipReport = () => {
                   </Button>
 
                   <Button
-                    type="submit"
-                    radius="md"
+                    type='submit'
+                    radius='md'
                     loading={isGenerating}
                     leftSection={
                       activeStep === 3 ? <IconCheck size={16} /> : null
@@ -1401,7 +1402,7 @@ const GenerateSalarySlipReport = () => {
             </form>,
 
             //{/* ================= STEP 4 (COMPLETED) ================= */}
-            <Stack key="completed" align="center" py="xl" gap="md">
+            <Stack key='completed' align='center' py='xl' gap='md'>
               <IconCircleCheck
                 size={48}
                 color={currentThemeConfig.successColor}
@@ -1411,13 +1412,13 @@ const GenerateSalarySlipReport = () => {
                 Salary Slip Generated
               </Title>
 
-              <Text size="sm" ta="center" opacity={0.8}>
+              <Text size='sm' ta='center' opacity={0.8}>
                 The salary slip has been successfully generated and downloaded.
               </Text>
 
               <Button
-                variant="light"
-                radius="md"
+                variant='light'
+                radius='md'
                 onClick={() => window.location.reload()}
               >
                 Generate Another Salary Slip
