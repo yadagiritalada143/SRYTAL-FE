@@ -132,7 +132,7 @@ const EmployeesForSuperadmin = () => {
                 <tbody className='text-sm'>
                   {employees?.map(employee => (
                     <tr
-                      key={employee._id}
+                      key={employee.id}
                       className='hover:bg-slate-200 hover:text-black'
                     >
                       <td className='px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis'>

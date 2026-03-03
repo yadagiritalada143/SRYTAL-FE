@@ -503,7 +503,7 @@ const Employees = () => {
     if (!selectedEmployeeId || filteredEmployees.length === 0) return;
 
     const employeeIndex = filteredEmployees.findIndex(
-      emp => emp._id === selectedEmployeeId
+      emp => emp.id === selectedEmployeeId
     );
 
     if (employeeIndex === -1) return;
