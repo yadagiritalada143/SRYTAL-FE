@@ -580,7 +580,7 @@ const RecruiterProtectedRoutes = () => {
   const { organizationConfig } = useAppTheme();
 
   useEffect(() => {
-    if (!userRole || !token || userRole.toLowerCase() !== ROLES.RECRUITER) {
+    if (!userRole || !token || userRole !== ROLES.RECRUITER) {
       toast.error('Not authorized to access');
       setTimeout(() => {
         navigate(
@@ -592,7 +592,7 @@ const RecruiterProtectedRoutes = () => {
     }
   }, [navigate, userRole, token, organizationConfig.organization_name]);
 
-  if (!userRole || !token || userRole.toLowerCase() !== ROLES.RECRUITER) {
+  if (!userRole || !token || userRole !== ROLES.RECRUITER) {
     return null;
   }
 

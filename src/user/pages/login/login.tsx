@@ -24,11 +24,7 @@ import { useAppTheme } from '@hooks/use-app-theme';
 
 const EmployeeLogin = () => {
   const { showSuccessToast, showErrorToast } = useCustomToast();
-  const {
-    themeConfig: currentThemeConfig,
-    organizationConfig,
-    isDarkTheme
-  } = useAppTheme();
+  const { themeConfig: currentThemeConfig, organizationConfig } = useAppTheme();
   const { organization } = useParams<{ organization: string }>();
 
   const setUser = useSetRecoilState(userDetailsAtom);

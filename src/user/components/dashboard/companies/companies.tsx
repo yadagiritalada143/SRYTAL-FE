@@ -20,8 +20,6 @@ import {
 } from '@mantine/core';
 import DataView from '@components/common/loaders/DataView';
 import {
-  IconBuildings,
-  IconUserEdit,
   IconSearch,
   IconPlus,
   IconSortAscending,

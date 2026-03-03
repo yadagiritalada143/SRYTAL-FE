@@ -572,7 +572,7 @@ const AdminProtectedRoutes = () => {
   const { organizationConfig } = useAppTheme();
 
   useEffect(() => {
-    if (!userRole || !token || userRole.toLowerCase() !== ROLES.ADMIN) {
+    if (!userRole || !token || userRole !== ROLES.ADMIN) {
       setTimeout(() => {
         toast.error('Not authorized to access');
         navigate(
@@ -582,7 +582,7 @@ const AdminProtectedRoutes = () => {
     }
   }, [navigate, userRole, token, organizationConfig.organization_name]);
 
-  if (!userRole || !token || userRole.toLowerCase() !== ROLES.ADMIN) {
+  if (!userRole || !token || userRole !== ROLES.ADMIN) {
     return null;
   }
 

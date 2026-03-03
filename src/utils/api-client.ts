@@ -27,7 +27,16 @@ export const logoutUser = async () => {
   } catch (error) {
     console.log('Error during logout:', error);
   } finally {
-    localStorage.clear();
+    // Specifically remove auth-related keys to persist theme/preferences
+    const authKeys = [
+      'token',
+      'userRole',
+      'refreshToken',
+      'createdAt',
+      'adminToken'
+    ];
+    authKeys.forEach(key => localStorage.removeItem(key));
+
     window.location.href = loginPath;
   }
 };
