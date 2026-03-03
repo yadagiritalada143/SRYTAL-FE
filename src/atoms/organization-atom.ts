@@ -1,6 +1,6 @@
 import { atom } from 'recoil';
-import { OrganizationConfig } from '../interfaces/organization';
-import { EmployeeInterface } from '../interfaces/employee';
+import { OrganizationConfig } from '@interfaces/organization';
+import { EmployeeInterface } from '@interfaces/employee';
 
 export const organizationThemeAtom = atom<OrganizationConfig>({
   key: 'organizationTheme',

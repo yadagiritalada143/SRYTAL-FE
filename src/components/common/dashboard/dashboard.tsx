@@ -29,23 +29,22 @@ import {
   IconConfetti,
   IconPlayerPause
 } from '@tabler/icons-react';
-import { organizationThemeAtom } from '../../../atoms/organization-atom';
-import { themeAtom } from '../../../atoms/theme';
-import { EmployeeInterface } from '../../../interfaces/employee';
-import { getUserDetails } from '../../../services/user-services';
+
+
+import { EmployeeInterface } from '@interfaces/employee';
+import { getUserDetails } from '@services/user-services';
 import { toast } from 'react-toastify';
-import { getThemeConfig } from '../../../utils/common/theme-utils';
+
 import { useDisclosure } from '@mantine/hooks';
+import { useAppTheme } from '@hooks/use-app-theme';
 
 const Dashboard = () => {
   const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const { themeConfig: currentThemeConfig, organizationConfig, isDarkTheme } = useAppTheme();
   const [opened, { open, close }] = useDisclosure(false);
 
-  const organizationConfig = useRecoilValue(organizationThemeAtom);
-  const isDarkTheme = useRecoilValue(themeAtom);
-  const currentThemeConfig = useMemo(() => {
-    return getThemeConfig(organizationConfig, isDarkTheme);
-  }, [organizationConfig, isDarkTheme]);
+  
+  
 
   // Handle Timer Toggle
   const toggleTimer = () => {

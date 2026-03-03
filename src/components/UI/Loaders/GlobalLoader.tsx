@@ -1,4 +1,5 @@
-import { LoadingOverlay, Loader } from "@mantine/core";
+import { LoadingOverlay } from '@mantine/core';
+import { useAppTheme } from '@hooks/use-app-theme';
 
 type GlobalLoaderProps = {
   visible: boolean;
@@ -9,8 +10,10 @@ type GlobalLoaderProps = {
 const GlobalLoader = ({
   visible,
   blur = 6,
-  opacity = 0.6,
+  opacity = 0.6
 }: GlobalLoaderProps) => {
+  const { themeConfig } = useAppTheme();
+
   return (
     <LoadingOverlay
       visible={visible}
@@ -18,14 +21,15 @@ const GlobalLoader = ({
       overlayProps={{
         blur,
         backgroundOpacity: opacity,
+        color: themeConfig.backgroundColor
       }}
       loaderProps={{
-        type: "dots",
-        size: "xl",
+        type: 'dots',
+        size: 'xl'
       }}
       style={{
-        position: "fixed",
-        inset: 0,
+        position: 'fixed',
+        inset: 0
       }}
     />
   );
