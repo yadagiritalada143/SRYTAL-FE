@@ -13,7 +13,8 @@ import {
   Paper,
   ActionIcon,
   Badge,
-  Divider
+  Divider,
+  Loader
 } from '@mantine/core';
 import { RichTextEditor, Link } from '@mantine/tiptap';
 import { useEditor } from '@tiptap/react';
@@ -30,28 +31,23 @@ import {
   IconArrowLeft,
   IconCheck
 } from '@tabler/icons-react';
-import { useMemo, useState } from 'react';
-import { useRecoilValue } from 'recoil';
-
-
+import { useState } from 'react';
 import { useMediaQuery } from '@mantine/hooks';
-import { addCourseContentWriter } from '@services/user-services';
 import { useNavigate } from 'react-router-dom';
 import { useCustomToast } from '@utils/common/toast';
 import { useAppTheme } from '@hooks/use-app-theme';
-
+import { useAddCourse } from '@hooks/mutations/useUserMutations';
 
 export const ContentWriterAddCourse = () => {
   const [courseName, setCourseName] = useState('');
-  const { themeConfig: currentThemeConfig, organizationConfig, isDarkTheme } = useAppTheme();
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  
+
+  const { themeConfig: currentThemeConfig, isDarkTheme } = useAppTheme();
+  const { mutateAsync: addCourseMutation, isPending: isSubmitting } =
+    useAddCourse();
   const navigate = useNavigate();
   const { showErrorToast, showSuccessToast } = useCustomToast();
-
   const isMobile = useMediaQuery('(max-width: 768px)');
 
   const editor = useEditor({
@@ -66,7 +62,6 @@ export const ContentWriterAddCourse = () => {
     ],
     content: '<p>Write your course description here...</p>'
   });
-
 
   const handleThumbnailChange = (file: File | null) => {
     setThumbnailFile(file);
@@ -87,22 +82,19 @@ export const ContentWriterAddCourse = () => {
   };
 
   const handleSubmit = async () => {
-    setIsSubmitting(true);
-
-    // Get the HTML content from the editor
     const description = editor?.getHTML() || '';
 
-    // Create form data for submission
-
     try {
-      await addCourseContentWriter(courseName, description, thumbnailFile);
+      await addCourseMutation({
+        name: courseName,
+        description,
+        image: thumbnailFile
+      });
       showSuccessToast('Course added successfully!');
       navigate(-1);
     } catch (error: any) {
       showErrorToast(error?.response?.data?.message || 'Failed to add course');
     }
-
-    setIsSubmitting(false);
   };
 
   const isFormValid =
@@ -110,35 +102,34 @@ export const ContentWriterAddCourse = () => {
 
   return (
     <Container
-      size="lg"
+      size='lg'
       py={{ base: 'md', sm: 'xl' }}
       px={{ base: 'xs', sm: 'md' }}
     >
-      <Stack gap="lg">
-        {/* Header */}
-        <Stack gap="sm">
-          <Group justify="space-between" align="flex-start" wrap="wrap">
-            <Group gap="sm" align="flex-start" style={{ flex: 1 }}>
+      <Stack gap='lg'>
+        <Stack gap='sm'>
+          <Group justify='space-between' align='flex-start' wrap='wrap'>
+            <Group gap='sm' align='flex-start' style={{ flex: 1 }}>
               <ActionIcon
-                variant="subtle"
-                color="gray"
+                variant='subtle'
+                color='gray'
                 size={isMobile ? 'md' : 'lg'}
-                onClick={() => window.history.back()}
+                onClick={() => navigate(-1)}
                 mt={{ base: 4, sm: 0 }}
               >
                 <IconArrowLeft size={isMobile ? 18 : 20} />
               </ActionIcon>
               <Stack gap={4} style={{ flex: 1 }}>
                 <Title order={isMobile ? 2 : 1}>Create New Course</Title>
-                <Text size={isMobile ? 'xs' : 'sm'} c="dimmed">
+                <Text size={isMobile ? 'xs' : 'sm'} c='dimmed'>
                   Fill in the details below to create a new course
                 </Text>
               </Stack>
             </Group>
             <Badge
               size={isMobile ? 'md' : 'lg'}
-              variant="light"
-              color="blue"
+              variant='light'
+              color='blue'
               mt={{ base: 'xs', sm: 0 }}
             >
               Draft
@@ -147,11 +138,10 @@ export const ContentWriterAddCourse = () => {
           <Divider />
         </Stack>
 
-        {/* Main Form */}
         <Card
-          shadow="sm"
+          shadow='sm'
           p={{ base: 'md', sm: 'xl' }}
-          radius="md"
+          radius='md'
           withBorder
           style={{
             backgroundColor: currentThemeConfig.headerBackgroundColor,
@@ -159,17 +149,16 @@ export const ContentWriterAddCourse = () => {
             borderColor: currentThemeConfig.borderColor
           }}
         >
-          <Stack gap="lg">
-            {/* Course Name */}
+          <Stack gap='lg'>
             <Box>
               <TextInput
-                label="Course Name"
-                placeholder="Enter course name"
+                label='Course Name'
+                placeholder='Enter course name'
                 size={isMobile ? 'sm' : 'md'}
                 value={courseName}
                 onChange={e => setCourseName(e.target.value)}
                 required
-                description="Give your course a clear and descriptive name"
+                description='Give your course a clear and descriptive name'
                 styles={{
                   input: {
                     backgroundColor: currentThemeConfig.headerBackgroundColor,
@@ -190,28 +179,27 @@ export const ContentWriterAddCourse = () => {
               />
             </Box>
 
-            {/* Thumbnail Upload */}
             <Box>
               <Text
                 size={isMobile ? 'sm' : 'md'}
                 fw={600}
-                mb="xs"
+                mb='xs'
                 c={currentThemeConfig.color}
               >
                 Course Thumbnail{' '}
-                <Text component="span" c="red">
+                <Text component='span' c='red'>
                   *
                 </Text>
               </Text>
-              <Text size={isMobile ? 'xs' : 'sm'} c={'dimmed'} mb="md">
+              <Text size={isMobile ? 'xs' : 'sm'} c={'dimmed'} mb='md'>
                 Upload a high-quality image that represents your course
                 {!isMobile && ' (Recommended: 1280x720px)'}
               </Text>
 
               {!thumbnailPreview ? (
                 <FileInput
-                  placeholder="Click to upload or drag and drop"
-                  accept="image/*"
+                  placeholder='Click to upload or drag and drop'
+                  accept='image/*'
                   value={thumbnailFile}
                   onChange={handleThumbnailChange}
                   leftSection={<IconUpload size={isMobile ? 16 : 18} />}
@@ -231,7 +219,7 @@ export const ContentWriterAddCourse = () => {
                 />
               ) : (
                 <Paper
-                  radius="md"
+                  radius='md'
                   withBorder
                   p={isMobile ? 'sm' : 'md'}
                   style={{
@@ -241,22 +229,22 @@ export const ContentWriterAddCourse = () => {
                     borderColor: currentThemeConfig.borderColor
                   }}
                 >
-                  <Stack gap="md">
+                  <Stack gap='md'>
                     <Group
                       gap={isMobile ? 'sm' : 'md'}
-                      align="center"
+                      align='center'
                       wrap={isMobile ? 'wrap' : 'nowrap'}
                     >
                       <Image
                         src={thumbnailPreview}
                         height={isMobile ? 80 : 120}
                         width={isMobile ? '100%' : 200}
-                        radius="md"
-                        fit="cover"
-                        alt="Course thumbnail"
+                        radius='md'
+                        fit='cover'
+                        alt='Course thumbnail'
                         style={{ maxWidth: isMobile ? '100%' : '200px' }}
                       />
-                      <Stack gap="xs" style={{ flex: 1, minWidth: 0 }}>
+                      <Stack gap='xs' style={{ flex: 1, minWidth: 0 }}>
                         <Text
                           size={isMobile ? 'xs' : 'sm'}
                           fw={500}
@@ -265,13 +253,16 @@ export const ContentWriterAddCourse = () => {
                         >
                           {thumbnailFile?.name}
                         </Text>
-                        <Text size="xs" c={'dimmed'}>
-                          {(thumbnailFile!.size / 1024 / 1024).toFixed(2)} MB
+                        <Text size='xs' c={'dimmed'}>
+                          {thumbnailFile
+                            ? (thumbnailFile.size / 1024 / 1024).toFixed(2)
+                            : '0'}{' '}
+                          MB
                         </Text>
                         <Button
-                          variant="light"
-                          color="red"
-                          size="xs"
+                          variant='light'
+                          color='red'
+                          size='xs'
                           leftSection={<IconX size={12} />}
                           onClick={handleRemoveThumbnail}
                           style={{ width: 'fit-content' }}
@@ -285,20 +276,19 @@ export const ContentWriterAddCourse = () => {
               )}
             </Box>
 
-            {/* Course Description */}
             <Box>
               <Text
                 size={isMobile ? 'sm' : 'md'}
                 fw={600}
-                mb="xs"
+                mb='xs'
                 c={currentThemeConfig.color}
               >
                 Course Description{' '}
-                <Text component="span" c="red">
+                <Text component='span' c='red'>
                   *
                 </Text>
               </Text>
-              <Text size={isMobile ? 'xs' : 'sm'} c={'dimmed'} mb="md">
+              <Text size={isMobile ? 'xs' : 'sm'} c={'dimmed'} mb='md'>
                 Provide a detailed description of what students will learn
               </Text>
 
@@ -390,7 +380,6 @@ export const ContentWriterAddCourse = () => {
                     </>
                   ) : (
                     <>
-                      {/* Mobile: Essential controls only */}
                       <RichTextEditor.ControlsGroup>
                         <RichTextEditor.Bold />
                         <RichTextEditor.Italic />
@@ -432,62 +421,64 @@ export const ContentWriterAddCourse = () => {
           </Stack>
         </Card>
 
-        {/* Action Buttons */}
-        <Card shadow="sm" p={{ base: 'md', sm: 'lg' }} radius="md" withBorder>
-          <Stack gap="sm" hiddenFrom="sm">
-            {/* Mobile: Stacked buttons */}
+        <Card shadow='sm' p={{ base: 'md', sm: 'lg' }} radius='md' withBorder>
+          <Stack gap='sm' hiddenFrom='sm'>
             <Button
               fullWidth
-              leftSection={<IconCheck size={16} />}
-              disabled={!isFormValid}
-              loading={isSubmitting}
+              leftSection={
+                isSubmitting ? (
+                  <Loader size='xs' color='white' />
+                ) : (
+                  <IconCheck size={16} />
+                )
+              }
+              disabled={!isFormValid || isSubmitting}
               onClick={handleSubmit}
             >
-              Create Course
+              {isSubmitting ? 'Creating...' : 'Create Course'}
             </Button>
 
-            <Button
-              fullWidth
-              variant="default"
-              onClick={() => window.history.back()}
-            >
+            <Button fullWidth variant='default' onClick={() => navigate(-1)}>
               Cancel
             </Button>
           </Stack>
 
-          <Group justify="space-between" wrap="nowrap" visibleFrom="sm">
-            {/* Desktop: Horizontal buttons */}
-            <Button variant="default" onClick={() => window.history.back()}>
+          <Group justify='space-between' wrap='nowrap' visibleFrom='sm'>
+            <Button variant='default' onClick={() => navigate(-1)}>
               Cancel
             </Button>
-            <Group gap="sm">
+            <Group gap='sm'>
               <Button
-                leftSection={<IconCheck size={18} />}
-                disabled={!isFormValid}
-                loading={isSubmitting}
+                leftSection={
+                  isSubmitting ? (
+                    <Loader size='xs' color='white' />
+                  ) : (
+                    <IconCheck size={18} />
+                  )
+                }
+                disabled={!isFormValid || isSubmitting}
                 onClick={handleSubmit}
               >
-                Create Course
+                {isSubmitting ? 'Creating...' : 'Create Course'}
               </Button>
             </Group>
           </Group>
         </Card>
 
-        {/* Help Card */}
         <Card
-          shadow="sm"
+          shadow='sm'
           p={{ base: 'md', sm: 'lg' }}
-          radius="md"
+          radius='md'
           withBorder
-          bg="blue.0"
+          bg='blue.0'
         >
-          <Group gap={isMobile ? 'sm' : 'md'} align="flex-start">
-            <IconPhoto size={isMobile ? 24 : 32} color="#228BE6" />
+          <Group gap={isMobile ? 'sm' : 'md'} align='flex-start'>
+            <IconPhoto size={isMobile ? 24 : 32} color='#228BE6' />
             <Stack gap={4} style={{ flex: 1 }}>
               <Text size={isMobile ? 'xs' : 'sm'} fw={600}>
                 Tips for a Great Course
               </Text>
-              <Text size="xs" c="dimmed" style={{ lineHeight: 1.6 }}>
+              <Text size='xs' c='dimmed' style={{ lineHeight: 1.6 }}>
                 • Use a clear, high-resolution thumbnail image
                 <br />
                 • Write a compelling description that highlights key learning
@@ -504,3 +495,5 @@ export const ContentWriterAddCourse = () => {
     </Container>
   );
 };
+
+export default ContentWriterAddCourse;

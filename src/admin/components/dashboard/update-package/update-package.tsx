@@ -30,15 +30,14 @@ import {
 import { useRecoilValue } from 'recoil';
 
 import { userDetailsAtom } from '@atoms/user';
+import { packageSchema, PackageUpdateForm } from '@forms/update-package';
 import {
-  packageSchema,
-  PackageUpdateForm
-} from '@forms/update-package';
+  useUpdatePackageByAdmin,
+  useDeletePackageByAdmin
+} from '@hooks/mutations/useAdminMutations';
 import {
-  deletePackageByAdmin,
   getAllEmployeeDetailsByAdmin,
-  getPackageDetailsByAdmin,
-  updatePackageByAdmin
+  getPackageDetailsByAdmin
 } from '@services/admin-services';
 import { useCustomToast } from '@utils/common/toast';
 import { DeletePackageModel } from './delete-models';
@@ -49,7 +48,11 @@ import { useAppTheme } from '@hooks/use-app-theme';
 
 const UpdatePackage = () => {
   const [opened, { open, close }] = useDisclosure(false);
-  const { themeConfig: currentThemeConfig, organizationConfig, isDarkTheme } = useAppTheme();
+  const {
+    themeConfig: currentThemeConfig,
+    organizationConfig,
+    isDarkTheme
+  } = useAppTheme();
   const navigate = useNavigate();
   const params = useParams();
   const packageId = params.packageId as string;
@@ -58,9 +61,11 @@ const UpdatePackage = () => {
   const [approversOptions, setApproversOptions] = useState([]);
   const { showSuccessToast } = useCustomToast();
   const user = useRecoilValue(userDetailsAtom);
-  
+
   const [tasks, setTasks] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const { mutateAsync: updatePackageMutation } = useUpdatePackageByAdmin();
+  const { mutateAsync: deletePackageMutation } = useDeletePackageByAdmin();
 
   const isMobile = useMediaQuery('(max-width: 768px)');
   const isSmallMobile = useMediaQuery('(max-width: 500px)');
@@ -135,7 +140,7 @@ const UpdatePackage = () => {
       toast.error('Invalid package ID.');
       return;
     }
-    deletePackageByAdmin(packageId, hardDelete)
+    deletePackageMutation({ id: packageId, hardDelete })
       .then(() => {
         showSuccessToast('Package deleted successfully!');
         navigate(-1);
@@ -150,7 +155,7 @@ const UpdatePackage = () => {
 
     try {
       setIsLoading(true);
-      await updatePackageByAdmin(packageId, data);
+      await updatePackageMutation({ id: packageId, data });
       showSuccessToast('Package updated successfully!');
       navigate(-1);
     } catch (error: any) {
@@ -161,26 +166,26 @@ const UpdatePackage = () => {
   };
 
   return (
-    <Container size="xl" py="md" my="xl" px={isSmallMobile ? 'xs' : 'md'}>
+    <Container size='xl' py='md' my='xl' px={isSmallMobile ? 'xs' : 'md'}>
       {isLoading ? (
         <Center style={{ minHeight: '400px' }}>
-          <Stack align="center" gap="md">
-            <Loader size="xl" />
+          <Stack align='center' gap='md'>
+            <Loader size='xl' />
             <Text>Loading package details...</Text>
           </Stack>
         </Center>
       ) : (
-        <Stack gap="md">
+        <Stack gap='md'>
           {/* Header Card */}
-          <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder>
+          <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md' withBorder>
             <Flex
-              direction="row"
-              justify="space-between"
-              align="center"
-              gap="md"
+              direction='row'
+              justify='space-between'
+              align='center'
+              gap='md'
             >
-              <Group justify="space-between" align="center">
-                <Group gap="xs">
+              <Group justify='space-between' align='center'>
+                <Group gap='xs'>
                   <IconPackage size={24} />
                   <Text size={isMobile ? 'lg' : 'xl'} fw={700}>
                     Update Package
@@ -192,36 +197,36 @@ const UpdatePackage = () => {
           </Card>
 
           {/* Form Card */}
-          <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder>
+          <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md' withBorder>
             <form onSubmit={handleSubmit(onSubmit)}>
-              <Stack gap="md">
+              <Stack gap='md'>
                 <TextInput
-                  label="Title"
-                  placeholder="Enter package title"
+                  label='Title'
+                  placeholder='Enter package title'
                   {...register('title')}
                   error={errors.title?.message}
-                  size="md"
+                  size='md'
                   required
                 />
 
                 <Textarea
-                  label="Description"
-                  placeholder="Enter package description"
+                  label='Description'
+                  placeholder='Enter package description'
                   {...register('description')}
                   error={errors.description?.message}
                   minRows={4}
-                  size="md"
+                  size='md'
                   required
                 />
 
                 <Controller
-                  name="approvers"
+                  name='approvers'
                   control={control}
                   render={({ field }) => (
                     <MultiSelect
                       data={approversOptions}
-                      label="Approvers"
-                      placeholder="Select approvers"
+                      label='Approvers'
+                      placeholder='Select approvers'
                       value={
                         Array.isArray(field.value)
                           ? field.value.map(a => String(a).trim())
@@ -230,7 +235,7 @@ const UpdatePackage = () => {
                       onChange={field.onChange}
                       onBlur={field.onBlur}
                       error={errors.approvers?.message}
-                      size="md"
+                      size='md'
                       searchable
                       clearable
                     />
@@ -240,59 +245,59 @@ const UpdatePackage = () => {
                 <Group grow={isMobile}>
                   <Controller
                     control={control}
-                    name="startDate"
+                    name='startDate'
                     render={({ field }) => (
                       <DateInput
-                        label="Start Date"
-                        placeholder="Pick a date"
+                        label='Start Date'
+                        placeholder='Pick a date'
                         value={field.value ? new Date(field.value) : null}
                         onChange={date =>
                           field.onChange(date ? new Date(date) : null)
                         }
                         error={errors.startDate?.message}
-                        valueFormat="YYYY-MM-DD"
-                        size="md"
+                        valueFormat='YYYY-MM-DD'
+                        size='md'
                         clearable
                       />
                     )}
                   />
                   <Controller
                     control={control}
-                    name="endDate"
+                    name='endDate'
                     render={({ field }) => (
                       <DateInput
-                        label="End Date"
-                        placeholder="Pick a date"
+                        label='End Date'
+                        placeholder='Pick a date'
                         value={field.value ? new Date(field.value) : null}
                         onChange={date =>
                           field.onChange(date ? new Date(date) : null)
                         }
                         error={errors.endDate?.message}
-                        valueFormat="YYYY-MM-DD"
-                        size="md"
+                        valueFormat='YYYY-MM-DD'
+                        size='md'
                         clearable
                       />
                     )}
                   />
                 </Group>
 
-                <Group justify="space-between" mt="lg">
+                <Group justify='space-between' mt='lg'>
                   <Button
-                    color="red"
-                    variant="outline"
+                    color='red'
+                    variant='outline'
                     leftSection={<IconTrash size={16} />}
                     onClick={open}
                     fullWidth={isMobile}
-                    radius="md"
+                    radius='md'
                   >
                     Delete Package
                   </Button>
                   <Button
-                    type="submit"
+                    type='submit'
                     disabled={isLoading}
                     leftSection={<IconDeviceFloppy size={16} />}
                     fullWidth={isMobile}
-                    radius="md"
+                    radius='md'
                   >
                     {isLoading ? 'Updating...' : 'Update Package'}
                   </Button>

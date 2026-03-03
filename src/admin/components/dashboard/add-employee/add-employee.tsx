@@ -14,14 +14,8 @@ import {
   Progress
 } from '@mantine/core';
 import { toast } from 'react-toastify';
-import {
-  AddEmployeeForm,
-  addEmployeeSchema
-} from '@forms/add-employee';
-import {
-  getAllEmployeeDetailsByAdmin,
-  registerEmployee
-} from '@services/admin-services';
+import { AddEmployeeForm, addEmployeeSchema } from '@forms/add-employee';
+import { useRegisterEmployee } from '@hooks/mutations/useAdminMutations';
 import axios from 'axios';
 import {
   IconCircleDashedCheck,
@@ -44,7 +38,6 @@ import { useMemo, useState } from 'react';
 import { ThemeBackground } from '@UI/Theme-background/background';
 import { useAppTheme } from '@hooks/use-app-theme';
 
-
 // Constants
 const USER_ROLES = [
   { label: 'Employee', value: 'Employee' },
@@ -56,10 +49,13 @@ const USER_ROLES = [
 
 const AddEmployee = () => {
   const navigate = useNavigate();
-  const { themeConfig: currentThemeConfig, organizationConfig, isDarkTheme } = useAppTheme();
-  
-  
-  const setEmployeeList = useSetRecoilState(organizationEmployeeAtom);
+  const {
+    themeConfig: currentThemeConfig,
+    organizationConfig,
+    isDarkTheme
+  } = useAppTheme();
+
+  const { mutateAsync: registerEmployeeMutation } = useRegisterEmployee();
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Get current theme configuration
@@ -89,11 +85,7 @@ const AddEmployee = () => {
     try {
       setSubmitError(null);
 
-      await registerEmployee(employeeDetails);
-
-      // Update employee list in state
-      const updatedEmployees = await getAllEmployeeDetailsByAdmin();
-      setEmployeeList(updatedEmployees);
+      await registerEmployeeMutation(employeeDetails);
 
       // Show success toast with better styling
       const roleName = getValues('userRole');
@@ -157,26 +149,26 @@ const AddEmployee = () => {
   };
 
   return (
-    <Container size="md" py="xl">
+    <Container size='md' py='xl'>
       <ThemeBackground>
         <Card
-          shadow="lg"
-          radius="md"
+          shadow='lg'
+          radius='md'
           withBorder
-          p="xl"
+          p='xl'
           style={{
             backgroundColor: currentThemeConfig.backgroundColor,
             borderColor: currentThemeConfig.borderColor
           }}
         >
-          <Stack gap="lg">
+          <Stack gap='lg'>
             {/* Header */}
-            <Group justify="space-between" align="flex-start">
-              <Stack gap="xs">
-                <Text size="xl" fw={700} c={currentThemeConfig.color}>
+            <Group justify='space-between' align='flex-start'>
+              <Stack gap='xs'>
+                <Text size='xl' fw={700} c={currentThemeConfig.color}>
                   Add New Employee
                 </Text>
-                <Text size="sm" c="dimmed">
+                <Text size='sm' c='dimmed'>
                   Fill in the details below to create a new employee account
                 </Text>
               </Stack>
@@ -184,20 +176,20 @@ const AddEmployee = () => {
 
             {/* Progress Indicator */}
             {isDirty && (
-              <Stack gap="xs">
-                <Group justify="space-between">
-                  <Text size="sm" c="dimmed">
+              <Stack gap='xs'>
+                <Group justify='space-between'>
+                  <Text size='sm' c='dimmed'>
                     Form Progress
                   </Text>
-                  <Text size="sm" c="dimmed">
+                  <Text size='sm' c='dimmed'>
                     {progressPercentage}%
                   </Text>
                 </Group>
                 <Progress
                   value={progressPercentage}
-                  size="sm"
+                  size='sm'
                   color={currentThemeConfig.button.color}
-                  radius="xl"
+                  radius='xl'
                 />
               </Stack>
             )}
@@ -206,9 +198,9 @@ const AddEmployee = () => {
             {submitError && (
               <Alert
                 icon={<IconAlertCircle size={16} />}
-                color="red"
-                title="Error"
-                variant="light"
+                color='red'
+                title='Error'
+                variant='light'
               >
                 {submitError}
               </Alert>
@@ -216,15 +208,15 @@ const AddEmployee = () => {
 
             {/* Form */}
             <form onSubmit={handleSubmit(onSubmit)}>
-              <Stack gap="md">
+              <Stack gap='md'>
                 <Grid>
                   <Grid.Col span={{ base: 12, sm: 6 }}>
                     <TextInput
-                      label="First Name"
-                      placeholder="Enter first name"
+                      label='First Name'
+                      placeholder='Enter first name'
                       leftSection={<IconUser size={16} />}
                       {...register('firstName')}
-                      autoComplete="off"
+                      autoComplete='off'
                       error={errors.firstName?.message}
                       required
                     />
@@ -232,11 +224,11 @@ const AddEmployee = () => {
 
                   <Grid.Col span={{ base: 12, sm: 6 }}>
                     <TextInput
-                      label="Last Name"
-                      placeholder="Enter last name"
+                      label='Last Name'
+                      placeholder='Enter last name'
                       leftSection={<IconUser size={16} />}
                       {...register('lastName')}
-                      autoComplete="off"
+                      autoComplete='off'
                       error={errors.lastName?.message}
                       required
                     />
@@ -244,12 +236,12 @@ const AddEmployee = () => {
 
                   <Grid.Col span={{ base: 12, sm: 6 }}>
                     <TextInput
-                      label="Email Address"
-                      placeholder="Enter email address"
-                      type="email"
+                      label='Email Address'
+                      placeholder='Enter email address'
+                      type='email'
                       leftSection={<IconMail size={16} />}
                       {...register('email')}
-                      autoComplete="off"
+                      autoComplete='off'
                       error={errors.email?.message}
                       required
                     />
@@ -257,10 +249,10 @@ const AddEmployee = () => {
 
                   <Grid.Col span={{ base: 12, sm: 6 }}>
                     <TextInput
-                      label="Phone Number"
-                      placeholder="Enter phone number"
-                      type="tel"
-                      autoComplete="off"
+                      label='Phone Number'
+                      placeholder='Enter phone number'
+                      type='tel'
+                      autoComplete='off'
                       leftSection={<IconPhone size={16} />}
                       {...register('mobileNumber')}
                       error={errors.mobileNumber?.message}
@@ -270,18 +262,18 @@ const AddEmployee = () => {
 
                   <Grid.Col span={{ base: 12, sm: 6 }}>
                     <Controller
-                      name="userRole"
+                      name='userRole'
                       control={control}
                       render={({ field }) => (
                         <Select
-                          label="User Role"
-                          placeholder="Select user role"
+                          label='User Role'
+                          placeholder='Select user role'
                           leftSection={<IconUserCheck size={16} />}
                           data={USER_ROLES}
                           {...field}
                           error={errors.userRole?.message}
                           required
-                          autoComplete="off"
+                          autoComplete='off'
                           searchable
                           clearable
                         />
@@ -291,32 +283,32 @@ const AddEmployee = () => {
                 </Grid>
 
                 {/* Action Buttons */}
-                <Group justify="flex-end" gap="md" mt="xl">
+                <Group justify='flex-end' gap='md' mt='xl'>
                   <Button
-                    variant="subtle"
+                    variant='subtle'
                     leftSection={<IconArrowLeft size={16} />}
                     onClick={handleCancel}
-                    radius="md"
+                    radius='md'
                   >
                     Cancel
                   </Button>
 
                   {isDirty && (
                     <Button
-                      variant="light"
-                      color="orange"
+                      variant='light'
+                      color='orange'
                       onClick={handleReset}
-                      radius="md"
+                      radius='md'
                     >
                       Reset Form
                     </Button>
                   )}
 
                   <Button
-                    type="submit"
+                    type='submit'
                     loading={isSubmitting}
                     disabled={!isValid || isSubmitting}
-                    radius="md"
+                    radius='md'
                     leftSection={
                       !isSubmitting && <IconCircleDashedCheck size={16} />
                     }

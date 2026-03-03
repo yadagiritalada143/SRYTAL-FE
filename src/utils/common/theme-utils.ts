@@ -1,4 +1,13 @@
+import { MantineColorsTuple } from '@mantine/core';
 import { OrganizationConfig } from '@interfaces/organization';
+
+// Helper to ensure colors are valid MantineColorsTuple
+const toMantineColors = (colors: string[]): MantineColorsTuple => {
+  // Mantine requires exactly 10 colors in the tuple.
+  // If the array is shorter or longer, it might still work at runtime but TS will complain.
+  // We cast to unknown then to MantineColorsTuple to satisfy the type system.
+  return colors as unknown as MantineColorsTuple;
+};
 
 // Default theme configs as fallback when API response doesn't include themes
 const defaultDarkTheme = {
@@ -19,7 +28,7 @@ const defaultDarkTheme = {
   mutedTextColor: '#adb5bd',
   cardBackground: '#23272b',
   colors: {
-    primary: [
+    primary: toMantineColors([
       '#343a40',
       '#2c3136',
       '#23272b',
@@ -30,8 +39,8 @@ const defaultDarkTheme = {
       '#030405',
       '#000000',
       '#000000'
-    ],
-    secondary: [
+    ]),
+    secondary: toMantineColors([
       '#adb5bd',
       '#949aa0',
       '#7b8287',
@@ -42,7 +51,7 @@ const defaultDarkTheme = {
       '#080a0b',
       '#000000',
       '#000000'
-    ]
+    ])
   },
   color: '#ffffff',
   backgroundColor: '#1b1e21',
@@ -69,7 +78,7 @@ const defaultLightTheme = {
   mutedTextColor: '#6c757d',
   cardBackground: '#f8f9fa',
   colors: {
-    primary: [
+    primary: toMantineColors([
       '#495057',
       '#5a6268',
       '#6c757d',
@@ -80,8 +89,8 @@ const defaultLightTheme = {
       '#c6d0d7',
       '#d8e2e9',
       '#eaf4fb'
-    ],
-    secondary: [
+    ]),
+    secondary: toMantineColors([
       '#6c757d',
       '#868e96',
       '#adb5bd',
@@ -92,7 +101,7 @@ const defaultLightTheme = {
       '#f8f9fa',
       '#ffffff',
       '#ffffff'
-    ]
+    ])
   },
   color: '#212529',
   backgroundColor: '#ffffff',
@@ -108,32 +117,58 @@ const defaultLightTheme = {
 export function getThemeConfig(
   organizationConfig: OrganizationConfig,
   isDarkTheme: boolean
-) {
+): any {
   const orgTheme = organizationConfig?.organization_theme;
+  const defaultTheme = isDarkTheme ? defaultDarkTheme : defaultLightTheme;
 
   // Check if new dual themes structure exists
   if (orgTheme?.themes?.dark && orgTheme?.themes?.light) {
-    return isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+    const rawTheme = isDarkTheme ? orgTheme.themes.dark : orgTheme.themes.light;
+    return {
+      ...defaultTheme,
+      ...rawTheme,
+      colors: {
+        ...defaultTheme.colors,
+        ...(rawTheme.colors
+          ? {
+              primary: rawTheme.colors.primary
+                ? toMantineColors(rawTheme.colors.primary)
+                : defaultTheme.colors.primary,
+              secondary: rawTheme.colors.secondary
+                ? toMantineColors(rawTheme.colors.secondary)
+                : defaultTheme.colors.secondary
+            }
+          : {})
+      }
+    };
   }
 
   // Fallback to legacy theme structure if it exists
   if (orgTheme?.theme) {
-    // Enhance legacy theme with missing properties from defaults
-    const defaultTheme = isDarkTheme ? defaultDarkTheme : defaultLightTheme;
+    const rawTheme = orgTheme.theme;
     return {
       ...defaultTheme,
-      ...orgTheme.theme,
+      ...rawTheme,
       button: {
         ...defaultTheme.button,
-        ...orgTheme.theme.button
+        ...rawTheme.button
       },
       colors: {
         ...defaultTheme.colors,
-        ...orgTheme.theme.colors
+        ...(rawTheme.colors
+          ? {
+              primary: rawTheme.colors.primary
+                ? toMantineColors(rawTheme.colors.primary)
+                : defaultTheme.colors.primary,
+              secondary: rawTheme.colors.secondary
+                ? toMantineColors(rawTheme.colors.secondary)
+                : defaultTheme.colors.secondary
+            }
+          : {})
       }
     };
   }
 
   // Fallback to default themes
-  return isDarkTheme ? defaultDarkTheme : defaultLightTheme;
+  return defaultTheme;
 }

@@ -2,31 +2,29 @@ import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { TextInput, Button, Loader, Textarea } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
-import { registerPackage } from '@services/admin-services';
+import { useRegisterPackage } from '@hooks/mutations/useAdminMutations';
 import { useNavigate, useParams } from 'react-router';
 import { BgDiv } from '@common/style-components/bg-div';
 import { useRecoilValue } from 'recoil';
 
 import { useCustomToast } from '@utils/common/toast';
-import {
-  AddPackageForm,
-  addPackageSchema
-} from '@forms/add-package';
+import { AddPackageForm, addPackageSchema } from '@forms/add-package';
 import { toast } from 'react-toastify';
 import { BackButton } from '@common/style-components/buttons';
 import { useMemo } from 'react';
 import { useAppTheme } from '@hooks/use-app-theme';
 
-
-
 const AddPackage = () => {
   const navigate = useNavigate();
-  const { themeConfig: currentThemeConfig, organizationConfig, isDarkTheme } = useAppTheme();
+  const {
+    themeConfig: currentThemeConfig,
+    organizationConfig,
+    isDarkTheme
+  } = useAppTheme();
   const params = useParams();
   const packageId = params.packageId as string;
-  
 
-  
+  const { mutateAsync: registerPackageMutation } = useRegisterPackage();
   const {
     register,
     handleSubmit,
@@ -40,7 +38,7 @@ const AddPackage = () => {
 
   const onSubmit = async (packageDetails: AddPackageForm) => {
     try {
-      await registerPackage(packageDetails);
+      await registerPackageMutation(packageDetails);
       showSuccessToast(`${packageDetails.title} created successfully!`);
 
       reset();
@@ -52,18 +50,18 @@ const AddPackage = () => {
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto my-6">
+    <div className='w-full max-w-3xl mx-auto my-6'>
       <BgDiv>
         <form
           onSubmit={handleSubmit(onSubmit)}
           style={{
             backgroundColor: currentThemeConfig.backgroundColor
           }}
-          className="rounded-lg shadow-lg w-full p-8"
+          className='rounded-lg shadow-lg w-full p-8'
         >
-          <div className="px-2 py-4 flex justify-between items-center flex-wrap">
+          <div className='px-2 py-4 flex justify-between items-center flex-wrap'>
             <h1
-              className="text-xl sm:text-2xl md:text-3xl font-extrabold underline"
+              className='text-xl sm:text-2xl md:text-3xl font-extrabold underline'
               style={{ color: currentThemeConfig.color }}
             >
               Add Package
@@ -72,25 +70,25 @@ const AddPackage = () => {
           </div>
 
           <TextInput
-            label="Title"
-            placeholder="Enter Title"
+            label='Title'
+            placeholder='Enter Title'
             {...register('title')}
             error={errors.title?.message}
           />
-          <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 mt-4">
+          <div className='grid gap-5 grid-cols-1 sm:grid-cols-2 mt-4'>
             <Controller
               control={control}
-              name="startDate"
+              name='startDate'
               render={({ field }) => (
                 <DateInput
-                  label="Start Date"
-                  placeholder="Pick a date"
+                  label='Start Date'
+                  placeholder='Pick a date'
                   value={field.value ? new Date(field.value) : null}
                   onChange={date =>
                     field.onChange(date ? new Date(date) : null)
                   }
                   error={errors.startDate?.message}
-                  valueFormat="YYYY-MM-DD"
+                  valueFormat='YYYY-MM-DD'
                   popoverProps={{ withinPortal: true }}
                 />
               )}
@@ -98,17 +96,17 @@ const AddPackage = () => {
 
             <Controller
               control={control}
-              name="endDate"
+              name='endDate'
               render={({ field }) => (
                 <DateInput
-                  label="End Date"
-                  placeholder="Pick a date"
+                  label='End Date'
+                  placeholder='Pick a date'
                   value={field.value ? new Date(field.value) : null}
                   onChange={date =>
                     field.onChange(date ? new Date(date) : null)
                   }
                   error={errors.endDate?.message}
-                  valueFormat="YYYY-MM-DD"
+                  valueFormat='YYYY-MM-DD'
                   popoverProps={{ withinPortal: true }}
                 />
               )}
@@ -116,22 +114,22 @@ const AddPackage = () => {
           </div>
 
           <Textarea
-            label="Description"
-            className="mt-4"
-            placeholder="Enter Description"
+            label='Description'
+            className='mt-4'
+            placeholder='Enter Description'
             {...register('description')}
             maxRows={4}
             error={errors.description?.message}
           />
 
-          <div className="flex justify-end py-3">
+          <div className='flex justify-end py-3'>
             <Button
-              className="rounded-md mt-4"
-              type="submit"
-              data-testid="submitButton"
+              className='rounded-md mt-4'
+              type='submit'
+              data-testid='submitButton'
               leftSection={
                 isSubmitting && (
-                  <Loader size="xs" color={currentThemeConfig.button.color} />
+                  <Loader size='xs' color={currentThemeConfig.button.color} />
                 )
               }
               disabled={isSubmitting}

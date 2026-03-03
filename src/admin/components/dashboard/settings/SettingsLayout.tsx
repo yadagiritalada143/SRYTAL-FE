@@ -4,7 +4,6 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 
 import { useRecoilValue } from 'recoil';
 
-
 import {
   IconBriefcase,
   IconDroplet,
@@ -15,11 +14,12 @@ import { useMediaQuery } from '@mantine/hooks';
 import { useAppTheme } from '@hooks/use-app-theme';
 
 const SettingsLayout = () => {
-  
-  
-
   const location = useLocation();
-  const { themeConfig: currentThemeConfig, organizationConfig, isDarkTheme } = useAppTheme();
+  const {
+    themeConfig: currentThemeConfig,
+    organizationConfig,
+    isDarkTheme
+  } = useAppTheme();
   const navigate = useNavigate();
   const isMobile = useMediaQuery('(max-width: 768px)');
 
@@ -27,11 +27,11 @@ const SettingsLayout = () => {
 
   return (
     <Box pt={{ base: 'xl', sm: 'md' }}>
-      <Container size="md" mt={{ base: 'xl', sm: 'lg' }} mb="lg">
+      <Container size='md' mt={{ base: 'xl', sm: 'lg' }} mb='lg'>
         <Tabs
           value={currentTab}
           onChange={value => navigate(value || 'blood-groups')}
-          variant="default"
+          variant='default'
           color={currentThemeConfig.button.color}
           classNames={{
             tab: 'settings-tab'
@@ -57,30 +57,30 @@ const SettingsLayout = () => {
             }
           }}
         >
-          <Tabs.List mb="md">
+          <Tabs.List mb='md'>
             <Tabs.Tab
-              value="blood-groups"
+              value='blood-groups'
               leftSection={<IconDroplet size={16} stroke={1.8} />}
             >
               Blood Groups
             </Tabs.Tab>
 
             <Tabs.Tab
-              value="employment-types"
+              value='employment-types'
               leftSection={<IconBriefcase size={16} stroke={1.8} />}
             >
               Employment Types
             </Tabs.Tab>
 
             <Tabs.Tab
-              value="employment-roles"
+              value='employment-roles'
               leftSection={<IconUserCheck size={16} stroke={1.8} />}
             >
               Employment Roles
             </Tabs.Tab>
 
             <Tabs.Tab
-              value="feedback"
+              value='feedback'
               leftSection={<IconMessage2 size={16} stroke={1.8} />}
             >
               Feedback Attributes

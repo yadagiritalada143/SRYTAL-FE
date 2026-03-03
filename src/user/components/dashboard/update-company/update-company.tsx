@@ -1,9 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, Controller } from 'react-hook-form';
-import {
-  AddCompanyForm,
-  addCompanySchema
-} from '@forms/add-company';
+import { AddCompanyForm, addCompanySchema } from '@forms/add-company';
 import {
   Button,
   Checkbox,
@@ -124,10 +121,10 @@ const UpdateCompany = () => {
 
   if (isLoading) {
     return (
-      <Container size="xl" py="xl">
+      <Container size='xl' py='xl'>
         <Center style={{ minHeight: '60vh' }}>
-          <Stack align="center" gap="md">
-            <Loader size="xl" />
+          <Stack align='center' gap='md'>
+            <Loader size='xl' />
             <Text>Loading company details...</Text>
           </Stack>
         </Center>
@@ -136,13 +133,13 @@ const UpdateCompany = () => {
   }
 
   return (
-    <Container size="xl" py="md" my="xl" px={isSmallMobile ? 'xs' : 'md'}>
-      <Stack gap="md">
+    <Container size='xl' py='md' my='xl' px={isSmallMobile ? 'xs' : 'md'}>
+      <Stack gap='md'>
         {/* Header Card */}
-        <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder>
+        <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md' withBorder>
           <Group
-            justify="space-between"
-            align="center"
+            justify='space-between'
+            align='center'
             wrap={isMobile ? 'wrap' : 'nowrap'}
           >
             <Title order={isMobile ? 4 : 3} fw={700}>
@@ -153,29 +150,29 @@ const UpdateCompany = () => {
         </Card>
 
         {/* Main Form Card */}
-        <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder>
+        <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md' withBorder>
           <form onSubmit={handleSubmit(onSubmit)}>
-            <Stack gap="lg">
+            <Stack gap='lg'>
               {/* Company Name and Status */}
-              <Grid gutter="md">
+              <Grid gutter='md'>
                 <Grid.Col span={{ base: 12, sm: 6 }}>
                   <TextInput
                     {...register('companyName')}
-                    label="Company Name"
+                    label='Company Name'
                     disabled
                     error={errors.companyName?.message}
                     size={isMobile ? 'sm' : 'md'}
-                    autoComplete="off"
+                    autoComplete='off'
                   />
                 </Grid.Col>
                 <Grid.Col span={{ base: 12, sm: 6 }}>
                   <Controller
-                    name="status"
+                    name='status'
                     control={control}
                     render={({ field }: { field: any }) => (
                       <Select
-                        label="Select Status"
-                        placeholder="Pick value"
+                        label='Select Status'
+                        placeholder='Pick value'
                         {...field}
                         data={[
                           { value: 'Created', label: 'Created' },
@@ -199,37 +196,37 @@ const UpdateCompany = () => {
               <Divider />
 
               {/* Primary Contact */}
-              <Card withBorder p="md" radius="md">
-                <Stack gap="md">
-                  <Text size="lg" fw={600}>
+              <Card withBorder p='md' radius='md'>
+                <Stack gap='md'>
+                  <Text size='lg' fw={600}>
                     Primary Contact
                   </Text>
-                  <Grid gutter="md">
+                  <Grid gutter='md'>
                     <Grid.Col span={12}>
                       <TextInput
                         {...register('primaryContact.name')}
-                        label="Name"
+                        label='Name'
                         error={errors.primaryContact?.name?.message}
                         size={isMobile ? 'sm' : 'md'}
-                        autoComplete="off"
+                        autoComplete='off'
                       />
                     </Grid.Col>
                     <Grid.Col span={{ base: 12, sm: 6 }}>
                       <TextInput
                         {...register('primaryContact.email')}
-                        label="Email"
+                        label='Email'
                         error={errors.primaryContact?.email?.message}
                         size={isMobile ? 'sm' : 'md'}
-                        autoComplete="off"
+                        autoComplete='off'
                       />
                     </Grid.Col>
                     <Grid.Col span={{ base: 12, sm: 6 }}>
                       <TextInput
                         {...register('primaryContact.phone')}
-                        label="Phone"
+                        label='Phone'
                         error={errors.primaryContact?.phone?.message}
                         size={isMobile ? 'sm' : 'md'}
-                        autoComplete="off"
+                        autoComplete='off'
                       />
                     </Grid.Col>
                   </Grid>
@@ -237,62 +234,62 @@ const UpdateCompany = () => {
               </Card>
 
               {/* Secondary Contacts */}
-              <Grid gutter="md">
+              <Grid gutter='md'>
                 <Grid.Col span={{ base: 12, md: 6 }}>
-                  <Card withBorder p="md" radius="md">
-                    <Stack gap="md">
-                      <Text size="lg" fw={600}>
+                  <Card withBorder p='md' radius='md'>
+                    <Stack gap='md'>
+                      <Text size='lg' fw={600}>
                         Secondary Contact 1
                       </Text>
                       <TextInput
                         {...register('secondaryContact_1.name')}
-                        label="Name"
+                        label='Name'
                         error={errors.secondaryContact_1?.name?.message}
                         size={isMobile ? 'sm' : 'md'}
-                        autoComplete="off"
+                        autoComplete='off'
                       />
                       <TextInput
                         {...register('secondaryContact_1.email')}
-                        label="Email"
+                        label='Email'
                         error={errors.secondaryContact_1?.email?.message}
                         size={isMobile ? 'sm' : 'md'}
-                        autoComplete="off"
+                        autoComplete='off'
                       />
                       <TextInput
                         {...register('secondaryContact_1.phone')}
-                        label="Phone"
+                        label='Phone'
                         error={errors.secondaryContact_1?.phone?.message}
                         size={isMobile ? 'sm' : 'md'}
-                        autoComplete="off"
+                        autoComplete='off'
                       />
                     </Stack>
                   </Card>
                 </Grid.Col>
 
                 <Grid.Col span={{ base: 12, md: 6 }}>
-                  <Card withBorder p="md" radius="md">
-                    <Stack gap="md">
-                      <Text size="lg" fw={600}>
+                  <Card withBorder p='md' radius='md'>
+                    <Stack gap='md'>
+                      <Text size='lg' fw={600}>
                         Secondary Contact 2
                       </Text>
                       <TextInput
                         {...register('secondaryContact_2.name')}
-                        label="Name"
+                        label='Name'
                         error={errors.secondaryContact_2?.name?.message}
                         size={isMobile ? 'sm' : 'md'}
-                        autoComplete="off"
+                        autoComplete='off'
                       />
                       <TextInput
                         {...register('secondaryContact_2.email')}
-                        label="Email"
+                        label='Email'
                         error={errors.secondaryContact_2?.email?.message}
                         size={isMobile ? 'sm' : 'md'}
-                        autoComplete="off"
+                        autoComplete='off'
                       />
                       <TextInput
                         {...register('secondaryContact_2.phone')}
-                        label="Phone"
-                        autoComplete="off"
+                        label='Phone'
+                        autoComplete='off'
                         error={errors.secondaryContact_2?.phone?.message}
                         size={isMobile ? 'sm' : 'md'}
                       />
@@ -305,14 +302,14 @@ const UpdateCompany = () => {
 
               {/* Action Buttons */}
               <Group
-                justify="space-between"
+                justify='space-between'
                 wrap={isMobile ? 'wrap' : 'nowrap'}
               >
                 <Button
-                  color="red"
-                  variant="filled"
+                  color='red'
+                  variant='filled'
                   leftSection={<IconTrash size={16} />}
-                  radius="md"
+                  radius='md'
                   onClick={e => {
                     e.preventDefault();
                     open();
@@ -323,12 +320,12 @@ const UpdateCompany = () => {
                   Delete Company
                 </Button>
                 <Button
-                  type="submit"
+                  type='submit'
                   disabled={isSubmitting}
                   leftSection={<IconDeviceFloppy size={16} />}
                   fullWidth={isMobile}
                   size={isMobile ? 'md' : 'sm'}
-                  radius="md"
+                  radius='md'
                 >
                   {isSubmitting ? 'Updating...' : 'Update Company'}
                 </Button>
@@ -338,13 +335,7 @@ const UpdateCompany = () => {
         </Card>
 
         {/* Add Comment Section */}
-        <AddCommentPoolCompany
-          comments={comments}
-          setComments={setComments}
-          user={user}
-          companyId={companyId}
-          isMobile={isMobile}
-        />
+        <AddCommentPoolCompany companyId={companyId} isMobile={isMobile} />
 
         {/* Comments Table */}
         <PoolCompaniesCommentsTable
@@ -358,51 +349,51 @@ const UpdateCompany = () => {
       {/* Delete Confirmation Modal */}
       <StandardModal
         title={
-          <Group gap="xs">
-            <IconAlertTriangle size={24} color="red" />
-            <Title order={3} c="red">
+          <Group gap='xs'>
+            <IconAlertTriangle size={24} color='red' />
+            <Title order={3} c='red'>
               Delete Action
             </Title>
           </Group>
         }
-        size="md"
+        size='md'
         opened={opened}
         onClose={close}
       >
-        <Stack gap="md">
-          <Text size="lg" fw={600}>
+        <Stack gap='md'>
+          <Text size='lg' fw={600}>
             Sure want to delete this Company?
           </Text>
-          <Text c="dimmed">
+          <Text c='dimmed'>
             Please be aware of doing this action! Deleting company is an
             un-reversible action and you should be aware while doing this.
           </Text>
 
-          <Stack gap="sm" mt="md">
+          <Stack gap='sm' mt='md'>
             <Checkbox
-              label="I understand what are the consequences of doing this action!"
+              label='I understand what are the consequences of doing this action!'
               checked={confirmDelete}
               onChange={e => setConfirmDelete(e.currentTarget.checked)}
               required
             />
             <Checkbox
-              label="I understand that this employee details are not a part of our application forever. I agreed to the Terms and Conditions to perform this action"
+              label='I understand that this employee details are not a part of our application forever. I agreed to the Terms and Conditions to perform this action'
               checked={agreeTerms}
               onChange={e => setAgreeTerms(e.currentTarget.checked)}
             />
           </Stack>
 
-          <Group justify="space-between" mt="xl">
+          <Group justify='space-between' mt='xl'>
             <Button
-              color="red"
+              color='red'
               onClick={() => handleDeleteCompany(companyId!, agreeTerms)}
               disabled={!confirmDelete}
               leftSection={<IconTrash size={16} />}
-              radius="md"
+              radius='md'
             >
               Delete
             </Button>
-            <Button variant="default" onClick={close} radius="md">
+            <Button variant='default' onClick={close} radius='md'>
               Cancel
             </Button>
           </Group>

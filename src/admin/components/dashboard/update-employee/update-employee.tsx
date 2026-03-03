@@ -20,19 +20,17 @@ import {
 } from '@mantine/core';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { EmployeeUpdateForm, employeeSchema } from '@forms/update-employee';
 import {
-  EmployeeUpdateForm,
-  employeeSchema
-} from '@forms/update-employee';
+  useUpdateEmployeeDetails,
+  useDeleteEmployeeByAdmin,
+  useHandlePasswordResetByAdmin
+} from '@hooks/mutations/useAdminMutations';
 import {
   getAllBloodGroupByAdmin,
   getEmployeeDetailsByAdmin,
-  updateEmployeeDetailsByAdmin,
-  deleteEmployeeByAdmin,
   getAllEmploymentTypes,
-  getAllEmployeeRoleByAdmin,
-  handlePasswordResetByAdmin,
-  getAllEmployeeDetailsByAdmin
+  getAllEmployeeRoleByAdmin
 } from '@services/admin-services';
 import { toast } from 'react-toastify';
 import { useEffect, useState, useMemo } from 'react';
@@ -74,16 +72,20 @@ import {
 import { BackButton } from '@common/style-components/buttons';
 import { useAppTheme } from '@hooks/use-app-theme';
 
-
 const UpdateEmployee = () => {
   const navigate = useNavigate();
-  const { themeConfig: currentThemeConfig, organizationConfig, isDarkTheme } = useAppTheme();
+  const {
+    themeConfig: currentThemeConfig,
+    organizationConfig,
+    isDarkTheme
+  } = useAppTheme();
   const params = useParams();
   const employeeId = params.employeeId as string;
 
-  const setEmployeeList = useSetRecoilState(organizationEmployeeAtom);
-  
-  
+  const { mutateAsync: updateEmployeeMutation } = useUpdateEmployeeDetails();
+  const { mutateAsync: deleteEmployeeMutation } = useDeleteEmployeeByAdmin();
+  const { mutateAsync: resetPasswordMutation } =
+    useHandlePasswordResetByAdmin();
 
   const [opened, { open, close }] = useDisclosure(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -218,9 +220,7 @@ const UpdateEmployee = () => {
         delete updatedData.bankDetailsInfo;
       }
 
-      await updateEmployeeDetailsByAdmin(updatedData);
-      const updatedEmployees = await getAllEmployeeDetailsByAdmin();
-      setEmployeeList(updatedEmployees);
+      await updateEmployeeMutation(updatedData);
       localStorage.setItem('id', employeeId);
 
       showSuccessToast('Employee details updated successfully!');
@@ -238,10 +238,7 @@ const UpdateEmployee = () => {
   const handleDeleteEmployee = async () => {
     try {
       const payload = { id: employeeId, confirmDelete: agreeTerms };
-      await deleteEmployeeByAdmin(payload);
-
-      const updatedEmployees = await getAllEmployeeDetailsByAdmin();
-      setEmployeeList(updatedEmployees);
+      await deleteEmployeeMutation(payload);
 
       showSuccessToast('Employee deleted successfully!');
       navigate(
@@ -254,7 +251,7 @@ const UpdateEmployee = () => {
 
   const handlePasswordReset = async () => {
     try {
-      await handlePasswordResetByAdmin(employeeId);
+      await resetPasswordMutation(employeeId);
       showSuccessToast('Password reset successful!');
     } catch (error: any) {
       toast.error(error?.response?.data?.message || 'Failed to reset password');
@@ -273,11 +270,11 @@ const UpdateEmployee = () => {
 
   if (isLoading) {
     return (
-      <Container size="lg" py="xl">
-        <Card shadow="sm" p="xl" radius="md" withBorder>
-          <Stack align="center" gap="md">
-            <Loader size="xl" color={currentThemeConfig.button.color} />
-            <Text c="dimmed">Loading employee details...</Text>
+      <Container size='lg' py='xl'>
+        <Card shadow='sm' p='xl' radius='md' withBorder>
+          <Stack align='center' gap='md'>
+            <Loader size='xl' color={currentThemeConfig.button.color} />
+            <Text c='dimmed'>Loading employee details...</Text>
           </Stack>
         </Card>
       </Container>
@@ -285,15 +282,15 @@ const UpdateEmployee = () => {
   }
 
   return (
-    <Container size="xl" py="md" mt="xl">
-      <Card shadow="sm" p="lg" radius="md" withBorder mt="xl">
-        <Group justify="space-between" align="center" wrap="nowrap">
-          <Group gap="md">
+    <Container size='xl' py='md' mt='xl'>
+      <Card shadow='sm' p='lg' radius='md' withBorder mt='xl'>
+        <Group justify='space-between' align='center' wrap='nowrap'>
+          <Group gap='md'>
             <div>
-              <Text size="xl" fw={700} c={currentThemeConfig.color}>
+              <Text size='xl' fw={700} c={currentThemeConfig.color}>
                 Update Employee Profile
               </Text>
-              <Text size="sm" c="dimmed">
+              <Text size='sm' c='dimmed'>
                 Manage employee profile and employment details
               </Text>
             </div>
@@ -306,9 +303,9 @@ const UpdateEmployee = () => {
       {submitError && (
         <Alert
           icon={<IconAlertTriangle size={16} />}
-          color="red"
-          title="Update Failed"
-          variant="light"
+          color='red'
+          title='Update Failed'
+          variant='light'
           withCloseButton
           onClose={() => setSubmitError(null)}
         >
@@ -316,13 +313,13 @@ const UpdateEmployee = () => {
         </Alert>
       )}
 
-      <Grid align="start" gutter="lg" mt="md">
+      <Grid align='start' gutter='lg' mt='md'>
         {/* LEFT SIDEBAR */}
         <Grid.Col span={{ base: 12, md: 4, lg: 3 }}>
           <Stack>
-            <Card withBorder shadow="sm" p="lg" radius="md">
-              <Stack align="center" gap="xs">
-                <Avatar size={80} radius="xl" />
+            <Card withBorder shadow='sm' p='lg' radius='md'>
+              <Stack align='center' gap='xs'>
+                <Avatar size={80} radius='xl' />
 
                 <Text fw={700}>
                   {watch('firstName')} {watch('lastName')}
@@ -330,7 +327,7 @@ const UpdateEmployee = () => {
 
                 <Group gap={6}>
                   <IconMail size={14} color={currentThemeConfig.dangerColor} />
-                  <Text size="sm" c="dimmed">
+                  <Text size='sm' c='dimmed'>
                     {watch('email')}
                   </Text>
                 </Group>
@@ -340,42 +337,42 @@ const UpdateEmployee = () => {
                     size={14}
                     color={currentThemeConfig.successColor}
                   />
-                  <Text size="sm" c="dimmed">
+                  <Text size='sm' c='dimmed'>
                     {watch('mobileNumber')}
                   </Text>
                 </Group>
 
-                <Divider my="sm" />
+                <Divider my='sm' />
 
                 <Button
-                  variant="light"
-                  color="blue"
+                  variant='light'
+                  color='blue'
                   fullWidth
                   leftSection={<IconKey size={16} />}
                   onClick={handlePasswordReset}
-                  radius="md"
+                  radius='md'
                 >
                   Reset Password
                 </Button>
               </Stack>
             </Card>
 
-            <Card withBorder shadow="xs" p="lg" radius="md">
-              <Group gap="xs" mb="xs">
-                <IconAlertTriangle size={16} color="red" />
-                <Text fw={600} c="red">
+            <Card withBorder shadow='xs' p='lg' radius='md'>
+              <Group gap='xs' mb='xs'>
+                <IconAlertTriangle size={16} color='red' />
+                <Text fw={600} c='red'>
                   Delete Employee
                 </Text>
               </Group>
 
-              <Text size="sm" c="dimmed" mb="sm">
+              <Text size='sm' c='dimmed' mb='sm'>
                 Permanently delete this employee and all associated records.
               </Text>
 
               <Button
-                color="red"
-                variant="light"
-                radius="md"
+                color='red'
+                variant='light'
+                radius='md'
                 leftSection={<IconTrash size={16} />}
                 onClick={open}
               >
@@ -388,23 +385,23 @@ const UpdateEmployee = () => {
         {/* RIGHT SIDE*/}
         <Grid.Col span={{ base: 12, md: 8, lg: 9 }}>
           <form onSubmit={handleSubmit(onSubmit)}>
-            <Stack gap="md">
-              <Card withBorder shadow="xs" p="lg">
-                <Group gap="xs" mb={4}>
+            <Stack gap='md'>
+              <Card withBorder shadow='xs' p='lg'>
+                <Group gap='xs' mb={4}>
                   <IconUser size={18} />
-                  <Text fw={600} size="lg">
+                  <Text fw={600} size='lg'>
                     Basic Information
                   </Text>
                 </Group>
-                <Text size="sm" c="dimmed" mb="md">
+                <Text size='sm' c='dimmed' mb='md'>
                   Employee identity and contact information.
                 </Text>
 
                 <Grid>
                   <Grid.Col span={{ base: 12, sm: 6 }}>
                     <TextInput
-                      label="Employee ID"
-                      placeholder="Enter employee ID"
+                      label='Employee ID'
+                      placeholder='Enter employee ID'
                       styles={{
                         input: {
                           backgroundColor:
@@ -423,19 +420,19 @@ const UpdateEmployee = () => {
                         />
                       }
                       {...register('employeeId')}
-                      autoComplete="off"
+                      autoComplete='off'
                       required
                       error={errors.employeeId?.message}
                     />
                   </Grid.Col>
                   <Grid.Col span={{ base: 12, sm: 6 }}>
                     <Controller
-                      name="dateOfJoining"
+                      name='dateOfJoining'
                       control={control}
                       render={({ field }) => (
                         <DatePickerInput
-                          label="Date of Joining"
-                          placeholder="Select joining date"
+                          label='Date of Joining'
+                          placeholder='Select joining date'
                           value={field.value ? new Date(field.value) : null}
                           onChange={date => {
                             if (date) {
@@ -470,8 +467,8 @@ const UpdateEmployee = () => {
                   </Grid.Col>
                   <Grid.Col span={{ base: 12, md: 6 }}>
                     <TextInput
-                      label="First Name"
-                      placeholder="Enter first name"
+                      label='First Name'
+                      placeholder='Enter first name'
                       leftSection={
                         <IconUser
                           size={16}
@@ -480,15 +477,15 @@ const UpdateEmployee = () => {
                       }
                       {...register('firstName')}
                       error={errors.firstName?.message}
-                      autoComplete="off"
+                      autoComplete='off'
                       required
                     />{' '}
                   </Grid.Col>
 
                   <Grid.Col span={{ base: 12, md: 6 }}>
                     <TextInput
-                      label="Last Name"
-                      placeholder="Enter last name"
+                      label='Last Name'
+                      placeholder='Enter last name'
                       leftSection={
                         <IconUser
                           size={16}
@@ -497,16 +494,16 @@ const UpdateEmployee = () => {
                       }
                       {...register('lastName')}
                       error={errors.lastName?.message}
-                      autoComplete="off"
+                      autoComplete='off'
                       required
                     />
                   </Grid.Col>
 
                   <Grid.Col span={{ base: 12, md: 6 }}>
                     <TextInput
-                      label="Email Address"
-                      placeholder="Enter email address"
-                      type="email"
+                      label='Email Address'
+                      placeholder='Enter email address'
+                      type='email'
                       leftSection={
                         <IconMail
                           size={16}
@@ -515,16 +512,16 @@ const UpdateEmployee = () => {
                       }
                       {...register('email')}
                       error={errors.email?.message}
-                      autoComplete="off"
+                      autoComplete='off'
                       required
                     />{' '}
                   </Grid.Col>
 
                   <Grid.Col span={{ base: 12, md: 6 }}>
                     <TextInput
-                      label="Mobile Number"
-                      placeholder="Enter mobile number"
-                      type="tel"
+                      label='Mobile Number'
+                      placeholder='Enter mobile number'
+                      type='tel'
                       leftSection={
                         <IconPhone
                           size={16}
@@ -539,9 +536,9 @@ const UpdateEmployee = () => {
 
                   <Grid.Col span={{ base: 12, sm: 6 }}>
                     <TextInput
-                      label="Aadhar Number"
-                      placeholder="Enter Aadhaar number"
-                      type="tel"
+                      label='Aadhar Number'
+                      placeholder='Enter Aadhaar number'
+                      type='tel'
                       leftSection={
                         <IconFingerprint
                           size={16}
@@ -557,9 +554,9 @@ const UpdateEmployee = () => {
 
                   <Grid.Col span={{ base: 12, sm: 6 }}>
                     <TextInput
-                      label="PAN Card Number"
-                      placeholder="Enter PAN Card number"
-                      type="text"
+                      label='PAN Card Number'
+                      placeholder='Enter PAN Card number'
+                      type='text'
                       leftSection={
                         <IconId
                           size={16}
@@ -579,16 +576,16 @@ const UpdateEmployee = () => {
                 </Grid>
               </Card>
 
-              <Card withBorder shadow="xs" p="lg">
-                <Group justify="space-between" mb="md">
-                  <Group gap="xs">
+              <Card withBorder shadow='xs' p='lg'>
+                <Group justify='space-between' mb='md'>
+                  <Group gap='xs'>
                     <IconCalendar size={18} />
-                    <Text fw={600} size="lg">
+                    <Text fw={600} size='lg'>
                       Personal Details
                     </Text>
                   </Group>
 
-                  <Text size="sm" c="dimmed">
+                  <Text size='sm' c='dimmed'>
                     (Optional)
                   </Text>
                 </Group>
@@ -596,12 +593,12 @@ const UpdateEmployee = () => {
                 <Grid>
                   <Grid.Col span={{ base: 12, md: 6 }}>
                     <Controller
-                      name="bloodGroup"
+                      name='bloodGroup'
                       control={control}
                       render={({ field }) => (
                         <Select
-                          label="Blood Group"
-                          placeholder="Select blood group"
+                          label='Blood Group'
+                          placeholder='Select blood group'
                           leftSection={
                             <IconDroplet
                               size={16}
@@ -617,7 +614,7 @@ const UpdateEmployee = () => {
                           error={errors.bloodGroup?.message}
                           searchable
                           clearable
-                          autoComplete="off"
+                          autoComplete='off'
                         />
                       )}
                     />
@@ -625,12 +622,12 @@ const UpdateEmployee = () => {
 
                   <Grid.Col span={{ base: 12, md: 6 }}>
                     <Controller
-                      name="dateOfBirth"
+                      name='dateOfBirth'
                       control={control}
                       render={({ field }) => (
                         <DatePickerInput
-                          label="Date of Birth"
-                          placeholder="Select date of birth"
+                          label='Date of Birth'
+                          placeholder='Select date of birth'
                           leftSection={
                             <IconCalendar
                               size={16}
@@ -664,8 +661,8 @@ const UpdateEmployee = () => {
 
                   <Grid.Col span={{ base: 12, sm: 6 }}>
                     <Textarea
-                      label="Present Address"
-                      placeholder="Enter present address"
+                      label='Present Address'
+                      placeholder='Enter present address'
                       leftSection={
                         <IconMapPin
                           size={16}
@@ -680,14 +677,14 @@ const UpdateEmployee = () => {
                           paddingTop: 29
                         }
                       }}
-                      autoComplete="off"
+                      autoComplete='off'
                     />
                   </Grid.Col>
 
                   <Grid.Col span={{ base: 12, sm: 6 }}>
                     <Textarea
-                      label="Permanent Address"
-                      placeholder="Enter permanent address"
+                      label='Permanent Address'
+                      placeholder='Enter permanent address'
                       leftSection={
                         <IconMapPin
                           size={16}
@@ -702,32 +699,32 @@ const UpdateEmployee = () => {
                           paddingTop: 29
                         }
                       }}
-                      autoComplete="off"
+                      autoComplete='off'
                     />
                   </Grid.Col>
                 </Grid>
               </Card>
 
-              <Card withBorder shadow="xs" p="lg">
-                <Group gap="xs" mb={4}>
+              <Card withBorder shadow='xs' p='lg'>
+                <Group gap='xs' mb={4}>
                   <IconBriefcase size={18} />
-                  <Text fw={600} size="lg">
+                  <Text fw={600} size='lg'>
                     Employment Details
                   </Text>
                 </Group>
-                <Text size="sm" c="dimmed" mb="md">
+                <Text size='sm' c='dimmed' mb='md'>
                   Manage role and employment type
                 </Text>
 
                 <Grid>
                   <Grid.Col span={{ base: 12, md: 6 }}>
                     <Controller
-                      name="employmentType"
+                      name='employmentType'
                       control={control}
                       render={({ field }) => (
                         <Select
-                          label="Employment Type"
-                          placeholder="Select employment type"
+                          label='Employment Type'
+                          placeholder='Select employment type'
                           leftSection={
                             <IconBriefcase
                               size={16}
@@ -740,7 +737,7 @@ const UpdateEmployee = () => {
                           onChange={value => field.onChange(value ?? undefined)}
                           error={errors.employmentType?.message}
                           searchable
-                          autoComplete="off"
+                          autoComplete='off'
                           required
                           clearable
                         />
@@ -750,11 +747,11 @@ const UpdateEmployee = () => {
 
                   <Grid.Col span={{ base: 12, md: 6 }}>
                     <Controller
-                      name="employeeRole"
+                      name='employeeRole'
                       control={control}
                       render={({ field }) => (
                         <MultiSelect
-                          label="Employee Roles"
+                          label='Employee Roles'
                           placeholder={
                             field.value && field.value.length > 0
                               ? ''
@@ -774,7 +771,7 @@ const UpdateEmployee = () => {
                             )
                           }
                           onBlur={field.onBlur}
-                          autoComplete="off"
+                          autoComplete='off'
                           required
                           error={errors.employeeRole?.message}
                           searchable
@@ -786,25 +783,25 @@ const UpdateEmployee = () => {
                 </Grid>
               </Card>
 
-              <Card withBorder shadow="xs" p="lg">
-                <Group justify="space-between" mb="md">
-                  <Group gap="xs">
+              <Card withBorder shadow='xs' p='lg'>
+                <Group justify='space-between' mb='md'>
+                  <Group gap='xs'>
                     <IconBuildingBank size={18} />
-                    <Text fw={600} size="lg">
+                    <Text fw={600} size='lg'>
                       Bank Details
                     </Text>
                   </Group>
 
-                  <Text size="sm" c="dimmed">
+                  <Text size='sm' c='dimmed'>
                     (Optional)
                   </Text>
                 </Group>
 
-                <Grid gutter="md">
+                <Grid gutter='md'>
                   <Grid.Col span={{ base: 12, sm: 6 }}>
                     <TextInput
-                      label="Account Number"
-                      placeholder="Enter account number"
+                      label='Account Number'
+                      placeholder='Enter account number'
                       leftSection={
                         <IconCreditCard
                           size={16}
@@ -812,22 +809,22 @@ const UpdateEmployee = () => {
                         />
                       }
                       {...register('bankDetailsInfo.accountNumber')}
-                      autoComplete="off"
+                      autoComplete='off'
                       error={errors.bankDetailsInfo?.accountNumber?.message}
                     />
                   </Grid.Col>
 
                   <Grid.Col span={{ base: 12, sm: 6 }}>
                     <TextInput
-                      label="Account Holder Name"
-                      placeholder="Enter account holder name"
+                      label='Account Holder Name'
+                      placeholder='Enter account holder name'
                       leftSection={
                         <IconUser
                           size={16}
                           color={currentThemeConfig.accentColor}
                         />
                       }
-                      autoComplete="off"
+                      autoComplete='off'
                       {...register('bankDetailsInfo.accountHolderName')}
                       error={errors.bankDetailsInfo?.accountHolderName?.message}
                     />
@@ -835,8 +832,8 @@ const UpdateEmployee = () => {
 
                   <Grid.Col span={{ base: 12, sm: 6 }}>
                     <TextInput
-                      label="Bank Name"
-                      placeholder="Enter bank name"
+                      label='Bank Name'
+                      placeholder='Enter bank name'
                       leftSection={
                         <IconBuildingBank
                           size={16}
@@ -845,14 +842,14 @@ const UpdateEmployee = () => {
                       }
                       {...register('bankDetailsInfo.bankName')}
                       error={errors.bankDetailsInfo?.bankName?.message}
-                      autoComplete="off"
+                      autoComplete='off'
                     />
                   </Grid.Col>
 
                   <Grid.Col span={{ base: 12, sm: 6 }}>
                     <TextInput
-                      label="IFSC Code"
-                      placeholder="Enter IFSC code"
+                      label='IFSC Code'
+                      placeholder='Enter IFSC code'
                       leftSection={
                         <IconBuildingBank
                           size={16}
@@ -861,30 +858,30 @@ const UpdateEmployee = () => {
                       }
                       {...register('bankDetailsInfo.ifscCode')}
                       error={errors.bankDetailsInfo?.ifscCode?.message}
-                      autoComplete="off"
+                      autoComplete='off'
                     />
                   </Grid.Col>
                 </Grid>
               </Card>
 
               <Card
-                shadow="sm"
-                p="md"
-                radius="md"
+                shadow='sm'
+                p='md'
+                radius='md'
                 style={{
                   border: `1px solid ${currentThemeConfig.borderColor}`
                 }}
               >
-                <Group justify="space-between">
-                  <Button variant="subtle" onClick={handleBack} radius="md">
+                <Group justify='space-between'>
+                  <Button variant='subtle' onClick={handleBack} radius='md'>
                     Cancel
                   </Button>
 
                   <Button
-                    type="submit"
+                    type='submit'
                     loading={isSubmitting}
                     disabled={isSubmitting}
-                    radius="md"
+                    radius='md'
                     leftSection={
                       !isSubmitting && <IconDeviceFloppy size={16} />
                     }
@@ -905,41 +902,41 @@ const UpdateEmployee = () => {
       <Modal
         opened={opened}
         onClose={close}
-        title="Delete Employee"
+        title='Delete Employee'
         centered
-        size="md"
+        size='md'
       >
-        <Stack gap="md">
+        <Stack gap='md'>
           <Alert
             icon={<IconAlertTriangle size={16} />}
-            mt="md"
-            color="red"
-            title="Warning"
-            variant="filled"
+            mt='md'
+            color='red'
+            title='Warning'
+            variant='filled'
           >
             This action cannot be undone. The employee and all associated data
             will be permanently deleted.
           </Alert>
 
           <Checkbox
-            label="I understand that this action is irreversible"
+            label='I understand that this action is irreversible'
             checked={agreeTerms}
             onChange={event => setAgreeTerms(event.currentTarget.checked)}
           />
 
           <Checkbox
-            label="Confirm Permanent Deletion"
+            label='Confirm Permanent Deletion'
             checked={confirmDelete}
             onChange={event => setConfirmDelete(event.currentTarget.checked)}
           />
 
-          <Group justify="flex-end" gap="sm">
-            <Button variant="subtle" onClick={close} radius="md">
+          <Group justify='flex-end' gap='sm'>
+            <Button variant='subtle' onClick={close} radius='md'>
               Cancel
             </Button>
             <Button
-              color="red"
-              radius="md"
+              color='red'
+              radius='md'
               disabled={!agreeTerms || !confirmDelete}
               onClick={() => {
                 handleDeleteEmployee();

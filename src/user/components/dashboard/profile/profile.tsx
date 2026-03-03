@@ -1,27 +1,12 @@
-import { useEffect, useState } from 'react';
 import Profile from '@common/profile/profile';
-import { getUserDetails } from '@services/user-services';
-import { toast } from 'react-toastify';
+import { useGetUserDetails } from '@hooks/queries/useUserQueries';
 import { EmployeeInterface } from '@interfaces/employee';
 
 const EmployeeProfile = () => {
-  const [employeeDetails, setEmployeeDetails] = useState<EmployeeInterface>(
-    {} as unknown as EmployeeInterface
-  );
+  const { data: user, isLoading, isError, error } = useGetUserDetails();
 
-  useEffect(() => {
-    getUserDetails()
-      .then(user => {
-        setEmployeeDetails({
-          ...(user as EmployeeInterface),
-          dateOfBirth: user.dateOfBirth ? formatDate(user.dateOfBirth) : ''
-        });
-      })
-      .catch(error =>
-        toast.error(error || error.message || error.response.data.message)
-      );
-  }, []);
   const formatDate = (dateString: any) => {
+    if (!dateString) return '';
     const date = new Date(dateString);
     const day = date.getDate().toString().padStart(2, '0');
     const month = date.toLocaleString('en-US', { month: 'short' });
@@ -29,11 +14,15 @@ const EmployeeProfile = () => {
     return `${day}-${month}-${year}`;
   };
 
-  return (
-    <>
-      <Profile details={employeeDetails} />
-    </>
-  );
+  if (isLoading) return <div>Loading...</div>;
+  if (isError) return <div>Error: {error?.message}</div>;
+
+  const employeeDetails = {
+    ...user,
+    dateOfBirth: user?.dateOfBirth ? formatDate(user.dateOfBirth) : ''
+  };
+
+  return <Profile details={employeeDetails as any} />;
 };
 
 export default EmployeeProfile;
