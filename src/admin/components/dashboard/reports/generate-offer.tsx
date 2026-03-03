@@ -1,6 +1,5 @@
 import {
   Button,
-  Loader,
   Select,
   Textarea,
   TextInput,
@@ -10,11 +9,9 @@ import {
   Title,
   Group
 } from '@mantine/core';
+import PremiumLoader from '@components/common/loaders/PremiumLoader';
 import { Controller, useForm } from 'react-hook-form';
-import {
-  OfferLetterForm,
-  offerLetterForm
-} from '@forms/offerletter';
+import { OfferLetterForm, offerLetterForm } from '@forms/offerletter';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 const GenerateOfferReport = () => {
@@ -25,35 +22,35 @@ const GenerateOfferReport = () => {
   } = useForm<OfferLetterForm>({ resolver: zodResolver(offerLetterForm) });
 
   return (
-    <Container size="lg" py="xl">
-      <Card shadow="sm" p="lg" radius="md" withBorder>
-        <Stack gap="md">
-          <Title order={2} className="text-center">
+    <Container size='lg' py='xl'>
+      <Card shadow='sm' p='lg' radius='md' withBorder>
+        <Stack gap='md'>
+          <Title order={2} className='text-center'>
             Generate Offer Letter
           </Title>
           <form>
-            <Stack gap="md">
+            <Stack gap='md'>
               <Textarea
-                label="Subject"
+                label='Subject'
                 maxRows={4}
                 autosize
-                placeholder="Enter Subject"
+                placeholder='Enter Subject'
                 {...register('subject')}
                 error={errors.subject?.message}
               />
 
               <Group grow>
                 <TextInput
-                  label="Candidate Name"
-                  placeholder="Enter candidate name"
+                  label='Candidate Name'
+                  placeholder='Enter candidate name'
                   {...register('nameOfTheCandidate')}
                   error={errors.nameOfTheCandidate?.message}
                 />
 
                 <TextInput
-                  type="date"
-                  label="Joining Date"
-                  placeholder="Select joining date"
+                  type='date'
+                  label='Joining Date'
+                  placeholder='Select joining date'
                   {...register('dateOfJoining')}
                   error={errors.dateOfJoining?.message}
                 />
@@ -61,22 +58,22 @@ const GenerateOfferReport = () => {
 
               <Group grow>
                 <TextInput
-                  type="number"
-                  label="Compensation"
-                  placeholder="Enter Compensation"
+                  type='number'
+                  label='Compensation'
+                  placeholder='Enter Compensation'
                   {...register('compensation')}
                   error={errors.compensation?.message}
                 />
 
                 <Controller
-                  name="role"
+                  name='role'
                   control={control}
                   render={({ field }) => (
                     <Select
-                      label="User Role"
+                      label='User Role'
                       {...field}
                       error={errors.role?.message}
-                      placeholder="Select user role"
+                      placeholder='Select user role'
                       value={field.value}
                       data={[
                         { label: 'employee', value: 'employee' },
@@ -88,17 +85,19 @@ const GenerateOfferReport = () => {
               </Group>
 
               <TextInput
-                label="Work Location"
-                placeholder="Enter Work Location"
+                label='Work Location'
+                placeholder='Enter Work Location'
                 {...register('workLocation')}
                 error={errors.workLocation?.message}
               />
 
-              <Group justify="flex-end">
+              <Group justify='flex-end'>
                 <Button
-                  type="submit"
+                  type='submit'
                   disabled={isSubmitting}
-                  leftSection={isSubmitting && <Loader size="xs" />}
+                  leftSection={
+                    isSubmitting && <PremiumLoader size='xs' minHeight='20px' />
+                  }
                 >
                   {isSubmitting ? 'Generating...' : 'Generate Offer Letter'}
                 </Button>

@@ -1,6 +1,7 @@
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { TextInput, Button, Loader, Textarea } from '@mantine/core';
+import PremiumLoader from '@components/common/loaders/PremiumLoader';
 import { DateInput } from '@mantine/dates';
 import { useRegisterPackage } from '@hooks/mutations/useAdminMutations';
 import { useNavigate, useParams } from 'react-router';
@@ -128,9 +129,7 @@ const AddPackage = () => {
               type='submit'
               data-testid='submitButton'
               leftSection={
-                isSubmitting && (
-                  <Loader size='xs' color={currentThemeConfig.button.color} />
-                )
+                isSubmitting && <PremiumLoader size='xs' minHeight='20px' />
               }
               disabled={isSubmitting}
             >

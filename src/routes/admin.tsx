@@ -491,12 +491,8 @@ const AdminRoutes = () => {
 
   return (
     <MantineProvider theme={mantineTheme}>
-      <LoadingOverlay
-        visible={isLoading}
-        loaderProps={{ children: <Loader /> }}
-      />
       <div
-        className="d-flex justify-end p-4 absolute right-0 transition-colors duration-300 ease-in-out"
+        className='d-flex justify-end p-4 absolute right-0 transition-colors duration-300 ease-in-out'
         style={{
           backgroundColor: 'transparent',
           zIndex: 1000
@@ -505,7 +501,7 @@ const AdminRoutes = () => {
         <ThemeToggleButton isDarkTheme={isDarkTheme} setTheme={setTheme} />
       </div>
       <Routes>
-        <Route path="/login" element={<AdminLogin />} />
+        <Route path='/login' element={<AdminLogin />} />
         <Route
           element={
             <UserProvider>
@@ -513,52 +509,52 @@ const AdminRoutes = () => {
             </UserProvider>
           }
         >
-          <Route path="/dashboard" element={<AdminDashboard />}>
-            <Route path="addemployee" element={<AddEmployee />} />
-            <Route path="" element={<Employees />} />
-            <Route path="profile" element={<AdminProfile />} />
-            <Route path="pool-companies" element={<Companies />} />
-            <Route path="add-pool-companies" element={<AddCompany />} />
-            <Route path="add-pool-candidate" element={<AddPoolCandidate />} />
-            <Route path="packages" element={<Packages />} />
-            <Route path="/dashboard/addPackage" element={<AddPackage />} />
-            <Route path="updates/:packageId" element={<UpdatePackage />} />
-            <Route path="reports" element={<Reports />}>
-              <Route path="generate-offer" element={<GenerateOfferReport />} />
+          <Route path='/dashboard' element={<AdminDashboard />}>
+            <Route path='addemployee' element={<AddEmployee />} />
+            <Route path='' element={<Employees />} />
+            <Route path='profile' element={<AdminProfile />} />
+            <Route path='pool-companies' element={<Companies />} />
+            <Route path='add-pool-companies' element={<AddCompany />} />
+            <Route path='add-pool-candidate' element={<AddPoolCandidate />} />
+            <Route path='packages' element={<Packages />} />
+            <Route path='/dashboard/addPackage' element={<AddPackage />} />
+            <Route path='updates/:packageId' element={<UpdatePackage />} />
+            <Route path='reports' element={<Reports />}>
+              <Route path='generate-offer' element={<GenerateOfferReport />} />
               <Route
-                path="generate-salary-slip"
+                path='generate-salary-slip'
                 element={<GenerateSalarySlipReport />}
               />
               <Route
-                path="all-employee-reports"
+                path='all-employee-reports'
                 element={<EmployeeReports />}
               />
             </Route>
-            <Route path="timesheet" element={<DateTableComponent />} />
+            <Route path='timesheet' element={<DateTableComponent />} />
             <Route
-              path=":candidateId/edit-pool-candidate"
+              path=':candidateId/edit-pool-candidate'
               element={<UpdatePoolCandidateForm />}
             />
-            <Route path="update/:employeeId" element={<UpdateEmployee />} />
+            <Route path='update/:employeeId' element={<UpdateEmployee />} />
             <Route
-              path="package/:employeeId"
+              path='package/:employeeId'
               element={<PackagePageWrapper />}
             />
             <Route
-              path="timesheet/:employeeId"
+              path='timesheet/:employeeId'
               element={<EmployeeTimesheetAdminView />}
             />
-            <Route path="pool-candidates" element={<PoolCandidateList />} />
+            <Route path='pool-candidates' element={<PoolCandidateList />} />
             <Route
-              path="update-pool-company/:companyId"
+              path='update-pool-company/:companyId'
               element={<UpdateCompany />}
             />
-            <Route path="settings" element={<SettingsLayout />}>
-              <Route index element={<Navigate to="blood-groups" replace />} />
-              <Route path="blood-groups" element={<BloodGroupTable />} />
-              <Route path="employment-types" element={<EmploymentTypes />} />
-              <Route path="employment-roles" element={<EmploymentRoles />} />
-              <Route path="feedback" element={<FeedbackTable />} />
+            <Route path='settings' element={<SettingsLayout />}>
+              <Route index element={<Navigate to='blood-groups' replace />} />
+              <Route path='blood-groups' element={<BloodGroupTable />} />
+              <Route path='employment-types' element={<EmploymentTypes />} />
+              <Route path='employment-roles' element={<EmploymentRoles />} />
+              <Route path='feedback' element={<FeedbackTable />} />
             </Route>
           </Route>
         </Route>

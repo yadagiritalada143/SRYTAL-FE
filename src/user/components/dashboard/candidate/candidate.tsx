@@ -18,6 +18,7 @@ import {
   ScrollArea,
   Divider
 } from '@mantine/core';
+import DataView from '@components/common/loaders/DataView';
 import {
   IconSearch,
   IconPlus,
@@ -138,10 +139,10 @@ const CandidateActions: React.FC<{
   color: string;
   isMobile?: boolean;
 }> = ({ candidateId, onEdit, color, isMobile = false }) => (
-  <Group gap="xs" justify="center">
-    <Tooltip label="Edit Candidate">
+  <Group gap='xs' justify='center'>
+    <Tooltip label='Edit Candidate'>
       <ActionIcon
-        variant="subtle"
+        variant='subtle'
         color={color}
         onClick={() => onEdit(candidateId)}
         size={isMobile ? 'md' : 'sm'}
@@ -165,21 +166,21 @@ const MobileCandidateCard: React.FC<{
     <Card
       key={candidate._id}
       id={`candidate-${candidate._id}`}
-      shadow="sm"
-      p="md"
-      mb="sm"
+      shadow='sm'
+      p='md'
+      mb='sm'
       withBorder
     >
-      <Stack gap="sm">
-        <Group justify="space-between" align="center">
-          <Badge variant="filled" color={color}>
+      <Stack gap='sm'>
+        <Group justify='space-between' align='center'>
+          <Badge variant='filled' color={color}>
             #{index + 1 + (activePage - 1) * itemsPerPage}
           </Badge>
           <ActionIcon
-            variant="subtle"
+            variant='subtle'
             color={color}
             onClick={() => onEdit(candidate._id)}
-            size="md"
+            size='md'
           >
             <IconEdit size={18} />
           </ActionIcon>
@@ -188,20 +189,20 @@ const MobileCandidateCard: React.FC<{
         <Divider />
 
         <Stack gap={2}>
-          <Text size="xs" fw={600} c="dimmed">
+          <Text size='xs' fw={600} c='dimmed'>
             Candidate Name
           </Text>
-          <Text size="lg" fw={700}>
+          <Text size='lg' fw={700}>
             {candidate.candidateName}
           </Text>
         </Stack>
 
         <Group grow>
           <Stack gap={2}>
-            <Text size="xs" fw={600} c="dimmed">
+            <Text size='xs' fw={600} c='dimmed'>
               Email
             </Text>
-            <Text size="sm" lineClamp={1}>
+            <Text size='sm' lineClamp={1}>
               {candidate.contact?.email || 'N/A'}
             </Text>
           </Stack>
@@ -209,16 +210,16 @@ const MobileCandidateCard: React.FC<{
 
         <Group grow>
           <Stack gap={2}>
-            <Text size="xs" fw={600} c="dimmed">
+            <Text size='xs' fw={600} c='dimmed'>
               Phone
             </Text>
-            <Text size="sm">{candidate.contact?.phone || 'N/A'}</Text>
+            <Text size='sm'>{candidate.contact?.phone || 'N/A'}</Text>
           </Stack>
           <Stack gap={2}>
-            <Text size="xs" fw={600} c="dimmed">
+            <Text size='xs' fw={600} c='dimmed'>
               Experience
             </Text>
-            <Badge size="sm" variant="light" color="teal">
+            <Badge size='sm' variant='light' color='teal'>
               {candidate.totalYearsOfExperience || '0'} years
             </Badge>
           </Stack>
@@ -227,20 +228,20 @@ const MobileCandidateCard: React.FC<{
         <Divider />
 
         <Stack gap={2}>
-          <Text size="xs" fw={600} c="dimmed">
+          <Text size='xs' fw={600} c='dimmed'>
             Created By
           </Text>
-          <Text size="sm">
+          <Text size='sm'>
             {candidate.createdBy?.firstName || ''}{' '}
             {candidate.createdBy?.lastName || 'N/A'}
           </Text>
         </Stack>
 
         <Stack gap={2}>
-          <Text size="xs" fw={600} c="dimmed">
+          <Text size='xs' fw={600} c='dimmed'>
             Created At
           </Text>
-          <Text size="sm">
+          <Text size='sm'>
             {moment(new Date(candidate.createdAt)).format('MMM DD, YYYY')}
           </Text>
         </Stack>
@@ -249,19 +250,19 @@ const MobileCandidateCard: React.FC<{
           <>
             <Divider />
             <Stack gap={2}>
-              <Text size="xs" fw={600} c="dimmed">
+              <Text size='xs' fw={600} c='dimmed'>
                 Latest Comment By
               </Text>
-              <Text size="sm">
+              <Text size='sm'>
                 {candidate.comments[0].userId?.firstName}{' '}
                 {candidate.comments[0].userId?.lastName}
               </Text>
             </Stack>
             <Stack gap={2}>
-              <Text size="xs" fw={600} c="dimmed">
+              <Text size='xs' fw={600} c='dimmed'>
                 Latest Comment At
               </Text>
-              <Text size="sm">
+              <Text size='sm'>
                 {moment(new Date(candidate.comments[0].updateAt)).format(
                   'MMM DD, YYYY'
                 )}
@@ -286,11 +287,11 @@ const TableHeader: React.FC<{
     children: React.ReactNode;
   }> = ({ field, children }) => (
     <Table.Th
-      className="border cursor-pointer select-none hover:bg-opacity-80 transition-colors"
+      className='border cursor-pointer select-none hover:bg-opacity-80 transition-colors'
       onClick={() => onSort(field)}
     >
-      <Group justify="center">
-        <Text size="sm" fw={500}>
+      <Group justify='center'>
+        <Text size='sm' fw={500}>
           {children}
         </Text>
         {sortConfig.field === field &&
@@ -312,53 +313,53 @@ const TableHeader: React.FC<{
     >
       <Table.Tr>
         <Table.Th
-          className="p-3 border text-center"
+          className='p-3 border text-center'
           style={{ minWidth: '60px' }}
         >
-          <Text size="sm" fw={500}>
+          <Text size='sm' fw={500}>
             S.No
           </Text>
         </Table.Th>
-        <SortableHeader field="candidateName">Name</SortableHeader>
+        <SortableHeader field='candidateName'>Name</SortableHeader>
         {!isTablet && (
           <>
-            <Table.Th className="p-3 border text-center">
-              <Text size="sm" fw={500}>
+            <Table.Th className='p-3 border text-center'>
+              <Text size='sm' fw={500}>
                 Email
               </Text>
             </Table.Th>
-            <Table.Th className="p-3 border text-center">
-              <Text size="sm" fw={500}>
+            <Table.Th className='p-3 border text-center'>
+              <Text size='sm' fw={500}>
                 Phone
               </Text>
             </Table.Th>
           </>
         )}
-        <SortableHeader field="totalYearsOfExperience">
+        <SortableHeader field='totalYearsOfExperience'>
           Experience
         </SortableHeader>
         {!isTablet && (
           <>
-            <Table.Th className="p-3 border text-center">
-              <Text size="sm" fw={500}>
+            <Table.Th className='p-3 border text-center'>
+              <Text size='sm' fw={500}>
                 Created By
               </Text>
             </Table.Th>
-            <SortableHeader field="createdAt">Created At</SortableHeader>
-            <Table.Th className="p-3 border text-center">
-              <Text size="sm" fw={500}>
+            <SortableHeader field='createdAt'>Created At</SortableHeader>
+            <Table.Th className='p-3 border text-center'>
+              <Text size='sm' fw={500}>
                 Latest Comment By
               </Text>
             </Table.Th>
-            <Table.Th className="p-3 border text-center">
-              <Text size="sm" fw={500}>
+            <Table.Th className='p-3 border text-center'>
+              <Text size='sm' fw={500}>
                 Latest Comment At
               </Text>
             </Table.Th>
           </>
         )}
-        <Table.Th className="p-3 border text-center">
-          <Text size="sm" fw={500}>
+        <Table.Th className='p-3 border text-center'>
+          <Text size='sm' fw={500}>
             Actions
           </Text>
         </Table.Th>
@@ -372,12 +373,12 @@ const HeadingComponent: React.FC<{
   handleAddCandidate: () => void;
   isMobile?: boolean;
 }> = ({ filteredCount = 0, handleAddCandidate, isMobile = false }) => (
-  <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder mt="xl">
+  <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md' withBorder mt='xl'>
     <Flex
       direction={isMobile ? 'column' : 'row'}
-      justify="space-between"
-      align="center"
-      gap="md"
+      justify='space-between'
+      align='center'
+      gap='md'
     >
       <Text
         size={isMobile ? 'lg' : 'xl'}
@@ -389,10 +390,10 @@ const HeadingComponent: React.FC<{
       <Button
         leftSection={<IconPlus size={16} />}
         onClick={handleAddCandidate}
-        variant="filled"
+        variant='filled'
         fullWidth={isMobile}
         size={isMobile ? 'md' : 'sm'}
-        radius="md"
+        radius='md'
       >
         Add Candidate
       </Button>
@@ -532,12 +533,12 @@ const PoolCandidateList = () => {
     const errorMessage =
       (error as any)?.response?.data?.message || 'Failed to load candidates';
     return (
-      <Container size={isMobile ? 'sm' : 'lg'} py="xl">
-        <Card shadow="sm" p="lg" radius="md" withBorder>
-          <Text ta="center" size="lg">
+      <Container size={isMobile ? 'sm' : 'lg'} py='xl'>
+        <Card shadow='sm' p='lg' radius='md' withBorder>
+          <Text ta='center' size='lg'>
             {errorMessage}
           </Text>
-          <Center mt="md">
+          <Center mt='md'>
             <Button onClick={() => window.location.reload()}>Try Again</Button>
           </Center>
         </Card>
@@ -546,8 +547,8 @@ const PoolCandidateList = () => {
   }
 
   return (
-    <Container size="xl" py="md" my="xl" px={isSmallMobile ? 'xs' : 'md'}>
-      <Stack gap="md">
+    <Container size='xl' py='md' my='xl' px={isSmallMobile ? 'xs' : 'md'}>
+      <Stack gap='md'>
         {/* Header */}
         <HeadingComponent
           filteredCount={filteredCandidates.length}
@@ -556,19 +557,19 @@ const PoolCandidateList = () => {
         />
 
         {/* Filters */}
-        <Card shadow="sm" p={isMobile ? 'sm' : 'md'} radius="md" withBorder>
-          <Stack gap="md">
+        <Card shadow='sm' p={isMobile ? 'sm' : 'md'} radius='md' withBorder>
+          <Stack gap='md'>
             <TextInput
-              placeholder="Search by name, email, phone, or skills..."
+              placeholder='Search by name, email, phone, or skills...'
               leftSection={<IconSearch size={16} />}
               onChange={e => debouncedSearch(e.target.value)}
-              radius="md"
+              radius='md'
               size={isMobile ? 'sm' : 'md'}
             />
 
-            <Group justify="space-between" wrap={isMobile ? 'wrap' : 'nowrap'}>
-              <Group gap="xs">
-                <Text size="sm">Items per page:</Text>
+            <Group justify='space-between' wrap={isMobile ? 'wrap' : 'nowrap'}>
+              <Group gap='xs'>
+                <Text size='sm'>Items per page:</Text>
                 <Select
                   data={ITEMS_PER_PAGE_OPTIONS}
                   value={itemsPerPage.toString()}
@@ -576,12 +577,12 @@ const PoolCandidateList = () => {
                     setItemsPerPage(Number(value) || DEFAULT_ITEMS_PER_PAGE)
                   }
                   w={80}
-                  size="sm"
+                  size='sm'
                 />
               </Group>
 
               {filteredCandidates.length !== candidates.length && (
-                <Badge variant="light" color="blue">
+                <Badge variant='light' color='blue'>
                   {filteredCandidates.length} of {candidates.length} candidates
                 </Badge>
               )}
@@ -589,190 +590,193 @@ const PoolCandidateList = () => {
           </Stack>
         </Card>
 
-        {/* Table or Cards */}
-        <Card shadow="sm" p={0} radius="md" withBorder>
-          {isLoading ? (
-            <Center p="xl">
-              <Stack align="center" gap="md">
-                <Loader size="xl" />
-                <Text>Loading candidates...</Text>
-              </Stack>
-            </Center>
-          ) : isMobile ? (
-            // Mobile Card View
-            <ScrollArea p="md">
-              <Stack gap="sm">
-                {paginatedCandidates.length > 0 ? (
-                  paginatedCandidates.map((candidate: any, index: number) => (
-                    <MobileCandidateCard
-                      color={currentThemeConfig.button.color}
-                      key={candidate._id}
-                      candidate={candidate}
-                      index={index}
-                      activePage={activePage}
-                      itemsPerPage={itemsPerPage}
-                      onEdit={handleCandidateEdit}
-                    />
-                  ))
-                ) : (
-                  <Card p="xl" withBorder>
-                    <Stack align="center" gap="md">
-                      <IconUser size={48} opacity={0.5} />
-                      <Text size="lg" ta="center">
-                        No candidates found
-                      </Text>
-                      <Text size="sm" ta="center">
-                        {searchQuery
-                          ? 'Try adjusting your search'
-                          : 'Start by adding your first candidate'}
-                      </Text>
-                      {!searchQuery && (
-                        <Button
-                          variant="light"
-                          leftSection={<IconPlus size={16} />}
-                          onClick={handleAddCandidate}
-                          fullWidth={isSmallMobile}
-                        >
-                          Add Candidate
-                        </Button>
-                      )}
-                    </Stack>
-                  </Card>
-                )}
-              </Stack>
-            </ScrollArea>
-          ) : (
-            // Desktop/Tablet Table View
-            <div
-              ref={scrollRef}
-              onMouseDown={handleMouseDown}
-              onMouseMove={handleMouseMove}
-              onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseUp}
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
-              style={{
-                overflowX: 'auto'
-              }}
-            >
-              <Table stickyHeader withTableBorder withColumnBorders>
-                <TableHeader
-                  sortConfig={sortConfig}
-                  onSort={handleSort}
-                  themeConfig={currentThemeConfig}
-                  isTablet={isTablet}
-                />
-                <Table.Tbody>
+        <Card shadow='sm' p={0} radius='md' withBorder>
+          <DataView
+            isLoading={isLoading}
+            error={error}
+            label='candidates'
+            isEmpty={paginatedCandidates.length === 0 && !isLoading}
+          >
+            {isMobile ? (
+              // Mobile Card View
+              <ScrollArea p='md'>
+                <Stack gap='sm'>
                   {paginatedCandidates.length > 0 ? (
                     paginatedCandidates.map((candidate: any, index: number) => (
-                      <Table.Tr
+                      <MobileCandidateCard
+                        color={currentThemeConfig.button.color}
                         key={candidate._id}
-                        id={`candidate-${candidate._id}`}
-                        className="transition-colors"
-                      >
-                        <Table.Td className="text-center p-3">
-                          <Text size="sm">
-                            {index + 1 + (activePage - 1) * itemsPerPage}
-                          </Text>
-                        </Table.Td>
-                        <Table.Td className="p-3">
-                          <Text size="sm" fw={500}>
-                            {candidate.candidateName}
-                          </Text>
-                        </Table.Td>
-                        {!isTablet && (
-                          <>
-                            <Table.Td className="p-3">
-                              <Text size="sm" truncate>
-                                {candidate.contact?.email || 'N/A'}
-                              </Text>
-                            </Table.Td>
-                            <Table.Td className="p-3">
-                              <Text size="sm">
-                                {candidate.contact?.phone || 'N/A'}
-                              </Text>
-                            </Table.Td>
-                          </>
-                        )}
-                        <Table.Td className="p-3 text-center">
-                          <Badge size="sm" variant="light" color="teal">
-                            {candidate.totalYearsOfExperience || '0'} years
-                          </Badge>
-                        </Table.Td>
-                        {!isTablet && (
-                          <>
-                            <Table.Td className="p-3">
-                              <Text size="sm">
-                                {candidate.createdBy?.firstName || ''}{' '}
-                                {candidate.createdBy?.lastName || 'N/A'}
-                              </Text>
-                            </Table.Td>
-                            <Table.Td className="p-3">
-                              <Text size="sm">
-                                {moment(new Date(candidate.createdAt)).format(
-                                  'MMM DD, YYYY'
-                                )}
-                              </Text>
-                            </Table.Td>
-                            <Table.Td className="p-3">
-                              <Text size="sm">
-                                {candidate.comments?.length
-                                  ? `${candidate.comments[0].userId?.firstName} ${candidate.comments[0].userId?.lastName}`
-                                  : 'N/A'}
-                              </Text>
-                            </Table.Td>
-                            <Table.Td className="p-3">
-                              <Text size="sm">
-                                {candidate.comments?.length
-                                  ? moment(
-                                      new Date(candidate.comments[0].updateAt)
-                                    ).format('MMM DD, YYYY')
-                                  : 'N/A'}
-                              </Text>
-                            </Table.Td>
-                          </>
-                        )}
-                        <Table.Td className="p-3">
-                          <CandidateActions
-                            color={currentThemeConfig.button.color}
-                            candidateId={candidate._id}
-                            onEdit={handleCandidateEdit}
-                          />
-                        </Table.Td>
-                      </Table.Tr>
+                        candidate={candidate}
+                        index={index}
+                        activePage={activePage}
+                        itemsPerPage={itemsPerPage}
+                        onEdit={handleCandidateEdit}
+                      />
                     ))
                   ) : (
-                    <Table.Tr>
-                      <Table.Td
-                        colSpan={isTablet ? 4 : 10}
-                        className="text-center p-8"
-                      >
-                        <Stack align="center" gap="md">
-                          <IconUser size={48} opacity={0.5} />
-                          <Text size="lg">No candidates found</Text>
-                          <Text size="sm">
-                            {searchQuery
-                              ? 'Try adjusting your search'
-                              : 'Start by adding your first candidate'}
-                          </Text>
-                          {!searchQuery && (
-                            <Button
-                              variant="light"
-                              leftSection={<IconPlus size={16} />}
-                              onClick={handleAddCandidate}
-                            >
-                              Add Candidate
-                            </Button>
-                          )}
-                        </Stack>
-                      </Table.Td>
-                    </Table.Tr>
+                    <Card p='xl' withBorder>
+                      <Stack align='center' gap='md'>
+                        <IconUser size={48} opacity={0.5} />
+                        <Text size='lg' ta='center'>
+                          No candidates found
+                        </Text>
+                        <Text size='sm' ta='center'>
+                          {searchQuery
+                            ? 'Try adjusting your search'
+                            : 'Start by adding your first candidate'}
+                        </Text>
+                        {!searchQuery && (
+                          <Button
+                            variant='light'
+                            leftSection={<IconPlus size={16} />}
+                            onClick={handleAddCandidate}
+                            fullWidth={isSmallMobile}
+                          >
+                            Add Candidate
+                          </Button>
+                        )}
+                      </Stack>
+                    </Card>
                   )}
-                </Table.Tbody>
-              </Table>
-            </div>
-          )}
+                </Stack>
+              </ScrollArea>
+            ) : (
+              // Desktop/Tablet Table View
+              <div
+                ref={scrollRef}
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseUp}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+                style={{
+                  overflowX: 'auto'
+                }}
+              >
+                <Table stickyHeader withTableBorder withColumnBorders>
+                  <TableHeader
+                    sortConfig={sortConfig}
+                    onSort={handleSort}
+                    themeConfig={currentThemeConfig}
+                    isTablet={isTablet}
+                  />
+                  <Table.Tbody>
+                    {paginatedCandidates.length > 0 ? (
+                      paginatedCandidates.map(
+                        (candidate: any, index: number) => (
+                          <Table.Tr
+                            key={candidate._id}
+                            id={`candidate-${candidate._id}`}
+                            className='transition-colors'
+                          >
+                            <Table.Td className='text-center p-3'>
+                              <Text size='sm'>
+                                {index + 1 + (activePage - 1) * itemsPerPage}
+                              </Text>
+                            </Table.Td>
+                            <Table.Td className='p-3'>
+                              <Text size='sm' fw={500}>
+                                {candidate.candidateName}
+                              </Text>
+                            </Table.Td>
+                            {!isTablet && (
+                              <>
+                                <Table.Td className='p-3'>
+                                  <Text size='sm' truncate>
+                                    {candidate.contact?.email || 'N/A'}
+                                  </Text>
+                                </Table.Td>
+                                <Table.Td className='p-3'>
+                                  <Text size='sm'>
+                                    {candidate.contact?.phone || 'N/A'}
+                                  </Text>
+                                </Table.Td>
+                              </>
+                            )}
+                            <Table.Td className='p-3 text-center'>
+                              <Badge size='sm' variant='light' color='teal'>
+                                {candidate.totalYearsOfExperience || '0'} years
+                              </Badge>
+                            </Table.Td>
+                            {!isTablet && (
+                              <>
+                                <Table.Td className='p-3'>
+                                  <Text size='sm'>
+                                    {candidate.createdBy?.firstName || ''}{' '}
+                                    {candidate.createdBy?.lastName || 'N/A'}
+                                  </Text>
+                                </Table.Td>
+                                <Table.Td className='p-3'>
+                                  <Text size='sm'>
+                                    {moment(
+                                      new Date(candidate.createdAt)
+                                    ).format('MMM DD, YYYY')}
+                                  </Text>
+                                </Table.Td>
+                                <Table.Td className='p-3'>
+                                  <Text size='sm'>
+                                    {candidate.comments?.length
+                                      ? `${candidate.comments[0].userId?.firstName} ${candidate.comments[0].userId?.lastName}`
+                                      : 'N/A'}
+                                  </Text>
+                                </Table.Td>
+                                <Table.Td className='p-3'>
+                                  <Text size='sm'>
+                                    {candidate.comments?.length
+                                      ? moment(
+                                          new Date(
+                                            candidate.comments[0].updateAt
+                                          )
+                                        ).format('MMM DD, YYYY')
+                                      : 'N/A'}
+                                  </Text>
+                                </Table.Td>
+                              </>
+                            )}
+                            <Table.Td className='p-3'>
+                              <CandidateActions
+                                color={currentThemeConfig.button.color}
+                                candidateId={candidate._id}
+                                onEdit={handleCandidateEdit}
+                              />
+                            </Table.Td>
+                          </Table.Tr>
+                        )
+                      )
+                    ) : (
+                      <Table.Tr>
+                        <Table.Td
+                          colSpan={isTablet ? 4 : 10}
+                          className='text-center p-8'
+                        >
+                          <Stack align='center' gap='md'>
+                            <IconUser size={48} opacity={0.5} />
+                            <Text size='lg'>No candidates found</Text>
+                            <Text size='sm'>
+                              {searchQuery
+                                ? 'Try adjusting your search'
+                                : 'Start by adding your first candidate'}
+                            </Text>
+                            {!searchQuery && (
+                              <Button
+                                variant='light'
+                                leftSection={<IconPlus size={16} />}
+                                onClick={handleAddCandidate}
+                              >
+                                Add Candidate
+                              </Button>
+                            )}
+                          </Stack>
+                        </Table.Td>
+                      </Table.Tr>
+                    )}
+                  </Table.Tbody>
+                </Table>
+              </div>
+            )}
+          </DataView>
         </Card>
 
         {/* Pagination */}
@@ -783,7 +787,7 @@ const PoolCandidateList = () => {
               onChange={setActivePage}
               total={totalPages}
               size={isMobile ? 'sm' : 'md'}
-              radius="md"
+              radius='md'
               withEdges
             />
           </Center>

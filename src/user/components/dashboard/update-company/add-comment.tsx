@@ -1,4 +1,5 @@
-import { Button, Textarea, Card, Stack, Text, Loader } from '@mantine/core';
+import { Button, Textarea, Card, Stack, Text } from '@mantine/core';
+import PremiumLoader from '@components/common/loaders/PremiumLoader';
 import { useAddCompanyComment } from '@hooks/mutations/useUserMutations';
 import { useCustomToast } from '@utils/common/toast';
 import { useState } from 'react';
@@ -51,7 +52,7 @@ const AddCommentPoolCompany = ({
           disabled={isSubmitting || !newComment.trim()}
           leftSection={
             isSubmitting ? (
-              <Loader size='xs' color='white' />
+              <PremiumLoader size='xs' minHeight='20px' />
             ) : (
               <IconMessagePlus size={16} />
             )

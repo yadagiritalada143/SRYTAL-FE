@@ -1,4 +1,5 @@
-import { Button, Loader, PasswordInput, TextInput, Modal } from '@mantine/core';
+import { Button, PasswordInput, TextInput, Modal } from '@mantine/core';
+import PremiumLoader from '@components/common/loaders/PremiumLoader';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema, LoginForm } from '@forms/login';
@@ -18,10 +19,14 @@ import { ROLES } from '@constants';
 import { useAppTheme } from '@hooks/use-app-theme';
 const AdminLogin = () => {
   const navigate = useNavigate();
-  const { themeConfig: currentThemeConfig, organizationConfig, isDarkTheme } = useAppTheme();
+  const {
+    themeConfig: currentThemeConfig,
+    organizationConfig,
+    isDarkTheme
+  } = useAppTheme();
   const { showErrorToast } = useCustomToast();
   const { organization = '' } = useParams<{ organization: string }>();
-  
+
   const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
   const {
     register,
@@ -30,7 +35,6 @@ const AdminLogin = () => {
   } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema)
   });
-  
 
   const { submit } = useSubmitAdminLogin();
 
@@ -61,53 +65,53 @@ const AdminLogin = () => {
   }, [navigate, organization, showErrorToast]);
 
   return (
-    <ThemeBackground className="flex justify-center items-center h-screen px-4">
+    <ThemeBackground className='flex justify-center items-center h-screen px-4'>
       <ThemeForm onSubmit={handleSubmit(handleLogin)}>
-        <div className="flex flex-col items-center">
-          <div className="relative mb-6">
+        <div className='flex flex-col items-center'>
+          <div className='relative mb-6'>
             <img
               src={organizationConfig.organization_theme.logo}
-              className="max-h-32 rounded-3xl object-contain transition-transform duration-300 hover:scale-105"
+              className='max-h-32 rounded-3xl object-contain transition-transform duration-300 hover:scale-105'
               alt={organizationConfig.organization_name}
             />
             <div
-              className="absolute -inset-1 rounded-full opacity-20 blur-lg transition-opacity duration-300"
+              className='absolute -inset-1 rounded-full opacity-20 blur-lg transition-opacity duration-300'
               style={{ backgroundColor: currentThemeConfig.button.color }}
             />
           </div>
 
-          <div className="text-center mb-6">
+          <div className='text-center mb-6'>
             <h1
-              className="text-2xl font-bold mb-2 transition-colors duration-300 ease-in-out"
+              className='text-2xl font-bold mb-2 transition-colors duration-300 ease-in-out'
               style={{ color: currentThemeConfig.color }}
             >
               Welcome Back
             </h1>
-            <div className="flex items-center justify-center gap-2 mb-2">
+            <div className='flex items-center justify-center gap-2 mb-2'>
               <div
-                className="w-8 h-0.5 transition-colors duration-300"
+                className='w-8 h-0.5 transition-colors duration-300'
                 style={{ backgroundColor: currentThemeConfig.button.color }}
               />
               <span
-                className="text-sm font-medium uppercase tracking-wider transition-colors duration-300"
+                className='text-sm font-medium uppercase tracking-wider transition-colors duration-300'
                 style={{ color: currentThemeConfig.button.color }}
               >
                 Admin Portal
               </span>
               <div
-                className="w-8 h-0.5 transition-colors duration-300"
+                className='w-8 h-0.5 transition-colors duration-300'
                 style={{ backgroundColor: currentThemeConfig.button.color }}
               />
             </div>
           </div>
         </div>
 
-        <div className="mb-4">
+        <div className='mb-4'>
           <TextInput
             {...register('email')}
-            label="Email"
-            placeholder="Enter your email"
-            autoComplete="off"
+            label='Email'
+            placeholder='Enter your email'
+            autoComplete='off'
             error={errors.email?.message}
             onChange={e => {
               e.target.value = e.target.value.replace(/\s/g, '');
@@ -116,11 +120,11 @@ const AdminLogin = () => {
           />
         </div>
 
-        <div className="mb-4">
+        <div className='mb-4'>
           <PasswordInput
             {...register('password')}
-            label="Password"
-            placeholder="Password"
+            label='Password'
+            placeholder='Password'
             error={errors.password?.message}
             leftSection={
               <span>
@@ -130,32 +134,27 @@ const AdminLogin = () => {
           />
         </div>
 
-        <div className="flex flex-wrap justify-between items-center gap-4 mt-8">
-          <div className="w-full md:w-auto flex justify-center md:justify-start order-2 md:order-1">
+        <div className='flex flex-wrap justify-between items-center gap-4 mt-8'>
+          <div className='w-full md:w-auto flex justify-center md:justify-start order-2 md:order-1'>
             <button
-              type="button"
+              type='button'
               onClick={() => setForgotPasswordOpen(true)}
-              className="text-sm underline hover:opacity-80 transition-all duration-300 ease-in-out"
+              className='text-sm underline hover:opacity-80 transition-all duration-300 ease-in-out'
               style={{ color: currentThemeConfig.linkColor }}
             >
               Forgot Password
             </button>
           </div>
-          <div className="w-full md:w-auto flex justify-center order-1 md:order-2">
+          <div className='w-full md:w-auto flex justify-center order-1 md:order-2'>
             <Button
-              type="submit"
-              data-testid="loginButton"
-              className="w-1/2 md:w-auto"
+              type='submit'
+              data-testid='loginButton'
+              className='w-1/2 md:w-auto'
               style={{ minWidth: '200px' }}
               disabled={isSubmitting}
-              radius="md"
+              radius='md'
               leftSection={
-                isSubmitting && (
-                  <Loader
-                    size="xs"
-                    color={currentThemeConfig.button.textColor}
-                  />
-                )
+                isSubmitting && <PremiumLoader size='xs' minHeight='20px' />
               }
             >
               {isSubmitting ? 'Logging in...' : 'Login'}
@@ -167,9 +166,9 @@ const AdminLogin = () => {
       <Modal
         opened={forgotPasswordOpen}
         onClose={() => setForgotPasswordOpen(false)}
-        title="Reset your password"
+        title='Reset your password'
         centered
-        size="md"
+        size='md'
         transitionProps={{
           transition: 'slide-right',
           duration: 300,

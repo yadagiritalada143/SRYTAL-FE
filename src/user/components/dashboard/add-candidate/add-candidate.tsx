@@ -15,12 +15,10 @@ import {
   Loader,
   Badge
 } from '@mantine/core';
+import PremiumLoader from '@components/common/loaders/PremiumLoader';
 import { Controller, useForm } from 'react-hook-form';
 import { useState, useMemo } from 'react';
-import {
-  AddCandidateForm,
-  candidateSchema
-} from '@forms/add-candidate';
+import { AddCandidateForm, candidateSchema } from '@forms/add-candidate';
 import { toast } from 'react-toastify';
 import { addPoolCandidateByRecruiter } from '@services/user-services';
 import { useMediaQuery } from '@mantine/hooks';
@@ -114,20 +112,20 @@ const AddPoolCandidate = () => {
 
   return (
     <Container
-      size="xl"
-      py="md"
-      my="xl"
+      size='xl'
+      py='md'
+      my='xl'
       mt={70}
       px={isSmallMobile ? 'xs' : 'md'}
       style={{
         backgroundColor: currentThemeConfig.backgroundColor
       }}
     >
-      <Stack gap="md">
+      <Stack gap='md'>
         {/* Header Card */}
-        <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder>
-          <Group justify="space-between" wrap="wrap">
-            <Group gap="sm">
+        <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md' withBorder>
+          <Group justify='space-between' wrap='wrap'>
+            <Group gap='sm'>
               <IconUser size={isMobile ? 24 : 28} />
               <Text
                 size={isMobile ? 'lg' : 'xl'}
@@ -140,9 +138,9 @@ const AddPoolCandidate = () => {
             <Button
               leftSection={<IconArrowLeft size={16} />}
               onClick={handleGoBack}
-              variant="light"
+              variant='light'
               size={isMobile ? 'sm' : 'md'}
-              radius="md"
+              radius='md'
             >
               Go Back
             </Button>
@@ -150,7 +148,7 @@ const AddPoolCandidate = () => {
         </Card>
 
         {/* Form Card */}
-        <Card shadow="sm" p={isMobile ? 'md' : 'xl'} radius="md" withBorder>
+        <Card shadow='sm' p={isMobile ? 'md' : 'xl'} radius='md' withBorder>
           <form
             onSubmit={handleSubmit(onSubmit)}
             onKeyDown={e => {
@@ -159,27 +157,27 @@ const AddPoolCandidate = () => {
               }
             }}
           >
-            <Stack gap="lg">
+            <Stack gap='lg'>
               {/* Basic Information Section */}
               <div>
-                <Text size="lg" fw={600} mb="md">
+                <Text size='lg' fw={600} mb='md'>
                   Basic Information
                 </Text>
-                <Grid gutter="md">
+                <Grid gutter='md'>
                   <Grid.Col span={12}>
                     <Controller
-                      name="candidateName"
+                      name='candidateName'
                       control={control}
                       render={({ field }) => (
                         <TextInput
                           {...field}
-                          label="Candidate Name"
-                          placeholder="Enter candidate full name"
+                          label='Candidate Name'
+                          placeholder='Enter candidate full name'
                           error={errors.candidateName?.message}
                           size={isMobile ? 'sm' : 'md'}
                           withAsterisk
                           leftSection={<IconUser size={16} />}
-                          autoComplete="off"
+                          autoComplete='off'
                         />
                       )}
                     />
@@ -191,43 +189,43 @@ const AddPoolCandidate = () => {
 
               {/* Contact Information Section */}
               <div>
-                <Text size="lg" fw={600} mb="md">
+                <Text size='lg' fw={600} mb='md'>
                   Contact Information
                 </Text>
-                <Grid gutter="md">
+                <Grid gutter='md'>
                   <Grid.Col span={{ base: 12, sm: 6 }}>
                     <Controller
-                      name="contact.email"
+                      name='contact.email'
                       control={control}
                       render={({ field }) => (
                         <TextInput
                           {...field}
-                          label="Email"
-                          placeholder="candidate@example.com"
+                          label='Email'
+                          placeholder='candidate@example.com'
                           error={errors.contact?.email?.message}
                           size={isMobile ? 'sm' : 'md'}
-                          type="email"
+                          type='email'
                           withAsterisk
                           leftSection={<IconMail size={16} />}
-                          autoComplete="off"
+                          autoComplete='off'
                         />
                       )}
                     />
                   </Grid.Col>
                   <Grid.Col span={{ base: 12, sm: 6 }}>
                     <Controller
-                      name="contact.phone"
+                      name='contact.phone'
                       control={control}
                       render={({ field }) => (
                         <TextInput
                           {...field}
-                          label="Phone"
-                          placeholder="Enter phone number"
+                          label='Phone'
+                          placeholder='Enter phone number'
                           error={errors.contact?.phone?.message}
                           size={isMobile ? 'sm' : 'md'}
                           withAsterisk
                           leftSection={<IconPhone size={16} />}
-                          autoComplete="off"
+                          autoComplete='off'
                         />
                       )}
                     />
@@ -239,38 +237,38 @@ const AddPoolCandidate = () => {
 
               {/* Experience Section */}
               <div>
-                <Text size="lg" fw={600} mb="md">
+                <Text size='lg' fw={600} mb='md'>
                   Experience
                 </Text>
-                <Grid gutter="md">
+                <Grid gutter='md'>
                   <Grid.Col span={{ base: 12, sm: 6 }}>
                     <Controller
-                      name="totalYearsOfExperience"
+                      name='totalYearsOfExperience'
                       control={control}
                       render={({ field }) => (
                         <NumberInput
                           {...field}
-                          label="Total Experience (Years)"
-                          placeholder="Enter total years"
+                          label='Total Experience (Years)'
+                          placeholder='Enter total years'
                           min={0}
                           error={errors.totalYearsOfExperience?.message}
                           size={isMobile ? 'sm' : 'md'}
                           withAsterisk
                           leftSection={<IconBriefcase size={16} />}
-                          autoComplete="off"
+                          autoComplete='off'
                         />
                       )}
                     />
                   </Grid.Col>
                   <Grid.Col span={{ base: 12, sm: 6 }}>
                     <Controller
-                      name="relaventYearsOfExperience"
+                      name='relaventYearsOfExperience'
                       control={control}
                       render={({ field }) => (
                         <NumberInput
                           {...field}
-                          label="Relevant Experience (Years)"
-                          placeholder="Enter relevant years"
+                          label='Relevant Experience (Years)'
+                          placeholder='Enter relevant years'
                           min={0}
                           error={
                             field.value > getValues('totalYearsOfExperience')
@@ -280,7 +278,7 @@ const AddPoolCandidate = () => {
                           size={isMobile ? 'sm' : 'md'}
                           withAsterisk
                           leftSection={<IconBriefcase size={16} />}
-                          autoComplete="off"
+                          autoComplete='off'
                         />
                       )}
                     />
@@ -292,15 +290,15 @@ const AddPoolCandidate = () => {
 
               {/* Skills Section */}
               <div>
-                <Text size="lg" fw={600} mb="md">
+                <Text size='lg' fw={600} mb='md'>
                   Skills & Expertise
                 </Text>
-                <Stack gap="md">
+                <Stack gap='md'>
                   <Input.Wrapper
-                    label="Add Skills"
+                    label='Add Skills'
                     description="Enter a skill and click 'Add' or press Enter"
                   >
-                    <Group gap="xs" mt="xs">
+                    <Group gap='xs' mt='xs'>
                       <TextInput
                         value={skillInput}
                         onChange={e => setSkillInput(e.target.value)}
@@ -310,17 +308,17 @@ const AddPoolCandidate = () => {
                             handleSkillAdd();
                           }
                         }}
-                        placeholder="e.g., React, Python, AWS"
+                        placeholder='e.g., React, Python, AWS'
                         style={{ flex: 1 }}
                         size={isMobile ? 'sm' : 'md'}
-                        autoComplete="off"
+                        autoComplete='off'
                       />
                       <Button
                         onClick={handleSkillAdd}
                         leftSection={<IconPlus size={16} />}
                         size={isMobile ? 'sm' : 'md'}
                         disabled={!skillInput.trim()}
-                        radius="md"
+                        radius='md'
                       >
                         Add
                       </Button>
@@ -328,27 +326,27 @@ const AddPoolCandidate = () => {
                   </Input.Wrapper>
 
                   {skills.length > 0 && (
-                    <Card p="md" withBorder>
-                      <Stack gap="xs">
-                        <Group justify="space-between">
-                          <Text size="sm" fw={500}>
+                    <Card p='md' withBorder>
+                      <Stack gap='xs'>
+                        <Group justify='space-between'>
+                          <Text size='sm' fw={500}>
                             Added Skills
                           </Text>
                           <Badge
-                            variant="filled"
+                            variant='filled'
                             color={currentThemeConfig.button.color}
                           >
                             {skills.length}{' '}
                             {skills.length === 1 ? 'skill' : 'skills'}
                           </Badge>
                         </Group>
-                        <Group gap="xs">
+                        <Group gap='xs'>
                           {skills.map(skill => (
                             <Badge
                               key={skill}
                               color={currentThemeConfig.button.color}
-                              size="md"
-                              variant="filled"
+                              size='md'
+                              variant='filled'
                               onClick={() => handleSkillRemove(skill)}
                               style={{
                                 cursor: 'pointer',
@@ -357,8 +355,8 @@ const AddPoolCandidate = () => {
                                 gap: '4px'
                               }}
                             >
-                              <Group gap={4} align="center">
-                                <Text size="xs">{skill}</Text>
+                              <Group gap={4} align='center'>
+                                <Text size='xs'>{skill}</Text>
                                 <IconX size={14} style={{ marginTop: 1 }} />
                               </Group>
                             </Badge>
@@ -374,18 +372,18 @@ const AddPoolCandidate = () => {
 
               {/* Comments Section */}
               <div>
-                <Text size="lg" fw={600} mb="md">
+                <Text size='lg' fw={600} mb='md'>
                   Initial Comments & Call Details
                 </Text>
-                <Stack gap="md">
+                <Stack gap='md'>
                   <Controller
-                    name="comments.0.comment"
+                    name='comments.0.comment'
                     control={control}
                     render={({ field }) => (
                       <Textarea
                         {...field}
-                        label="Comment"
-                        placeholder="Add initial comments about the candidate..."
+                        label='Comment'
+                        placeholder='Add initial comments about the candidate...'
                         autosize
                         minRows={4}
                         maxRows={8}
@@ -396,10 +394,10 @@ const AddPoolCandidate = () => {
                     )}
                   />
 
-                  <Grid gutter="md">
+                  <Grid gutter='md'>
                     <Grid.Col span={{ base: 12, sm: 6 }}>
                       <Controller
-                        name="comments.0.callStartsAt"
+                        name='comments.0.callStartsAt'
                         control={control}
                         render={({ field }) => (
                           <DateTimePicker
@@ -411,8 +409,8 @@ const AddPoolCandidate = () => {
                               )
                             }
                             clearable
-                            label="Call Start Time"
-                            placeholder="Select date and time"
+                            label='Call Start Time'
+                            placeholder='Select date and time'
                             error={errors.comments?.[0]?.callStartsAt?.message}
                             size={isMobile ? 'sm' : 'md'}
                             leftSection={<IconClock size={16} />}
@@ -422,7 +420,7 @@ const AddPoolCandidate = () => {
                     </Grid.Col>
                     <Grid.Col span={{ base: 12, sm: 6 }}>
                       <Controller
-                        name="comments.0.callEndsAt"
+                        name='comments.0.callEndsAt'
                         control={control}
                         render={({ field }) => (
                           <DateTimePicker
@@ -434,8 +432,8 @@ const AddPoolCandidate = () => {
                               )
                             }
                             clearable
-                            label="Call End Time"
-                            placeholder="Select date and time"
+                            label='Call End Time'
+                            placeholder='Select date and time'
                             error={errors.comments?.[0]?.callEndsAt?.message}
                             size={isMobile ? 'sm' : 'md'}
                             leftSection={<IconClock size={16} />}
@@ -450,27 +448,27 @@ const AddPoolCandidate = () => {
               <Divider />
 
               {/* Submit Buttons */}
-              <Group justify="flex-end" mt="md">
+              <Group justify='flex-end' mt='md'>
                 <Button
-                  type="button"
-                  variant="light"
+                  type='button'
+                  variant='light'
                   onClick={handleGoBack}
                   disabled={isSubmitting}
                   size={isMobile ? 'sm' : 'md'}
                   fullWidth={isMobile}
-                  radius="md"
+                  radius='md'
                 >
                   Cancel
                 </Button>
                 <Button
-                  type="submit"
+                  type='submit'
                   disabled={isSubmitting}
                   size={isMobile ? 'sm' : 'md'}
                   fullWidth={isMobile}
-                  radius="md"
+                  radius='md'
                   leftSection={
                     isSubmitting ? (
-                      <Loader size="xs" color="white" />
+                      <PremiumLoader size='xs' minHeight='20px' />
                     ) : (
                       <IconUser size={16} />
                     )

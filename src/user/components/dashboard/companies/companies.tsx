@@ -18,6 +18,7 @@ import {
   ScrollArea,
   Divider
 } from '@mantine/core';
+import DataView from '@components/common/loaders/DataView';
 import {
   IconBuildings,
   IconUserEdit,
@@ -145,10 +146,10 @@ const CompanyActions: React.FC<{
   isMobile?: boolean;
   color: string;
 }> = ({ companyId, onEdit, color, isMobile = false }) => (
-  <Group gap="xs" justify="center">
-    <Tooltip label="Edit Company Details">
+  <Group gap='xs' justify='center'>
+    <Tooltip label='Edit Company Details'>
       <ActionIcon
-        variant="subtle"
+        variant='subtle'
         color={color}
         onClick={() => onEdit(companyId)}
         size={isMobile ? 'md' : 'sm'}
@@ -173,18 +174,18 @@ const MobileCompanyCard: React.FC<{
     <Card
       key={company.id}
       id={`company-${company.id}`}
-      shadow="sm"
-      p="md"
-      mb="sm"
+      shadow='sm'
+      p='md'
+      mb='sm'
       withBorder
     >
-      <Stack gap="sm">
+      <Stack gap='sm'>
         {/* Header Section */}
-        <Group justify="space-between" align="center">
-          <Badge variant="filled" color={color}>
+        <Group justify='space-between' align='center'>
+          <Badge variant='filled' color={color}>
             #{index + 1 + (activePage - 1) * itemsPerPage}
           </Badge>
-          <Badge size="sm" color="teal" variant="light">
+          <Badge size='sm' color='teal' variant='light'>
             {company.status || 'N/A'}
           </Badge>
         </Group>
@@ -193,10 +194,10 @@ const MobileCompanyCard: React.FC<{
 
         {/* Company Name */}
         <Stack gap={2}>
-          <Text size="xs" fw={600} c="dimmed">
+          <Text size='xs' fw={600} c='dimmed'>
             Company Name
           </Text>
-          <Text size="lg" fw={700}>
+          <Text size='lg' fw={700}>
             {company.companyName}
           </Text>
         </Stack>
@@ -205,30 +206,30 @@ const MobileCompanyCard: React.FC<{
 
         {/* Primary Contact */}
         <Stack gap={4}>
-          <Text size="xs" fw={600} c="dimmed">
+          <Text size='xs' fw={600} c='dimmed'>
             Primary Contact
           </Text>
           <Group grow>
             <Stack gap={2}>
-              <Text size="xs" c="dimmed">
+              <Text size='xs' c='dimmed'>
                 Name
               </Text>
-              <Text size="sm">{company.primaryContact.name}</Text>
+              <Text size='sm'>{company.primaryContact.name}</Text>
             </Stack>
           </Group>
           <Stack gap={2}>
-            <Text size="xs" c="dimmed">
+            <Text size='xs' c='dimmed'>
               Email
             </Text>
-            <Text size="sm" lineClamp={1}>
+            <Text size='sm' lineClamp={1}>
               {company.primaryContact.email}
             </Text>
           </Stack>
           <Stack gap={2}>
-            <Text size="xs" c="dimmed">
+            <Text size='xs' c='dimmed'>
               Phone
             </Text>
-            <Text size="sm">{company.primaryContact.phone}</Text>
+            <Text size='sm'>{company.primaryContact.phone}</Text>
           </Stack>
         </Stack>
 
@@ -236,30 +237,30 @@ const MobileCompanyCard: React.FC<{
 
         {/* Secondary Contact 1 */}
         <Stack gap={4}>
-          <Text size="xs" fw={600} c="dimmed">
+          <Text size='xs' fw={600} c='dimmed'>
             Secondary Contact 1
           </Text>
           <Group grow>
             <Stack gap={2}>
-              <Text size="xs" c="dimmed">
+              <Text size='xs' c='dimmed'>
                 Name
               </Text>
-              <Text size="sm">{company.secondaryContact_1.name || 'N/A'}</Text>
+              <Text size='sm'>{company.secondaryContact_1.name || 'N/A'}</Text>
             </Stack>
           </Group>
           <Stack gap={2}>
-            <Text size="xs" c="dimmed">
+            <Text size='xs' c='dimmed'>
               Email
             </Text>
-            <Text size="sm" lineClamp={1}>
+            <Text size='sm' lineClamp={1}>
               {company.secondaryContact_1.email || 'N/A'}
             </Text>
           </Stack>
           <Stack gap={2}>
-            <Text size="xs" c="dimmed">
+            <Text size='xs' c='dimmed'>
               Phone
             </Text>
-            <Text size="sm">{company.secondaryContact_1.phone || 'N/A'}</Text>
+            <Text size='sm'>{company.secondaryContact_1.phone || 'N/A'}</Text>
           </Stack>
         </Stack>
 
@@ -267,30 +268,30 @@ const MobileCompanyCard: React.FC<{
 
         {/* Secondary Contact 2 */}
         <Stack gap={4}>
-          <Text size="xs" fw={600} c="dimmed">
+          <Text size='xs' fw={600} c='dimmed'>
             Secondary Contact 2
           </Text>
           <Group grow>
             <Stack gap={2}>
-              <Text size="xs" c="dimmed">
+              <Text size='xs' c='dimmed'>
                 Name
               </Text>
-              <Text size="sm">{company.secondaryContact_2.name || 'N/A'}</Text>
+              <Text size='sm'>{company.secondaryContact_2.name || 'N/A'}</Text>
             </Stack>
           </Group>
           <Stack gap={2}>
-            <Text size="xs" c="dimmed">
+            <Text size='xs' c='dimmed'>
               Email
             </Text>
-            <Text size="sm" lineClamp={1}>
+            <Text size='sm' lineClamp={1}>
               {company.secondaryContact_2.email || 'N/A'}
             </Text>
           </Stack>
           <Stack gap={2}>
-            <Text size="xs" c="dimmed">
+            <Text size='xs' c='dimmed'>
               Phone
             </Text>
-            <Text size="sm">{company.secondaryContact_2.phone || 'N/A'}</Text>
+            <Text size='sm'>{company.secondaryContact_2.phone || 'N/A'}</Text>
           </Stack>
         </Stack>
 
@@ -298,10 +299,10 @@ const MobileCompanyCard: React.FC<{
 
         {/* Last Update */}
         <Stack gap={2}>
-          <Text size="xs" fw={600} c="dimmed">
+          <Text size='xs' fw={600} c='dimmed'>
             Last Updated
           </Text>
-          <Text size="sm">
+          <Text size='sm'>
             {moment(company.lastUpdatedAt).format('DD MMM YYYY')}
           </Text>
         </Stack>
@@ -309,7 +310,7 @@ const MobileCompanyCard: React.FC<{
         <Divider />
 
         {/* Actions */}
-        <Card.Section withBorder mt="sm" p="md" style={{ borderRadius: '8px' }}>
+        <Card.Section withBorder mt='sm' p='md' style={{ borderRadius: '8px' }}>
           <CompanyActions
             companyId={company.id}
             onEdit={onEdit}
@@ -335,12 +336,12 @@ const TableHeader: React.FC<{
     rowSpan?: number;
   }> = ({ field, children, rowSpan = 2 }) => (
     <Table.Th
-      className="border cursor-pointer select-none hover:bg-opacity-80 transition-colors"
+      className='border cursor-pointer select-none hover:bg-opacity-80 transition-colors'
       onClick={() => onSort(field)}
       rowSpan={rowSpan}
     >
-      <Group justify="center">
-        <Text size="sm" fw={500}>
+      <Group justify='center'>
+        <Text size='sm' fw={500}>
           {children}
         </Text>
         {sortConfig.field === field &&
@@ -362,86 +363,86 @@ const TableHeader: React.FC<{
     >
       <Table.Tr>
         <Table.Th
-          className="p-3 border text-center"
+          className='p-3 border text-center'
           rowSpan={2}
           style={{ minWidth: '60px' }}
         >
-          <Text size="sm" fw={500}>
+          <Text size='sm' fw={500}>
             S.No
           </Text>
         </Table.Th>
-        <SortableHeader field="companyName">Company Name</SortableHeader>
+        <SortableHeader field='companyName'>Company Name</SortableHeader>
         {!isTablet && (
           <>
-            <Table.Th className="p-3 border text-center" colSpan={3}>
-              <Text size="sm" fw={500}>
+            <Table.Th className='p-3 border text-center' colSpan={3}>
+              <Text size='sm' fw={500}>
                 Primary Contact
               </Text>
             </Table.Th>
-            <Table.Th className="p-3 border text-center" colSpan={3}>
-              <Text size="sm" fw={500}>
+            <Table.Th className='p-3 border text-center' colSpan={3}>
+              <Text size='sm' fw={500}>
                 Secondary Contact 1
               </Text>
             </Table.Th>
-            <Table.Th className="p-3 border text-center" colSpan={3}>
-              <Text size="sm" fw={500}>
+            <Table.Th className='p-3 border text-center' colSpan={3}>
+              <Text size='sm' fw={500}>
                 Secondary Contact 2
               </Text>
             </Table.Th>
           </>
         )}
-        <SortableHeader field="status">Status</SortableHeader>
-        <SortableHeader field="lastUpdatedAt">Last Update</SortableHeader>
-        <Table.Th className="p-3 border text-center" rowSpan={2}>
-          <Text size="sm" fw={500}>
+        <SortableHeader field='status'>Status</SortableHeader>
+        <SortableHeader field='lastUpdatedAt'>Last Update</SortableHeader>
+        <Table.Th className='p-3 border text-center' rowSpan={2}>
+          <Text size='sm' fw={500}>
             Actions
           </Text>
         </Table.Th>
       </Table.Tr>
       {!isTablet && (
         <Table.Tr>
-          <Table.Th className="p-2 border text-center">
-            <Text size="xs" fw={500}>
+          <Table.Th className='p-2 border text-center'>
+            <Text size='xs' fw={500}>
               Name
             </Text>
           </Table.Th>
-          <Table.Th className="p-2 border text-center">
-            <Text size="xs" fw={500}>
+          <Table.Th className='p-2 border text-center'>
+            <Text size='xs' fw={500}>
               Email
             </Text>
           </Table.Th>
-          <Table.Th className="p-2 border text-center">
-            <Text size="xs" fw={500}>
+          <Table.Th className='p-2 border text-center'>
+            <Text size='xs' fw={500}>
               Phone
             </Text>
           </Table.Th>
-          <Table.Th className="p-2 border text-center">
-            <Text size="xs" fw={500}>
+          <Table.Th className='p-2 border text-center'>
+            <Text size='xs' fw={500}>
               Name
             </Text>
           </Table.Th>
-          <Table.Th className="p-2 border text-center">
-            <Text size="xs" fw={500}>
+          <Table.Th className='p-2 border text-center'>
+            <Text size='xs' fw={500}>
               Email
             </Text>
           </Table.Th>
-          <Table.Th className="p-2 border text-center">
-            <Text size="xs" fw={500}>
+          <Table.Th className='p-2 border text-center'>
+            <Text size='xs' fw={500}>
               Phone
             </Text>
           </Table.Th>
-          <Table.Th className="p-2 border text-center">
-            <Text size="xs" fw={500}>
+          <Table.Th className='p-2 border text-center'>
+            <Text size='xs' fw={500}>
               Name
             </Text>
           </Table.Th>
-          <Table.Th className="p-2 border text-center">
-            <Text size="xs" fw={500}>
+          <Table.Th className='p-2 border text-center'>
+            <Text size='xs' fw={500}>
               Email
             </Text>
           </Table.Th>
-          <Table.Th className="p-2 border text-center">
-            <Text size="xs" fw={500}>
+          <Table.Th className='p-2 border text-center'>
+            <Text size='xs' fw={500}>
               Phone
             </Text>
           </Table.Th>
@@ -456,12 +457,12 @@ const HeadingComponent: React.FC<{
   handleAddCompany: () => void;
   isMobile?: boolean;
 }> = ({ filteredCompanies = 0, handleAddCompany, isMobile = false }) => (
-  <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder mt="xl">
+  <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md' withBorder mt='xl'>
     <Flex
       direction={isMobile ? 'column' : 'row'}
-      justify="space-between"
-      align="center"
-      gap="md"
+      justify='space-between'
+      align='center'
+      gap='md'
     >
       <Text
         size={isMobile ? 'lg' : 'xl'}
@@ -473,10 +474,10 @@ const HeadingComponent: React.FC<{
       <Button
         leftSection={<IconPlus size={16} />}
         onClick={handleAddCompany}
-        variant="filled"
+        variant='filled'
         fullWidth={isMobile}
         size={isMobile ? 'md' : 'sm'}
-        radius="md"
+        radius='md'
       >
         Add Company
       </Button>
@@ -613,12 +614,12 @@ const Companies = () => {
     const errorMessage =
       (error as any)?.response?.data?.message || 'Failed to load companies';
     return (
-      <Container size={isMobile ? 'sm' : 'lg'} py="xl">
-        <Card shadow="sm" p="lg" radius="md" withBorder>
-          <Text ta="center" size="lg">
+      <Container size={isMobile ? 'sm' : 'lg'} py='xl'>
+        <Card shadow='sm' p='lg' radius='md' withBorder>
+          <Text ta='center' size='lg'>
             {errorMessage}
           </Text>
-          <Center mt="md">
+          <Center mt='md'>
             <Button onClick={() => window.location.reload()}>Try Again</Button>
           </Center>
         </Card>
@@ -627,8 +628,8 @@ const Companies = () => {
   }
 
   return (
-    <Container size="xl" py="md" my="xl" px={isSmallMobile ? 'xs' : 'md'}>
-      <Stack gap="md">
+    <Container size='xl' py='md' my='xl' px={isSmallMobile ? 'xs' : 'md'}>
+      <Stack gap='md'>
         {/* Header */}
         <HeadingComponent
           filteredCompanies={filteredCompanies.length}
@@ -637,31 +638,31 @@ const Companies = () => {
         />
 
         {/* Filters */}
-        <Card shadow="sm" p={isMobile ? 'sm' : 'md'} radius="md" withBorder>
-          <Stack gap="md">
+        <Card shadow='sm' p={isMobile ? 'sm' : 'md'} radius='md' withBorder>
+          <Stack gap='md'>
             <Group grow={!isMobile}>
               <TextInput
-                placeholder="Search by company name, contact name, email, or phone..."
+                placeholder='Search by company name, contact name, email, or phone...'
                 leftSection={<IconSearch size={16} />}
                 onChange={e => debouncedSearch(e.target.value)}
-                radius="md"
+                radius='md'
                 size={isMobile ? 'sm' : 'md'}
               />
               <Select
-                placeholder="Filter by status"
+                placeholder='Filter by status'
                 data={uniqueStatuses}
                 value={statusFilter}
                 onChange={value => setStatusFilter(value ?? '')}
                 clearable
                 leftSection={<IconFilter size={16} />}
-                radius="md"
+                radius='md'
                 size={isMobile ? 'sm' : 'md'}
               />
             </Group>
 
-            <Group justify="space-between" wrap={isMobile ? 'wrap' : 'nowrap'}>
-              <Group gap="xs">
-                <Text size="sm">Items per page:</Text>
+            <Group justify='space-between' wrap={isMobile ? 'wrap' : 'nowrap'}>
+              <Group gap='xs'>
+                <Text size='sm'>Items per page:</Text>
                 <Select
                   data={ITEMS_PER_PAGE_OPTIONS}
                   value={itemsPerPage.toString()}
@@ -669,12 +670,12 @@ const Companies = () => {
                     setItemsPerPage(Number(value) || DEFAULT_ITEMS_PER_PAGE)
                   }
                   w={80}
-                  size="sm"
+                  size='sm'
                 />
               </Group>
 
               {filteredCompanies.length !== companies.length && (
-                <Badge variant="light" color="blue">
+                <Badge variant='light' color='blue'>
                   {filteredCompanies.length} of {companies.length} companies
                 </Badge>
               )}
@@ -682,196 +683,195 @@ const Companies = () => {
           </Stack>
         </Card>
 
-        {/* Table or Cards based on screen size */}
-        <Card shadow="sm" p={0} radius="md" withBorder>
-          {isLoading ? (
-            <Center p="xl">
-              <Stack align="center" gap="md">
-                <Loader size="xl" />
-                <Text>Loading companies...</Text>
-              </Stack>
-            </Center>
-          ) : isMobile ? (
-            // Mobile Card View
-            <ScrollArea p="md">
-              <Stack gap="sm">
-                {paginatedCompanies.length > 0 ? (
-                  paginatedCompanies.map((company, index) => (
-                    <MobileCompanyCard
-                      key={company.id}
-                      color={currentThemeConfig.button.color}
-                      company={company}
-                      index={index}
-                      activePage={activePage}
-                      itemsPerPage={itemsPerPage}
-                      onEdit={handleCompanyEdit}
-                    />
-                  ))
-                ) : (
-                  <Card p="xl" withBorder>
-                    <Stack align="center" gap="md">
-                      <Text size="lg" ta="center">
-                        No companies found
-                      </Text>
-                      <Text size="sm" ta="center">
-                        {searchQuery || statusFilter
-                          ? 'Try adjusting your search or filters'
-                          : 'Start by adding your first company'}
-                      </Text>
-                      {!searchQuery && !statusFilter && (
-                        <Button
-                          variant="light"
-                          leftSection={<IconPlus size={16} />}
-                          onClick={handleAddCompany}
-                          fullWidth={isSmallMobile}
-                        >
-                          Add Company
-                        </Button>
-                      )}
-                    </Stack>
-                  </Card>
-                )}
-              </Stack>
-            </ScrollArea>
-          ) : (
-            // Desktop/Tablet Table View
-            <div
-              ref={scrollRef}
-              onMouseDown={handleMouseDown}
-              onMouseMove={handleMouseMove}
-              onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseUp}
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
-              style={{
-                overflowX: 'auto'
-              }}
-            >
-              <Table stickyHeader withTableBorder withColumnBorders>
-                <TableHeader
-                  sortConfig={sortConfig}
-                  onSort={handleSort}
-                  themeConfig={currentThemeConfig}
-                  isTablet={isTablet}
-                />
-                <Table.Tbody>
+        <Card shadow='sm' p={0} radius='md' withBorder>
+          <DataView
+            isLoading={isLoading}
+            error={error}
+            label='companies'
+            isEmpty={paginatedCompanies.length === 0 && !isLoading}
+          >
+            {isMobile ? (
+              // Mobile Card View
+              <ScrollArea p='md'>
+                <Stack gap='sm'>
                   {paginatedCompanies.length > 0 ? (
                     paginatedCompanies.map((company, index) => (
-                      <Table.Tr
+                      <MobileCompanyCard
                         key={company.id}
-                        id={`company-${company.id}`}
-                        className="transition-colors"
-                      >
-                        <Table.Td className="text-center p-3">
-                          <Text size="sm">
-                            {index + 1 + (activePage - 1) * itemsPerPage}
-                          </Text>
-                        </Table.Td>
-                        <Table.Td className="p-3">
-                          <Text size="sm" fw={500}>
-                            {company.companyName}
-                          </Text>
-                        </Table.Td>
-                        {!isTablet && (
-                          <>
-                            <Table.Td className="p-3">
-                              <Text size="sm">
-                                {company.primaryContact.name}
-                              </Text>
-                            </Table.Td>
-                            <Table.Td className="p-3">
-                              <Text size="sm" truncate>
-                                {company.primaryContact.email}
-                              </Text>
-                            </Table.Td>
-                            <Table.Td className="p-3">
-                              <Text size="sm">
-                                {company.primaryContact.phone}
-                              </Text>
-                            </Table.Td>
-                            <Table.Td className="p-3">
-                              <Text size="sm">
-                                {company.secondaryContact_1.name || 'N/A'}
-                              </Text>
-                            </Table.Td>
-                            <Table.Td className="p-3">
-                              <Text size="sm" truncate>
-                                {company.secondaryContact_1.email || 'N/A'}
-                              </Text>
-                            </Table.Td>
-                            <Table.Td className="p-3">
-                              <Text size="sm">
-                                {company.secondaryContact_1.phone || 'N/A'}
-                              </Text>
-                            </Table.Td>
-                            <Table.Td className="p-3">
-                              <Text size="sm">
-                                {company.secondaryContact_2.name || 'N/A'}
-                              </Text>
-                            </Table.Td>
-                            <Table.Td className="p-3">
-                              <Text size="sm" truncate>
-                                {company.secondaryContact_2.email || 'N/A'}
-                              </Text>
-                            </Table.Td>
-                            <Table.Td className="p-3">
-                              <Text size="sm">
-                                {company.secondaryContact_2.phone || 'N/A'}
-                              </Text>
-                            </Table.Td>
-                          </>
-                        )}
-                        <Table.Td className="p-3 text-center">
-                          <Text size="sm">{company.status || 'N/A'}</Text>
-                        </Table.Td>
-
-                        <Table.Td className="p-3 text-center">
-                          <Text size="sm">
-                            {moment(company.lastUpdatedAt).format(
-                              'DD MMM YYYY'
-                            )}
-                          </Text>
-                        </Table.Td>
-                        <Table.Td className="p-3">
-                          <CompanyActions
-                            color={currentThemeConfig.button.color}
-                            companyId={company.id}
-                            onEdit={handleCompanyEdit}
-                          />
-                        </Table.Td>
-                      </Table.Tr>
+                        color={currentThemeConfig.button.color}
+                        company={company}
+                        index={index}
+                        activePage={activePage}
+                        itemsPerPage={itemsPerPage}
+                        onEdit={handleCompanyEdit}
+                      />
                     ))
                   ) : (
-                    <Table.Tr>
-                      <Table.Td
-                        colSpan={isTablet ? 5 : 14}
-                        className="text-center p-8"
-                      >
-                        <Stack align="center" gap="md">
-                          <Text size="lg">No companies found</Text>
-                          <Text size="sm">
-                            {searchQuery || statusFilter
-                              ? 'Try adjusting your search or filters'
-                              : 'Start by adding your first company'}
-                          </Text>
-                          {!searchQuery && !statusFilter && (
-                            <Button
-                              variant="light"
-                              leftSection={<IconPlus size={16} />}
-                              onClick={handleAddCompany}
-                            >
-                              Add Company
-                            </Button>
-                          )}
-                        </Stack>
-                      </Table.Td>
-                    </Table.Tr>
+                    <Card p='xl' withBorder>
+                      <Stack align='center' gap='md'>
+                        <Text size='lg' ta='center'>
+                          No companies found
+                        </Text>
+                        <Text size='sm' ta='center'>
+                          {searchQuery || statusFilter
+                            ? 'Try adjusting your search or filters'
+                            : 'Start by adding your first company'}
+                        </Text>
+                        {!searchQuery && !statusFilter && (
+                          <Button
+                            variant='light'
+                            leftSection={<IconPlus size={16} />}
+                            onClick={handleAddCompany}
+                            fullWidth={isSmallMobile}
+                          >
+                            Add Company
+                          </Button>
+                        )}
+                      </Stack>
+                    </Card>
                   )}
-                </Table.Tbody>
-              </Table>
-            </div>
-          )}
+                </Stack>
+              </ScrollArea>
+            ) : (
+              // Desktop/Tablet Table View
+              <div
+                ref={scrollRef}
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseUp}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+                style={{
+                  overflowX: 'auto'
+                }}
+              >
+                <Table stickyHeader withTableBorder withColumnBorders>
+                  <TableHeader
+                    sortConfig={sortConfig}
+                    onSort={handleSort}
+                    themeConfig={currentThemeConfig}
+                    isTablet={isTablet}
+                  />
+                  <Table.Tbody>
+                    {paginatedCompanies.length > 0 ? (
+                      paginatedCompanies.map((company, index) => (
+                        <Table.Tr
+                          key={company.id}
+                          id={`company-${company.id}`}
+                          className='transition-colors'
+                        >
+                          <Table.Td className='text-center p-3'>
+                            <Text size='sm'>
+                              {index + 1 + (activePage - 1) * itemsPerPage}
+                            </Text>
+                          </Table.Td>
+                          <Table.Td className='p-3'>
+                            <Text size='sm' fw={500}>
+                              {company.companyName}
+                            </Text>
+                          </Table.Td>
+                          {!isTablet && (
+                            <>
+                              <Table.Td className='p-3'>
+                                <Text size='sm'>
+                                  {company.primaryContact.name}
+                                </Text>
+                              </Table.Td>
+                              <Table.Td className='p-3'>
+                                <Text size='sm' truncate>
+                                  {company.primaryContact.email}
+                                </Text>
+                              </Table.Td>
+                              <Table.Td className='p-3'>
+                                <Text size='sm'>
+                                  {company.primaryContact.phone}
+                                </Text>
+                              </Table.Td>
+                              <Table.Td className='p-3'>
+                                <Text size='sm'>
+                                  {company.secondaryContact_1.name || 'N/A'}
+                                </Text>
+                              </Table.Td>
+                              <Table.Td className='p-3'>
+                                <Text size='sm' truncate>
+                                  {company.secondaryContact_1.email || 'N/A'}
+                                </Text>
+                              </Table.Td>
+                              <Table.Td className='p-3'>
+                                <Text size='sm'>
+                                  {company.secondaryContact_1.phone || 'N/A'}
+                                </Text>
+                              </Table.Td>
+                              <Table.Td className='p-3'>
+                                <Text size='sm'>
+                                  {company.secondaryContact_2.name || 'N/A'}
+                                </Text>
+                              </Table.Td>
+                              <Table.Td className='p-3'>
+                                <Text size='sm' truncate>
+                                  {company.secondaryContact_2.email || 'N/A'}
+                                </Text>
+                              </Table.Td>
+                              <Table.Td className='p-3'>
+                                <Text size='sm'>
+                                  {company.secondaryContact_2.phone || 'N/A'}
+                                </Text>
+                              </Table.Td>
+                            </>
+                          )}
+                          <Table.Td className='p-3 text-center'>
+                            <Text size='sm'>{company.status || 'N/A'}</Text>
+                          </Table.Td>
+
+                          <Table.Td className='p-3 text-center'>
+                            <Text size='sm'>
+                              {moment(company.lastUpdatedAt).format(
+                                'DD MMM YYYY'
+                              )}
+                            </Text>
+                          </Table.Td>
+                          <Table.Td className='p-3'>
+                            <CompanyActions
+                              color={currentThemeConfig.button.color}
+                              companyId={company.id}
+                              onEdit={handleCompanyEdit}
+                            />
+                          </Table.Td>
+                        </Table.Tr>
+                      ))
+                    ) : (
+                      <Table.Tr>
+                        <Table.Td
+                          colSpan={isTablet ? 5 : 14}
+                          className='text-center p-8'
+                        >
+                          <Stack align='center' gap='md'>
+                            <Text size='lg'>No companies found</Text>
+                            <Text size='sm'>
+                              {searchQuery || statusFilter
+                                ? 'Try adjusting your search or filters'
+                                : 'Start by adding your first company'}
+                            </Text>
+                            {!searchQuery && !statusFilter && (
+                              <Button
+                                variant='light'
+                                leftSection={<IconPlus size={16} />}
+                                onClick={handleAddCompany}
+                              >
+                                Add Company
+                              </Button>
+                            )}
+                          </Stack>
+                        </Table.Td>
+                      </Table.Tr>
+                    )}
+                  </Table.Tbody>
+                </Table>
+              </div>
+            )}
+          </DataView>
         </Card>
 
         {/* Pagination */}
@@ -882,7 +882,7 @@ const Companies = () => {
               onChange={setActivePage}
               total={totalPages}
               size={isMobile ? 'sm' : 'md'}
-              radius="md"
+              radius='md'
               withEdges
             />
           </Center>

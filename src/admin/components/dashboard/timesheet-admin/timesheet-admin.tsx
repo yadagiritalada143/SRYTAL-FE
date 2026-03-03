@@ -6,12 +6,13 @@ import {
   Text,
   Button,
   Group,
-  LoadingOverlay,
   Badge,
   Modal,
   Title,
   TextInput
 } from '@mantine/core';
+import PremiumLoader from '@components/common/loaders/PremiumLoader';
+import DataView from '@components/common/loaders/DataView';
 import { DatePickerInput, DatesRangeValue } from '@mantine/dates';
 import { useDisclosure } from '@mantine/hooks';
 import { IconSearch, IconCheck, IconX } from '@tabler/icons-react';
@@ -183,11 +184,11 @@ export const EmployeeTimesheetUpdateByAdmin = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'approved':
-        return <Badge color="green">Approved</Badge>;
+        return <Badge color='green'>Approved</Badge>;
       case 'rejected':
-        return <Badge color="red">Rejected</Badge>;
+        return <Badge color='red'>Rejected</Badge>;
       default:
-        return <Badge color="yellow">Pending</Badge>;
+        return <Badge color='yellow'>Pending</Badge>;
     }
   };
 
@@ -202,25 +203,25 @@ export const EmployeeTimesheetUpdateByAdmin = () => {
   };
 
   return (
-    <Box p="md">
-      <Title order={2} mb="xl">
+    <Box p='md'>
+      <Title order={2} mb='xl'>
         Employee Timesheet Administration
       </Title>
 
       {/* Filters Section */}
       <Box
-        mb="xl"
-        p="md"
+        mb='xl'
+        p='md'
         style={{ border: '1px solid #ddd', borderRadius: '8px' }}
       >
-        <Group mb="md" justify="space-between">
+        <Group mb='md' justify='space-between'>
           <Text fw={500}>Filters</Text>
           <Button
-            variant="outline"
-            size="sm"
+            variant='outline'
+            size='sm'
             onClick={resetFilters}
             leftSection={<IconX size={16} />}
-            radius="md"
+            radius='md'
           >
             Clear Filters
           </Button>
@@ -228,8 +229,8 @@ export const EmployeeTimesheetUpdateByAdmin = () => {
 
         <Group grow>
           <Select
-            label="Status"
-            placeholder="Filter by status"
+            label='Status'
+            placeholder='Filter by status'
             data={[
               { value: 'pending', label: 'Pending' },
               { value: 'approved', label: 'Approved' },
@@ -241,8 +242,8 @@ export const EmployeeTimesheetUpdateByAdmin = () => {
           />
 
           <Select
-            label="Employee"
-            placeholder="Filter by employee"
+            label='Employee'
+            placeholder='Filter by employee'
             data={employees}
             value={selectedEmployee}
             onChange={setSelectedEmployee}
@@ -251,18 +252,18 @@ export const EmployeeTimesheetUpdateByAdmin = () => {
           />
 
           <DatePickerInput
-            type="range"
-            label="Date Range"
-            placeholder="Select date range"
+            type='range'
+            label='Date Range'
+            placeholder='Select date range'
             value={dateRange}
             onChange={setDateRange}
           />
         </Group>
 
         <TextInput
-          mt="md"
-          label="Search"
-          placeholder="Search by employee, project, task or comments"
+          mt='md'
+          label='Search'
+          placeholder='Search by employee, project, task or comments'
           leftSection={<IconSearch size={16} />}
           value={searchQuery}
           onChange={e => setSearchQuery(e.currentTarget.value)}
@@ -270,11 +271,9 @@ export const EmployeeTimesheetUpdateByAdmin = () => {
       </Box>
 
       {/* Timesheet Table */}
-      <Box pos="relative">
-        <LoadingOverlay visible={isLoading} overlayProps={{ blur: 2 }} />
-
+      <DataView isLoading={isLoading} label='timesheets'>
         {filteredTimesheets.length === 0 ? (
-          <Text ta="center" my="xl">
+          <Text ta='center' my='xl'>
             No timesheets found matching your criteria
           </Text>
         ) : (
@@ -301,11 +300,11 @@ export const EmployeeTimesheetUpdateByAdmin = () => {
                   <td>{getStatusBadge(timesheet.status)}</td>
                   <td>
                     {timesheet.status === 'pending' && (
-                      <Group gap="xs">
+                      <Group gap='xs'>
                         <Button
-                          size="xs"
-                          variant="outline"
-                          color="green"
+                          size='xs'
+                          variant='outline'
+                          color='green'
                           onClick={() => {
                             setSelectedTimesheet(timesheet);
                             open();
@@ -321,37 +320,37 @@ export const EmployeeTimesheetUpdateByAdmin = () => {
             </tbody>
           </Table>
         )}
-      </Box>
+      </DataView>
 
       {/* Status Update Modal */}
       <Modal
         opened={opened && selectedTimesheet !== null}
         onClose={close}
         title={`Review Timesheet - ${selectedTimesheet?.employeeName}`}
-        size="lg"
+        size='lg'
       >
         {selectedTimesheet && (
           <Box>
-            <Text mb="sm">
+            <Text mb='sm'>
               <strong>Date:</strong>{' '}
               {moment(selectedTimesheet.date).format('MMMM D, YYYY')}
             </Text>
-            <Text mb="sm">
+            <Text mb='sm'>
               <strong>Project:</strong> {selectedTimesheet.projectName}
             </Text>
-            <Text mb="sm">
+            <Text mb='sm'>
               <strong>Task:</strong> {selectedTimesheet.taskName}
             </Text>
-            <Text mb="sm">
+            <Text mb='sm'>
               <strong>Hours:</strong> {selectedTimesheet.hours}
             </Text>
-            <Text mb="md">
+            <Text mb='md'>
               <strong>Comments:</strong> {selectedTimesheet.comments}
             </Text>
 
-            <Group justify="center" mt="xl">
+            <Group justify='center' mt='xl'>
               <Button
-                color="red"
+                color='red'
                 leftSection={<IconX size={16} />}
                 onClick={() =>
                   handleStatusChange(selectedTimesheet.id, 'rejected')
@@ -360,7 +359,7 @@ export const EmployeeTimesheetUpdateByAdmin = () => {
                 Reject
               </Button>
               <Button
-                color="green"
+                color='green'
                 leftSection={<IconCheck size={16} />}
                 onClick={() =>
                   handleStatusChange(selectedTimesheet.id, 'approved')

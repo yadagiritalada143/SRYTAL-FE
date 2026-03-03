@@ -1,4 +1,5 @@
-import { Button, Loader, PasswordInput, TextInput, Modal } from '@mantine/core';
+import { Button, PasswordInput, TextInput, Modal } from '@mantine/core';
+import PremiumLoader from '@components/common/loaders/PremiumLoader';
 import { useForm } from 'react-hook-form';
 import { LoginForm, loginSchema } from '@forms/login';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -23,12 +24,16 @@ import { useAppTheme } from '@hooks/use-app-theme';
 
 const EmployeeLogin = () => {
   const { showSuccessToast, showErrorToast } = useCustomToast();
-  const { themeConfig: currentThemeConfig, organizationConfig, isDarkTheme } = useAppTheme();
+  const {
+    themeConfig: currentThemeConfig,
+    organizationConfig,
+    isDarkTheme
+  } = useAppTheme();
   const { organization } = useParams<{ organization: string }>();
-  
+
   const setUser = useSetRecoilState(userDetailsAtom);
   const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
-  
+
   const {
     register,
     formState: { errors, isSubmitting },
@@ -37,7 +42,6 @@ const EmployeeLogin = () => {
   const navigate = useNavigate();
 
   // Get the current theme configuration for form styling
-  
 
   const { backgroundColor, button, color, linkColor } = currentThemeConfig;
 
@@ -91,14 +95,14 @@ const EmployeeLogin = () => {
   };
   return (
     <ThemeBackground
-      className="flex h-screen w-full transition-colors duration-500 ease-out"
+      className='flex h-screen w-full transition-colors duration-500 ease-out'
       style={{
         background: `linear-gradient(135deg, ${backgroundColor} 0%, #f8f9fa 100%)`
       }}
     >
       {/* Left section */}
       <div
-        className="hidden md:flex w-1/2 flex-col items-center justify-center p-8 transition-all duration-500 ease-out"
+        className='hidden md:flex w-1/2 flex-col items-center justify-center p-8 transition-all duration-500 ease-out'
         style={{
           backgroundColor: backgroundColor,
           color: color,
@@ -110,25 +114,25 @@ const EmployeeLogin = () => {
         <img
           src={organizationConfig.organization_theme.logo}
           alt={organizationConfig.organization_name}
-          className="max-h-28 rounded-3xl object-contain transition-transform duration-300 ease-out hover:scale-105 mb-6"
+          className='max-h-28 rounded-3xl object-contain transition-transform duration-300 ease-out hover:scale-105 mb-6'
         />
 
         {/* Welcome text */}
-        <div className="text-center transition-colors duration-500 ease-out">
-          <h2 className="text-5xl font-bold mb-5">Welcome Back !</h2>
-          <div className="flex items-center justify-center gap-2 mb-2">
+        <div className='text-center transition-colors duration-500 ease-out'>
+          <h2 className='text-5xl font-bold mb-5'>Welcome Back !</h2>
+          <div className='flex items-center justify-center gap-2 mb-2'>
             <div
-              className="w-8 h-0.5 transition-colors duration-500 ease-out"
+              className='w-8 h-0.5 transition-colors duration-500 ease-out'
               style={{ backgroundColor: currentThemeConfig.button.color }}
             />
             <span
-              className="text-sm font-medium uppercase tracking-wider transition-colors duration-500 ease-out"
+              className='text-sm font-medium uppercase tracking-wider transition-colors duration-500 ease-out'
               style={{ color: currentThemeConfig.button.color }}
             >
               Employee Portal
             </span>
             <div
-              className="w-8 h-0.5 transition-colors duration-500 ease-out"
+              className='w-8 h-0.5 transition-colors duration-500 ease-out'
               style={{ backgroundColor: currentThemeConfig.button.color }}
             />
           </div>
@@ -136,25 +140,25 @@ const EmployeeLogin = () => {
       </div>
 
       {/* Right section */}
-      <div className="flex w-full md:w-1/2 justify-center items-center px-6">
+      <div className='flex w-full md:w-1/2 justify-center items-center px-6'>
         <ThemeForm
           onSubmit={handleSubmit(Submit)}
-          className="shadow-lg border rounded-2xl p-8 max-w-md w-full transition-all duration-500 ease-out"
+          className='shadow-lg border rounded-2xl p-8 max-w-md w-full transition-all duration-500 ease-out'
         >
           <h1
-            className="text-3xl font-bold text-center mb-6 transition-colors duration-500 ease-out"
+            className='text-3xl font-bold text-center mb-6 transition-colors duration-500 ease-out'
             style={{ color }}
           >
             Employee Login
           </h1>
 
           {/* Email input */}
-          <div className="mb-4">
+          <div className='mb-4'>
             <TextInput
               {...register('email')}
-              label="Email"
-              autoComplete="off"
-              placeholder="Enter your email"
+              label='Email'
+              autoComplete='off'
+              placeholder='Enter your email'
               error={errors.email?.message}
               classNames={{
                 input: 'rounded-xl shadow-sm focus:border-blue-500',
@@ -165,11 +169,11 @@ const EmployeeLogin = () => {
           </div>
 
           {/* Password input */}
-          <div className="mb-4">
+          <div className='mb-4'>
             <PasswordInput
               {...register('password')}
-              label="Password"
-              placeholder="Password"
+              label='Password'
+              placeholder='Password'
               error={errors.password?.message}
               leftSection={
                 <span>
@@ -180,11 +184,11 @@ const EmployeeLogin = () => {
           </div>
 
           {/* Forgot password */}
-          <div className="flex justify-end items-center mt-4 mb-6">
+          <div className='flex justify-end items-center mt-4 mb-6'>
             <button
-              type="button"
+              type='button'
               onClick={() => setForgotPasswordOpen(true)}
-              className="text-sm hover:underline transition-colors"
+              className='text-sm hover:underline transition-colors'
               style={{ color: linkColor }}
             >
               Forgot Password?
@@ -193,9 +197,9 @@ const EmployeeLogin = () => {
 
           {/* Login button */}
           <Button
-            type="submit"
-            data-testid="loginButton"
-            className="w-full rounded-full font-semibold transition-all duration-200"
+            type='submit'
+            data-testid='loginButton'
+            className='w-full rounded-full font-semibold transition-all duration-200'
             disabled={isSubmitting}
             style={{
               color: button.textColor,
@@ -215,7 +219,7 @@ const EmployeeLogin = () => {
             }}
             leftSection={
               isSubmitting ? (
-                <Loader size="xs" color={button.textColor} />
+                <PremiumLoader size='xs' minHeight='20px' />
               ) : (
                 <IconLogin2 size={18} />
               )
@@ -230,9 +234,9 @@ const EmployeeLogin = () => {
       <Modal
         opened={forgotPasswordOpen}
         onClose={() => setForgotPasswordOpen(false)}
-        title="Forgot Password"
+        title='Forgot Password'
         centered
-        size="md"
+        size='md'
       >
         <ForgotPassword closeModal={() => setForgotPasswordOpen(false)} />
       </Modal>

@@ -7,9 +7,9 @@ import {
   Textarea,
   Card,
   Stack,
-  Text,
-  Loader
+  Text
 } from '@mantine/core';
+import PremiumLoader from '@components/common/loaders/PremiumLoader';
 import React from 'react';
 import { AddCommentForm, commentSchema } from '@forms/add-candidate';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -57,22 +57,22 @@ const AddComment = ({ candidateId }: AddCommentProps) => {
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto my-6">
-      <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder>
-        <Stack gap="md">
+    <div className='w-full max-w-3xl mx-auto my-6'>
+      <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md' withBorder>
+        <Stack gap='md'>
           <Text size={isMobile ? 'lg' : 'xl'} fw={700}>
             Add Comment
           </Text>
 
           <form onSubmit={handleSubmit(handleAddComment)}>
-            <Stack gap="md">
+            <Stack gap='md'>
               <Controller
-                name="comment"
+                name='comment'
                 control={control}
                 render={({ field }) => (
                   <Textarea
-                    label="Comment"
-                    placeholder="Enter your comment here..."
+                    label='Comment'
+                    placeholder='Enter your comment here...'
                     autosize
                     minRows={4}
                     maxRows={8}
@@ -84,10 +84,10 @@ const AddComment = ({ candidateId }: AddCommentProps) => {
                 )}
               />
 
-              <Grid gutter="md">
+              <Grid gutter='md'>
                 <Grid.Col span={{ base: 12, sm: 6 }}>
                   <Controller
-                    name="callStartsAt"
+                    name='callStartsAt'
                     control={control}
                     render={({ field }) => (
                       <DateTimePicker
@@ -99,8 +99,8 @@ const AddComment = ({ candidateId }: AddCommentProps) => {
                           )
                         }
                         clearable
-                        label="Call Start Time"
-                        placeholder="Pick date and time"
+                        label='Call Start Time'
+                        placeholder='Pick date and time'
                         error={errors?.callStartsAt?.message}
                         size={isMobile ? 'sm' : 'md'}
                         disabled={isSubmitting}
@@ -110,7 +110,7 @@ const AddComment = ({ candidateId }: AddCommentProps) => {
                 </Grid.Col>
                 <Grid.Col span={{ base: 12, sm: 6 }}>
                   <Controller
-                    name="callEndsAt"
+                    name='callEndsAt'
                     control={control}
                     render={({ field }) => (
                       <DateTimePicker
@@ -122,8 +122,8 @@ const AddComment = ({ candidateId }: AddCommentProps) => {
                           )
                         }
                         clearable
-                        label="Call End Time"
-                        placeholder="Pick date and time"
+                        label='Call End Time'
+                        placeholder='Pick date and time'
                         error={errors?.callEndsAt?.message}
                         size={isMobile ? 'sm' : 'md'}
                         disabled={isSubmitting}
@@ -133,15 +133,15 @@ const AddComment = ({ candidateId }: AddCommentProps) => {
                 </Grid.Col>
               </Grid>
 
-              <Group justify="flex-end" mt="md">
+              <Group justify='flex-end' mt='md'>
                 <Button
-                  type="submit"
+                  type='submit'
                   disabled={isSubmitting}
                   size={isMobile ? 'md' : 'sm'}
                   fullWidth={isMobile}
-                  radius="md"
+                  radius='md'
                   leftSection={
-                    isSubmitting && <Loader size="xs" color="white" />
+                    isSubmitting && <PremiumLoader size='xs' minHeight='20px' />
                   }
                 >
                   {isSubmitting ? 'Adding...' : 'Add Comment'}

@@ -1,23 +1,27 @@
 import {
   Button,
-  Loader,
-  TextInput,
-  Pagination,
-  Center,
-  Table,
-  Stack,
   Group,
   Text,
-  ActionIcon,
-  Tooltip,
-  Badge,
+  Loader,
+  Pagination,
+  Modal,
+  TextInput,
+  Center,
   Container,
   Card,
-  Flex,
+  Stack,
+  Table,
+  Badge,
+  ActionIcon,
+  Tooltip,
   Select,
   ScrollArea,
-  Divider
+  Flex,
+  Divider,
+  Skeleton
 } from '@mantine/core';
+import { useDisclosure, useMediaQuery } from '@mantine/hooks';
+import DataView from '@components/common/loaders/DataView';
 import {
   IconCalendarTime,
   IconPackage,
@@ -40,7 +44,6 @@ import { organizationAdminUrls } from '@utils/common/constants';
 import useHorizontalScroll from '@hooks/horizontal-scroll';
 import { debounce } from '@utils/common/debounce';
 import type { EmployeeInterface } from '@interfaces/employee';
-import { useMediaQuery } from '@mantine/hooks';
 import { useAppTheme } from '@hooks/use-app-theme';
 import { useGetAllEmployeesByAdmin } from '@hooks/queries/useAdminQueries';
 
@@ -125,32 +128,32 @@ const EmployeeActions: React.FC<{
   onTimesheet: (id: string) => void;
   isMobile?: boolean;
 }> = ({ employeeId, onEdit, onPackage, onTimesheet, isMobile = false }) => (
-  <Group gap="xs" justify="center">
-    <Tooltip label="Edit Employee Details">
+  <Group gap='xs' justify='center'>
+    <Tooltip label='Edit Employee Details'>
       <ActionIcon
-        variant="subtle"
-        color="blue"
+        variant='subtle'
+        color='blue'
         onClick={() => onEdit(employeeId)}
         size={isMobile ? 'md' : 'sm'}
       >
         <IconUser size={isMobile ? 18 : 16} />
       </ActionIcon>
     </Tooltip>
-    <Tooltip label="Update Package">
+    <Tooltip label='Update Package'>
       <ActionIcon
-        variant="subtle"
-        color="green"
+        variant='subtle'
+        color='green'
         onClick={() => onPackage(employeeId)}
         size={isMobile ? 'md' : 'sm'}
-        radius="md"
+        radius='md'
       >
         <IconPackage size={isMobile ? 18 : 16} />
       </ActionIcon>
     </Tooltip>
-    <Tooltip label="View Timesheet">
+    <Tooltip label='View Timesheet'>
       <ActionIcon
-        variant="subtle"
-        color="orange"
+        variant='subtle'
+        color='orange'
         onClick={() => onTimesheet(employeeId)}
         size={isMobile ? 'md' : 'sm'}
       >
@@ -182,18 +185,18 @@ const MobileEmployeeCard: React.FC<{
     <Card
       key={employee._id}
       id={`employee-${employee._id}`}
-      shadow="sm"
-      p="md"
-      mb="sm"
+      shadow='sm'
+      p='md'
+      mb='sm'
       withBorder
     >
-      <Stack gap="sm">
+      <Stack gap='sm'>
         {/* Header Section */}
-        <Group justify="space-between" align="center">
-          <Badge variant="filled" color="blue">
+        <Group justify='space-between' align='center'>
+          <Badge variant='filled' color='blue'>
             #{index + 1 + (activePage - 1) * itemsPerPage}
           </Badge>
-          <Badge size="sm" color="teal" variant="light">
+          <Badge size='sm' color='teal' variant='light'>
             {employee.userRole || 'N/A'}
           </Badge>
         </Group>
@@ -201,19 +204,19 @@ const MobileEmployeeCard: React.FC<{
         <Divider />
 
         {/* Basic Info Section */}
-        <Group grow align="start">
+        <Group grow align='start'>
           <Stack gap={2}>
-            <Text size="xs" fw={600} c="dimmed">
+            <Text size='xs' fw={600} c='dimmed'>
               Employee ID
             </Text>
-            <Text size="sm">{employee.employeeId || 'N/A'}</Text>
+            <Text size='sm'>{employee.employeeId || 'N/A'}</Text>
           </Stack>
 
           <Stack gap={2}>
-            <Text size="xs" fw={600} c="dimmed">
+            <Text size='xs' fw={600} c='dimmed'>
               Name
             </Text>
-            <Text size="sm">
+            <Text size='sm'>
               {employee.firstName} {employee.lastName}
             </Text>
           </Stack>
@@ -223,26 +226,26 @@ const MobileEmployeeCard: React.FC<{
 
         {/* Contact Section */}
         <Stack gap={4}>
-          <Text size="xs" fw={600} c="dimmed">
+          <Text size='xs' fw={600} c='dimmed'>
             Email
           </Text>
-          <Text size="sm" lineClamp={1}>
+          <Text size='sm' lineClamp={1}>
             {employee.email}
           </Text>
         </Stack>
 
         <Group grow>
           <Stack gap={2}>
-            <Text size="xs" fw={600} c="dimmed">
+            <Text size='xs' fw={600} c='dimmed'>
               Mobile
             </Text>
-            <Text size="sm">{employee.mobileNumber || 'N/A'}</Text>
+            <Text size='sm'>{employee.mobileNumber || 'N/A'}</Text>
           </Stack>
           <Stack gap={2}>
-            <Text size="xs" fw={600} c="dimmed">
+            <Text size='xs' fw={600} c='dimmed'>
               Blood Group
             </Text>
-            <Badge size="sm" variant="light" color="red">
+            <Badge size='sm' variant='light' color='red'>
               {employee.bloodGroup?.type || 'N/A'}
             </Badge>
           </Stack>
@@ -252,27 +255,27 @@ const MobileEmployeeCard: React.FC<{
 
         {/* Employment Info */}
         <Stack gap={2}>
-          <Text size="xs" fw={600} c="dimmed">
+          <Text size='xs' fw={600} c='dimmed'>
             Employment Type
           </Text>
-          <Text size="sm">
+          <Text size='sm'>
             {employee.employmentType?.employmentType || 'N/A'}
           </Text>
         </Stack>
 
         <Stack gap={4}>
-          <Text size="xs" fw={600} c="dimmed">
+          <Text size='xs' fw={600} c='dimmed'>
             Designations
           </Text>
-          <Group gap={6} wrap="wrap">
+          <Group gap={6} wrap='wrap'>
             {employee.employeeRole?.length ? (
               employee.employeeRole.map(role => (
-                <Badge key={role._id} size="xs" variant="outline" color="gray">
+                <Badge key={role._id} size='xs' variant='outline' color='gray'>
                   {role.designation}
                 </Badge>
               ))
             ) : (
-              <Text size="xs" c="dimmed">
+              <Text size='xs' c='dimmed'>
                 None
               </Text>
             )}
@@ -282,7 +285,7 @@ const MobileEmployeeCard: React.FC<{
         <Divider />
 
         {/* Actions */}
-        <Card.Section withBorder mt="sm" p="md" style={{ borderRadius: '8px' }}>
+        <Card.Section withBorder mt='sm' p='md' style={{ borderRadius: '8px' }}>
           <EmployeeActions
             employeeId={employee._id}
             onEdit={onEdit}
@@ -308,12 +311,12 @@ const TableHeader: React.FC<{
     children: React.ReactNode;
   }> = ({ field, children }) => (
     <Table.Th
-      className="border cursor-pointer select-none hover:bg-opacity-80 transition-colors"
+      className='border cursor-pointer select-none hover:bg-opacity-80 transition-colors'
       onClick={() => onSort(field)}
       style={{ minWidth: isTablet ? '120px' : 'auto' }}
     >
-      <Group justify="center">
-        <Text size="sm" fw={500}>
+      <Group justify='center'>
+        <Text size='sm' fw={500}>
           {children}
         </Text>
         {sortConfig.field === field &&
@@ -335,52 +338,52 @@ const TableHeader: React.FC<{
     >
       <Table.Tr>
         <Table.Th
-          className="p-3 border text-center"
+          className='p-3 border text-center'
           style={{ minWidth: '60px' }}
         >
-          <Text size="sm" fw={500}>
+          <Text size='sm' fw={500}>
             S.No
           </Text>
         </Table.Th>
-        <SortableHeader field="employeeId">Employee ID</SortableHeader>
-        <SortableHeader field="firstName">First Name</SortableHeader>
+        <SortableHeader field='employeeId'>Employee ID</SortableHeader>
+        <SortableHeader field='firstName'>First Name</SortableHeader>
         {!isTablet && (
-          <SortableHeader field="lastName">Last Name</SortableHeader>
+          <SortableHeader field='lastName'>Last Name</SortableHeader>
         )}
-        <SortableHeader field="email">Email</SortableHeader>
+        <SortableHeader field='email'>Email</SortableHeader>
         {!isTablet && (
-          <Table.Th className="p-3 border text-center">
-            <Text size="sm" fw={500}>
+          <Table.Th className='p-3 border text-center'>
+            <Text size='sm' fw={500}>
               Mobile
             </Text>
           </Table.Th>
         )}
-        <Table.Th className="p-3 border text-center">
-          <Text size="sm" fw={500}>
+        <Table.Th className='p-3 border text-center'>
+          <Text size='sm' fw={500}>
             Role
           </Text>
         </Table.Th>
         {!isTablet && (
           <>
-            <Table.Th className="p-3 border text-center">
-              <Text size="sm" fw={500}>
+            <Table.Th className='p-3 border text-center'>
+              <Text size='sm' fw={500}>
                 Employment
               </Text>
             </Table.Th>
-            <Table.Th className="p-3 border text-center">
-              <Text size="sm" fw={500}>
+            <Table.Th className='p-3 border text-center'>
+              <Text size='sm' fw={500}>
                 Blood Group
               </Text>
             </Table.Th>
           </>
         )}
-        <Table.Th className="p-3 border text-center">
-          <Text size="sm" fw={500}>
+        <Table.Th className='p-3 border text-center'>
+          <Text size='sm' fw={500}>
             Designations
           </Text>
         </Table.Th>
-        <Table.Th className="p-3 border text-center">
-          <Text size="sm" fw={500}>
+        <Table.Th className='p-3 border text-center'>
+          <Text size='sm' fw={500}>
             Actions
           </Text>
         </Table.Th>
@@ -394,12 +397,12 @@ const HeadingComponent: React.FC<{
   handleAddEmployee: () => void;
   isMobile?: boolean;
 }> = ({ filteredEmployees = 0, handleAddEmployee, isMobile = false }) => (
-  <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder mt="xl">
+  <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md' withBorder mt='xl'>
     <Flex
       direction={isMobile ? 'column' : 'row'}
-      justify="space-between"
-      align="center"
-      gap="md"
+      justify='space-between'
+      align='center'
+      gap='md'
     >
       <Text
         size={isMobile ? 'lg' : 'xl'}
@@ -411,10 +414,10 @@ const HeadingComponent: React.FC<{
       <Button
         leftSection={<IconPlus size={16} />}
         onClick={handleAddEmployee}
-        variant="filled"
+        variant='filled'
         fullWidth={isMobile}
         size={isMobile ? 'md' : 'sm'}
-        radius="md"
+        radius='md'
       >
         Add Employee
       </Button>
@@ -575,12 +578,12 @@ const Employees = () => {
 
   if (queryError) {
     return (
-      <Container size={isMobile ? 'sm' : 'lg'} py="xl">
-        <Card shadow="sm" p="lg" radius="md" withBorder>
-          <Text ta="center" size="lg">
+      <Container size={isMobile ? 'sm' : 'lg'} py='xl'>
+        <Card shadow='sm' p='lg' radius='md' withBorder>
+          <Text ta='center' size='lg'>
             Failed to load employees.
           </Text>
-          <Center mt="md">
+          <Center mt='md'>
             <Button onClick={() => window.location.reload()}>Try Again</Button>
           </Center>
         </Card>
@@ -589,8 +592,8 @@ const Employees = () => {
   }
 
   return (
-    <Container size="xl" py="md" my="xl" px={isSmallMobile ? 'xs' : 'md'}>
-      <Stack gap="md">
+    <Container size='xl' py='md' my='xl' px={isSmallMobile ? 'xs' : 'md'}>
+      <Stack gap='md'>
         {/* Header */}
         <HeadingComponent
           filteredEmployees={filteredEmployees.length}
@@ -599,33 +602,33 @@ const Employees = () => {
         />
 
         {/* Filters */}
-        <Card shadow="sm" p={isMobile ? 'sm' : 'md'} radius="md" withBorder>
-          <Stack gap="md">
+        <Card shadow='sm' p={isMobile ? 'sm' : 'md'} radius='md' withBorder>
+          <Stack gap='md'>
             <Group grow={!isMobile}>
               <TextInput
-                placeholder="Search by name, email, phone, or employee ID..."
+                placeholder='Search by name, email, phone, or employee ID...'
                 leftSection={<IconSearch size={16} />}
                 onChange={e => debouncedSearch(e.target.value)}
-                radius="md"
+                radius='md'
                 size={isMobile ? 'sm' : 'md'}
-                w="100%"
+                w='100%'
               />
               <Select
-                placeholder="Filter by role"
+                placeholder='Filter by role'
                 data={uniqueRoles.map(role => ({ value: role, label: role }))}
                 value={roleFilter}
                 onChange={value => setRoleFilter(value ?? '')}
                 clearable
                 leftSection={<IconFilter size={16} />}
-                radius="md"
+                radius='md'
                 size={isMobile ? 'sm' : 'md'}
-                w="100%"
+                w='100%'
               />
             </Group>
 
-            <Group justify="space-between" wrap={isMobile ? 'wrap' : 'nowrap'}>
-              <Group gap="xs">
-                <Text size="sm">Items per page:</Text>
+            <Group justify='space-between' wrap={isMobile ? 'wrap' : 'nowrap'}>
+              <Group gap='xs'>
+                <Text size='sm'>Items per page:</Text>
                 <Select
                   data={ITEMS_PER_PAGE_OPTIONS}
                   value={itemsPerPage.toString()}
@@ -633,12 +636,12 @@ const Employees = () => {
                     setItemsPerPage(Number(value) || DEFAULT_ITEMS_PER_PAGE)
                   }
                   w={80}
-                  size="sm"
+                  size='sm'
                 />
               </Group>
 
               {filteredEmployees.length !== employees.length && (
-                <Badge variant="light" color="blue">
+                <Badge variant='light' color='blue'>
                   {filteredEmployees.length} of {employees.length} employees
                 </Badge>
               )}
@@ -647,218 +650,219 @@ const Employees = () => {
         </Card>
 
         {/* Table or Cards based on screen size */}
-        <Card shadow="sm" p={0} radius="md" withBorder>
-          {isLoading ? (
-            <Center p="xl">
-              <Stack align="center" gap="md">
-                <Loader size="xl" />
-                <Text>Loading employees...</Text>
-              </Stack>
-            </Center>
-          ) : isMobile ? (
-            // Mobile Card View
-            <ScrollArea p="md">
-              <Stack gap="sm">
-                {paginatedEmployees.length > 0 ? (
-                  paginatedEmployees.map((employee, index) => (
-                    <MobileEmployeeCard
-                      key={employee._id}
-                      employee={employee}
-                      index={index}
-                      activePage={activePage}
-                      itemsPerPage={itemsPerPage}
-                      onEdit={handleEmployeeEdit}
-                      onPackage={handlePackageUpdate}
-                      onTimesheet={handleTimesheet}
-                    />
-                  ))
-                ) : (
-                  <Card p="xl" withBorder>
-                    <Stack align="center" gap="md">
-                      <Text size="lg" ta="center">
-                        No employees found
-                      </Text>
-                      <Text size="sm" ta="center">
-                        {searchQuery || roleFilter
-                          ? 'Try adjusting your search or filters'
-                          : 'Start by adding your first employee'}
-                      </Text>
-                      {!searchQuery && !roleFilter && (
-                        <Button
-                          variant="light"
-                          leftSection={<IconPlus size={16} />}
-                          onClick={handleAddEmployee}
-                          fullWidth={isSmallMobile}
-                        >
-                          Add Employee
-                        </Button>
-                      )}
-                    </Stack>
-                  </Card>
-                )}
-              </Stack>
-            </ScrollArea>
-          ) : (
-            // Desktop/Tablet Table View
-            <div
-              ref={scrollRef}
-              onMouseDown={handleMouseDown}
-              onMouseMove={handleMouseMove}
-              onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseUp}
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
-              style={{
-                overflowX: 'auto',
-                overflowY: 'scroll',
-                maxHeight: '600px'
-              }}
-            >
-              <Table
-                stickyHeader
-                withTableBorder
-                withColumnBorders
-                style={{ tableLayout: 'fixed' }}
-              >
-                <colgroup>
-                  <col style={{ width: '70px' }} />
-                  <col style={{ width: '120px' }} />
-                  <col style={{ width: '140px' }} />
-                  {!isTablet && <col style={{ width: '140px' }} />}
-                  <col style={{ width: '225px' }} />
-                  {!isTablet && <col style={{ width: '120px' }} />}
-                  <col style={{ width: '130px' }} />
-                  {!isTablet && <col style={{ width: '150px' }} />}
-                  {!isTablet && <col style={{ width: '100px' }} />}
-                  <col style={{ width: '170px' }} />
-                  <col style={{ width: '120px' }} />
-                </colgroup>
-
-                <TableHeader
-                  sortConfig={sortConfig}
-                  onSort={handleSort}
-                  themeConfig={currentThemeConfig}
-                  isTablet={isTablet}
-                />
-                <Table.Tbody>
+        <Card shadow='sm' p={0} radius='md' withBorder>
+          <DataView
+            isLoading={isLoading}
+            error={queryError}
+            label='employees'
+            onRetry={() => window.location.reload()}
+            isEmpty={paginatedEmployees.length === 0 && !isLoading}
+          >
+            {isMobile ? (
+              // Mobile Card View
+              <ScrollArea p='md'>
+                <Stack gap='sm'>
                   {paginatedEmployees.length > 0 ? (
                     paginatedEmployees.map((employee, index) => (
-                      <Table.Tr
+                      <MobileEmployeeCard
                         key={employee._id}
-                        id={`employee-${employee._id}`}
-                        className="transition-colors"
-                      >
-                        <Table.Td className="text-center py-2 px-1">
-                          <Text size="sm">
-                            {index + 1 + (activePage - 1) * itemsPerPage}
-                          </Text>
-                        </Table.Td>
-                        <Table.Td className="p-3">
-                          <Text size="sm" fw={500}>
-                            {employee.employeeId || 'N/A'}
-                          </Text>
-                        </Table.Td>
-                        <Table.Td className="p-3">
-                          <Text size="sm">{employee.firstName}</Text>
-                        </Table.Td>
-                        {!isTablet && (
-                          <Table.Td className="p-3">
-                            <Text size="sm">{employee.lastName}</Text>
-                          </Table.Td>
-                        )}
-                        <Table.Td className="p-3">
-                          <Text size="sm" lineClamp={1}>
-                            {employee.email}
-                          </Text>
-                        </Table.Td>
-                        {!isTablet && (
-                          <Table.Td className="p-3 text-center">
-                            <Text size="sm">
-                              {employee.mobileNumber || 'N/A'}
-                            </Text>
-                          </Table.Td>
-                        )}
-                        <Table.Td className="p-3 text-center">
-                          <Badge size="sm" color="teal" variant="light">
-                            {employee.userRole || 'N/A'}
-                          </Badge>
-                        </Table.Td>
-                        {!isTablet && (
-                          <>
-                            <Table.Td className="p-3 text-center">
-                              <Text size="sm">
-                                {employee.employmentType?.employmentType ||
-                                  'N/A'}
-                              </Text>
-                            </Table.Td>
-                            <Table.Td className="p-3 text-center">
-                              <Badge size="xs" variant="light" color="red">
-                                {employee.bloodGroup?.type || 'N/A'}
-                              </Badge>
-                            </Table.Td>
-                          </>
-                        )}
-                        <Table.Td className="p-3">
-                          <ScrollArea h={45}>
-                            <Group gap={4} wrap="wrap">
-                              {employee.employeeRole?.length ? (
-                                employee.employeeRole.map(role => (
-                                  <Badge
-                                    key={role._id}
-                                    size="xs"
-                                    variant="outline"
-                                    color="gray"
-                                  >
-                                    {role.designation}
-                                  </Badge>
-                                ))
-                              ) : (
-                                <Text size="xs" c="dimmed">
-                                  None
-                                </Text>
-                              )}
-                            </Group>
-                          </ScrollArea>
-                        </Table.Td>
-                        <Table.Td className="p-3">
-                          <EmployeeActions
-                            employeeId={employee._id}
-                            onEdit={handleEmployeeEdit}
-                            onPackage={handlePackageUpdate}
-                            onTimesheet={handleTimesheet}
-                            isMobile={isTablet}
-                          />
-                        </Table.Td>
-                      </Table.Tr>
+                        employee={employee}
+                        index={index}
+                        activePage={activePage}
+                        itemsPerPage={itemsPerPage}
+                        onEdit={handleEmployeeEdit}
+                        onPackage={handlePackageUpdate}
+                        onTimesheet={handleTimesheet}
+                      />
                     ))
                   ) : (
-                    <Table.Tr>
-                      <Table.Td colSpan={11} className="text-center p-8">
-                        <Stack align="center" gap="md">
-                          <Text size="lg">No employees found</Text>
-                          <Text size="sm">
-                            {searchQuery || roleFilter
-                              ? 'Try adjusting your search or filters'
-                              : 'Start by adding your first employee'}
-                          </Text>
-                          {!searchQuery && !roleFilter && (
-                            <Button
-                              variant="light"
-                              leftSection={<IconPlus size={16} />}
-                              onClick={handleAddEmployee}
-                            >
-                              Add Employee
-                            </Button>
-                          )}
-                        </Stack>
-                      </Table.Td>
-                    </Table.Tr>
+                    <Card p='xl' withBorder>
+                      <Stack align='center' gap='md'>
+                        <Text size='lg' ta='center'>
+                          No employees found
+                        </Text>
+                        <Text size='sm' ta='center'>
+                          {searchQuery || roleFilter
+                            ? 'Try adjusting your search or filters'
+                            : 'Start by adding your first employee'}
+                        </Text>
+                        {!searchQuery && !roleFilter && (
+                          <Button
+                            variant='light'
+                            leftSection={<IconPlus size={16} />}
+                            onClick={handleAddEmployee}
+                            fullWidth={isSmallMobile}
+                          >
+                            Add Employee
+                          </Button>
+                        )}
+                      </Stack>
+                    </Card>
                   )}
-                </Table.Tbody>
-              </Table>
-            </div>
-          )}
+                </Stack>
+              </ScrollArea>
+            ) : (
+              // Desktop/Tablet Table View
+              <div
+                ref={scrollRef}
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseUp}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+                style={{
+                  overflowX: 'auto',
+                  overflowY: 'scroll',
+                  maxHeight: '600px'
+                }}
+              >
+                <Table
+                  stickyHeader
+                  withTableBorder
+                  withColumnBorders
+                  style={{ tableLayout: 'fixed' }}
+                >
+                  <colgroup>
+                    <col style={{ width: '70px' }} />
+                    <col style={{ width: '120px' }} />
+                    <col style={{ width: '140px' }} />
+                    {!isTablet && <col style={{ width: '140px' }} />}
+                    <col style={{ width: '225px' }} />
+                    {!isTablet && <col style={{ width: '120px' }} />}
+                    <col style={{ width: '130px' }} />
+                    {!isTablet && <col style={{ width: '150px' }} />}
+                    {!isTablet && <col style={{ width: '100px' }} />}
+                    <col style={{ width: '170px' }} />
+                    <col style={{ width: '120px' }} />
+                  </colgroup>
+
+                  <TableHeader
+                    sortConfig={sortConfig}
+                    onSort={handleSort}
+                    themeConfig={currentThemeConfig}
+                    isTablet={isTablet}
+                  />
+                  <Table.Tbody>
+                    {paginatedEmployees.length > 0 ? (
+                      paginatedEmployees.map((employee, index) => (
+                        <Table.Tr
+                          key={employee._id}
+                          id={`employee-${employee._id}`}
+                          className='transition-colors'
+                        >
+                          <Table.Td className='text-center py-2 px-1'>
+                            <Text size='sm'>
+                              {index + 1 + (activePage - 1) * itemsPerPage}
+                            </Text>
+                          </Table.Td>
+                          <Table.Td className='p-3'>
+                            <Text size='sm' fw={500}>
+                              {employee.employeeId || 'N/A'}
+                            </Text>
+                          </Table.Td>
+                          <Table.Td className='p-3'>
+                            <Text size='sm'>{employee.firstName}</Text>
+                          </Table.Td>
+                          {!isTablet && (
+                            <Table.Td className='p-3'>
+                              <Text size='sm'>{employee.lastName}</Text>
+                            </Table.Td>
+                          )}
+                          <Table.Td className='p-3'>
+                            <Text size='sm' lineClamp={1}>
+                              {employee.email}
+                            </Text>
+                          </Table.Td>
+                          {!isTablet && (
+                            <Table.Td className='p-3 text-center'>
+                              <Text size='sm'>
+                                {employee.mobileNumber || 'N/A'}
+                              </Text>
+                            </Table.Td>
+                          )}
+                          <Table.Td className='p-3 text-center'>
+                            <Badge size='sm' color='teal' variant='light'>
+                              {employee.userRole || 'N/A'}
+                            </Badge>
+                          </Table.Td>
+                          {!isTablet && (
+                            <>
+                              <Table.Td className='p-3 text-center'>
+                                <Text size='sm'>
+                                  {employee.employmentType?.employmentType ||
+                                    'N/A'}
+                                </Text>
+                              </Table.Td>
+                              <Table.Td className='p-3 text-center'>
+                                <Badge size='xs' variant='light' color='red'>
+                                  {employee.bloodGroup?.type || 'N/A'}
+                                </Badge>
+                              </Table.Td>
+                            </>
+                          )}
+                          <Table.Td className='p-3'>
+                            <ScrollArea h={45}>
+                              <Group gap={4} wrap='wrap'>
+                                {employee.employeeRole?.length ? (
+                                  employee.employeeRole.map(role => (
+                                    <Badge
+                                      key={role._id}
+                                      size='xs'
+                                      variant='outline'
+                                      color='gray'
+                                    >
+                                      {role.designation}
+                                    </Badge>
+                                  ))
+                                ) : (
+                                  <Text size='xs' c='dimmed'>
+                                    None
+                                  </Text>
+                                )}
+                              </Group>
+                            </ScrollArea>
+                          </Table.Td>
+                          <Table.Td className='p-3'>
+                            <EmployeeActions
+                              employeeId={employee._id}
+                              onEdit={handleEmployeeEdit}
+                              onPackage={handlePackageUpdate}
+                              onTimesheet={handleTimesheet}
+                              isMobile={isTablet}
+                            />
+                          </Table.Td>
+                        </Table.Tr>
+                      ))
+                    ) : (
+                      <Table.Tr>
+                        <Table.Td colSpan={11} className='text-center p-8'>
+                          <Stack align='center' gap='md'>
+                            <Text size='lg'>No employees found</Text>
+                            <Text size='sm'>
+                              {searchQuery || roleFilter
+                                ? 'Try adjusting your search or filters'
+                                : 'Start by adding your first employee'}
+                            </Text>
+                            {!searchQuery && !roleFilter && (
+                              <Button
+                                variant='light'
+                                leftSection={<IconPlus size={16} />}
+                                onClick={handleAddEmployee}
+                              >
+                                Add Employee
+                              </Button>
+                            )}
+                          </Stack>
+                        </Table.Td>
+                      </Table.Tr>
+                    )}
+                  </Table.Tbody>
+                </Table>
+              </div>
+            )}
+          </DataView>
         </Card>
 
         {/* Pagination */}
@@ -870,7 +874,7 @@ const Employees = () => {
               total={totalPages}
               color={currentThemeConfig.button.color}
               size={isMobile ? 'sm' : 'md'}
-              radius="md"
+              radius='md'
               withEdges
             />
           </Center>

@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { MantineProvider, Center, Loader } from '@mantine/core';
 import { ModalsProvider } from '@mantine/modals';
 import { useAppTheme } from '@hooks/use-app-theme';
+import PremiumLoader from '@components/common/loaders/PremiumLoader';
 
 const Landing = lazy(() => import('@landing/pages/landing'));
 const AdminRoutes = lazy(() => import('./routes/admin'));
@@ -21,17 +22,7 @@ const App: React.FC = () => {
       <ModalsProvider>
         <Router>
           <Suspense
-            fallback={
-              <Center
-                h='100vh'
-                style={{
-                  backgroundColor: isDarkTheme ? '#1A1B1E' : '#FFFFFF',
-                  color: isDarkTheme ? '#C1C2C5' : '#000000'
-                }}
-              >
-                <Loader size='xl' type='bars' />
-              </Center>
-            }
+            fallback={<PremiumLoader label='SRYTAL' minHeight='100vh' />}
           >
             <Routes>
               <Route path='/' element={<Landing />} />

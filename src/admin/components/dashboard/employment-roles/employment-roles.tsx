@@ -20,6 +20,8 @@ import {
   Flex,
   Divider
 } from '@mantine/core';
+import PremiumLoader from '@components/common/loaders/PremiumLoader';
+import DataView from '@components/common/loaders/DataView';
 import { useDisclosure, useMediaQuery } from '@mantine/hooks';
 import {
   IconEdit,
@@ -52,10 +54,10 @@ const RoleActions: React.FC<{
   color: string;
   isMobile?: boolean;
 }> = ({ role, onEdit, color, isMobile = false }) => (
-  <Group gap="xs" justify="center">
-    <Tooltip label="Edit Role">
+  <Group gap='xs' justify='center'>
+    <Tooltip label='Edit Role'>
       <ActionIcon
-        variant="subtle"
+        variant='subtle'
         color={color}
         onClick={() => onEdit(role)}
         size={isMobile ? 'md' : 'sm'}
@@ -76,17 +78,17 @@ const MobileRoleCard: React.FC<{
   onEdit: (role: any) => void;
 }> = ({ role, index, activePage, itemsPerPage, color, onEdit }) => {
   return (
-    <Card shadow="sm" p="md" mb="sm" withBorder>
-      <Stack gap="sm">
-        <Group justify="space-between" align="center">
-          <Badge variant="filled" color={color}>
+    <Card shadow='sm' p='md' mb='sm' withBorder>
+      <Stack gap='sm'>
+        <Group justify='space-between' align='center'>
+          <Badge variant='filled' color={color}>
             #{index + 1 + (activePage - 1) * itemsPerPage}
           </Badge>
           <ActionIcon
-            variant="subtle"
+            variant='subtle'
             color={color}
             onClick={() => onEdit(role)}
-            size="md"
+            size='md'
           >
             <IconEdit size={18} />
           </ActionIcon>
@@ -95,10 +97,10 @@ const MobileRoleCard: React.FC<{
         <Divider />
 
         <Stack gap={2}>
-          <Text size="xs" fw={600} c="dimmed">
+          <Text size='xs' fw={600} c='dimmed'>
             Employment Role
           </Text>
-          <Text size="lg" fw={600}>
+          <Text size='lg' fw={600}>
             {role.designation}
           </Text>
         </Stack>
@@ -113,12 +115,12 @@ const HeadingComponent: React.FC<{
   onAdd: () => void;
   isMobile?: boolean;
 }> = ({ filteredCount, onAdd, isMobile = false }) => (
-  <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md">
+  <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md'>
     <Flex
       direction={isMobile ? 'column' : 'row'}
-      justify="space-between"
-      align="center"
-      gap="md"
+      justify='space-between'
+      align='center'
+      gap='md'
     >
       <Text
         size={isMobile ? 'lg' : 'xl'}
@@ -130,10 +132,10 @@ const HeadingComponent: React.FC<{
       <Button
         leftSection={<IconPlus size={16} />}
         onClick={onAdd}
-        variant="filled"
+        variant='filled'
         fullWidth={isMobile}
         size={isMobile ? 'md' : 'sm'}
-        radius="md"
+        radius='md'
       >
         Add Role
       </Button>
@@ -270,7 +272,8 @@ const EmploymentRoles = () => {
 
     if (
       employmentRoles.some(
-        (role: any) => role.designation.toLowerCase() === newRoleName.toLowerCase()
+        (role: any) =>
+          role.designation.toLowerCase() === newRoleName.toLowerCase()
       )
     ) {
       showErrorToast('This role already exists');
@@ -302,10 +305,10 @@ const EmploymentRoles = () => {
   }, [itemsPerPage]);
 
   return (
-    <Container size="lg">
+    <Container size='lg'>
       <Card
-        radius="lg"
-        p="lg"
+        radius='lg'
+        p='lg'
         withBorder
         shadow={isDarkTheme ? 'xs' : 'sm'}
         style={{
@@ -313,7 +316,7 @@ const EmploymentRoles = () => {
           border: `1px solid ${currentThemeConfig.borderColor}`
         }}
       >
-        <Stack gap="lg">
+        <Stack gap='lg'>
           {/* Header */}
           <HeadingComponent
             filteredCount={filteredEmploymentRole.length}
@@ -321,25 +324,25 @@ const EmploymentRoles = () => {
             isMobile={isMobile}
           />
 
-          <Card shadow="sm" p={isMobile ? 'sm' : 'md'} radius="md">
+          <Card shadow='sm' p={isMobile ? 'sm' : 'md'} radius='md'>
             <Flex
               direction={isMobile ? 'column' : 'row'}
-              justify="space-between"
+              justify='space-between'
               align={isMobile ? 'stretch' : 'center'}
-              gap="md"
+              gap='md'
             >
               <TextInput
-                placeholder="Search by employment role..."
+                placeholder='Search by employment role...'
                 leftSection={<IconSearch size={16} />}
                 value={searchQuery}
                 onChange={handleSearch}
-                radius="md"
+                radius='md'
                 style={{ flex: 1 }}
               />
 
-              <Group wrap="nowrap" gap="md">
-                <Group gap="xs">
-                  <Text size="sm">Items per page:</Text>
+              <Group wrap='nowrap' gap='md'>
+                <Group gap='xs'>
+                  <Text size='sm'>Items per page:</Text>
                   <Select
                     data={ITEMS_PER_PAGE_OPTIONS}
                     value={itemsPerPage.toString()}
@@ -347,12 +350,12 @@ const EmploymentRoles = () => {
                       setItemsPerPage(Number(value) || DEFAULT_ITEMS_PER_PAGE)
                     }
                     w={80}
-                    size="sm"
+                    size='sm'
                   />
                 </Group>
 
                 {filteredEmploymentRole.length !== employmentRoles.length && (
-                  <Badge variant="light" color="blue">
+                  <Badge variant='light' color='blue'>
                     {filteredEmploymentRole.length} of {employmentRoles.length}{' '}
                     roles
                   </Badge>
@@ -362,18 +365,11 @@ const EmploymentRoles = () => {
           </Card>
 
           {/* Table or Cards */}
-          <Card shadow="sm" p={0} radius="md">
-            {isLoading ? (
-              <Center p="xl">
-                <Stack align="center" gap="md">
-                  <Loader size="xl" />
-                  <Text>Loading employment roles...</Text>
-                </Stack>
-              </Center>
-            ) : isMobile ? (
+          <DataView isLoading={isLoading} label='employment roles'>
+            {isMobile ? (
               // Mobile Card View
-              <ScrollArea p="md">
-                <Stack gap="sm">
+              <ScrollArea p='md'>
+                <Stack gap='sm'>
                   {paginatedData.length > 0 ? (
                     paginatedData.map((role: any, index: number) => (
                       <MobileRoleCard
@@ -387,24 +383,24 @@ const EmploymentRoles = () => {
                       />
                     ))
                   ) : (
-                    <Card p="xl" withBorder>
-                      <Stack align="center" gap="md">
+                    <Card p='xl' withBorder>
+                      <Stack align='center' gap='md'>
                         <IconBriefcase size={48} opacity={0.5} />
-                        <Text size="lg" ta="center">
+                        <Text size='lg' ta='center'>
                           No employment roles found
                         </Text>
-                        <Text size="sm" ta="center">
+                        <Text size='sm' ta='center'>
                           {searchQuery
                             ? 'Try adjusting your search'
                             : 'Start by adding your first employment role'}
                         </Text>
                         {!searchQuery && (
                           <Button
-                            variant="light"
+                            variant='light'
                             leftSection={<IconPlus size={16} />}
                             onClick={openAddModal}
                             fullWidth={isSmallMobile}
-                            radius="md"
+                            radius='md'
                           >
                             Add Role
                           </Button>
@@ -440,23 +436,23 @@ const EmploymentRoles = () => {
                   >
                     <Table.Tr>
                       <Table.Th
-                        className="p-3 border text-center"
+                        className='p-3 border text-center'
                         style={{ width: '100px' }}
                       >
-                        <Text size="sm" fw={500}>
+                        <Text size='sm' fw={500}>
                           S.No
                         </Text>
                       </Table.Th>
-                      <Table.Th className="p-3 border">
-                        <Text size="sm" fw={500}>
+                      <Table.Th className='p-3 border'>
+                        <Text size='sm' fw={500}>
                           Employment Role
                         </Text>
                       </Table.Th>
                       <Table.Th
-                        className="p-3 border text-center"
+                        className='p-3 border text-center'
                         style={{ width: '120px' }}
                       >
-                        <Text size="sm" fw={500}>
+                        <Text size='sm' fw={500}>
                           Actions
                         </Text>
                       </Table.Th>
@@ -465,16 +461,16 @@ const EmploymentRoles = () => {
                   <Table.Tbody>
                     {paginatedData.length > 0 ? (
                       paginatedData.map((role: any, index: number) => (
-                        <Table.Tr key={role.id} className="transition-colors">
-                          <Table.Td className="text-center">
-                            <Text size="sm">
+                        <Table.Tr key={role.id} className='transition-colors'>
+                          <Table.Td className='text-center'>
+                            <Text size='sm'>
                               {index + 1 + (activePage - 1) * itemsPerPage}
                             </Text>
                           </Table.Td>
-                          <Table.Td className="p-3">
-                            <Text size="sm">{role.designation}</Text>
+                          <Table.Td className='p-3'>
+                            <Text size='sm'>{role.designation}</Text>
                           </Table.Td>
-                          <Table.Td className="p-3">
+                          <Table.Td className='p-3'>
                             <RoleActions
                               role={role}
                               onEdit={handleEdit}
@@ -485,18 +481,18 @@ const EmploymentRoles = () => {
                       ))
                     ) : (
                       <Table.Tr>
-                        <Table.Td colSpan={3} className="text-center p-8">
-                          <Stack align="center" gap="md">
+                        <Table.Td colSpan={3} className='text-center p-8'>
+                          <Stack align='center' gap='md'>
                             <IconBriefcase size={48} opacity={0.5} />
-                            <Text size="lg">No employment roles found</Text>
-                            <Text size="sm">
+                            <Text size='lg'>No employment roles found</Text>
+                            <Text size='sm'>
                               {searchQuery
                                 ? 'Try adjusting your search'
                                 : 'Start by adding your first employment role'}
                             </Text>
                             {!searchQuery && (
                               <Button
-                                variant="light"
+                                variant='light'
                                 leftSection={<IconPlus size={16} />}
                                 onClick={openAddModal}
                               >
@@ -511,7 +507,7 @@ const EmploymentRoles = () => {
                 </Table>
               </ScrollArea>
             )}
-          </Card>
+          </DataView>
 
           {/* Pagination */}
           {totalPages > 1 && (
@@ -522,7 +518,7 @@ const EmploymentRoles = () => {
                 total={totalPages}
                 color={currentThemeConfig.button.color}
                 size={isMobile ? 'sm' : 'md'}
-                radius="md"
+                radius='md'
                 withEdges
               />
             </Center>
@@ -534,19 +530,19 @@ const EmploymentRoles = () => {
           opened={addModalOpened}
           onClose={closeAddModal}
           title={
-            <Group gap="xs">
+            <Group gap='xs'>
               <IconBriefcase
                 size={20}
                 stroke={1.8}
                 color={currentThemeConfig.button.color}
               />
-              <Text fw={600} size="lg">
+              <Text fw={600} size='lg'>
                 Add New Employment Role
               </Text>
             </Group>
           }
           centered
-          size="md"
+          size='md'
           styles={{
             header: {
               paddingBottom: 4,
@@ -554,10 +550,10 @@ const EmploymentRoles = () => {
             }
           }}
         >
-          <Stack gap="md">
+          <Stack gap='md'>
             <TextInput
-              mt="md"
-              label="Role Name"
+              mt='md'
+              label='Role Name'
               value={newRoleName}
               onChange={e => {
                 const value = e.target.value;
@@ -565,19 +561,19 @@ const EmploymentRoles = () => {
                   setNewRoleName(value);
                 }
               }}
-              placeholder="Enter role name"
+              placeholder='Enter role name'
               required
-              size="md"
+              size='md'
             />
-            <Group justify="flex-end" mt="xs">
-              <Button variant="default" onClick={closeAddModal} radius="md">
+            <Group justify='flex-end' mt='xs'>
+              <Button variant='default' onClick={closeAddModal} radius='md'>
                 Cancel
               </Button>
               <Button
                 onClick={handleAdd}
                 disabled={isMutating || !newRoleName.trim()}
                 leftSection={<IconDeviceFloppy size={16} />}
-                radius="md"
+                radius='md'
               >
                 {isAdding ? 'Adding...' : 'Add Role'}
               </Button>
@@ -590,15 +586,15 @@ const EmploymentRoles = () => {
           opened={editModalOpened}
           onClose={closeEditModal}
           title={
-            <Group gap="xs">
+            <Group gap='xs'>
               <IconEdit size={20} color={currentThemeConfig.button.color} />
-              <Text fw={600} size="lg">
+              <Text fw={600} size='lg'>
                 Edit Employment Role
               </Text>
             </Group>
           }
           centered
-          size="md"
+          size='md'
           styles={{
             header: {
               paddingBottom: 4,
@@ -606,10 +602,10 @@ const EmploymentRoles = () => {
             }
           }}
         >
-          <Stack gap="md">
+          <Stack gap='md'>
             <TextInput
-              mt="md"
-              label="Role Name"
+              mt='md'
+              label='Role Name'
               value={selectedRole?.designation || ''}
               onChange={e => {
                 const value = e.target.value;
@@ -621,40 +617,40 @@ const EmploymentRoles = () => {
                 }
               }}
               required
-              size="md"
+              size='md'
             />
-            <Group justify="space-between" mt="xs">
+            <Group justify='space-between' mt='xs'>
               {isMobile ? (
-                <Tooltip label="Delete Role">
+                <Tooltip label='Delete Role'>
                   <Button
                     onClick={openDeleteModal}
-                    p="xs"
-                    radius="md"
-                    variant="outline"
+                    p='xs'
+                    radius='md'
+                    variant='outline'
                   >
                     <IconTrash size={16} />
                   </Button>
                 </Tooltip>
               ) : (
                 <Button
-                  color="red"
-                  variant="outline"
+                  color='red'
+                  variant='outline'
                   leftSection={<IconTrash size={16} />}
                   onClick={() => handleDelete(selectedRole.id)}
-                  radius="md"
+                  radius='md'
                 >
                   Delete
                 </Button>
               )}
               <Group>
-                <Button variant="default" onClick={closeEditModal} radius="md">
+                <Button variant='default' onClick={closeEditModal} radius='md'>
                   Cancel
                 </Button>
                 <Button
                   onClick={confirmEdit}
                   disabled={isMutating}
                   leftSection={<IconDeviceFloppy size={16} />}
-                  radius="md"
+                  radius='md'
                 >
                   {isUpdating ? 'Saving...' : 'Save'}
                 </Button>
@@ -668,31 +664,31 @@ const EmploymentRoles = () => {
           opened={deleteModalOpened}
           onClose={closeDeleteModal}
           title={
-            <Group gap="xs">
-              <IconAlertTriangle size={24} color="red" />
-              <Text fw={600} size="lg" c="red">
+            <Group gap='xs'>
+              <IconAlertTriangle size={24} color='red' />
+              <Text fw={600} size='lg' c='red'>
                 Delete Employment Role
               </Text>
             </Group>
           }
           centered
-          size="md"
+          size='md'
         >
-          <Stack gap="md">
-            <Text size="sm" mt="md">
+          <Stack gap='md'>
+            <Text size='sm' mt='md'>
               Are you sure you want to delete this employment role? This action
               cannot be undone.
             </Text>
-            <Group justify="flex-end" mt="md">
-              <Button variant="default" onClick={closeDeleteModal} radius="md">
+            <Group justify='flex-end' mt='md'>
+              <Button variant='default' onClick={closeDeleteModal} radius='md'>
                 Cancel
               </Button>
               <Button
-                color="red"
+                color='red'
                 onClick={confirmDelete}
                 disabled={isMutating}
                 leftSection={<IconTrash size={16} />}
-                radius="md"
+                radius='md'
               >
                 {isDeleting ? 'Deleting...' : 'Delete'}
               </Button>

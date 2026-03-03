@@ -21,6 +21,8 @@ import {
   Divider,
   Box
 } from '@mantine/core';
+import PremiumLoader from '@components/common/loaders/PremiumLoader';
+import DataView from '@components/common/loaders/DataView';
 import {
   IconPackage,
   IconUser,
@@ -278,44 +280,6 @@ const PackagesFormComponent = ({ employeeId }: PackagesFormProps) => {
     }
   };
 
-  if (isLoading) {
-    return (
-      <Container
-        size="lg"
-        py={isMobile ? 'md' : 'xl'}
-        px={isMobile ? 'xs' : undefined}
-      >
-        <ThemeBackground>
-          <Card
-            shadow="lg"
-            radius="md"
-            withBorder
-            p={isMobile ? 'md' : 'xl'}
-            style={{
-              backgroundColor: currentThemeConfig.backgroundColor,
-              borderColor: currentThemeConfig.borderColor
-            }}
-          >
-            <div className="flex justify-center items-center h-64">
-              <Stack align="center" gap="md">
-                <Loader
-                  size={isMobile ? 'lg' : 'xl'}
-                  color={currentThemeConfig.button.color}
-                />
-                <Text
-                  size={isMobile ? 'md' : 'lg'}
-                  c={currentThemeConfig.color}
-                >
-                  Loading employee data...
-                </Text>
-              </Stack>
-            </div>
-          </Card>
-        </ThemeBackground>
-      </Container>
-    );
-  }
-
   const employeeInfoItems = getEmployeeInfoItems(employeeDetails);
 
   const getInfoIcon = (label: string) => {
@@ -338,499 +302,144 @@ const PackagesFormComponent = ({ employeeId }: PackagesFormProps) => {
 
   return (
     <Container
-      size="lg"
+      size='lg'
       py={isMobile ? 'md' : 'xl'}
       px={isMobile ? 'xs' : 'md'}
     >
       <ThemeBackground>
-        <Stack gap={isMobile ? 'md' : 'xl'}>
-          {/* Header */}
-          <Card shadow="sm" p="lg" radius="md" withBorder mt="xl">
-            <Group
-              justify="space-between"
-              align="flex-start"
-              wrap={isMobile ? 'wrap' : 'nowrap'}
-            >
-              <Stack gap="xs" style={{ flex: isMobile ? '1 1 100%' : 'auto' }}>
-                <Group gap="sm">
-                  <IconPackages
-                    size={isMobile ? 20 : 24}
-                    color={currentThemeConfig.button.color}
-                  />
-                  <Text
-                    size={isMobile ? 'lg' : 'xl'}
-                    fw={700}
-                    c={currentThemeConfig.color}
-                  >
-                    Package Assignment
-                  </Text>
-                </Group>
-                <Text size={isMobile ? 'xs' : 'sm'} c="dimmed">
-                  Assign packages and tasks to the employee
-                </Text>
-              </Stack>
-
-              <Box
-                style={{
-                  marginTop: isMobile ? '1rem' : 0,
-                  width: isMobile ? '100%' : 'auto'
-                }}
+        <DataView isLoading={isLoading} label='employee and package details'>
+          <Stack gap={isMobile ? 'md' : 'xl'}>
+            {/* Header */}
+            <Card shadow='sm' p='lg' radius='md' withBorder mt='xl'>
+              <Group
+                justify='space-between'
+                align='flex-start'
+                wrap={isMobile ? 'wrap' : 'nowrap'}
               >
-                {isMobile ? (
-                  <Group justify="space-between" align="center" wrap="nowrap">
-                    <Group gap="xs">
+                <Stack
+                  gap='xs'
+                  style={{ flex: isMobile ? '1 1 100%' : 'auto' }}
+                >
+                  <Group gap='sm'>
+                    <IconPackages
+                      size={isMobile ? 20 : 24}
+                      color={currentThemeConfig.button.color}
+                    />
+                    <Text
+                      size={isMobile ? 'lg' : 'xl'}
+                      fw={700}
+                      c={currentThemeConfig.color}
+                    >
+                      Package Assignment
+                    </Text>
+                  </Group>
+                  <Text size={isMobile ? 'xs' : 'sm'} c='dimmed'>
+                    Assign packages and tasks to the employee
+                  </Text>
+                </Stack>
+
+                <Box
+                  style={{
+                    marginTop: isMobile ? '1rem' : 0,
+                    width: isMobile ? '100%' : 'auto'
+                  }}
+                >
+                  {isMobile ? (
+                    <Group justify='space-between' align='center' wrap='nowrap'>
+                      <Group gap='xs'>
+                        {progressStats.packages > 0 && (
+                          <>
+                            <Badge
+                              variant='light'
+                              color={currentThemeConfig.button.color}
+                              size='sm'
+                            >
+                              {progressStats.packages} Package
+                              {progressStats.packages !== 1 ? 's' : ''}
+                            </Badge>
+                            <Badge variant='light' color='blue' size='sm'>
+                              {progressStats.selectedTasksCount}/
+                              {progressStats.totalTasks} Tasks
+                            </Badge>
+                          </>
+                        )}
+                      </Group>
+                      <BackButton id={employeeId} />
+                    </Group>
+                  ) : (
+                    <>
                       {progressStats.packages > 0 && (
-                        <>
+                        <Group gap='xs' justify='flex-end' wrap='wrap'>
                           <Badge
-                            variant="light"
+                            variant='light'
                             color={currentThemeConfig.button.color}
-                            size="sm"
                           >
                             {progressStats.packages} Package
                             {progressStats.packages !== 1 ? 's' : ''}
                           </Badge>
-                          <Badge variant="light" color="blue" size="sm">
+                          <Badge variant='light' color='blue'>
                             {progressStats.selectedTasksCount}/
                             {progressStats.totalTasks} Tasks
                           </Badge>
-                        </>
+                        </Group>
                       )}
-                    </Group>
-                    <BackButton id={employeeId} />
-                  </Group>
-                ) : (
-                  <>
-                    {progressStats.packages > 0 && (
-                      <Group gap="xs" justify="flex-end" wrap="wrap">
-                        <Badge
-                          variant="light"
-                          color={currentThemeConfig.button.color}
-                        >
-                          {progressStats.packages} Package
-                          {progressStats.packages !== 1 ? 's' : ''}
-                        </Badge>
-                        <Badge variant="light" color="blue">
-                          {progressStats.selectedTasksCount}/
-                          {progressStats.totalTasks} Tasks
-                        </Badge>
+                      <Group mt='md' justify='center'>
+                        <BackButton id={employeeId} />
                       </Group>
-                    )}
-                    <Group mt="md" justify="center">
-                      <BackButton id={employeeId} />
-                    </Group>
-                  </>
-                )}
-              </Box>
-            </Group>
-          </Card>
-
-          {/* Progress Indicator */}
-          {isDirty && progressStats.totalTasks > 0 && (
-            <Card
-              radius="md"
-              p={isMobile ? 'sm' : 'md'}
-              style={{
-                backgroundColor: currentThemeConfig.backgroundColor,
-                borderColor: currentThemeConfig.borderColor,
-                border: `1px solid ${currentThemeConfig.borderColor}`
-              }}
-            >
-              <Stack gap="xs">
-                <Group justify="space-between">
-                  <Text size={isMobile ? 'xs' : 'sm'} c="dimmed">
-                    Task Selection Progress
-                  </Text>
-                  <Text size={isMobile ? 'xs' : 'sm'} c="dimmed">
-                    {progressStats.progress}%
-                  </Text>
-                </Group>
-                <Progress
-                  value={progressStats.progress}
-                  size="sm"
-                  color={currentThemeConfig.button.color}
-                  radius="xl"
-                />
-              </Stack>
+                    </>
+                  )}
+                </Box>
+              </Group>
             </Card>
-          )}
 
-          {/* Error Alert */}
-          {submitError && (
-            <Alert
-              icon={<IconAlertCircle size={16} />}
-              color="red"
-              title="Error"
-              variant="light"
-              onClose={() => setSubmitError(null)}
-              withCloseButton
-            >
-              {submitError}
-            </Alert>
-          )}
-
-          {/* Employee Information Section */}
-          <Card
-            shadow="lg"
-            radius="md"
-            withBorder
-            p={isMobile ? 'md' : 'lg'}
-            style={{
-              backgroundColor: currentThemeConfig.backgroundColor,
-              borderColor: currentThemeConfig.borderColor
-            }}
-          >
-            <Stack gap={isMobile ? 'md' : 'lg'}>
-              <Group gap="sm">
-                <IconUser
-                  size={isMobile ? 18 : 20}
-                  color={currentThemeConfig.button.color}
-                />
-                <Text
-                  size={isMobile ? 'md' : 'lg'}
-                  fw={600}
-                  c={currentThemeConfig.color}
-                >
-                  Employee Information
-                </Text>
-              </Group>
-
-              <SimpleGrid
-                cols={{ base: 1, xs: 1, sm: 2, md: 2, lg: 3 }}
-                spacing={isMobile ? 'md' : 'lg'}
+            {/* Progress Indicator */}
+            {isDirty && progressStats.totalTasks > 0 && (
+              <Card
+                radius='md'
+                p={isMobile ? 'sm' : 'md'}
+                style={{
+                  backgroundColor: currentThemeConfig.backgroundColor,
+                  borderColor: currentThemeConfig.borderColor,
+                  border: `1px solid ${currentThemeConfig.borderColor}`
+                }}
               >
-                {employeeInfoItems.map((item, index) => (
-                  <Card
-                    key={index}
-                    radius="md"
-                    p={isMobile ? 'sm' : 'md'}
-                    style={{
-                      border: `1px solid ${currentThemeConfig.borderColor}`
-                    }}
-                  >
-                    <Stack gap="xs">
-                      <Group gap="xs">
-                        {getInfoIcon(item.label)}
-                        <Text size={isMobile ? 'xs' : 'sm'} c="dimmed">
-                          {item.label}
-                        </Text>
-                      </Group>
-                      <Text
-                        size={isMobile ? 'sm' : 'md'}
-                        fw={500}
-                        c={currentThemeConfig.color}
-                        className="break-words"
-                      >
-                        {item.value || '-'}
-                      </Text>
-                    </Stack>
-                  </Card>
-                ))}
-              </SimpleGrid>
-            </Stack>
-          </Card>
-
-          {/* Package Assignment Section */}
-          <Card
-            shadow="lg"
-            radius="md"
-            withBorder
-            p={isMobile ? 'md' : 'lg'}
-            style={{
-              backgroundColor: currentThemeConfig.backgroundColor,
-              borderColor: currentThemeConfig.borderColor
-            }}
-          >
-            <Stack gap={isMobile ? 'md' : 'lg'}>
-              <Group gap="sm">
-                <IconPackage
-                  size={isMobile ? 18 : 20}
-                  color={currentThemeConfig.button.color}
-                />
-                <Text
-                  size={isMobile ? 'md' : 'lg'}
-                  fw={600}
-                  c={currentThemeConfig.color}
-                >
-                  Assign Packages
-                </Text>
-              </Group>
-
-              <Controller
-                name="packagesInfo"
-                control={control}
-                render={({ field }) => (
-                  <MultiSelect
-                    data={
-                      employmentPackagesOptions?.map(pkg => ({
-                        value: pkg._id,
-                        label: pkg.title
-                      })) || []
-                    }
-                    label="Select Packages"
-                    placeholder={
-                      !selectedPackages.length
-                        ? 'Choose packages to assign'
-                        : ''
-                    }
-                    value={
-                      Array.isArray(field.value)
-                        ? field.value.map(a => String(a).trim())
-                        : []
-                    }
-                    onChange={field.onChange}
-                    onBlur={field.onBlur}
-                    error={errors.packagesInfo?.message}
-                    clearable
-                    searchable
-                    size={isMobile ? 'sm' : 'md'}
-                    leftSection={<IconPackage size={isMobile ? 14 : 16} />}
-                  />
-                )}
-              />
-
-              <Group justify="flex-end" mt="md">
-                <Button
-                  onClick={proceedToTaskSelection}
-                  disabled={selectedPackages.length === 0}
-                  size={isMobile ? 'sm' : 'md'}
-                  fullWidth={isSmallMobile}
-                  rightSection={<IconArrowRight size={isMobile ? 14 : 16} />}
-                  style={{
-                    backgroundColor: currentThemeConfig.button.color,
-                    color: currentThemeConfig.button.textColor
-                  }}
-                  radius="md"
-                >
-                  Next: Select Tasks
-                </Button>
-              </Group>
-            </Stack>
-          </Card>
-
-          {/* Task Selection Modal */}
-          <StandardModal
-            opened={opened}
-            onClose={close}
-            size={isMobile ? 'full' : isTablet ? 'lg' : 'xl'}
-            title={
-              <Group gap="sm">
-                <IconSubtask
-                  size={isMobile ? 18 : 20}
-                  color={currentThemeConfig.button.color}
-                />
-                <Text
-                  size={isMobile ? 'sm' : 'md'}
-                  fw={600}
-                  c={currentThemeConfig.color}
-                >
-                  Select Tasks for Packages
-                </Text>
-              </Group>
-            }
-            centered
-            fullScreen={isSmallMobile}
-          >
-            <Stack gap={isMobile ? 'md' : 'lg'}>
-              {/* Modal Progress */}
-              {progressStats.totalTasks > 0 && (
-                <Stack gap="xs">
-                  <Group justify="space-between">
-                    <Text size={isMobile ? 'xs' : 'sm'} c="dimmed">
-                      Overall Progress
+                <Stack gap='xs'>
+                  <Group justify='space-between'>
+                    <Text size={isMobile ? 'xs' : 'sm'} c='dimmed'>
+                      Task Selection Progress
                     </Text>
-                    <Text size={isMobile ? 'xs' : 'sm'} c="dimmed">
-                      {progressStats.selectedTasksCount} of{' '}
-                      {progressStats.totalTasks} tasks selected
+                    <Text size={isMobile ? 'xs' : 'sm'} c='dimmed'>
+                      {progressStats.progress}%
                     </Text>
                   </Group>
                   <Progress
                     value={progressStats.progress}
-                    size="sm"
+                    size='sm'
                     color={currentThemeConfig.button.color}
-                    radius="xl"
+                    radius='xl'
                   />
                 </Stack>
-              )}
+              </Card>
+            )}
 
-              <Divider />
-
-              <ScrollArea.Autosize
-                mah={isMobile ? 400 : 500}
-                className={isMobile ? 'pr-2' : 'pr-4'}
+            {/* Error Alert */}
+            {submitError && (
+              <Alert
+                icon={<IconAlertCircle size={16} />}
+                color='red'
+                title='Error'
+                variant='light'
+                onClose={() => setSubmitError(null)}
+                withCloseButton
               >
-                <Stack gap={isMobile ? 'md' : 'lg'}>
-                  {selectedPackages.map((packageId: string) => {
-                    const pkg = employmentPackagesOptions?.find(
-                      p => p._id === packageId
-                    );
-                    if (!pkg) return null;
+                {submitError}
+              </Alert>
+            )}
 
-                    const taskCount = pkg.tasks?.length || 0;
-                    const selectedCount = selectedTasks[packageId]?.size || 0;
-
-                    return (
-                      <Card
-                        key={packageId}
-                        radius="md"
-                        p={isMobile ? 'md' : 'lg'}
-                        style={{
-                          border: `1px solid ${currentThemeConfig.borderColor}`
-                        }}
-                      >
-                        <Stack gap={isMobile ? 'sm' : 'md'}>
-                          <Group
-                            justify="space-between"
-                            align="flex-start"
-                            wrap="wrap"
-                          >
-                            <Stack gap="xs" style={{ flex: 1 }}>
-                              <Group gap="sm">
-                                <IconPackage
-                                  size={isMobile ? 14 : 16}
-                                  color={currentThemeConfig.button.color}
-                                />
-                                <Text
-                                  size={isMobile ? 'sm' : 'md'}
-                                  fw={500}
-                                  c={currentThemeConfig.color}
-                                >
-                                  {pkg.title}
-                                </Text>
-                              </Group>
-                              <Group gap="xs" wrap="wrap">
-                                <Badge
-                                  variant="light"
-                                  size={isMobile ? 'sm' : 'md'}
-                                  color={
-                                    selectedCount === taskCount && taskCount > 0
-                                      ? 'green'
-                                      : currentThemeConfig.button.color
-                                  }
-                                >
-                                  {selectedCount} of {taskCount} selected
-                                </Badge>
-                                {taskCount === 0 && (
-                                  <Badge
-                                    variant="light"
-                                    color="gray"
-                                    size={isMobile ? 'sm' : 'md'}
-                                  >
-                                    No tasks available
-                                  </Badge>
-                                )}
-                              </Group>
-                            </Stack>
-                          </Group>
-
-                          {pkg.tasks?.length ? (
-                            <Stack gap="sm">
-                              {pkg.tasks.map(task => (
-                                <Card
-                                  key={task._id}
-                                  radius="sm"
-                                  p={isMobile ? 'xs' : 'sm'}
-                                  style={{
-                                    backgroundColor: selectedTasks[
-                                      packageId
-                                    ]?.has(task._id)
-                                      ? `${currentThemeConfig.button.color}20`
-                                      : 'transparent',
-                                    border: `1px solid ${
-                                      selectedTasks[packageId]?.has(task._id)
-                                        ? currentThemeConfig.button.color
-                                        : currentThemeConfig.borderColor
-                                    }`
-                                  }}
-                                >
-                                  <Checkbox
-                                    label={task.title}
-                                    checked={
-                                      selectedTasks[packageId]?.has(task._id) ||
-                                      false
-                                    }
-                                    onChange={() =>
-                                      handleTaskToggle(packageId, task._id)
-                                    }
-                                    color={currentThemeConfig.button.color}
-                                    size={isMobile ? 'sm' : 'md'}
-                                    styles={{
-                                      label: {
-                                        fontSize: isMobile
-                                          ? '0.875rem'
-                                          : undefined
-                                      }
-                                    }}
-                                  />
-                                </Card>
-                              ))}
-                            </Stack>
-                          ) : (
-                            <Text
-                              size={isMobile ? 'xs' : 'sm'}
-                              c="dimmed"
-                              ta="center"
-                              py="md"
-                            >
-                              No tasks available in this package
-                            </Text>
-                          )}
-                        </Stack>
-                      </Card>
-                    );
-                  })}
-                </Stack>
-              </ScrollArea.Autosize>
-
-              <Group
-                justify="space-between"
-                mt="lg"
-                style={{
-                  flexDirection: isSmallMobile ? 'column-reverse' : 'row',
-                  gap: isSmallMobile ? '0.5rem' : undefined
-                }}
-              >
-                <Button
-                  variant="subtle"
-                  leftSection={<IconX size={isMobile ? 14 : 16} />}
-                  onClick={close}
-                  size={isMobile ? 'sm' : 'md'}
-                  fullWidth={isSmallMobile}
-                >
-                  Cancel
-                </Button>
-
-                <Button
-                  onClick={onSubmit}
-                  loading={isSubmitting}
-                  disabled={
-                    isSubmitting || progressStats.selectedTasksCount === 0
-                  }
-                  leftSection={
-                    !isSubmitting && <IconCheck size={isMobile ? 14 : 16} />
-                  }
-                  loaderProps={{
-                    size: 'sm',
-                    color: currentThemeConfig.button.textColor
-                  }}
-                  size={isMobile ? 'sm' : 'md'}
-                  fullWidth={isSmallMobile}
-                  style={{
-                    backgroundColor: currentThemeConfig.button.color,
-                    color: currentThemeConfig.button.textColor
-                  }}
-                  radius="md"
-                >
-                  {isSubmitting ? 'Saving Changes...' : 'Save Changes'}
-                </Button>
-              </Group>
-            </Stack>
-          </StandardModal>
-
-          {/* Assigned Packages Table */}
-          {selectedPackagesData && (
+            {/* Employee Information Section */}
             <Card
-              shadow="lg"
-              radius="md"
+              shadow='lg'
+              radius='md'
               withBorder
               p={isMobile ? 'md' : 'lg'}
               style={{
@@ -839,8 +448,8 @@ const PackagesFormComponent = ({ employeeId }: PackagesFormProps) => {
               }}
             >
               <Stack gap={isMobile ? 'md' : 'lg'}>
-                <Group gap="sm">
-                  <IconSubtask
+                <Group gap='sm'>
+                  <IconUser
                     size={isMobile ? 18 : 20}
                     color={currentThemeConfig.button.color}
                   />
@@ -849,19 +458,367 @@ const PackagesFormComponent = ({ employeeId }: PackagesFormProps) => {
                     fw={600}
                     c={currentThemeConfig.color}
                   >
-                    Assigned Packages & Tasks
+                    Employee Information
                   </Text>
                 </Group>
 
-                <PackagesTaskTable
-                  selectedPackagesData={selectedPackagesData}
-                  tasks={tasks}
-                  employeeId={employeeId}
-                />
+                <SimpleGrid
+                  cols={{ base: 1, xs: 1, sm: 2, md: 2, lg: 3 }}
+                  spacing={isMobile ? 'md' : 'lg'}
+                >
+                  {employeeInfoItems.map((item, index) => (
+                    <Card
+                      key={index}
+                      radius='md'
+                      p={isMobile ? 'sm' : 'md'}
+                      style={{
+                        border: `1px solid ${currentThemeConfig.borderColor}`
+                      }}
+                    >
+                      <Stack gap='xs'>
+                        <Group gap='xs'>
+                          {getInfoIcon(item.label)}
+                          <Text size={isMobile ? 'xs' : 'sm'} c='dimmed'>
+                            {item.label}
+                          </Text>
+                        </Group>
+                        <Text
+                          size={isMobile ? 'sm' : 'md'}
+                          fw={500}
+                          c={currentThemeConfig.color}
+                          className='break-words'
+                        >
+                          {item.value || '-'}
+                        </Text>
+                      </Stack>
+                    </Card>
+                  ))}
+                </SimpleGrid>
               </Stack>
             </Card>
-          )}
-        </Stack>
+
+            {/* Package Assignment Section */}
+            <Card
+              shadow='lg'
+              radius='md'
+              withBorder
+              p={isMobile ? 'md' : 'lg'}
+              style={{
+                backgroundColor: currentThemeConfig.backgroundColor,
+                borderColor: currentThemeConfig.borderColor
+              }}
+            >
+              <Stack gap={isMobile ? 'md' : 'lg'}>
+                <Group gap='sm'>
+                  <IconPackage
+                    size={isMobile ? 18 : 20}
+                    color={currentThemeConfig.button.color}
+                  />
+                  <Text
+                    size={isMobile ? 'md' : 'lg'}
+                    fw={600}
+                    c={currentThemeConfig.color}
+                  >
+                    Assign Packages
+                  </Text>
+                </Group>
+
+                <Controller
+                  name='packagesInfo'
+                  control={control}
+                  render={({ field }) => (
+                    <MultiSelect
+                      data={
+                        employmentPackagesOptions?.map(pkg => ({
+                          value: pkg._id,
+                          label: pkg.title
+                        })) || []
+                      }
+                      label='Select Packages'
+                      placeholder={
+                        !selectedPackages.length
+                          ? 'Choose packages to assign'
+                          : ''
+                      }
+                      value={
+                        Array.isArray(field.value)
+                          ? field.value.map(a => String(a).trim())
+                          : []
+                      }
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      error={errors.packagesInfo?.message}
+                      clearable
+                      searchable
+                      size={isMobile ? 'sm' : 'md'}
+                      leftSection={<IconPackage size={isMobile ? 14 : 16} />}
+                    />
+                  )}
+                />
+
+                <Group justify='flex-end' mt='md'>
+                  <Button
+                    onClick={proceedToTaskSelection}
+                    disabled={selectedPackages.length === 0}
+                    size={isMobile ? 'sm' : 'md'}
+                    fullWidth={isSmallMobile}
+                    rightSection={<IconArrowRight size={isMobile ? 14 : 16} />}
+                    style={{
+                      backgroundColor: currentThemeConfig.button.color,
+                      color: currentThemeConfig.button.textColor
+                    }}
+                    radius='md'
+                  >
+                    Next: Select Tasks
+                  </Button>
+                </Group>
+              </Stack>
+            </Card>
+
+            {/* Task Selection Modal */}
+            <StandardModal
+              opened={opened}
+              onClose={close}
+              size={isMobile ? 'full' : isTablet ? 'lg' : 'xl'}
+              title={
+                <Group gap='sm'>
+                  <IconSubtask
+                    size={isMobile ? 18 : 20}
+                    color={currentThemeConfig.button.color}
+                  />
+                  <Text
+                    size={isMobile ? 'sm' : 'md'}
+                    fw={600}
+                    c={currentThemeConfig.color}
+                  >
+                    Select Tasks for Packages
+                  </Text>
+                </Group>
+              }
+              centered
+              fullScreen={isSmallMobile}
+            >
+              <Stack gap={isMobile ? 'md' : 'lg'}>
+                {/* Modal Progress */}
+                {progressStats.totalTasks > 0 && (
+                  <Stack gap='xs'>
+                    <Group justify='space-between'>
+                      <Text size={isMobile ? 'xs' : 'sm'} c='dimmed'>
+                        Overall Progress
+                      </Text>
+                      <Text size={isMobile ? 'xs' : 'sm'} c='dimmed'>
+                        {progressStats.selectedTasksCount} of{' '}
+                        {progressStats.totalTasks} tasks selected
+                      </Text>
+                    </Group>
+                    <Progress
+                      value={progressStats.progress}
+                      size='sm'
+                      color={currentThemeConfig.button.color}
+                      radius='xl'
+                    />
+                  </Stack>
+                )}
+
+                <Divider />
+
+                <ScrollArea.Autosize
+                  mah={isMobile ? 400 : 500}
+                  className={isMobile ? 'pr-2' : 'pr-4'}
+                >
+                  <Stack gap={isMobile ? 'md' : 'lg'}>
+                    {selectedPackages.map((packageId: string) => {
+                      const pkg = employmentPackagesOptions?.find(
+                        p => p._id === packageId
+                      );
+                      if (!pkg) return null;
+
+                      const taskCount = pkg.tasks?.length || 0;
+                      const selectedCount = selectedTasks[packageId]?.size || 0;
+
+                      return (
+                        <Card
+                          key={packageId}
+                          radius='md'
+                          p={isMobile ? 'md' : 'lg'}
+                          style={{
+                            border: `1px solid ${currentThemeConfig.borderColor}`
+                          }}
+                        >
+                          <Stack gap={isMobile ? 'sm' : 'md'}>
+                            <Group
+                              justify='space-between'
+                              align='flex-start'
+                              wrap='wrap'
+                            >
+                              <Stack gap='xs' style={{ flex: 1 }}>
+                                <Group gap='sm'>
+                                  <IconPackage
+                                    size={isMobile ? 14 : 16}
+                                    color={currentThemeConfig.button.color}
+                                  />
+                                  <Text
+                                    size={isMobile ? 'sm' : 'md'}
+                                    fw={500}
+                                    c={currentThemeConfig.color}
+                                  >
+                                    {pkg.title}
+                                  </Text>
+                                </Group>
+                                <Group gap='xs' wrap='wrap'>
+                                  <Badge
+                                    variant='light'
+                                    size={isMobile ? 'sm' : 'md'}
+                                    color={
+                                      selectedCount === taskCount &&
+                                      taskCount > 0
+                                        ? 'green'
+                                        : currentThemeConfig.button.color
+                                    }
+                                  >
+                                    {selectedCount} of {taskCount} selected
+                                  </Badge>
+                                  {taskCount === 0 && (
+                                    <Badge
+                                      variant='light'
+                                      color='gray'
+                                      size={isMobile ? 'sm' : 'md'}
+                                    >
+                                      No tasks available
+                                    </Badge>
+                                  )}
+                                </Group>
+                              </Stack>
+                            </Group>
+
+                            {pkg.tasks?.length ? (
+                              <Stack gap='sm'>
+                                {pkg.tasks.map(task => (
+                                  <Card
+                                    key={task._id}
+                                    radius='sm'
+                                    p={isMobile ? 'xs' : 'sm'}
+                                    style={{
+                                      backgroundColor: selectedTasks[
+                                        packageId
+                                      ]?.has(task._id)
+                                        ? `${currentThemeConfig.button.color}20`
+                                        : 'transparent',
+                                      border: `1px solid ${
+                                        selectedTasks[packageId]?.has(task._id)
+                                          ? currentThemeConfig.button.color
+                                          : currentThemeConfig.borderColor
+                                      }`
+                                    }}
+                                  >
+                                    <Checkbox
+                                      label={task.title}
+                                      checked={
+                                        selectedTasks[packageId]?.has(
+                                          task._id
+                                        ) || false
+                                      }
+                                      onChange={() =>
+                                        handleTaskToggle(packageId, task._id)
+                                      }
+                                      color={currentThemeConfig.button.color}
+                                      size={isMobile ? 'sm' : 'md'}
+                                      styles={{
+                                        label: {
+                                          fontSize: isMobile
+                                            ? '0.875rem'
+                                            : undefined
+                                        }
+                                      }}
+                                    />
+                                  </Card>
+                                ))}
+                              </Stack>
+                            ) : (
+                              <Text
+                                size={isMobile ? 'xs' : 'sm'}
+                                c='dimmed'
+                                ta='center'
+                                py='md'
+                              >
+                                No tasks available in this package
+                              </Text>
+                            )}
+                          </Stack>
+                        </Card>
+                      );
+                    })}
+                  </Stack>
+                </ScrollArea.Autosize>
+
+                <Group
+                  justify='space-between'
+                  mt='lg'
+                  style={{
+                    flexDirection: isSmallMobile ? 'column-reverse' : 'row',
+                    gap: isSmallMobile ? '0.5rem' : undefined
+                  }}
+                >
+                  <Button
+                    variant='subtle'
+                    leftSection={<IconX size={isMobile ? 14 : 16} />}
+                    onClick={close}
+                    size={isMobile ? 'sm' : 'md'}
+                    fullWidth={isSmallMobile}
+                  >
+                    Cancel
+                  </Button>
+
+                  <Button
+                    onClick={onSubmit}
+                    loading={isSubmitting}
+                    disabled={
+                      isSubmitting || progressStats.selectedTasksCount === 0
+                    }
+                    leftSection={
+                      !isSubmitting && <IconCheck size={isMobile ? 14 : 16} />
+                    }
+                    loaderProps={{
+                      size: 'sm',
+                      color: currentThemeConfig.button.textColor
+                    }}
+                    size={isMobile ? 'sm' : 'md'}
+                    fullWidth={isSmallMobile}
+                    style={{
+                      backgroundColor: currentThemeConfig.button.color,
+                      color: currentThemeConfig.button.textColor
+                    }}
+                    radius='md'
+                  >
+                    {isSubmitting ? 'Saving Changes...' : 'Save Changes'}
+                  </Button>
+                </Group>
+              </Stack>
+            </StandardModal>
+
+            {/* Stats Section with Table */}
+            {selectedPackagesData && (
+              <Card
+                shadow='lg'
+                radius='md'
+                withBorder
+                p={isMobile ? 'md' : 'lg'}
+                style={{
+                  backgroundColor: currentThemeConfig.backgroundColor,
+                  borderColor: currentThemeConfig.borderColor
+                }}
+              >
+                <Stack gap='lg'>
+                  <PackagesTaskTable
+                    selectedPackagesData={selectedPackagesData}
+                    tasks={tasks}
+                    employeeId={employeeId}
+                  />
+                </Stack>
+              </Card>
+            )}
+          </Stack>
+        </DataView>
       </ThemeBackground>
     </Container>
   );

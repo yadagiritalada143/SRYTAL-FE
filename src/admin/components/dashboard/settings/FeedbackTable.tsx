@@ -19,6 +19,8 @@ import {
   Divider,
   Container
 } from '@mantine/core';
+import PremiumLoader from '@components/common/loaders/PremiumLoader';
+import DataView from '@components/common/loaders/DataView';
 
 import {
   IconEdit,
@@ -175,17 +177,17 @@ export default function FeedbackTable() {
     onEdit: (type: any) => void;
   }> = ({ type, index, activePage, color, itemsPerPage, onEdit }) => {
     return (
-      <Card shadow="sm" p="md" mb="sm">
-        <Stack gap="sm">
-          <Group justify="space-between" align="center">
-            <Badge variant="filled" color={color}>
+      <Card shadow='sm' p='md' mb='sm'>
+        <Stack gap='sm'>
+          <Group justify='space-between' align='center'>
+            <Badge variant='filled' color={color}>
               #{index + 1 + (activePage - 1) * itemsPerPage}
             </Badge>
             <ActionIcon
-              variant="subtle"
+              variant='subtle'
               color={color}
               onClick={() => onEdit(type)}
-              size="md"
+              size='md'
             >
               <IconEdit size={18} />
             </ActionIcon>
@@ -194,10 +196,10 @@ export default function FeedbackTable() {
           <Divider />
 
           <Stack gap={2}>
-            <Text size="xs" fw={600} c="dimmed">
+            <Text size='xs' fw={600} c='dimmed'>
               Employment Type
             </Text>
-            <Text size="lg" fw={600}>
+            <Text size='lg' fw={600}>
               {type.name}
             </Text>
           </Stack>
@@ -207,10 +209,10 @@ export default function FeedbackTable() {
   };
 
   return (
-    <Container size="lg">
+    <Container size='lg'>
       <Card
-        radius="lg"
-        p="lg"
+        radius='lg'
+        p='lg'
         withBorder
         shadow={isDarkTheme ? 'xs' : 'sm'}
         style={{
@@ -218,14 +220,14 @@ export default function FeedbackTable() {
           border: `1px solid ${currentThemeConfig.borderColor}`
         }}
       >
-        <Stack gap="lg">
+        <Stack gap='lg'>
           {/* HEADER */}
-          <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md">
+          <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md'>
             <Flex
               direction={isMobile ? 'column' : 'row'}
-              justify="space-between"
-              align="center"
-              gap="md"
+              justify='space-between'
+              align='center'
+              gap='md'
             >
               <Text size={isMobile ? 'lg' : 'xl'} fw={700}>
                 Manage Feedback Attributes ({filtered.length})
@@ -235,32 +237,32 @@ export default function FeedbackTable() {
                 leftSection={<IconPlus size={16} />}
                 onClick={openAdd}
                 fullWidth={isMobile}
-                radius="md"
+                radius='md'
               >
                 Add Feedback Attribute
               </Button>
             </Flex>
           </Card>
 
-          <Card shadow="sm" p="md" radius="md">
+          <Card shadow='sm' p='md' radius='md'>
             <Flex
               direction={isMobile ? 'column' : 'row'}
-              justify="space-between"
+              justify='space-between'
               align={isMobile ? 'stretch' : 'center'}
-              gap="md"
+              gap='md'
             >
               <TextInput
-                placeholder="Search feedback attribute..."
+                placeholder='Search feedback attribute...'
                 leftSection={<IconSearch size={16} />}
                 value={searchQuery}
                 onChange={handleSearch}
-                radius="md"
+                radius='md'
                 style={{ flex: 1 }}
               />
 
-              <Group wrap="nowrap" gap="md">
-                <Group gap="xs">
-                  <Text size="sm">Items per page:</Text>
+              <Group wrap='nowrap' gap='md'>
+                <Group gap='xs'>
+                  <Text size='sm'>Items per page:</Text>
                   <Select
                     data={ITEMS_PER_PAGE_OPTIONS}
                     value={itemsPerPage.toString()}
@@ -268,12 +270,12 @@ export default function FeedbackTable() {
                       setItemsPerPage(Number(v) || DEFAULT_ITEMS_PER_PAGE)
                     }
                     w={80}
-                    size="sm"
+                    size='sm'
                   />
                 </Group>
 
                 {filtered.length !== feedbacks.length && (
-                  <Badge variant="light" color="blue">
+                  <Badge variant='light' color='blue'>
                     {filtered.length} of {feedbacks.length}
                   </Badge>
                 )}
@@ -282,31 +284,25 @@ export default function FeedbackTable() {
           </Card>
 
           {/* TABLE */}
-          <Card shadow="sm" p={0} radius="md">
-            {isLoading ? (
-              <Center p="xl">
-                <Stack align="center" gap="md">
-                  <Loader size="xl" />
-                </Stack>
-              </Center>
-            ) : isMobile ? (
-              <ScrollArea p="md">
-                <Stack gap="sm">
+          <DataView isLoading={isLoading} label='feedback attributes'>
+            {isMobile ? (
+              <ScrollArea p='md'>
+                <Stack gap='sm'>
                   {filtered.length === 0 ? (
-                    <Card p="xl" withBorder>
-                      <Stack align="center" gap="md">
+                    <Card p='xl' withBorder>
+                      <Stack align='center' gap='md'>
                         <IconCategory size={48} opacity={0.5} />
-                        <Text size="lg" ta="center">
+                        <Text size='lg' ta='center'>
                           No feedback attributes found
                         </Text>
-                        <Text size="sm" ta="center">
+                        <Text size='sm' ta='center'>
                           {searchQuery
                             ? 'Try adjusting your search'
                             : 'Start by adding your first feedback attribute'}
                         </Text>
                         {!searchQuery && (
                           <Button
-                            variant="light"
+                            variant='light'
                             leftSection={<IconPlus size={16} />}
                             onClick={openAdd}
                             fullWidth={isSmallMobile}
@@ -356,23 +352,23 @@ export default function FeedbackTable() {
                   >
                     <Table.Tr>
                       <Table.Th
-                        className="p-3 text-center"
+                        className='p-3 text-center'
                         style={{ width: '100px' }}
                       >
-                        <Text size="sm" fw={500}>
+                        <Text size='sm' fw={500}>
                           S.No
                         </Text>
                       </Table.Th>
-                      <Table.Th className="p-3">
-                        <Text size="sm" fw={500}>
+                      <Table.Th className='p-3'>
+                        <Text size='sm' fw={500}>
                           Feedback Attributes
                         </Text>
                       </Table.Th>
                       <Table.Th
-                        className="p-3 text-center"
+                        className='p-3 text-center'
                         style={{ width: '120px' }}
                       >
-                        <Text size="sm" fw={500}>
+                        <Text size='sm' fw={500}>
                           Actions
                         </Text>
                       </Table.Th>
@@ -383,11 +379,11 @@ export default function FeedbackTable() {
                     {filtered.length === 0 ? (
                       <Table.Tr>
                         <Table.Td colSpan={3}>
-                          <Center py="xl">
-                            <Stack align="center" gap="xs">
+                          <Center py='xl'>
+                            <Stack align='center' gap='xs'>
                               <IconCategory size={40} opacity={0.5} />
                               <Text>No feedback attributes found</Text>
-                              <Text size="sm">
+                              <Text size='sm'>
                                 {searchQuery
                                   ? 'Try adjusting your search'
                                   : 'Start by adding your first feedback attribute'}
@@ -397,7 +393,7 @@ export default function FeedbackTable() {
                                   leftSection={<IconPlus size={16} />}
                                   onClick={openAdd}
                                   fullWidth={isMobile}
-                                  radius="md"
+                                  radius='md'
                                   color={currentThemeConfig.button.color}
                                 >
                                   Add Feedback Attribute
@@ -410,16 +406,16 @@ export default function FeedbackTable() {
                     ) : (
                       paginatedData.map((item: any, index: number) => (
                         <Table.Tr key={item.id}>
-                          <Table.Td className="text-center">
+                          <Table.Td className='text-center'>
                             {index + 1 + (activePage - 1) * itemsPerPage}
                           </Table.Td>
                           <Table.Td>{item.name}</Table.Td>
-                          <Table.Td className="text-center">
-                            <Group justify="center">
-                              <Tooltip label="Edit">
+                          <Table.Td className='text-center'>
+                            <Group justify='center'>
+                              <Tooltip label='Edit'>
                                 <ActionIcon
                                   color={currentThemeConfig.button.color}
-                                  variant="subtle"
+                                  variant='subtle'
                                   onClick={() => handleEdit(item)}
                                 >
                                   <IconEdit size={16} />
@@ -434,7 +430,7 @@ export default function FeedbackTable() {
                 </Table>
               </ScrollArea>
             )}
-          </Card>
+          </DataView>
 
           {totalPages > 1 && (
             <Center>
@@ -444,7 +440,7 @@ export default function FeedbackTable() {
                 total={totalPages}
                 color={currentThemeConfig.button.color}
                 size={isMobile ? 'sm' : 'md'}
-                radius="md"
+                radius='md'
                 withEdges
               />
             </Center>
@@ -456,19 +452,19 @@ export default function FeedbackTable() {
           opened={addOpened}
           onClose={closeAdd}
           title={
-            <Group gap="xs">
+            <Group gap='xs'>
               <IconCategory
                 size={20}
                 stroke={1.8}
                 color={currentThemeConfig.button.color}
               />
-              <Text fw={600} size="lg">
+              <Text fw={600} size='lg'>
                 Add New Feedback Attribute
               </Text>
             </Group>
           }
           centered
-          size="md"
+          size='md'
           styles={{
             header: {
               paddingBottom: 4,
@@ -478,21 +474,21 @@ export default function FeedbackTable() {
         >
           <Stack>
             <TextInput
-              mt="md"
-              label="Feedback Attribute"
+              mt='md'
+              label='Feedback Attribute'
               value={newName}
               onChange={e => setNewName(e.target.value)}
-              placeholder="Enter the feedback attribute"
+              placeholder='Enter the feedback attribute'
               required
             />
-            <Group justify="flex-end">
-              <Button variant="default" onClick={closeAdd} radius="md">
+            <Group justify='flex-end'>
+              <Button variant='default' onClick={closeAdd} radius='md'>
                 Cancel
               </Button>
               <Button
                 onClick={handleAdd}
                 disabled={isMutating || !newName.trim()}
-                radius="md"
+                radius='md'
               >
                 {isAdding ? 'Adding...' : 'Add'}
               </Button>
@@ -505,15 +501,15 @@ export default function FeedbackTable() {
           opened={editOpened}
           onClose={closeEdit}
           title={
-            <Group gap="xs">
+            <Group gap='xs'>
               <IconEdit size={20} color={currentThemeConfig.button.color} />
-              <Text fw={600} size="lg">
+              <Text fw={600} size='lg'>
                 Edit Feedback Attribute
               </Text>
             </Group>
           }
           centered
-          size="md"
+          size='md'
           styles={{
             header: {
               paddingBottom: 4,
@@ -523,9 +519,9 @@ export default function FeedbackTable() {
         >
           <Stack>
             <TextInput
-              mt="md"
-              label="Feedback Attribute"
-              placeholder="Enter the feedback attribute"
+              mt='md'
+              label='Feedback Attribute'
+              placeholder='Enter the feedback attribute'
               value={selected?.name || ''}
               onChange={e =>
                 setSelected(prev =>
@@ -533,27 +529,27 @@ export default function FeedbackTable() {
                 )
               }
               required
-              size="md"
+              size='md'
             />
 
-            <Group justify="space-between">
+            <Group justify='space-between'>
               {isMobile ? (
-                <Tooltip label="Delete">
+                <Tooltip label='Delete'>
                   <Button
                     onClick={openDelete}
-                    p="xs"
-                    radius="md"
-                    variant="outline"
+                    p='xs'
+                    radius='md'
+                    variant='outline'
                   >
                     <IconTrash size={16} />
                   </Button>
                 </Tooltip>
               ) : (
                 <Button
-                  color="red"
-                  variant="outline"
+                  color='red'
+                  variant='outline'
                   onClick={openDelete}
-                  radius="md"
+                  radius='md'
                   leftSection={<IconTrash size={16} />}
                 >
                   Delete
@@ -561,14 +557,14 @@ export default function FeedbackTable() {
               )}
 
               <Group>
-                <Button variant="default" onClick={closeEdit} radius="md">
+                <Button variant='default' onClick={closeEdit} radius='md'>
                   Cancel
                 </Button>
                 <Button
                   onClick={confirmEdit}
                   leftSection={<IconDeviceFloppy size={16} />}
                   disabled={isMutating}
-                  radius="md"
+                  radius='md'
                 >
                   {isUpdating ? 'Saving...' : 'Save'}
                 </Button>
@@ -582,31 +578,31 @@ export default function FeedbackTable() {
           opened={deleteOpened}
           onClose={closeDelete}
           title={
-            <Group gap="xs">
-              <IconAlertTriangle size={24} color="red" />
-              <Text fw={600} size="lg" c="red">
+            <Group gap='xs'>
+              <IconAlertTriangle size={24} color='red' />
+              <Text fw={600} size='lg' c='red'>
                 Delete Feedback Attribute
               </Text>
             </Group>
           }
           centered
-          size="md"
+          size='md'
         >
-          <Stack gap="md">
-            <Text size="md" mt="sm">
+          <Stack gap='md'>
+            <Text size='md' mt='sm'>
               Are you sure you want to delete this feedback attribute? This
               action cannot be undone.
             </Text>
-            <Group justify="flex-end" mt="md">
-              <Button variant="default" onClick={closeDelete} radius="md">
+            <Group justify='flex-end' mt='md'>
+              <Button variant='default' onClick={closeDelete} radius='md'>
                 Cancel
               </Button>
               <Button
-                color="red"
+                color='red'
                 onClick={confirmDelete}
                 disabled={isMutating}
                 leftSection={<IconTrash size={16} />}
-                radius="md"
+                radius='md'
               >
                 {isDeleting ? 'Deleting...' : 'Delete'}
               </Button>

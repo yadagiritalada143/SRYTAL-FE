@@ -14,8 +14,10 @@ import {
   ActionIcon,
   Badge,
   Divider,
-  Loader
+  Loader,
+  Flex
 } from '@mantine/core';
+import PremiumLoader from '@components/common/loaders/PremiumLoader';
 import { RichTextEditor, Link } from '@mantine/tiptap';
 import { useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -451,7 +453,7 @@ export const ContentWriterAddCourse = () => {
               <Button
                 leftSection={
                   isSubmitting ? (
-                    <Loader size='xs' color='white' />
+                    <PremiumLoader size='xs' minHeight='20px' />
                   ) : (
                     <IconCheck size={18} />
                   )

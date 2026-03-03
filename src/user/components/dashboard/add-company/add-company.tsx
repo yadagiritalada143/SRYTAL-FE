@@ -1,8 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  AddCompanyForm,
-  addCompanySchema
-} from '@forms/add-company';
+import { AddCompanyForm, addCompanySchema } from '@forms/add-company';
 import { useForm } from 'react-hook-form';
 import {
   Button,
@@ -13,8 +10,11 @@ import {
   Text,
   Group,
   Divider,
-  Loader
+  Loader,
+  Grid,
+  Title
 } from '@mantine/core';
+import PremiumLoader from '@components/common/loaders/PremiumLoader';
 import { IconArrowLeft, IconBuilding } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom';
 import { useMediaQuery } from '@mantine/hooks';
@@ -68,20 +68,20 @@ const AddCompany = () => {
 
   return (
     <Container
-      size="xl"
-      py="md"
-      my="xl"
+      size='xl'
+      py='md'
+      my='xl'
       mt={70}
       px={isSmallMobile ? 'xs' : 'md'}
       style={{
         backgroundColor: currentThemeConfig.backgroundColor
       }}
     >
-      <Stack gap="md">
+      <Stack gap='md'>
         {/* Header Card */}
-        <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder>
-          <Group justify="space-between" wrap="wrap">
-            <Group gap="sm">
+        <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md' withBorder>
+          <Group justify='space-between' wrap='wrap'>
+            <Group gap='sm'>
               <IconBuilding size={isMobile ? 24 : 28} />
               <Text
                 size={isMobile ? 'lg' : 'xl'}
@@ -94,9 +94,9 @@ const AddCompany = () => {
             <Button
               leftSection={<IconArrowLeft size={16} />}
               onClick={handleGoBack}
-              variant="light"
+              variant='light'
               size={isMobile ? 'sm' : 'md'}
-              radius="md"
+              radius='md'
             >
               Go Back
             </Button>
@@ -104,22 +104,22 @@ const AddCompany = () => {
         </Card>
 
         {/* Form Card */}
-        <Card shadow="sm" p={isMobile ? 'md' : 'xl'} radius="md" withBorder>
+        <Card shadow='sm' p={isMobile ? 'md' : 'xl'} radius='md' withBorder>
           <form onSubmit={handleSubmit(onSubmit)}>
-            <Stack gap="lg">
+            <Stack gap='lg'>
               {/* Company Name Section */}
               <div>
-                <Text size="lg" fw={600} mb="md">
+                <Text size='lg' fw={600} mb='md'>
                   Company Information
                 </Text>
                 <TextInput
                   {...register('companyName')}
-                  label="Company Name"
-                  placeholder="Enter company name"
+                  label='Company Name'
+                  placeholder='Enter company name'
                   error={errors.companyName?.message}
                   size={isMobile ? 'sm' : 'md'}
                   withAsterisk
-                  autoComplete="off"
+                  autoComplete='off'
                 />
               </div>
 
@@ -127,37 +127,37 @@ const AddCompany = () => {
 
               {/* Primary Contact Section */}
               <div>
-                <Text size="lg" fw={600} mb="md">
+                <Text size='lg' fw={600} mb='md'>
                   Primary Contact
                 </Text>
-                <Stack gap="md">
+                <Stack gap='md'>
                   <TextInput
                     {...register('primaryContact.name')}
-                    label="Name"
-                    placeholder="Enter contact name"
+                    label='Name'
+                    placeholder='Enter contact name'
                     error={errors.primaryContact?.name?.message}
                     size={isMobile ? 'sm' : 'md'}
                     withAsterisk
-                    autoComplete="off"
+                    autoComplete='off'
                   />
                   <TextInput
                     {...register('primaryContact.email')}
-                    label="Email"
-                    placeholder="Enter email address"
+                    label='Email'
+                    placeholder='Enter email address'
                     error={errors.primaryContact?.email?.message}
                     size={isMobile ? 'sm' : 'md'}
-                    type="email"
+                    type='email'
                     withAsterisk
-                    autoComplete="off"
+                    autoComplete='off'
                   />
                   <TextInput
                     {...register('primaryContact.phone')}
-                    label="Phone"
-                    placeholder="Enter phone number"
+                    label='Phone'
+                    placeholder='Enter phone number'
                     error={errors.primaryContact?.phone?.message}
                     size={isMobile ? 'sm' : 'md'}
                     withAsterisk
-                    autoComplete="off"
+                    autoComplete='off'
                   />
                 </Stack>
               </div>
@@ -166,76 +166,76 @@ const AddCompany = () => {
 
               {/* Secondary Contacts Section */}
               <div>
-                <Text size="lg" fw={600} mb="md">
+                <Text size='lg' fw={600} mb='md'>
                   Secondary Contacts (Optional)
                 </Text>
 
                 {/* Responsive Grid for Secondary Contacts */}
-                <Stack gap="lg">
+                <Stack gap='lg'>
                   {/* Secondary Contact 1 */}
-                  <Card p="md" withBorder>
-                    <Stack gap="md">
-                      <Text size="md" fw={500} c="dimmed">
+                  <Card p='md' withBorder>
+                    <Stack gap='md'>
+                      <Text size='md' fw={500} c='dimmed'>
                         Secondary Contact 1
                       </Text>
                       <TextInput
                         {...register('secondaryContact_1.name')}
-                        label="Name"
-                        placeholder="Enter contact name"
+                        label='Name'
+                        placeholder='Enter contact name'
                         error={errors.secondaryContact_1?.name?.message}
                         size={isMobile ? 'sm' : 'md'}
-                        autoComplete="off"
+                        autoComplete='off'
                       />
                       <TextInput
                         {...register('secondaryContact_1.email')}
-                        label="Email"
-                        placeholder="Enter email address"
+                        label='Email'
+                        placeholder='Enter email address'
                         error={errors.secondaryContact_1?.email?.message}
                         size={isMobile ? 'sm' : 'md'}
-                        type="email"
-                        autoComplete="off"
+                        type='email'
+                        autoComplete='off'
                       />
                       <TextInput
                         {...register('secondaryContact_1.phone')}
-                        label="Phone"
-                        placeholder="Enter phone number"
+                        label='Phone'
+                        placeholder='Enter phone number'
                         error={errors.secondaryContact_1?.phone?.message}
                         size={isMobile ? 'sm' : 'md'}
-                        autoComplete="off"
+                        autoComplete='off'
                       />
                     </Stack>
                   </Card>
 
                   {/* Secondary Contact 2 */}
-                  <Card p="md" withBorder>
-                    <Stack gap="md">
-                      <Text size="md" fw={500} c="dimmed">
+                  <Card p='md' withBorder>
+                    <Stack gap='md'>
+                      <Text size='md' fw={500} c='dimmed'>
                         Secondary Contact 2
                       </Text>
                       <TextInput
                         {...register('secondaryContact_2.name')}
-                        label="Name"
-                        placeholder="Enter contact name"
+                        label='Name'
+                        placeholder='Enter contact name'
                         error={errors.secondaryContact_2?.name?.message}
                         size={isMobile ? 'sm' : 'md'}
-                        autoComplete="off"
+                        autoComplete='off'
                       />
                       <TextInput
                         {...register('secondaryContact_2.email')}
-                        label="Email"
-                        placeholder="Enter email address"
+                        label='Email'
+                        placeholder='Enter email address'
                         error={errors.secondaryContact_2?.email?.message}
                         size={isMobile ? 'sm' : 'md'}
-                        type="email"
-                        autoComplete="off"
+                        type='email'
+                        autoComplete='off'
                       />
                       <TextInput
                         {...register('secondaryContact_2.phone')}
-                        label="Phone"
-                        placeholder="Enter phone number"
+                        label='Phone'
+                        placeholder='Enter phone number'
                         error={errors.secondaryContact_2?.phone?.message}
                         size={isMobile ? 'sm' : 'md'}
-                        autoComplete="off"
+                        autoComplete='off'
                       />
                     </Stack>
                   </Card>
@@ -245,27 +245,27 @@ const AddCompany = () => {
               <Divider />
 
               {/* Submit Button */}
-              <Group justify="flex-end" mt="md">
+              <Group justify='flex-end' mt='md'>
                 <Button
-                  type="button"
-                  variant="light"
+                  type='button'
+                  variant='light'
                   onClick={handleGoBack}
                   disabled={isSubmitting}
                   size={isMobile ? 'sm' : 'md'}
                   fullWidth={isMobile}
-                  radius="md"
+                  radius='md'
                 >
                   Cancel
                 </Button>
                 <Button
-                  type="submit"
+                  type='submit'
                   disabled={isSubmitting}
                   size={isMobile ? 'sm' : 'md'}
                   fullWidth={isMobile}
-                  radius="md"
+                  radius='md'
                   leftSection={
                     isSubmitting ? (
-                      <Loader size="xs" color="white" />
+                      <PremiumLoader size='xs' minHeight='20px' />
                     ) : (
                       <IconBuilding size={16} />
                     )

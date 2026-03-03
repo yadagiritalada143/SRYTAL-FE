@@ -12,10 +12,11 @@ import {
   Group,
   Text,
   Flex,
-  ActionIcon,
   Tooltip,
   Center
 } from '@mantine/core';
+import PremiumLoader from '@components/common/loaders/PremiumLoader';
+import DataView from '@components/common/loaders/DataView';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { DateInput } from '@mantine/dates';
@@ -167,162 +168,152 @@ const UpdatePackage = () => {
 
   return (
     <Container size='xl' py='md' my='xl' px={isSmallMobile ? 'xs' : 'md'}>
-      {isLoading ? (
-        <Center style={{ minHeight: '400px' }}>
-          <Stack align='center' gap='md'>
-            <Loader size='xl' />
-            <Text>Loading package details...</Text>
-          </Stack>
-        </Center>
-      ) : (
-        <Stack gap='md'>
-          {/* Header Card */}
-          <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md' withBorder>
-            <Flex
-              direction='row'
-              justify='space-between'
-              align='center'
-              gap='md'
-            >
-              <Group justify='space-between' align='center'>
-                <Group gap='xs'>
-                  <IconPackage size={24} />
-                  <Text size={isMobile ? 'lg' : 'xl'} fw={700}>
-                    Update Package
-                  </Text>
-                </Group>
+      <Stack gap='md'>
+        {/* Header Card */}
+        <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md' withBorder>
+          <Flex direction='row' justify='space-between' align='center' gap='md'>
+            <Group justify='space-between' align='center'>
+              <Group gap='xs'>
+                <IconPackage size={24} />
+                <Text size={isMobile ? 'lg' : 'xl'} fw={700}>
+                  Update Package
+                </Text>
               </Group>
-              <BackButton id={packageId} />
-            </Flex>
-          </Card>
+            </Group>
+            <BackButton id={packageId} />
+          </Flex>
+        </Card>
 
-          {/* Form Card */}
-          <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md' withBorder>
-            <form onSubmit={handleSubmit(onSubmit)}>
-              <Stack gap='md'>
-                <TextInput
-                  label='Title'
-                  placeholder='Enter package title'
-                  {...register('title')}
-                  error={errors.title?.message}
-                  size='md'
-                  required
-                />
+        <DataView isLoading={isLoading} label='package details'>
+          <Stack gap='md'>
+            {/* Form Card */}
+            <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md' withBorder>
+              <form onSubmit={handleSubmit(onSubmit)}>
+                <Stack gap='md'>
+                  <TextInput
+                    label='Title'
+                    placeholder='Enter package title'
+                    {...register('title')}
+                    error={errors.title?.message}
+                    size='md'
+                    required
+                  />
 
-                <Textarea
-                  label='Description'
-                  placeholder='Enter package description'
-                  {...register('description')}
-                  error={errors.description?.message}
-                  minRows={4}
-                  size='md'
-                  required
-                />
+                  <Textarea
+                    label='Description'
+                    placeholder='Enter package description'
+                    {...register('description')}
+                    error={errors.description?.message}
+                    minRows={4}
+                    size='md'
+                    required
+                  />
 
-                <Controller
-                  name='approvers'
-                  control={control}
-                  render={({ field }) => (
-                    <MultiSelect
-                      data={approversOptions}
-                      label='Approvers'
-                      placeholder='Select approvers'
-                      value={
-                        Array.isArray(field.value)
-                          ? field.value.map(a => String(a).trim())
-                          : []
-                      }
-                      onChange={field.onChange}
-                      onBlur={field.onBlur}
-                      error={errors.approvers?.message}
-                      size='md'
-                      searchable
-                      clearable
+                  <Controller
+                    name='approvers'
+                    control={control}
+                    render={({ field }) => (
+                      <MultiSelect
+                        data={approversOptions}
+                        label='Approvers'
+                        placeholder='Select approvers'
+                        value={
+                          Array.isArray(field.value)
+                            ? field.value.map(a => String(a).trim())
+                            : []
+                        }
+                        onChange={field.onChange}
+                        onBlur={field.onBlur}
+                        error={errors.approvers?.message}
+                        size='md'
+                        searchable
+                        clearable
+                      />
+                    )}
+                  />
+
+                  <Group grow={isMobile}>
+                    <Controller
+                      control={control}
+                      name='startDate'
+                      render={({ field }) => (
+                        <DateInput
+                          label='Start Date'
+                          placeholder='Pick a date'
+                          value={field.value ? new Date(field.value) : null}
+                          onChange={date =>
+                            field.onChange(date ? new Date(date) : null)
+                          }
+                          error={errors.startDate?.message}
+                          valueFormat='YYYY-MM-DD'
+                          size='md'
+                          clearable
+                        />
+                      )}
                     />
-                  )}
-                />
+                    <Controller
+                      control={control}
+                      name='endDate'
+                      render={({ field }) => (
+                        <DateInput
+                          label='End Date'
+                          placeholder='Pick a date'
+                          value={field.value ? new Date(field.value) : null}
+                          onChange={date =>
+                            field.onChange(date ? new Date(date) : null)
+                          }
+                          error={errors.endDate?.message}
+                          valueFormat='YYYY-MM-DD'
+                          size='md'
+                          clearable
+                        />
+                      )}
+                    />
+                  </Group>
 
-                <Group grow={isMobile}>
-                  <Controller
-                    control={control}
-                    name='startDate'
-                    render={({ field }) => (
-                      <DateInput
-                        label='Start Date'
-                        placeholder='Pick a date'
-                        value={field.value ? new Date(field.value) : null}
-                        onChange={date =>
-                          field.onChange(date ? new Date(date) : null)
-                        }
-                        error={errors.startDate?.message}
-                        valueFormat='YYYY-MM-DD'
-                        size='md'
-                        clearable
-                      />
-                    )}
-                  />
-                  <Controller
-                    control={control}
-                    name='endDate'
-                    render={({ field }) => (
-                      <DateInput
-                        label='End Date'
-                        placeholder='Pick a date'
-                        value={field.value ? new Date(field.value) : null}
-                        onChange={date =>
-                          field.onChange(date ? new Date(date) : null)
-                        }
-                        error={errors.endDate?.message}
-                        valueFormat='YYYY-MM-DD'
-                        size='md'
-                        clearable
-                      />
-                    )}
-                  />
-                </Group>
+                  <Group justify='space-between' mt='lg'>
+                    <Button
+                      color='red'
+                      variant='outline'
+                      leftSection={<IconTrash size={16} />}
+                      onClick={open}
+                      fullWidth={isMobile}
+                      radius='md'
+                    >
+                      Delete Package
+                    </Button>
+                    <Button
+                      type='submit'
+                      disabled={isLoading}
+                      leftSection={<IconDeviceFloppy size={16} />}
+                      fullWidth={isMobile}
+                      radius='md'
+                    >
+                      {isLoading ? 'Updating...' : 'Update Package'}
+                    </Button>
+                  </Group>
+                </Stack>
+              </form>
+            </Card>
 
-                <Group justify='space-between' mt='lg'>
-                  <Button
-                    color='red'
-                    variant='outline'
-                    leftSection={<IconTrash size={16} />}
-                    onClick={open}
-                    fullWidth={isMobile}
-                    radius='md'
-                  >
-                    Delete Package
-                  </Button>
-                  <Button
-                    type='submit'
-                    disabled={isLoading}
-                    leftSection={<IconDeviceFloppy size={16} />}
-                    fullWidth={isMobile}
-                    radius='md'
-                  >
-                    {isLoading ? 'Updating...' : 'Update Package'}
-                  </Button>
-                </Group>
-              </Stack>
-            </form>
-          </Card>
+            {/* Add Tasks Component */}
+            <AddTasksPackage
+              organizationConfig={organizationConfig}
+              user={user}
+              packageId={packageId}
+              required={true}
+              fetchPackageDetails={fetchPackageDetails}
+            />
 
-          {/* Add Tasks Component */}
-          <AddTasksPackage
-            organizationConfig={organizationConfig}
-            user={user}
-            packageId={packageId}
-            required={true}
-            fetchPackageDetails={fetchPackageDetails}
-          />
-
-          {/* Tasks Table Component */}
-          <PackageTasksTable
-            organizationConfig={organizationConfig}
-            tasks={tasks}
-            fetchPackageDetails={fetchPackageDetails}
-          />
-        </Stack>
-      )}
+            {/* Tasks Table Component */}
+            <PackageTasksTable
+              organizationConfig={organizationConfig}
+              tasks={tasks}
+              fetchPackageDetails={fetchPackageDetails}
+            />
+          </Stack>
+        </DataView>
+      </Stack>
 
       <DeletePackageModel
         agreeTerms={agreeTerms}

@@ -21,6 +21,7 @@ import {
   TextInput,
   Box
 } from '@mantine/core';
+import PremiumLoader from '@components/common/loaders/PremiumLoader';
 import {
   IconBook,
   IconLayersSubtract,
@@ -150,9 +151,9 @@ const WriterDashboard = () => {
 
   const CourseCard = ({ course }: { course: Course }) => (
     <Card
-      shadow="xs"
-      radius="md"
-      p="md"
+      shadow='xs'
+      radius='md'
+      p='md'
       withBorder
       onClick={() =>
         navigate(
@@ -161,10 +162,10 @@ const WriterDashboard = () => {
       }
       style={{ position: 'relative', cursor: 'pointer' }}
     >
-      <Menu position="bottom-end" shadow="md" width={160}>
+      <Menu position='bottom-end' shadow='md' width={160}>
         <Menu.Target>
           <ActionIcon
-            variant="subtle"
+            variant='subtle'
             onClick={e => e.stopPropagation()}
             style={{
               position: 'absolute',
@@ -202,7 +203,7 @@ const WriterDashboard = () => {
             style={{ borderColor: currentThemeConfig.borderColor }}
           />
           <Menu.Item
-            color="red"
+            color='red'
             leftSection={<IconTrash size={16} />}
             onClick={e => {
               e.stopPropagation();
@@ -217,19 +218,19 @@ const WriterDashboard = () => {
       <Image
         src={course.thumbnail || '/public/course-thumbnail.png'}
         height={140}
-        radius="md"
-        mb="sm"
+        radius='md'
+        mb='sm'
       />
       <Stack gap={4}>
-        <Text fw={600} size="md" lineClamp={1}>
+        <Text fw={600} size='md' lineClamp={1}>
           {course.courseName}
         </Text>
-        <Text size="sm" c="dimmed" lineClamp={2}>
+        <Text size='sm' c='dimmed' lineClamp={2}>
           {course.courseDescription
             ? `${course.courseDescription.replace(/<[^>]*>/g, '').slice(0, 64)}...`
             : 'No description available'}
         </Text>
-        <Badge color="blue" mt="xs" radius="sm" variant="light">
+        <Badge color='blue' mt='xs' radius='sm' variant='light'>
           {course.status || 'N/A'}
         </Badge>
       </Stack>
@@ -239,21 +240,21 @@ const WriterDashboard = () => {
   if (isLoading) {
     return (
       <Center h={400}>
-        <Loader size="lg" type="bars" color={currentThemeConfig.button.color} />
+        <PremiumLoader label='Loading content...' />
       </Center>
     );
   }
 
   if (showAllCourses) {
     return (
-      <Container size="xl" py="xl">
-        <Stack gap="lg">
-          <Group justify="space-between" align="center" wrap="nowrap">
-            <Group gap="sm">
+      <Container size='xl' py='xl'>
+        <Stack gap='lg'>
+          <Group justify='space-between' align='center' wrap='nowrap'>
+            <Group gap='sm'>
               <ActionIcon
-                variant="subtle"
-                color="gray"
-                size="lg"
+                variant='subtle'
+                color='gray'
+                size='lg'
                 onClick={() => {
                   setShowAllCourses(false);
                   setActivePage(1);
@@ -266,22 +267,22 @@ const WriterDashboard = () => {
             </Group>
             <Button
               leftSection={<IconPlus size={16} />}
-              radius="md"
-              visibleFrom="sm"
+              radius='md'
+              visibleFrom='sm'
               onClick={handleAddCourse}
             >
               Create New Course
             </Button>
           </Group>
 
-          <Card shadow="sm" p="md" radius="md" withBorder>
+          <Card shadow='sm' p='md' radius='md' withBorder>
             <TextInput
-              placeholder="Search courses..."
+              placeholder='Search courses...'
               leftSection={<IconSearch size={16} />}
               rightSection={
                 searchQuery && (
                   <ActionIcon
-                    variant="subtle"
+                    variant='subtle'
                     onClick={() => setSearchQuery('')}
                   >
                     <IconX size={16} />
@@ -293,18 +294,18 @@ const WriterDashboard = () => {
                 setSearchQuery(e.target.value);
                 setActivePage(1);
               }}
-              radius="md"
+              radius='md'
             />
           </Card>
 
-          <SimpleGrid cols={{ base: 1, xs: 2, sm: 2, md: 3 }} spacing="lg">
+          <SimpleGrid cols={{ base: 1, xs: 2, sm: 2, md: 3 }} spacing='lg'>
             {paginatedCourses.length > 0 ? (
               paginatedCourses.map((course: Course) => (
                 <CourseCard key={course._id} course={course} />
               ))
             ) : (
-              <Center style={{ gridColumn: '1 / -1' }} py="xl">
-                <Text size="sm" c="dimmed">
+              <Center style={{ gridColumn: '1 / -1' }} py='xl'>
+                <Text size='sm' c='dimmed'>
                   {searchQuery
                     ? 'No courses found matching your search.'
                     : 'No courses available.'}
@@ -314,13 +315,13 @@ const WriterDashboard = () => {
           </SimpleGrid>
 
           {totalPages > 1 && (
-            <Center mt="md">
+            <Center mt='md'>
               <Pagination
                 value={activePage}
                 onChange={setActivePage}
                 total={totalPages}
                 size={isMobile ? 'sm' : 'md'}
-                radius="md"
+                radius='md'
                 withEdges
               />
             </Center>
@@ -331,64 +332,64 @@ const WriterDashboard = () => {
   }
 
   return (
-    <Container size="xl" py="xl">
-      <Stack mb="xl" gap={4}>
+    <Container size='xl' py='xl'>
+      <Stack mb='xl' gap={4}>
         <Title order={1}>{overview.title}</Title>
-        <Text c="dimmed">
+        <Text c='dimmed'>
           Welcome to your dashboard! Here you can manage and track your content
           creation journey.
         </Text>
       </Stack>
 
-      <SimpleGrid cols={{ base: 1, lg: 2 }} spacing="xl">
+      <SimpleGrid cols={{ base: 1, lg: 2 }} spacing='xl'>
         {/* Left Side */}
-        <Stack gap="lg">
+        <Stack gap='lg'>
           <Card
-            shadow="sm"
-            p="xl"
-            radius="xl"
+            shadow='sm'
+            p='xl'
+            radius='xl'
             style={{
               background: 'linear-gradient(90deg, #6366F1, #8B5CF6, #EC4899)',
               color: 'white'
             }}
           >
-            <Group justify="space-between" align="center" wrap="nowrap">
+            <Group justify='space-between' align='center' wrap='nowrap'>
               <Stack gap={6} style={{ flex: 1 }}>
                 <Title order={2} fw={700}>
                   {overview.banner.headline}
                 </Title>
-                <Text size="sm" opacity={0.85}>
+                <Text size='sm' opacity={0.85}>
                   {overview.banner.tag}
                 </Text>
               </Stack>
               {!isMobile && (
                 <Image
                   src={overview.banner.thumbnailBanner}
-                  radius="md"
-                  alt="Banner"
-                  fit="contain"
+                  radius='md'
+                  alt='Banner'
+                  fit='contain'
                   style={{ width: 150, height: 120 }}
                 />
               )}
             </Group>
           </Card>
 
-          <SimpleGrid cols={3} spacing="md">
+          <SimpleGrid cols={3} spacing='md'>
             {[
               {
-                icon: <IconBook size={24} color="#4F46E5" />,
+                icon: <IconBook size={24} color='#4F46E5' />,
                 label: 'Courses',
                 value: stats.totalCourses,
                 color: 'indigo'
               },
               {
-                icon: <IconLayersSubtract size={24} color="#9333EA" />,
+                icon: <IconLayersSubtract size={24} color='#9333EA' />,
                 label: 'Modules',
                 value: stats.totalModules,
                 color: 'purple'
               },
               {
-                icon: <IconListCheck size={24} color="#EC4899" />,
+                icon: <IconListCheck size={24} color='#EC4899' />,
                 label: 'Tasks',
                 value: stats.totalTasks,
                 color: 'pink'
@@ -396,22 +397,22 @@ const WriterDashboard = () => {
             ].map((item, index) => (
               <Card
                 key={index}
-                shadow="sm"
-                p="md"
-                radius="md"
+                shadow='sm'
+                p='md'
+                radius='md'
                 withBorder
                 style={{ textAlign: 'center' }}
               >
-                <Stack align="center" gap={8}>
+                <Stack align='center' gap={8}>
                   <ThemeIcon
                     size={48}
-                    radius="xl"
+                    radius='xl'
                     color={item.color}
-                    variant="light"
+                    variant='light'
                   >
                     {item.icon}
                   </ThemeIcon>
-                  <Text size="xs" c="dimmed">
+                  <Text size='xs' c='dimmed'>
                     {item.label}
                   </Text>
                   <Title order={3}>{item.value}</Title>
@@ -420,17 +421,17 @@ const WriterDashboard = () => {
             ))}
           </SimpleGrid>
 
-          <Card shadow="sm" p="lg" radius="md" withBorder>
-            <Title order={5} mb="sm">
+          <Card shadow='sm' p='lg' radius='md' withBorder>
+            <Title order={5} mb='sm'>
               Recent Activity
             </Title>
-            <Divider mb="sm" />
-            <Stack gap="sm">
+            <Divider mb='sm' />
+            <Stack gap='sm'>
               {recentActivity.length > 0 ? (
                 recentActivity.map((item: any) => (
                   <Group
                     key={item.id}
-                    p="xs"
+                    p='xs'
                     onClick={() =>
                       navigate(
                         `${organizationEmployeeUrls(organizationConfig.organization_name)}/dashboard/course/${item.id}`
@@ -446,20 +447,20 @@ const WriterDashboard = () => {
                       src={item.thumbnail}
                       width={40}
                       height={40}
-                      radius="sm"
+                      radius='sm'
                     />
                     <Stack gap={0} style={{ flex: 1 }}>
-                      <Text size="sm" fw={500} lineClamp={1}>
+                      <Text size='sm' fw={500} lineClamp={1}>
                         {item.title}
                       </Text>
-                      <Text size="xs" c="dimmed">
+                      <Text size='xs' c='dimmed'>
                         {item.type}
                       </Text>
                     </Stack>
                   </Group>
                 ))
               ) : (
-                <Text size="sm" c="dimmed">
+                <Text size='sm' c='dimmed'>
                   No recent updates found.
                 </Text>
               )}
@@ -468,30 +469,30 @@ const WriterDashboard = () => {
         </Stack>
 
         {/* Right Side */}
-        <Stack gap="lg">
-          <Group justify="space-between">
+        <Stack gap='lg'>
+          <Group justify='space-between'>
             <Title order={3}>Content Pipeline</Title>
             <Button
               leftSection={<IconPlus size={16} />}
-              radius="md"
+              radius='md'
               onClick={handleAddCourse}
             >
               New Course
             </Button>
           </Group>
 
-          <Card shadow="sm" p="lg" radius="md" withBorder>
+          <Card shadow='sm' p='lg' radius='md' withBorder>
             <ScrollArea h={600} offsetScrollbars>
-              <SimpleGrid cols={isMobile ? 1 : 2} spacing="lg">
+              <SimpleGrid cols={isMobile ? 1 : 2} spacing='lg'>
                 {courses.slice(0, 4).map((course: Course) => (
                   <CourseCard key={course._id} course={course} />
                 ))}
               </SimpleGrid>
             </ScrollArea>
             <Button
-              mt="md"
+              mt='md'
               fullWidth
-              variant="outline"
+              variant='outline'
               onClick={() => setShowAllCourses(true)}
             >
               Show All Courses
@@ -503,19 +504,19 @@ const WriterDashboard = () => {
       <Modal
         opened={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
-        title="Delete Course"
+        title='Delete Course'
         centered
       >
-        <Stack gap="md">
+        <Stack gap='md'>
           <Text>
             Are you sure you want to delete this course? This action cannot be
             undone.
           </Text>
-          <Group justify="flex-end">
-            <Button variant="default" onClick={() => setDeleteModalOpen(false)}>
+          <Group justify='flex-end'>
+            <Button variant='default' onClick={() => setDeleteModalOpen(false)}>
               Cancel
             </Button>
-            <Button color="red" onClick={confirmDelete}>
+            <Button color='red' onClick={confirmDelete}>
               Delete
             </Button>
           </Group>

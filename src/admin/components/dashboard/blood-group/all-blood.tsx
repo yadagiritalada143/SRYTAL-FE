@@ -20,6 +20,8 @@ import {
   Flex,
   Divider
 } from '@mantine/core';
+import PremiumLoader from '@components/common/loaders/PremiumLoader';
+import DataView from '@components/common/loaders/DataView';
 import { useDisclosure, useMediaQuery } from '@mantine/hooks';
 import {
   IconEdit,
@@ -52,10 +54,10 @@ const BloodGroupActions: React.FC<{
   color: string;
   isMobile?: boolean;
 }> = ({ group, onEdit, color, isMobile = false }) => (
-  <Group gap="xs" justify="center">
-    <Tooltip label="Edit Blood Group">
+  <Group gap='xs' justify='center'>
+    <Tooltip label='Edit Blood Group'>
       <ActionIcon
-        variant="subtle"
+        variant='subtle'
         color={color}
         onClick={() => onEdit(group)}
         size={isMobile ? 'md' : 'sm'}
@@ -76,17 +78,17 @@ const MobileBloodGroupCard: React.FC<{
   onEdit: (group: any) => void;
 }> = ({ group, index, activePage, itemsPerPage, color, onEdit }) => {
   return (
-    <Card shadow="sm" p="md" mb="sm" withBorder>
-      <Stack gap="sm">
-        <Group justify="space-between" align="center">
-          <Badge variant="filled" color={color}>
+    <Card shadow='sm' p='md' mb='sm' withBorder>
+      <Stack gap='sm'>
+        <Group justify='space-between' align='center'>
+          <Badge variant='filled' color={color}>
             #{index + 1 + (activePage - 1) * itemsPerPage}
           </Badge>
           <ActionIcon
-            variant="subtle"
+            variant='subtle'
             color={color}
             onClick={() => onEdit(group)}
-            size="md"
+            size='md'
           >
             <IconEdit size={18} />
           </ActionIcon>
@@ -95,12 +97,12 @@ const MobileBloodGroupCard: React.FC<{
         <Divider />
 
         <Stack gap={2}>
-          <Text size="xs" fw={600} c="dimmed">
+          <Text size='xs' fw={600} c='dimmed'>
             Blood Group
           </Text>
-          <Group gap="xs">
-            <IconDroplet size={20} color="red" />
-            <Text size="lg" fw={600}>
+          <Group gap='xs'>
+            <IconDroplet size={20} color='red' />
+            <Text size='lg' fw={600}>
               {group.type}
             </Text>
           </Group>
@@ -116,12 +118,12 @@ const HeadingComponent: React.FC<{
   onAdd: () => void;
   isMobile?: boolean;
 }> = ({ filteredCount, onAdd, isMobile = false }) => (
-  <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder>
+  <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md' withBorder>
     <Flex
       direction={isMobile ? 'column' : 'row'}
-      justify="space-between"
-      align="center"
-      gap="md"
+      justify='space-between'
+      align='center'
+      gap='md'
     >
       <Text
         size={isMobile ? 'lg' : 'xl'}
@@ -133,10 +135,10 @@ const HeadingComponent: React.FC<{
       <Button
         leftSection={<IconPlus size={16} />}
         onClick={onAdd}
-        variant="filled"
+        variant='filled'
         fullWidth={isMobile}
         size={isMobile ? 'md' : 'sm'}
-        radius="md"
+        radius='md'
       >
         Add Blood Group
       </Button>
@@ -301,10 +303,10 @@ const BloodGroupTable = () => {
   }, [itemsPerPage]);
 
   return (
-    <Container size="lg">
+    <Container size='lg'>
       <Card
-        radius="lg"
-        p="lg"
+        radius='lg'
+        p='lg'
         withBorder
         shadow={isDarkTheme ? 'xs' : 'sm'}
         style={{
@@ -312,7 +314,7 @@ const BloodGroupTable = () => {
           border: `1px solid ${currentThemeConfig.borderColor}`
         }}
       >
-        <Stack gap="lg">
+        <Stack gap='lg'>
           {/* Header */}
           <HeadingComponent
             filteredCount={filteredBloodGroups.length}
@@ -321,25 +323,25 @@ const BloodGroupTable = () => {
           />
 
           {/* Filters */}
-          <Card shadow="sm" p={isMobile ? 'sm' : 'md'} radius="md">
+          <Card shadow='sm' p={isMobile ? 'sm' : 'md'} radius='md'>
             <Flex
               direction={isMobile ? 'column' : 'row'}
-              justify="space-between"
+              justify='space-between'
               align={isMobile ? 'stretch' : 'center'}
-              gap="md"
+              gap='md'
             >
               <TextInput
-                placeholder="Search by blood group..."
+                placeholder='Search by blood group...'
                 leftSection={<IconSearch size={16} />}
                 value={searchQuery}
                 onChange={handleSearch}
-                radius="md"
+                radius='md'
                 style={{ flex: 1 }}
               />
 
-              <Group justify="space-between" wrap="nowrap">
-                <Group gap="xs">
-                  <Text size="sm">Items per page:</Text>
+              <Group justify='space-between' wrap='nowrap'>
+                <Group gap='xs'>
+                  <Text size='sm'>Items per page:</Text>
                   <Select
                     data={ITEMS_PER_PAGE_OPTIONS}
                     value={itemsPerPage.toString()}
@@ -347,12 +349,12 @@ const BloodGroupTable = () => {
                       setItemsPerPage(Number(value) || DEFAULT_ITEMS_PER_PAGE)
                     }
                     w={80}
-                    size="sm"
+                    size='sm'
                   />
                 </Group>
 
                 {filteredBloodGroups.length !== bloodGroups.length && (
-                  <Badge variant="light" color={currentThemeConfig.dangerColor}>
+                  <Badge variant='light' color={currentThemeConfig.dangerColor}>
                     {filteredBloodGroups.length} of {bloodGroups.length} groups
                   </Badge>
                 )}
@@ -361,18 +363,11 @@ const BloodGroupTable = () => {
           </Card>
 
           {/* Table or Cards */}
-          <Card shadow="sm" p={0} radius="md">
-            {isLoading ? (
-              <Center p="xl">
-                <Stack align="center" gap="md">
-                  <Loader size="xl" />
-                  <Text>Loading blood groups...</Text>
-                </Stack>
-              </Center>
-            ) : isMobile ? (
+          <DataView isLoading={isLoading} label='blood groups'>
+            {isMobile ? (
               // Mobile Card View
-              <ScrollArea p="md">
-                <Stack gap="sm">
+              <ScrollArea p='md'>
+                <Stack gap='sm'>
                   {paginatedData.length > 0 ? (
                     paginatedData.map((group: any, index: number) => (
                       <MobileBloodGroupCard
@@ -386,24 +381,24 @@ const BloodGroupTable = () => {
                       />
                     ))
                   ) : (
-                    <Card p="xl" withBorder>
-                      <Stack align="center" gap="md">
+                    <Card p='xl' withBorder>
+                      <Stack align='center' gap='md'>
                         <IconDroplet
                           size={48}
                           opacity={0.5}
                           color={currentThemeConfig.dangerColor}
                         />
-                        <Text size="lg" ta="center">
+                        <Text size='lg' ta='center'>
                           No blood groups found
                         </Text>
-                        <Text size="sm" ta="center">
+                        <Text size='sm' ta='center'>
                           {searchQuery
                             ? 'Try adjusting your search'
                             : 'Start by adding your first blood group'}
                         </Text>
                         {!searchQuery && (
                           <Button
-                            variant="light"
+                            variant='light'
                             leftSection={<IconPlus size={16} />}
                             onClick={openAddModal}
                             fullWidth={isSmallMobile}
@@ -442,23 +437,23 @@ const BloodGroupTable = () => {
                   >
                     <Table.Tr>
                       <Table.Th
-                        className="p-3 border text-center"
+                        className='p-3 border text-center'
                         style={{ width: '100px' }}
                       >
-                        <Text size="sm" fw={500}>
+                        <Text size='sm' fw={500}>
                           S.No
                         </Text>
                       </Table.Th>
-                      <Table.Th className="p-3 border">
-                        <Text size="sm" fw={500}>
+                      <Table.Th className='p-3 border'>
+                        <Text size='sm' fw={500}>
                           Blood Group
                         </Text>
                       </Table.Th>
                       <Table.Th
-                        className="p-3 border text-center"
+                        className='p-3 border text-center'
                         style={{ width: '120px' }}
                       >
-                        <Text size="sm" fw={500}>
+                        <Text size='sm' fw={500}>
                           Actions
                         </Text>
                       </Table.Th>
@@ -467,22 +462,22 @@ const BloodGroupTable = () => {
                   <Table.Tbody>
                     {paginatedData.length > 0 ? (
                       paginatedData.map((group: any, index: number) => (
-                        <Table.Tr key={group.id} className="transition-colors">
-                          <Table.Td className="text-center">
-                            <Text size="sm">
+                        <Table.Tr key={group.id} className='transition-colors'>
+                          <Table.Td className='text-center'>
+                            <Text size='sm'>
                               {index + 1 + (activePage - 1) * itemsPerPage}
                             </Text>
                           </Table.Td>
-                          <Table.Td className="p-3">
-                            <Group gap="xs">
+                          <Table.Td className='p-3'>
+                            <Group gap='xs'>
                               <IconDroplet
                                 size={18}
                                 color={currentThemeConfig.dangerColor}
                               />
-                              <Text size="sm">{group.type}</Text>
+                              <Text size='sm'>{group.type}</Text>
                             </Group>
                           </Table.Td>
-                          <Table.Td className="p-3">
+                          <Table.Td className='p-3'>
                             <BloodGroupActions
                               group={group}
                               onEdit={handleEdit}
@@ -493,22 +488,22 @@ const BloodGroupTable = () => {
                       ))
                     ) : (
                       <Table.Tr>
-                        <Table.Td colSpan={3} className="text-center p-8">
-                          <Stack align="center" gap="md">
+                        <Table.Td colSpan={3} className='text-center p-8'>
+                          <Stack align='center' gap='md'>
                             <IconDroplet
                               size={48}
                               opacity={0.5}
                               color={currentThemeConfig.dangerColor}
                             />
-                            <Text size="lg">No blood groups found</Text>
-                            <Text size="sm">
+                            <Text size='lg'>No blood groups found</Text>
+                            <Text size='sm'>
                               {searchQuery
                                 ? 'Try adjusting your search'
                                 : 'Start by adding your first blood group'}
                             </Text>
                             {!searchQuery && (
                               <Button
-                                variant="light"
+                                variant='light'
                                 leftSection={<IconPlus size={16} />}
                                 onClick={openAddModal}
                               >
@@ -523,7 +518,7 @@ const BloodGroupTable = () => {
                 </Table>
               </ScrollArea>
             )}
-          </Card>
+          </DataView>
 
           {/* Pagination */}
           {totalPages > 1 && (
@@ -534,7 +529,7 @@ const BloodGroupTable = () => {
                 total={totalPages}
                 color={currentThemeConfig.button.color}
                 size={isMobile ? 'sm' : 'md'}
-                radius="md"
+                radius='md'
                 withEdges
               />
             </Center>
@@ -546,19 +541,19 @@ const BloodGroupTable = () => {
           opened={addModalOpened}
           onClose={closeAddModal}
           title={
-            <Group gap="xs">
+            <Group gap='xs'>
               <IconDroplet
                 size={20}
                 stroke={1.8}
                 color={currentThemeConfig.button.color}
               />
-              <Text fw={600} size="lg">
+              <Text fw={600} size='lg'>
                 Add New Blood Group
               </Text>
             </Group>
           }
           centered
-          size="md"
+          size='md'
           styles={{
             header: {
               paddingBottom: 4,
@@ -566,10 +561,10 @@ const BloodGroupTable = () => {
             }
           }}
         >
-          <Stack gap="md">
+          <Stack gap='md'>
             <TextInput
-              mt="md"
-              label="Blood Group"
+              mt='md'
+              label='Blood Group'
               value={newGroupName}
               onChange={e => {
                 const value = e.target.value;
@@ -581,20 +576,20 @@ const BloodGroupTable = () => {
                   setNewGroupName(value);
                 }
               }}
-              placeholder="e.g., A+, B-, AB+, O-"
+              placeholder='e.g., A+, B-, AB+, O-'
               required
-              size="md"
-              description="Valid formats: A+, B-, AB+, O-, etc."
+              size='md'
+              description='Valid formats: A+, B-, AB+, O-, etc.'
             />
-            <Group justify="flex-end" mt="xs">
-              <Button variant="default" onClick={closeAddModal} radius="md">
+            <Group justify='flex-end' mt='xs'>
+              <Button variant='default' onClick={closeAddModal} radius='md'>
                 Cancel
               </Button>
               <Button
                 onClick={handleAdd}
                 disabled={isMutating || !newGroupName.trim()}
                 leftSection={<IconDeviceFloppy size={16} />}
-                radius="md"
+                radius='md'
               >
                 {isAdding ? 'Adding...' : 'Add Blood Group'}
               </Button>
@@ -607,15 +602,15 @@ const BloodGroupTable = () => {
           opened={editModalOpened}
           onClose={closeEditModal}
           title={
-            <Group gap="xs">
+            <Group gap='xs'>
               <IconEdit size={20} color={currentThemeConfig.button.color} />
-              <Text fw={600} size="lg">
+              <Text fw={600} size='lg'>
                 Edit Blood Group
               </Text>
             </Group>
           }
           centered
-          size="md"
+          size='md'
           styles={{
             header: {
               paddingBottom: 4,
@@ -623,10 +618,10 @@ const BloodGroupTable = () => {
             }
           }}
         >
-          <Stack gap="md">
+          <Stack gap='md'>
             <TextInput
-              mt="md"
-              label="Blood Group"
+              mt='md'
+              label='Blood Group'
               value={selectedGroup?.type || ''}
               onChange={e => {
                 const value = e.target.value;
@@ -642,17 +637,17 @@ const BloodGroupTable = () => {
                 }
               }}
               required
-              size="md"
-              description="Valid formats: A+, B-, AB+, O-, etc."
+              size='md'
+              description='Valid formats: A+, B-, AB+, O-, etc.'
             />
-            <Group justify="space-between">
+            <Group justify='space-between'>
               {isMobile ? (
-                <Tooltip label="Delete Blood Group">
+                <Tooltip label='Delete Blood Group'>
                   <Button
                     onClick={openDeleteModal}
-                    p="xs"
-                    radius="md"
-                    variant="outline"
+                    p='xs'
+                    radius='md'
+                    variant='outline'
                   >
                     <IconTrash size={16} />
                   </Button>
@@ -660,23 +655,23 @@ const BloodGroupTable = () => {
               ) : (
                 <Button
                   color={currentThemeConfig.dangerColor}
-                  variant="outline"
+                  variant='outline'
                   leftSection={<IconTrash size={16} />}
                   onClick={() => handleDelete(selectedGroup.id)}
-                  radius="md"
+                  radius='md'
                 >
                   Delete
                 </Button>
               )}
               <Group>
-                <Button variant="default" onClick={closeEditModal} radius="md">
+                <Button variant='default' onClick={closeEditModal} radius='md'>
                   Cancel
                 </Button>
                 <Button
                   onClick={confirmEdit}
                   disabled={isMutating}
                   leftSection={<IconDeviceFloppy size={16} />}
-                  radius="md"
+                  radius='md'
                 >
                   {isUpdating ? 'Saving...' : 'Save'}
                 </Button>
@@ -690,26 +685,26 @@ const BloodGroupTable = () => {
           opened={deleteModalOpened}
           onClose={closeDeleteModal}
           title={
-            <Group gap="xs">
+            <Group gap='xs'>
               <IconAlertTriangle
                 size={24}
                 color={currentThemeConfig.dangerColor}
               />
-              <Text fw={600} size="lg" c={currentThemeConfig.dangerColor}>
+              <Text fw={600} size='lg' c={currentThemeConfig.dangerColor}>
                 Delete Blood Group
               </Text>
             </Group>
           }
           centered
-          size="md"
+          size='md'
         >
-          <Stack gap="md">
-            <Text size="sm" mt="md">
+          <Stack gap='md'>
+            <Text size='sm' mt='md'>
               Are you sure you want to delete this blood group? This action
               cannot be undone.
             </Text>
-            <Group justify="flex-end" mt="md">
-              <Button variant="default" onClick={closeDeleteModal} radius="md">
+            <Group justify='flex-end' mt='md'>
+              <Button variant='default' onClick={closeDeleteModal} radius='md'>
                 Cancel
               </Button>
               <Button
@@ -717,7 +712,7 @@ const BloodGroupTable = () => {
                 onClick={confirmDelete}
                 disabled={isMutating}
                 leftSection={<IconTrash size={16} />}
-                radius="md"
+                radius='md'
               >
                 {isDeleting ? 'Deleting...' : 'Delete'}
               </Button>

@@ -14,9 +14,10 @@ import {
   Divider,
   Flex,
   Container,
-  Loader,
   Center
 } from '@mantine/core';
+import PremiumLoader from '@components/common/loaders/PremiumLoader';
+import DataView from '@components/common/loaders/DataView';
 import { useCustomToast } from '@utils/common/toast';
 import React, { useEffect, useState } from 'react';
 import {
@@ -126,25 +127,12 @@ const UpdatePoolCandidateForm = () => {
     }
   };
 
-  if (isLoading) {
-    return (
-      <Container size="xl" py="xl">
-        <Center style={{ minHeight: '400px' }}>
-          <Stack align="center" gap="md">
-            <Loader size="xl" />
-            <Text>Loading candidate details...</Text>
-          </Stack>
-        </Center>
-      </Container>
-    );
-  }
-
   return (
-    <Container size="xl" py="md" my="xl" px={isSmallMobile ? 'xs' : 'md'}>
-      <Stack gap="md">
+    <Container size='xl' py='md' my='xl' px={isSmallMobile ? 'xs' : 'md'}>
+      <Stack gap='md'>
         {/* Header Card */}
-        <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder>
-          <Flex direction="row" justify="space-between" align="center" gap="md">
+        <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md' withBorder>
+          <Flex direction='row' justify='space-between' align='center' gap='md'>
             <Text
               size={isMobile ? 'lg' : 'xl'}
               fw={700}
@@ -156,242 +144,251 @@ const UpdatePoolCandidateForm = () => {
           </Flex>
         </Card>
 
-        {/* Candidate Form Card */}
-        <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder>
-          <form onSubmit={handleSubmit(handleUpdateCandidate)}>
-            <Stack gap="md">
-              <Controller
-                name="candidateName"
-                control={control}
-                render={({ field }) => (
-                  <TextInput
-                    label="Candidate Name"
-                    placeholder="Enter candidate name"
-                    {...field}
-                    error={errors.candidateName?.message}
-                    size={isMobile ? 'sm' : 'md'}
-                  />
-                )}
-              />
-
-              <Grid gutter="md">
-                <Grid.Col span={{ base: 12, sm: 6 }}>
+        <DataView isLoading={isLoading} label='candidate details'>
+          <Stack gap='md'>
+            {/* Candidate Form Card */}
+            <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md' withBorder>
+              <form onSubmit={handleSubmit(handleUpdateCandidate)}>
+                <Stack gap='md'>
                   <Controller
-                    name="contact.email"
+                    name='candidateName'
                     control={control}
                     render={({ field }) => (
                       <TextInput
-                        label="Email"
-                        placeholder="candidate@example.com"
+                        label='Candidate Name'
+                        placeholder='Enter candidate name'
                         {...field}
-                        error={errors.contact?.email?.message}
+                        error={errors.candidateName?.message}
                         size={isMobile ? 'sm' : 'md'}
                       />
                     )}
                   />
-                </Grid.Col>
-                <Grid.Col span={{ base: 12, sm: 6 }}>
-                  <Controller
-                    name="contact.phone"
-                    control={control}
-                    render={({ field }) => (
-                      <TextInput
-                        label="Phone"
-                        placeholder="+1234567890"
-                        {...field}
-                        error={errors.contact?.phone?.message}
-                        size={isMobile ? 'sm' : 'md'}
-                      />
-                    )}
-                  />
-                </Grid.Col>
-              </Grid>
 
-              <Grid gutter="md">
-                <Grid.Col span={{ base: 12, sm: 6 }}>
-                  <Controller
-                    name="totalYearsOfExperience"
-                    control={control}
-                    render={({ field }) => (
-                      <NumberInput
-                        label="Total Experience (Years)"
-                        placeholder="0"
-                        {...field}
-                        min={0}
-                        error={errors.totalYearsOfExperience?.message}
-                        size={isMobile ? 'sm' : 'md'}
+                  <Grid gutter='md'>
+                    <Grid.Col span={{ base: 12, sm: 6 }}>
+                      <Controller
+                        name='contact.email'
+                        control={control}
+                        render={({ field }) => (
+                          <TextInput
+                            label='Email'
+                            placeholder='candidate@example.com'
+                            {...field}
+                            error={errors.contact?.email?.message}
+                            size={isMobile ? 'sm' : 'md'}
+                          />
+                        )}
                       />
-                    )}
-                  />
-                </Grid.Col>
-                <Grid.Col span={{ base: 12, sm: 6 }}>
-                  <Controller
-                    name="relaventYearsOfExperience"
-                    control={control}
-                    render={({ field }) => (
-                      <NumberInput
-                        label="Relevant Experience (Years)"
-                        placeholder="0"
-                        {...field}
-                        min={0}
-                        error={
-                          (field.value || 0) >
-                          (getValues('totalYearsOfExperience') || 0)
-                            ? 'Relevant experience cannot be more than total experience'
-                            : errors.relaventYearsOfExperience?.message
-                        }
-                        size={isMobile ? 'sm' : 'md'}
+                    </Grid.Col>
+                    <Grid.Col span={{ base: 12, sm: 6 }}>
+                      <Controller
+                        name='contact.phone'
+                        control={control}
+                        render={({ field }) => (
+                          <TextInput
+                            label='Phone'
+                            placeholder='+1234567890'
+                            {...field}
+                            error={errors.contact?.phone?.message}
+                            size={isMobile ? 'sm' : 'md'}
+                          />
+                        )}
                       />
+                    </Grid.Col>
+                  </Grid>
+
+                  <Grid gutter='md'>
+                    <Grid.Col span={{ base: 12, sm: 6 }}>
+                      <Controller
+                        name='totalYearsOfExperience'
+                        control={control}
+                        render={({ field }) => (
+                          <NumberInput
+                            label='Total Experience (Years)'
+                            placeholder='0'
+                            {...field}
+                            min={0}
+                            error={errors.totalYearsOfExperience?.message}
+                            size={isMobile ? 'sm' : 'md'}
+                          />
+                        )}
+                      />
+                    </Grid.Col>
+                    <Grid.Col span={{ base: 12, sm: 6 }}>
+                      <Controller
+                        name='relaventYearsOfExperience'
+                        control={control}
+                        render={({ field }) => (
+                          <NumberInput
+                            label='Relevant Experience (Years)'
+                            placeholder='0'
+                            {...field}
+                            min={0}
+                            error={
+                              (field.value || 0) >
+                              (getValues('totalYearsOfExperience') || 0)
+                                ? 'Relevant experience cannot be more than total experience'
+                                : errors.relaventYearsOfExperience?.message
+                            }
+                            size={isMobile ? 'sm' : 'md'}
+                          />
+                        )}
+                      />
+                    </Grid.Col>
+                  </Grid>
+
+                  <Divider />
+
+                  {/* Skills Section */}
+                  <Stack gap='xs'>
+                    <Input.Wrapper label='Skills' size={isMobile ? 'sm' : 'md'}>
+                      <Group gap='xs' mt='xs'>
+                        <TextInput
+                          value={skillInput}
+                          onChange={e => setSkillInput(e.target.value)}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              handleSkillAdd();
+                            }
+                          }}
+                          placeholder='Type a skill and press Enter'
+                          style={{ flex: 1 }}
+                          size={isMobile ? 'sm' : 'md'}
+                        />
+                        <Button
+                          onClick={handleSkillAdd}
+                          leftSection={<IconPlus size={16} />}
+                          size={isMobile ? 'sm' : 'md'}
+                          radius='md'
+                        >
+                          Add
+                        </Button>
+                      </Group>
+                    </Input.Wrapper>
+
+                    {skills.length > 0 && (
+                      <Group gap='xs' mt='xs'>
+                        {skills.map(skill => (
+                          <Badge
+                            key={skill}
+                            size='lg'
+                            variant='filled'
+                            color={currentThemeConfig.button.color}
+                            rightSection={
+                              <IconX
+                                size={14}
+                                style={{ cursor: 'pointer' }}
+                                onClick={() => handleSkillRemove(skill)}
+                              />
+                            }
+                            style={{ cursor: 'pointer' }}
+                          >
+                            {skill}
+                          </Badge>
+                        ))}
+                      </Group>
                     )}
-                  />
-                </Grid.Col>
-              </Grid>
+                  </Stack>
 
-              <Divider />
+                  <Divider />
 
-              {/* Skills Section */}
-              <Stack gap="xs">
-                <Input.Wrapper label="Skills" size={isMobile ? 'sm' : 'md'}>
-                  <Group gap="xs" mt="xs">
-                    <TextInput
-                      value={skillInput}
-                      onChange={e => setSkillInput(e.target.value)}
-                      onKeyDown={e => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          handleSkillAdd();
-                        }
-                      }}
-                      placeholder="Type a skill and press Enter"
-                      style={{ flex: 1 }}
-                      size={isMobile ? 'sm' : 'md'}
-                    />
+                  {/* Action Buttons */}
+                  <Group
+                    justify='space-between'
+                    wrap={isMobile ? 'wrap' : 'nowrap'}
+                  >
                     <Button
-                      onClick={handleSkillAdd}
-                      leftSection={<IconPlus size={16} />}
-                      size={isMobile ? 'sm' : 'md'}
-                      radius="md"
+                      color='red'
+                      variant='filled'
+                      leftSection={<IconTrash size={16} />}
+                      onClick={open}
+                      fullWidth={isMobile}
+                      size={isMobile ? 'md' : 'sm'}
+                      radius='md'
                     >
-                      Add
+                      Delete Candidate
+                    </Button>
+                    <Button
+                      type='submit'
+                      disabled={isSubmitting}
+                      loading={isSubmitting}
+                      loaderProps={{
+                        children: <PremiumLoader size='xs' minHeight='20px' />
+                      }}
+                      leftSection={<IconDeviceFloppy size={16} />}
+                      fullWidth={isMobile}
+                      size={isMobile ? 'md' : 'sm'}
+                      radius='md'
+                    >
+                      {isSubmitting ? 'Updating...' : 'Update Candidate'}
                     </Button>
                   </Group>
-                </Input.Wrapper>
+                </Stack>
+              </form>
+            </Card>
 
-                {skills.length > 0 && (
-                  <Group gap="xs" mt="xs">
-                    {skills.map(skill => (
-                      <Badge
-                        key={skill}
-                        size="lg"
-                        variant="filled"
-                        color={currentThemeConfig.button.color}
-                        rightSection={
-                          <IconX
-                            size={14}
-                            style={{ cursor: 'pointer' }}
-                            onClick={() => handleSkillRemove(skill)}
-                          />
-                        }
-                        style={{ cursor: 'pointer' }}
-                      >
-                        {skill}
-                      </Badge>
-                    ))}
-                  </Group>
-                )}
+            {/* Delete Modal */}
+            <StandardModal
+              title={
+                <Title order={3} c='red'>
+                  Delete Action
+                </Title>
+              }
+              size='md'
+              opened={opened}
+              onClose={close}
+            >
+              <Stack gap='md'>
+                <Text size='lg' fw={700}>
+                  Sure want to delete this Candidate?
+                </Text>
+                <Text size='sm' c='dimmed'>
+                  Please be aware of doing this action! Deleting candidate is an
+                  un-reversible action and you should be aware while doing this.
+                </Text>
+
+                <Stack gap='sm' mt='md'>
+                  <Checkbox
+                    label='I understand what are the consequences of doing this action!'
+                    checked={confirmDelete}
+                    onChange={e => setConfirmDelete(e.currentTarget.checked)}
+                    required
+                  />
+                  <Checkbox
+                    label='I understand that this candidate details are not a part of our application forever. I agreed to the Terms and Conditions to perform this action'
+                    checked={agreeTerms}
+                    onChange={e => setAgreeTerms(e.currentTarget.checked)}
+                  />
+                </Stack>
+
+                <Group justify='space-between' mt='xl'>
+                  <Button
+                    color='red'
+                    variant='filled'
+                    onClick={() =>
+                      handleDeleteCandidate(candidateId!, agreeTerms)
+                    }
+                    disabled={!confirmDelete}
+                    leftSection={<IconTrash size={16} />}
+                    radius='md'
+                  >
+                    Delete
+                  </Button>
+                  <Button variant='default' onClick={close} radius='md'>
+                    Cancel
+                  </Button>
+                </Group>
               </Stack>
+            </StandardModal>
 
-              <Divider />
+            {/* Add Comment Section */}
+            <AddComment candidateId={candidateId} />
 
-              {/* Action Buttons */}
-              <Group
-                justify="space-between"
-                wrap={isMobile ? 'wrap' : 'nowrap'}
-              >
-                <Button
-                  color="red"
-                  variant="filled"
-                  leftSection={<IconTrash size={16} />}
-                  onClick={open}
-                  fullWidth={isMobile}
-                  size={isMobile ? 'md' : 'sm'}
-                  radius="md"
-                >
-                  Delete Candidate
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  loading={isSubmitting}
-                  leftSection={<IconDeviceFloppy size={16} />}
-                  fullWidth={isMobile}
-                  size={isMobile ? 'md' : 'sm'}
-                  radius="md"
-                >
-                  {isSubmitting ? 'Updating...' : 'Update Candidate'}
-                </Button>
-              </Group>
-            </Stack>
-          </form>
-        </Card>
-
-        {/* Delete Modal */}
-        <StandardModal
-          title={
-            <Title order={3} c="red">
-              Delete Action
-            </Title>
-          }
-          size="md"
-          opened={opened}
-          onClose={close}
-        >
-          <Stack gap="md">
-            <Text size="lg" fw={700}>
-              Sure want to delete this Candidate?
-            </Text>
-            <Text size="sm" c="dimmed">
-              Please be aware of doing this action! Deleting candidate is an
-              un-reversible action and you should be aware while doing this.
-            </Text>
-
-            <Stack gap="sm" mt="md">
-              <Checkbox
-                label="I understand what are the consequences of doing this action!"
-                checked={confirmDelete}
-                onChange={e => setConfirmDelete(e.currentTarget.checked)}
-                required
-              />
-              <Checkbox
-                label="I understand that this candidate details are not a part of our application forever. I agreed to the Terms and Conditions to perform this action"
-                checked={agreeTerms}
-                onChange={e => setAgreeTerms(e.currentTarget.checked)}
-              />
-            </Stack>
-
-            <Group justify="space-between" mt="xl">
-              <Button
-                color="red"
-                variant="filled"
-                onClick={() => handleDeleteCandidate(candidateId!, agreeTerms)}
-                disabled={!confirmDelete}
-                leftSection={<IconTrash size={16} />}
-                radius="md"
-              >
-                Delete
-              </Button>
-              <Button variant="default" onClick={close} radius="md">
-                Cancel
-              </Button>
-            </Group>
+            {/* Comments Table */}
+            <CommentsTable comments={candidate?.comments || []} />
           </Stack>
-        </StandardModal>
-
-        {/* Add Comment Section */}
-        <AddComment candidateId={candidateId} />
-
-        {/* Comments Table */}
-        <CommentsTable comments={candidate?.comments || []} />
+        </DataView>
       </Stack>
     </Container>
   );

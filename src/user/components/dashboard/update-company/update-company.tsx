@@ -14,9 +14,10 @@ import {
   Text,
   Divider,
   Grid,
-  Loader,
   Center
 } from '@mantine/core';
+import PremiumLoader from '@components/common/loaders/PremiumLoader';
+import DataView from '@components/common/loaders/DataView';
 import { useDisclosure, useMediaQuery } from '@mantine/hooks';
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -119,19 +120,6 @@ const UpdateCompany = () => {
     }
   };
 
-  if (isLoading) {
-    return (
-      <Container size='xl' py='xl'>
-        <Center style={{ minHeight: '60vh' }}>
-          <Stack align='center' gap='md'>
-            <Loader size='xl' />
-            <Text>Loading company details...</Text>
-          </Stack>
-        </Center>
-      </Container>
-    );
-  }
-
   return (
     <Container size='xl' py='md' my='xl' px={isSmallMobile ? 'xs' : 'md'}>
       <Stack gap='md'>
@@ -149,201 +137,212 @@ const UpdateCompany = () => {
           </Group>
         </Card>
 
-        {/* Main Form Card */}
-        <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md' withBorder>
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <Stack gap='lg'>
-              {/* Company Name and Status */}
-              <Grid gutter='md'>
-                <Grid.Col span={{ base: 12, sm: 6 }}>
-                  <TextInput
-                    {...register('companyName')}
-                    label='Company Name'
-                    disabled
-                    error={errors.companyName?.message}
-                    size={isMobile ? 'sm' : 'md'}
-                    autoComplete='off'
-                  />
-                </Grid.Col>
-                <Grid.Col span={{ base: 12, sm: 6 }}>
-                  <Controller
-                    name='status'
-                    control={control}
-                    render={({ field }: { field: any }) => (
-                      <Select
-                        label='Select Status'
-                        placeholder='Pick value'
-                        {...field}
-                        data={[
-                          { value: 'Created', label: 'Created' },
-                          { value: 'Followed Up', label: 'Followed Up' },
-                          {
-                            value: 'Waiting For Response',
-                            label: 'Waiting For Response'
-                          },
-                          { value: 'Not Interested', label: 'Not Interested' },
-                          { value: 'On Boarded', label: 'On Boarded' },
-                          { value: 'Closed', label: 'Closed' }
-                        ]}
-                        value={field.value}
-                        size={isMobile ? 'sm' : 'md'}
-                      />
-                    )}
-                  />
-                </Grid.Col>
-              </Grid>
-
-              <Divider />
-
-              {/* Primary Contact */}
-              <Card withBorder p='md' radius='md'>
-                <Stack gap='md'>
-                  <Text size='lg' fw={600}>
-                    Primary Contact
-                  </Text>
+        <DataView isLoading={isLoading} label='company details'>
+          <Stack gap='md'>
+            {/* Main Form Card */}
+            <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md' withBorder>
+              <form onSubmit={handleSubmit(onSubmit)}>
+                <Stack gap='lg'>
+                  {/* Company Name and Status */}
                   <Grid gutter='md'>
-                    <Grid.Col span={12}>
+                    <Grid.Col span={{ base: 12, sm: 6 }}>
                       <TextInput
-                        {...register('primaryContact.name')}
-                        label='Name'
-                        error={errors.primaryContact?.name?.message}
+                        {...register('companyName')}
+                        label='Company Name'
+                        disabled
+                        error={errors.companyName?.message}
                         size={isMobile ? 'sm' : 'md'}
                         autoComplete='off'
                       />
                     </Grid.Col>
                     <Grid.Col span={{ base: 12, sm: 6 }}>
-                      <TextInput
-                        {...register('primaryContact.email')}
-                        label='Email'
-                        error={errors.primaryContact?.email?.message}
-                        size={isMobile ? 'sm' : 'md'}
-                        autoComplete='off'
-                      />
-                    </Grid.Col>
-                    <Grid.Col span={{ base: 12, sm: 6 }}>
-                      <TextInput
-                        {...register('primaryContact.phone')}
-                        label='Phone'
-                        error={errors.primaryContact?.phone?.message}
-                        size={isMobile ? 'sm' : 'md'}
-                        autoComplete='off'
+                      <Controller
+                        name='status'
+                        control={control}
+                        render={({ field }: { field: any }) => (
+                          <Select
+                            label='Select Status'
+                            placeholder='Pick value'
+                            {...field}
+                            data={[
+                              { value: 'Created', label: 'Created' },
+                              { value: 'Followed Up', label: 'Followed Up' },
+                              {
+                                value: 'Waiting For Response',
+                                label: 'Waiting For Response'
+                              },
+                              {
+                                value: 'Not Interested',
+                                label: 'Not Interested'
+                              },
+                              { value: 'On Boarded', label: 'On Boarded' },
+                              { value: 'Closed', label: 'Closed' }
+                            ]}
+                            value={field.value}
+                            size={isMobile ? 'sm' : 'md'}
+                          />
+                        )}
                       />
                     </Grid.Col>
                   </Grid>
+
+                  <Divider />
+
+                  {/* Primary Contact */}
+                  <Card withBorder p='md' radius='md'>
+                    <Stack gap='md'>
+                      <Text size='lg' fw={600}>
+                        Primary Contact
+                      </Text>
+                      <Grid gutter='md'>
+                        <Grid.Col span={12}>
+                          <TextInput
+                            {...register('primaryContact.name')}
+                            label='Name'
+                            error={errors.primaryContact?.name?.message}
+                            size={isMobile ? 'sm' : 'md'}
+                            autoComplete='off'
+                          />
+                        </Grid.Col>
+                        <Grid.Col span={{ base: 12, sm: 6 }}>
+                          <TextInput
+                            {...register('primaryContact.email')}
+                            label='Email'
+                            error={errors.primaryContact?.email?.message}
+                            size={isMobile ? 'sm' : 'md'}
+                            autoComplete='off'
+                          />
+                        </Grid.Col>
+                        <Grid.Col span={{ base: 12, sm: 6 }}>
+                          <TextInput
+                            {...register('primaryContact.phone')}
+                            label='Phone'
+                            error={errors.primaryContact?.phone?.message}
+                            size={isMobile ? 'sm' : 'md'}
+                            autoComplete='off'
+                          />
+                        </Grid.Col>
+                      </Grid>
+                    </Stack>
+                  </Card>
+
+                  {/* Secondary Contacts */}
+                  <Grid gutter='md'>
+                    <Grid.Col span={{ base: 12, md: 6 }}>
+                      <Card withBorder p='md' radius='md'>
+                        <Stack gap='md'>
+                          <Text size='lg' fw={600}>
+                            Secondary Contact 1
+                          </Text>
+                          <TextInput
+                            {...register('secondaryContact_1.name')}
+                            label='Name'
+                            error={errors.secondaryContact_1?.name?.message}
+                            size={isMobile ? 'sm' : 'md'}
+                            autoComplete='off'
+                          />
+                          <TextInput
+                            {...register('secondaryContact_1.email')}
+                            label='Email'
+                            error={errors.secondaryContact_1?.email?.message}
+                            size={isMobile ? 'sm' : 'md'}
+                            autoComplete='off'
+                          />
+                          <TextInput
+                            {...register('secondaryContact_1.phone')}
+                            label='Phone'
+                            error={errors.secondaryContact_1?.phone?.message}
+                            size={isMobile ? 'sm' : 'md'}
+                            autoComplete='off'
+                          />
+                        </Stack>
+                      </Card>
+                    </Grid.Col>
+
+                    <Grid.Col span={{ base: 12, md: 6 }}>
+                      <Card withBorder p='md' radius='md'>
+                        <Stack gap='md'>
+                          <Text size='lg' fw={600}>
+                            Secondary Contact 2
+                          </Text>
+                          <TextInput
+                            {...register('secondaryContact_2.name')}
+                            label='Name'
+                            error={errors.secondaryContact_2?.name?.message}
+                            size={isMobile ? 'sm' : 'md'}
+                            autoComplete='off'
+                          />
+                          <TextInput
+                            {...register('secondaryContact_2.email')}
+                            label='Email'
+                            error={errors.secondaryContact_2?.email?.message}
+                            size={isMobile ? 'sm' : 'md'}
+                            autoComplete='off'
+                          />
+                          <TextInput
+                            {...register('secondaryContact_2.phone')}
+                            label='Phone'
+                            autoComplete='off'
+                            error={errors.secondaryContact_2?.phone?.message}
+                            size={isMobile ? 'sm' : 'md'}
+                          />
+                        </Stack>
+                      </Card>
+                    </Grid.Col>
+                  </Grid>
+
+                  <Divider />
+
+                  {/* Action Buttons */}
+                  <Group
+                    justify='space-between'
+                    wrap={isMobile ? 'wrap' : 'nowrap'}
+                  >
+                    <Button
+                      color='red'
+                      variant='filled'
+                      leftSection={<IconTrash size={16} />}
+                      radius='md'
+                      onClick={e => {
+                        e.preventDefault();
+                        open();
+                      }}
+                      fullWidth={isMobile}
+                      size={isMobile ? 'md' : 'sm'}
+                    >
+                      Delete Company
+                    </Button>
+                    <Button
+                      type='submit'
+                      disabled={isSubmitting}
+                      loaderProps={{
+                        children: <PremiumLoader size='xs' minHeight='20px' />
+                      }}
+                      loading={isSubmitting}
+                      leftSection={<IconDeviceFloppy size={16} />}
+                      fullWidth={isMobile}
+                      size={isMobile ? 'md' : 'sm'}
+                      radius='md'
+                    >
+                      {isSubmitting ? 'Updating...' : 'Update Company'}
+                    </Button>
+                  </Group>
                 </Stack>
-              </Card>
+              </form>
+            </Card>
 
-              {/* Secondary Contacts */}
-              <Grid gutter='md'>
-                <Grid.Col span={{ base: 12, md: 6 }}>
-                  <Card withBorder p='md' radius='md'>
-                    <Stack gap='md'>
-                      <Text size='lg' fw={600}>
-                        Secondary Contact 1
-                      </Text>
-                      <TextInput
-                        {...register('secondaryContact_1.name')}
-                        label='Name'
-                        error={errors.secondaryContact_1?.name?.message}
-                        size={isMobile ? 'sm' : 'md'}
-                        autoComplete='off'
-                      />
-                      <TextInput
-                        {...register('secondaryContact_1.email')}
-                        label='Email'
-                        error={errors.secondaryContact_1?.email?.message}
-                        size={isMobile ? 'sm' : 'md'}
-                        autoComplete='off'
-                      />
-                      <TextInput
-                        {...register('secondaryContact_1.phone')}
-                        label='Phone'
-                        error={errors.secondaryContact_1?.phone?.message}
-                        size={isMobile ? 'sm' : 'md'}
-                        autoComplete='off'
-                      />
-                    </Stack>
-                  </Card>
-                </Grid.Col>
+            {/* Add Comment Section */}
+            <AddCommentPoolCompany companyId={companyId} isMobile={isMobile} />
 
-                <Grid.Col span={{ base: 12, md: 6 }}>
-                  <Card withBorder p='md' radius='md'>
-                    <Stack gap='md'>
-                      <Text size='lg' fw={600}>
-                        Secondary Contact 2
-                      </Text>
-                      <TextInput
-                        {...register('secondaryContact_2.name')}
-                        label='Name'
-                        error={errors.secondaryContact_2?.name?.message}
-                        size={isMobile ? 'sm' : 'md'}
-                        autoComplete='off'
-                      />
-                      <TextInput
-                        {...register('secondaryContact_2.email')}
-                        label='Email'
-                        error={errors.secondaryContact_2?.email?.message}
-                        size={isMobile ? 'sm' : 'md'}
-                        autoComplete='off'
-                      />
-                      <TextInput
-                        {...register('secondaryContact_2.phone')}
-                        label='Phone'
-                        autoComplete='off'
-                        error={errors.secondaryContact_2?.phone?.message}
-                        size={isMobile ? 'sm' : 'md'}
-                      />
-                    </Stack>
-                  </Card>
-                </Grid.Col>
-              </Grid>
-
-              <Divider />
-
-              {/* Action Buttons */}
-              <Group
-                justify='space-between'
-                wrap={isMobile ? 'wrap' : 'nowrap'}
-              >
-                <Button
-                  color='red'
-                  variant='filled'
-                  leftSection={<IconTrash size={16} />}
-                  radius='md'
-                  onClick={e => {
-                    e.preventDefault();
-                    open();
-                  }}
-                  fullWidth={isMobile}
-                  size={isMobile ? 'md' : 'sm'}
-                >
-                  Delete Company
-                </Button>
-                <Button
-                  type='submit'
-                  disabled={isSubmitting}
-                  leftSection={<IconDeviceFloppy size={16} />}
-                  fullWidth={isMobile}
-                  size={isMobile ? 'md' : 'sm'}
-                  radius='md'
-                >
-                  {isSubmitting ? 'Updating...' : 'Update Company'}
-                </Button>
-              </Group>
-            </Stack>
-          </form>
-        </Card>
-
-        {/* Add Comment Section */}
-        <AddCommentPoolCompany companyId={companyId} isMobile={isMobile} />
-
-        {/* Comments Table */}
-        <PoolCompaniesCommentsTable
-          organizationConfig={organizationConfig}
-          comments={comments}
-          currentThemeConfig={currentThemeConfig}
-          isMobile={isMobile}
-        />
+            {/* Comments Table */}
+            <PoolCompaniesCommentsTable
+              organizationConfig={organizationConfig}
+              comments={comments}
+              currentThemeConfig={currentThemeConfig}
+              isMobile={isMobile}
+            />
+          </Stack>
+        </DataView>
       </Stack>
 
       {/* Delete Confirmation Modal */}

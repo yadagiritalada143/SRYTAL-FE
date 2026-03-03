@@ -21,6 +21,7 @@ import {
   TextInput,
   Box
 } from '@mantine/core';
+import DataView from '@components/common/loaders/DataView';
 import {
   IconBook,
   IconLayersSubtract,
@@ -39,27 +40,26 @@ import { getAllCoursesByUser } from '@services/user-services';
 import { Course } from '@interfaces/contentwriter';
 import { useRecoilValue } from 'recoil';
 
-
 import { useMediaQuery } from '@mantine/hooks';
 import { useNavigate } from 'react-router-dom';
 import { organizationEmployeeUrls } from '@utils/common/constants';
 import { useAppTheme } from '@hooks/use-app-theme';
 
-
 const COURSES_PER_PAGE = 6;
 
 const WriterDashboard = () => {
   const [courses, setCourses] = useState<Course[]>([]);
-  const { themeConfig: currentThemeConfig, organizationConfig, isDarkTheme } = useAppTheme();
+  const {
+    themeConfig: currentThemeConfig,
+    organizationConfig,
+    isDarkTheme
+  } = useAppTheme();
   const [loading, setLoading] = useState(true);
   const [showAllCourses, setShowAllCourses] = useState(false);
   const [activePage, setActivePage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [courseToDelete, setCourseToDelete] = useState<string | null>(null);
-
-  
-  
 
   const isMobile = useMediaQuery('(max-width: 768px)');
 
@@ -71,7 +71,6 @@ const WriterDashboard = () => {
   const [recentActivity, setRecentActivity] = useState<
     { id: string; title: string; thumbnail: string; type: string }[]
   >([]);
-
 
   const overview = useMemo(
     () => ({
@@ -181,16 +180,16 @@ const WriterDashboard = () => {
 
   const CourseCard = ({ course }: { course: Course }) => (
     <Card
-      shadow="xs"
-      radius="md"
-      p="md"
+      shadow='xs'
+      radius='md'
+      p='md'
       withBorder
       style={{ position: 'relative' }}
     >
-      <Menu position="bottom-end" shadow="md" width={160}>
+      <Menu position='bottom-end' shadow='md' width={160}>
         <Menu.Target>
           <ActionIcon
-            variant="subtle"
+            variant='subtle'
             style={{
               position: 'absolute',
               top: 8,
@@ -221,7 +220,7 @@ const WriterDashboard = () => {
             style={{ borderColor: currentThemeConfig.borderColor }}
           />
           <Menu.Item
-            color="red"
+            color='red'
             leftSection={<IconTrash size={16} />}
             onClick={() => handleDelete(course._id)}
           >
@@ -233,21 +232,21 @@ const WriterDashboard = () => {
       <Image
         src={course.thumbnail || '/public/course-thumbnail.png'}
         height={140}
-        radius="md"
-        mb="sm"
+        radius='md'
+        mb='sm'
       />
       <Stack gap={4}>
-        <Text fw={600} size="md" lineClamp={1}>
+        <Text fw={600} size='md' lineClamp={1}>
           {course.courseName}
         </Text>
-        <Text size="sm" c="dimmed" lineClamp={2}>
+        <Text size='sm' c='dimmed' lineClamp={2}>
           {course.courseDescription
             ? `${course.courseDescription.slice(0, 32)}${
                 course.courseDescription.length > 32 ? '...' : ''
               }`
             : 'No description available'}
         </Text>
-        <Badge color="blue" mt="xs" radius="sm" variant="light">
+        <Badge color='blue' mt='xs' radius='sm' variant='light'>
           {course.status || 'N/A'}
         </Badge>
       </Stack>
@@ -256,14 +255,14 @@ const WriterDashboard = () => {
 
   if (showAllCourses) {
     return (
-      <Container size="xl" py="xl">
-        <Stack gap="lg">
-          <Group justify="space-between" align="center" wrap="nowrap">
-            <Group gap="sm">
+      <Container size='xl' py='xl'>
+        <Stack gap='lg'>
+          <Group justify='space-between' align='center' wrap='nowrap'>
+            <Group gap='sm'>
               <ActionIcon
-                variant="subtle"
-                color="gray"
-                size="lg"
+                variant='subtle'
+                color='gray'
+                size='lg'
                 onClick={() => {
                   setShowAllCourses(false);
                   setActivePage(1);
@@ -276,23 +275,23 @@ const WriterDashboard = () => {
             </Group>
             <Button
               leftSection={<IconPlus size={16} />}
-              color="green"
-              radius="md"
-              visibleFrom="sm"
+              color='green'
+              radius='md'
+              visibleFrom='sm'
               onClick={handleAddCourse}
             >
               Create New Course
             </Button>
           </Group>
 
-          <Card shadow="sm" p="md" radius="md" withBorder>
+          <Card shadow='sm' p='md' radius='md' withBorder>
             <TextInput
-              placeholder="Search courses..."
+              placeholder='Search courses...'
               leftSection={<IconSearch size={16} />}
               rightSection={
                 searchQuery && (
                   <ActionIcon
-                    variant="subtle"
+                    variant='subtle'
                     onClick={() => setSearchQuery('')}
                   >
                     <IconX size={16} />
@@ -304,34 +303,39 @@ const WriterDashboard = () => {
                 setSearchQuery(e.target.value);
                 setActivePage(1);
               }}
-              radius="md"
+              radius='md'
             />
           </Card>
 
-          <SimpleGrid cols={{ base: 1, xs: 2, sm: 2, md: 3 }} spacing="lg">
-            {paginatedCourses.length > 0 ? (
-              paginatedCourses.map(course => (
+          <DataView
+            isLoading={loading}
+            label='courses'
+            isEmpty={paginatedCourses.length === 0 && !loading}
+          >
+            <SimpleGrid cols={{ base: 1, xs: 2, sm: 2, md: 3 }} spacing='lg'>
+              {paginatedCourses.map(course => (
                 <CourseCard key={course._id} course={course} />
-              ))
-            ) : (
-              <Center style={{ gridColumn: '1 / -1' }} py="xl">
-                <Text size="sm" c="dimmed">
+              ))}
+            </SimpleGrid>
+            {paginatedCourses.length === 0 && (
+              <Center style={{ gridColumn: '1 / -1' }} py='xl'>
+                <Text size='sm' c='dimmed'>
                   {searchQuery
                     ? 'No courses found matching your search.'
                     : 'No courses available.'}
                 </Text>
               </Center>
             )}
-          </SimpleGrid>
+          </DataView>
 
           {totalPages > 1 && (
-            <Center mt="md">
+            <Center mt='md'>
               <Pagination
                 value={activePage}
                 onChange={setActivePage}
                 total={totalPages}
                 size={isMobile ? 'sm' : 'md'}
-                radius="md"
+                radius='md'
                 withEdges
               />
             </Center>
@@ -341,22 +345,22 @@ const WriterDashboard = () => {
         <Modal
           opened={deleteModalOpen}
           onClose={() => setDeleteModalOpen(false)}
-          title="Delete Course"
+          title='Delete Course'
           centered
         >
-          <Stack gap="md">
+          <Stack gap='md'>
             <Text>
               Are you sure you want to delete this course? This action cannot be
               undone.
             </Text>
-            <Group justify="flex-end">
+            <Group justify='flex-end'>
               <Button
-                variant="default"
+                variant='default'
                 onClick={() => setDeleteModalOpen(false)}
               >
                 Cancel
               </Button>
-              <Button color="red" onClick={confirmDelete}>
+              <Button color='red' onClick={confirmDelete}>
                 Delete
               </Button>
             </Group>
@@ -367,98 +371,273 @@ const WriterDashboard = () => {
   }
 
   return (
-    <Container size="xl" py="xl">
-      {loading ? (
-        <Center h={400}>
-          <Loader
-            size="lg"
-            type="bars"
-            color={currentThemeConfig.button.color}
-          />
-        </Center>
-      ) : (
-        <>
-          <Stack m={isMobile ? 'md' : 'lg'} gap={4}>
-            <Title order={1}>{overview.title}</Title>
-            <Text c="dimmed" mb="md">
-              Welcome to your dashboard! Here you can manage and track your
-              content creation journey.
-            </Text>
+    <Container size='xl' py='xl'>
+      <DataView
+        isLoading={loading}
+        label='writer data'
+        isEmpty={courses.length === 0 && !loading}
+      >
+        <Stack m={isMobile ? 'md' : 'lg'} gap={4}>
+          <Title order={1}>{overview.title}</Title>
+          <Text c='dimmed' mb='md'>
+            Welcome to your dashboard! Here you can manage and track your
+            content creation journey.
+          </Text>
+        </Stack>
+
+        <Box>
+          <Stack gap='lg' hiddenFrom='lg'>
+            {/* Mobile/Tablet Layout - Stacked */}
+
+            {/* Banner Section */}
+            <Card
+              shadow='sm'
+              p={isMobile ? 'md' : 'xl'}
+              radius='xl'
+              style={{
+                background: 'linear-gradient(90deg, #6366F1, #8B5CF6, #EC4899)',
+                color: 'white'
+              }}
+            >
+              <Group justify='space-between' align='center' wrap='nowrap'>
+                <Stack gap={6} style={{ flex: 1 }}>
+                  <Title order={isMobile ? 3 : 2} fw={700}>
+                    {overview.banner.headline}
+                  </Title>
+                  <Text size='sm' opacity={0.85}>
+                    {overview.banner.tag}
+                  </Text>
+                </Stack>
+                {!isMobile && (
+                  <Image
+                    src={overview.banner.thumbnailBanner}
+                    radius='md'
+                    alt='Banner'
+                    fit='cover'
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      maxWidth: '150px',
+                      maxHeight: '120px',
+                      objectFit: 'cover',
+                      flexShrink: 0,
+                      boxShadow: '0 0 10px rgba(0,0,0,0.2)'
+                    }}
+                  />
+                )}
+              </Group>
+            </Card>
+
+            {/* Dashboard Stats */}
+            <SimpleGrid cols={3} spacing={isMobile ? 'xs' : 'md'}>
+              {[
+                {
+                  icon: <IconBook size={isMobile ? 20 : 24} color='#4F46E5' />,
+                  label: 'Total Courses',
+                  value: stats.totalCourses,
+                  color: 'indigo'
+                },
+                {
+                  icon: (
+                    <IconLayersSubtract
+                      size={isMobile ? 20 : 24}
+                      color='#9333EA'
+                    />
+                  ),
+                  label: 'Total Modules',
+                  value: stats.totalModules,
+                  color: 'purple'
+                },
+                {
+                  icon: (
+                    <IconListCheck size={isMobile ? 20 : 24} color='#EC4899' />
+                  ),
+                  label: 'Total Tasks',
+                  value: stats.totalTasks,
+                  color: 'pink'
+                }
+              ].map((item, index) => (
+                <Card
+                  key={index}
+                  shadow='sm'
+                  p={isMobile ? 'xs' : 'md'}
+                  radius='md'
+                  withBorder
+                  style={{
+                    transition: 'all 0.3s ease',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <Stack align='center' gap={isMobile ? 4 : 8}>
+                    <ThemeIcon
+                      size={isMobile ? 32 : 48}
+                      radius='xl'
+                      color={item.color}
+                      variant='light'
+                    >
+                      {item.icon}
+                    </ThemeIcon>
+                    <Text size={isMobile ? 'xs' : 'sm'} c='dimmed' ta='center'>
+                      {item.label}
+                    </Text>
+                    <Title order={isMobile ? 4 : 3}>{item.value}</Title>
+                  </Stack>
+                </Card>
+              ))}
+            </SimpleGrid>
+
+            {/* Recent Activity */}
+            <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md' withBorder>
+              <Group justify='space-between' mb='xs'>
+                <Title order={5}>Recent Activity</Title>
+              </Group>
+              <Divider mb='sm' />
+              <Stack gap='sm'>
+                {recentActivity.length > 0 ? (
+                  recentActivity.map(item => (
+                    <Group
+                      key={item.id}
+                      className='hover:bg-gray-50'
+                      p='xs'
+                      style={{
+                        borderRadius: 8,
+                        cursor: 'pointer',
+                        transition: '0.2s'
+                      }}
+                    >
+                      <Image
+                        src={item.thumbnail}
+                        width={40}
+                        height={40}
+                        radius='sm'
+                        alt={item.title}
+                      />
+                      <Stack gap={0} style={{ flex: 1, minWidth: 0 }}>
+                        <Text size='sm' fw={500} lineClamp={1}>
+                          {item.title}
+                        </Text>
+                        <Text size='xs' c='dimmed'>
+                          {item.type}
+                        </Text>
+                      </Stack>
+                    </Group>
+                  ))
+                ) : (
+                  <Text size='sm' c='dimmed'>
+                    No recent updates found.
+                  </Text>
+                )}
+              </Stack>
+            </Card>
+
+            {/* Content Pipeline */}
+            <Stack gap='md'>
+              <Group justify='space-between'>
+                <Title order={3}>Content Pipeline</Title>
+                <Button
+                  leftSection={<IconPlus size={16} />}
+                  color='green'
+                  radius='md'
+                  onClick={handleAddCourse}
+                >
+                  Create New Course
+                </Button>
+              </Group>
+
+              <Card
+                shadow='sm'
+                p={isMobile ? 'sm' : 'lg'}
+                radius='md'
+                withBorder
+              >
+                <SimpleGrid cols={{ base: 1, xs: 2 }} spacing='lg'>
+                  {courses.length > 0 ? (
+                    courses
+                      .slice(recentActivity.length, recentActivity.length + 1)
+                      .map(course => (
+                        <CourseCard key={course._id} course={course} />
+                      ))
+                  ) : (
+                    <Center>
+                      <Text size='sm' c='dimmed'>
+                        No courses available.
+                      </Text>
+                    </Center>
+                  )}
+                </SimpleGrid>
+              </Card>
+              <Button
+                m={20}
+                leftSection={<IconPlus size={16} />}
+                color='green'
+                radius='md'
+                onClick={() => setShowAllCourses(true)}
+              >
+                Show More
+              </Button>
+            </Stack>
           </Stack>
 
-          <Box>
-            <Stack gap="lg" hiddenFrom="lg">
-              {/* Mobile/Tablet Layout - Stacked */}
+          <Group align='start' grow visibleFrom='lg'>
+            {/* Desktop Layout - Side by Side */}
 
+            {/* Left Side (Banner + Stats + Recent Activity) */}
+            <Stack gap='lg' w='40%'>
               {/* Banner Section */}
               <Card
-                shadow="sm"
-                p={isMobile ? 'md' : 'xl'}
-                radius="xl"
+                shadow='sm'
+                p='xl'
+                radius='xl'
                 style={{
                   background:
                     'linear-gradient(90deg, #6366F1, #8B5CF6, #EC4899)',
                   color: 'white'
                 }}
               >
-                <Group justify="space-between" align="center" wrap="nowrap">
+                <Group justify='space-between' align='center' wrap='nowrap'>
                   <Stack gap={6} style={{ flex: 1 }}>
-                    <Title order={isMobile ? 3 : 2} fw={700}>
+                    <Title order={2} fw={700}>
                       {overview.banner.headline}
                     </Title>
-                    <Text size="sm" opacity={0.85}>
+                    <Text size='sm' opacity={0.85}>
                       {overview.banner.tag}
                     </Text>
                   </Stack>
-                  {!isMobile && (
-                    <Image
-                      src={overview.banner.thumbnailBanner}
-                      radius="md"
-                      alt="Banner"
-                      fit="cover"
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        maxWidth: '150px',
-                        maxHeight: '120px',
-                        objectFit: 'cover',
-                        flexShrink: 0,
-                        boxShadow: '0 0 10px rgba(0,0,0,0.2)'
-                      }}
-                    />
-                  )}
+                  <Image
+                    src={overview.banner.thumbnailBanner}
+                    radius='md'
+                    alt='Banner'
+                    fit='cover'
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      maxWidth: '200px',
+                      maxHeight: '150px',
+                      objectFit: 'cover',
+                      flexShrink: 0,
+                      boxShadow: '0 0 10px rgba(0,0,0,0.2)'
+                    }}
+                  />
                 </Group>
               </Card>
 
               {/* Dashboard Stats */}
-              <SimpleGrid cols={3} spacing={isMobile ? 'xs' : 'md'}>
+              <SimpleGrid cols={3} spacing={60} mx='auto' my='sm'>
                 {[
                   {
-                    icon: (
-                      <IconBook size={isMobile ? 20 : 24} color="#4F46E5" />
-                    ),
+                    icon: <IconBook size={24} color='#4F46E5' />,
                     label: 'Total Courses',
                     value: stats.totalCourses,
                     color: 'indigo'
                   },
                   {
-                    icon: (
-                      <IconLayersSubtract
-                        size={isMobile ? 20 : 24}
-                        color="#9333EA"
-                      />
-                    ),
+                    icon: <IconLayersSubtract size={24} color='#9333EA' />,
                     label: 'Total Modules',
                     value: stats.totalModules,
                     color: 'purple'
                   },
                   {
-                    icon: (
-                      <IconListCheck
-                        size={isMobile ? 20 : 24}
-                        color="#EC4899"
-                      />
-                    ),
+                    icon: <IconListCheck size={24} color='#EC4899' />,
                     label: 'Total Tasks',
                     value: stats.totalTasks,
                     color: 'pink'
@@ -466,55 +645,60 @@ const WriterDashboard = () => {
                 ].map((item, index) => (
                   <Card
                     key={index}
-                    shadow="sm"
-                    p={isMobile ? 'xs' : 'md'}
-                    radius="md"
+                    shadow='sm'
+                    p='md'
+                    radius='50%'
                     withBorder
                     style={{
+                      width: 150,
+                      height: 150,
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      flexDirection: 'column',
                       transition: 'all 0.3s ease',
                       cursor: 'pointer'
                     }}
+                    onMouseEnter={e => {
+                      const target = e.currentTarget;
+                      target.style.transform = 'scale(1.05)';
+                      target.style.boxShadow = '0 15px 30px rgba(0,0,0,0.2)';
+                    }}
+                    onMouseLeave={e => {
+                      const target = e.currentTarget;
+                      target.style.transform = 'scale(1)';
+                      target.style.boxShadow = '0 4px 10px rgba(0,0,0,0.1)';
+                    }}
                   >
-                    <Stack align="center" gap={isMobile ? 4 : 8}>
-                      <ThemeIcon
-                        size={isMobile ? 32 : 48}
-                        radius="xl"
-                        color={item.color}
-                        variant="light"
-                      >
-                        {item.icon}
-                      </ThemeIcon>
-                      <Text
-                        size={isMobile ? 'xs' : 'sm'}
-                        c="dimmed"
-                        ta="center"
-                      >
-                        {item.label}
-                      </Text>
-                      <Title order={isMobile ? 4 : 3}>{item.value}</Title>
-                    </Stack>
+                    <ThemeIcon
+                      size={48}
+                      radius='xl'
+                      color={item.color}
+                      variant='light'
+                    >
+                      {item.icon}
+                    </ThemeIcon>
+                    <Text size='sm' c='dimmed' mt={10}>
+                      {item.label}
+                    </Text>
+                    <Title order={3}>{item.value}</Title>
                   </Card>
                 ))}
               </SimpleGrid>
 
               {/* Recent Activity */}
-              <Card
-                shadow="sm"
-                p={isMobile ? 'md' : 'lg'}
-                radius="md"
-                withBorder
-              >
-                <Group justify="space-between" mb="xs">
+              <Card shadow='sm' p='lg' radius='md' withBorder>
+                <Group justify='space-between' mb='xs'>
                   <Title order={5}>Recent Activity</Title>
                 </Group>
-                <Divider mb="sm" />
-                <Stack gap="sm">
+                <Divider mb='sm' />
+                <Stack gap='sm'>
                   {recentActivity.length > 0 ? (
                     recentActivity.map(item => (
                       <Group
                         key={item.id}
-                        className="hover:bg-gray-50"
-                        p="xs"
+                        className='hover:bg-gray-50'
+                        p='xs'
                         style={{
                           borderRadius: 8,
                           cursor: 'pointer',
@@ -525,295 +709,91 @@ const WriterDashboard = () => {
                           src={item.thumbnail}
                           width={40}
                           height={40}
-                          radius="sm"
+                          radius='sm'
                           alt={item.title}
                         />
-                        <Stack gap={0} style={{ flex: 1, minWidth: 0 }}>
-                          <Text size="sm" fw={500} lineClamp={1}>
+                        <Stack gap={0}>
+                          <Text size='sm' fw={500}>
                             {item.title}
                           </Text>
-                          <Text size="xs" c="dimmed">
+                          <Text size='xs' c='dimmed'>
                             {item.type}
                           </Text>
                         </Stack>
                       </Group>
                     ))
                   ) : (
-                    <Text size="sm" c="dimmed">
+                    <Text size='sm' c='dimmed'>
                       No recent updates found.
                     </Text>
                   )}
                 </Stack>
               </Card>
+            </Stack>
 
-              {/* Content Pipeline */}
-              <Stack gap="md">
-                <Group justify="space-between">
-                  <Title order={3}>Content Pipeline</Title>
-                  <Button
-                    leftSection={<IconPlus size={16} />}
-                    color="green"
-                    radius="md"
-                    onClick={handleAddCourse}
-                  >
-                    Create New Course
-                  </Button>
-                </Group>
-
-                <Card
-                  shadow="sm"
-                  p={isMobile ? 'sm' : 'lg'}
-                  radius="md"
-                  withBorder
+            {/* Right Side (Content Pipeline) */}
+            <Stack gap='lg' w='60%'>
+              <Group justify='space-between'>
+                <Title order={3}>Content Pipeline</Title>
+                <Button
+                  leftSection={<IconPlus size={16} />}
+                  color='green'
+                  radius='md'
+                  onClick={handleAddCourse}
                 >
-                  <SimpleGrid cols={{ base: 1, xs: 2 }} spacing="lg">
+                  Create New Course
+                </Button>
+              </Group>
+
+              <Card shadow='sm' p='lg' radius='md' withBorder>
+                <ScrollArea h={650}>
+                  <SimpleGrid cols={{ base: 1, sm: 2 }} spacing='lg'>
                     {courses.length > 0 ? (
                       courses
-                        .slice(recentActivity.length, recentActivity.length + 1)
+                        .slice(recentActivity.length, recentActivity.length + 4)
                         .map(course => (
                           <CourseCard key={course._id} course={course} />
                         ))
                     ) : (
                       <Center>
-                        <Text size="sm" c="dimmed">
+                        <Text size='sm' c='dimmed'>
                           No courses available.
                         </Text>
                       </Center>
                     )}
                   </SimpleGrid>
-                </Card>
+                </ScrollArea>
                 <Button
                   m={20}
                   leftSection={<IconPlus size={16} />}
-                  color="green"
-                  radius="md"
+                  color='green'
+                  radius='md'
                   onClick={() => setShowAllCourses(true)}
                 >
                   Show More
                 </Button>
-              </Stack>
+              </Card>
             </Stack>
-
-            <Group align="start" grow visibleFrom="lg">
-              {/* Desktop Layout - Side by Side */}
-
-              {/* Left Side (Banner + Stats + Recent Activity) */}
-              <Stack gap="lg" w="40%">
-                {/* Banner Section */}
-                <Card
-                  shadow="sm"
-                  p="xl"
-                  radius="xl"
-                  style={{
-                    background:
-                      'linear-gradient(90deg, #6366F1, #8B5CF6, #EC4899)',
-                    color: 'white'
-                  }}
-                >
-                  <Group justify="space-between" align="center" wrap="nowrap">
-                    <Stack gap={6} style={{ flex: 1 }}>
-                      <Title order={2} fw={700}>
-                        {overview.banner.headline}
-                      </Title>
-                      <Text size="sm" opacity={0.85}>
-                        {overview.banner.tag}
-                      </Text>
-                    </Stack>
-                    <Image
-                      src={overview.banner.thumbnailBanner}
-                      radius="md"
-                      alt="Banner"
-                      fit="cover"
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        maxWidth: '200px',
-                        maxHeight: '150px',
-                        objectFit: 'cover',
-                        flexShrink: 0,
-                        boxShadow: '0 0 10px rgba(0,0,0,0.2)'
-                      }}
-                    />
-                  </Group>
-                </Card>
-
-                {/* Dashboard Stats */}
-                <SimpleGrid cols={3} spacing={60} mx="auto" my="sm">
-                  {[
-                    {
-                      icon: <IconBook size={24} color="#4F46E5" />,
-                      label: 'Total Courses',
-                      value: stats.totalCourses,
-                      color: 'indigo'
-                    },
-                    {
-                      icon: <IconLayersSubtract size={24} color="#9333EA" />,
-                      label: 'Total Modules',
-                      value: stats.totalModules,
-                      color: 'purple'
-                    },
-                    {
-                      icon: <IconListCheck size={24} color="#EC4899" />,
-                      label: 'Total Tasks',
-                      value: stats.totalTasks,
-                      color: 'pink'
-                    }
-                  ].map((item, index) => (
-                    <Card
-                      key={index}
-                      shadow="sm"
-                      p="md"
-                      radius="50%"
-                      withBorder
-                      style={{
-                        width: 150,
-                        height: 150,
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        flexDirection: 'column',
-                        transition: 'all 0.3s ease',
-                        cursor: 'pointer'
-                      }}
-                      onMouseEnter={e => {
-                        const target = e.currentTarget;
-                        target.style.transform = 'scale(1.05)';
-                        target.style.boxShadow = '0 15px 30px rgba(0,0,0,0.2)';
-                      }}
-                      onMouseLeave={e => {
-                        const target = e.currentTarget;
-                        target.style.transform = 'scale(1)';
-                        target.style.boxShadow = '0 4px 10px rgba(0,0,0,0.1)';
-                      }}
-                    >
-                      <ThemeIcon
-                        size={48}
-                        radius="xl"
-                        color={item.color}
-                        variant="light"
-                      >
-                        {item.icon}
-                      </ThemeIcon>
-                      <Text size="sm" c="dimmed" mt={10}>
-                        {item.label}
-                      </Text>
-                      <Title order={3}>{item.value}</Title>
-                    </Card>
-                  ))}
-                </SimpleGrid>
-
-                {/* Recent Activity */}
-                <Card shadow="sm" p="lg" radius="md" withBorder>
-                  <Group justify="space-between" mb="xs">
-                    <Title order={5}>Recent Activity</Title>
-                  </Group>
-                  <Divider mb="sm" />
-                  <Stack gap="sm">
-                    {recentActivity.length > 0 ? (
-                      recentActivity.map(item => (
-                        <Group
-                          key={item.id}
-                          className="hover:bg-gray-50"
-                          p="xs"
-                          style={{
-                            borderRadius: 8,
-                            cursor: 'pointer',
-                            transition: '0.2s'
-                          }}
-                        >
-                          <Image
-                            src={item.thumbnail}
-                            width={40}
-                            height={40}
-                            radius="sm"
-                            alt={item.title}
-                          />
-                          <Stack gap={0}>
-                            <Text size="sm" fw={500}>
-                              {item.title}
-                            </Text>
-                            <Text size="xs" c="dimmed">
-                              {item.type}
-                            </Text>
-                          </Stack>
-                        </Group>
-                      ))
-                    ) : (
-                      <Text size="sm" c="dimmed">
-                        No recent updates found.
-                      </Text>
-                    )}
-                  </Stack>
-                </Card>
-              </Stack>
-
-              {/* Right Side (Content Pipeline) */}
-              <Stack gap="lg" w="60%">
-                <Group justify="space-between">
-                  <Title order={3}>Content Pipeline</Title>
-                  <Button
-                    leftSection={<IconPlus size={16} />}
-                    color="green"
-                    radius="md"
-                    onClick={handleAddCourse}
-                  >
-                    Create New Course
-                  </Button>
-                </Group>
-
-                <Card shadow="sm" p="lg" radius="md" withBorder>
-                  <ScrollArea h={650}>
-                    <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="lg">
-                      {courses.length > 0 ? (
-                        courses
-                          .slice(
-                            recentActivity.length,
-                            recentActivity.length + 4
-                          )
-                          .map(course => (
-                            <CourseCard key={course._id} course={course} />
-                          ))
-                      ) : (
-                        <Center>
-                          <Text size="sm" c="dimmed">
-                            No courses available.
-                          </Text>
-                        </Center>
-                      )}
-                    </SimpleGrid>
-                  </ScrollArea>
-                  <Button
-                    m={20}
-                    leftSection={<IconPlus size={16} />}
-                    color="green"
-                    radius="md"
-                    onClick={() => setShowAllCourses(true)}
-                  >
-                    Show More
-                  </Button>
-                </Card>
-              </Stack>
-            </Group>
-          </Box>
-        </>
-      )}
+          </Group>
+        </Box>
+      </DataView>
 
       <Modal
         opened={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
-        title="Delete Course"
+        title='Delete Course'
         centered
       >
-        <Stack gap="md">
+        <Stack gap='md'>
           <Text>
             Are you sure you want to delete this course? This action cannot be
             undone.
           </Text>
-          <Group justify="flex-end">
-            <Button variant="default" onClick={() => setDeleteModalOpen(false)}>
+          <Group justify='flex-end'>
+            <Button variant='default' onClick={() => setDeleteModalOpen(false)}>
               Cancel
             </Button>
-            <Button color="red" onClick={confirmDelete}>
+            <Button color='red' onClick={confirmDelete}>
               Delete
             </Button>
           </Group>
