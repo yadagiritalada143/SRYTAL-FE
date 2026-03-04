@@ -183,8 +183,8 @@ const MobileEmployeeCard: React.FC<{
 }) => {
   return (
     <Card
-      key={employee._id}
-      id={`employee-${employee._id}`}
+      key={employee.id}
+      id={`employee-${employee.id}`}
       shadow='sm'
       p='md'
       mb='sm'
@@ -287,7 +287,7 @@ const MobileEmployeeCard: React.FC<{
         {/* Actions */}
         <Card.Section withBorder mt='sm' p='md' style={{ borderRadius: '8px' }}>
           <EmployeeActions
-            employeeId={employee._id}
+            employeeId={employee.id}
             onEdit={onEdit}
             onPackage={onPackage}
             onTimesheet={onTimesheet}
@@ -665,7 +665,7 @@ const Employees = () => {
                   {paginatedEmployees.length > 0 ? (
                     paginatedEmployees.map((employee, index) => (
                       <MobileEmployeeCard
-                        key={employee._id}
+                        key={employee.id}
                         employee={employee}
                         index={index}
                         activePage={activePage}
@@ -748,8 +748,8 @@ const Employees = () => {
                     {paginatedEmployees.length > 0 ? (
                       paginatedEmployees.map((employee, index) => (
                         <Table.Tr
-                          key={employee._id}
-                          id={`employee-${employee._id}`}
+                          key={employee.id}
+                          id={`employee-${employee.id}`}
                           className='transition-colors'
                         >
                           <Table.Td className='text-center py-2 px-1'>
@@ -826,7 +826,7 @@ const Employees = () => {
                           </Table.Td>
                           <Table.Td className='p-3'>
                             <EmployeeActions
-                              employeeId={employee._id}
+                              employeeId={employee.id}
                               onEdit={handleEmployeeEdit}
                               onPackage={handlePackageUpdate}
                               onTimesheet={handleTimesheet}
