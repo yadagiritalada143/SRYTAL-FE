@@ -181,7 +181,8 @@ const UpdateEmployee = () => {
             : undefined,
           presentAddress: emp.presentAddress ?? '',
           permanentAddress: emp.permanentAddress ?? '',
-          mobileNumber: emp.mobileNumber?.toString()
+          mobileNumber: emp.mobileNumber?.toString(),
+          uanNumber: emp.uanNumber?.toString()
         };
 
         setEmployeeDetails(formatted);
@@ -208,7 +209,8 @@ const UpdateEmployee = () => {
         employeeRole: data.employeeRole?.filter(role => role),
         mobileNumber: Number(data.mobileNumber),
         dateOfJoining: data.dateOfJoining ?? undefined,
-        dateOfBirth: data.dateOfBirth ?? undefined
+        dateOfBirth: data.dateOfBirth ?? undefined,
+        uanNumber: data.uanNumber || undefined
       };
 
       // Remove empty bank details
@@ -776,6 +778,22 @@ const UpdateEmployee = () => {
                               clearable
                             />
                           )}
+                        />
+                      </Grid.Col>
+                      <Grid.Col span={{ base: 12, md: 6 }}>
+                        <TextInput
+                          label='UAN Number'
+                          placeholder='Enter 12-digit UAN number'
+                          type='tel'
+                          maxLength={12}
+                          leftSection={
+                            <IconId
+                              size={16}
+                              color={currentThemeConfig.successColor}
+                            />
+                          }
+                          {...register('uanNumber')}
+                          error={errors.uanNumber?.message}
                         />
                       </Grid.Col>
                     </Grid>
