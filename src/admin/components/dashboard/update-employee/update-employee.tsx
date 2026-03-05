@@ -174,10 +174,10 @@ const UpdateEmployee = () => {
           employmentType: emp.employmentType?.id,
           employeeRole: emp.employeeRole.map((role: any) => role.id),
           dateOfJoining: emp.dateOfJoining
-            ? new Date(emp.dateOfJoining).toISOString().split('T')[0]
+            ? emp.dateOfJoining.split('T')[0]
             : undefined,
           dateOfBirth: emp.dateOfBirth
-            ? new Date(emp.dateOfBirth).toISOString().split('T')[0]
+            ? emp.dateOfBirth.split('T')[0]
             : undefined,
           presentAddress: emp.presentAddress ?? '',
           permanentAddress: emp.permanentAddress ?? '',
@@ -428,21 +428,24 @@ const UpdateEmployee = () => {
                             <DatePickerInput
                               label='Date of Joining'
                               placeholder='Select joining date'
+                              leftSection={
+                                <IconCalendar
+                                  size={16}
+                                  color={currentThemeConfig.iconColor}
+                                />
+                              }
+                              valueFormat='DD/MMM/YYYY'
                               value={field.value ? new Date(field.value) : null}
                               onChange={date => {
-                                if (date) {
-                                  const d = new Date(date);
-
-                                  const adjustedDate = new Date(
-                                    d.getTime() - d.getTimezoneOffset() * 60000
-                                  )
-                                    .toISOString()
-                                    .split('T')[0];
-
-                                  field.onChange(adjustedDate);
-                                } else {
-                                  field.onChange(undefined);
+                                if (!date) {
+                                  field.onChange('');
+                                  return;
                                 }
+
+                                const iso = new Date(date)
+                                  .toISOString()
+                                  .split('T')[0];
+                                field.onChange(iso);
                               }}
                               error={errors.dateOfJoining?.message}
                               styles={{
@@ -633,23 +636,17 @@ const UpdateEmployee = () => {
                               }
                               value={field.value}
                               maxDate={new Date()}
+                              valueFormat='DD/MMM/YYYY'
                               onChange={date => {
-                                if (date) {
-                                  const d = new Date(date);
-
-                                  if (!isNaN(d.getTime())) {
-                                    const adjustedDate = new Date(
-                                      d.getTime() -
-                                        d.getTimezoneOffset() * 60000
-                                    )
-                                      .toISOString()
-                                      .split('T')[0];
-
-                                    field.onChange(adjustedDate);
-                                  }
-                                } else {
-                                  field.onChange(undefined);
+                                if (!date) {
+                                  field.onChange('');
+                                  return;
                                 }
+
+                                const iso = new Date(date)
+                                  .toISOString()
+                                  .split('T')[0];
+                                field.onChange(iso);
                               }}
                               error={errors.dateOfBirth?.message}
                             />
