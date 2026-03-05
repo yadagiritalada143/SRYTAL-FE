@@ -3,7 +3,7 @@ import {
   IconLogout,
   IconSettings,
   IconUser,
-  IconPasswordUser,
+  IconPasswordUser
 } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom';
 import { commonUrls } from '@utils/common/constants';
@@ -13,12 +13,13 @@ import { useDisclosure } from '@mantine/hooks';
 
 import { ChangePasswordPopup } from '@UI/Models/updatePassword';
 import { useEffect, useState } from 'react';
-import { getProfileImage, logoutUser } from '@services/user-services';
+import { logoutUser } from '@services/user-services';
 import { profileImageAtom } from '@atoms/profile-image';
 import { useCustomToast } from '@utils/common/toast';
+import { getProfileImage } from '@services/common-services';
 const Header = ({
   color,
-  organization,
+  organization
 }: {
   color: string;
   organization: string;
@@ -59,25 +60,25 @@ const Header = ({
 
   return (
     <>
-      <div style={{ color }} className="flex justify-between space-x-8 mx-4">
+      <div style={{ color }} className='flex justify-between space-x-8 mx-4'>
         <div></div>
-        <div className="flex ">
-          <p className=" flex justify-center items-center px-4 font-bold">
+        <div className='flex '>
+          <p className=' flex justify-center items-center px-4 font-bold'>
             {user.firstName} {user.lastName}{' '}
           </p>
           <div>
-            <Menu shadow="md" width={200} position="bottom-end">
+            <Menu shadow='md' width={200} position='bottom-end'>
               <Menu.Target>
                 {isLoading ? (
-                  <Avatar className="cursor-pointer" color={color} />
+                  <Avatar className='cursor-pointer' color={color} />
                 ) : (
-                  <Avatar className="cursor-pointer" src={imageUrl} />
+                  <Avatar className='cursor-pointer' src={imageUrl} />
                 )}
               </Menu.Target>
               <Menu.Dropdown>
                 <Menu.Label>Application</Menu.Label>
                 <Menu.Item
-                  className="hover:bg-transparent  hover:text-inherit tranform transition-all duration-150 hover:scale-110"
+                  className='hover:bg-transparent  hover:text-inherit tranform transition-all duration-150 hover:scale-110'
                   leftSection={
                     <IconUser style={{ width: rem(14), height: rem(14) }} />
                   }
@@ -89,7 +90,7 @@ const Header = ({
                 </Menu.Item>
 
                 <Menu.Item
-                  className="hover:bg-transparent  hover:text-inherit tranform transition-all duration-150 hover:scale-110"
+                  className='hover:bg-transparent  hover:text-inherit tranform transition-all duration-150 hover:scale-110'
                   leftSection={
                     <IconPasswordUser
                       style={{ width: rem(14), height: rem(14) }}
@@ -101,7 +102,7 @@ const Header = ({
                 </Menu.Item>
 
                 <Menu.Item
-                  className="hover:bg-transparent  hover:text-inherit tranform transition-all duration-150 hover:scale-110"
+                  className='hover:bg-transparent  hover:text-inherit tranform transition-all duration-150 hover:scale-110'
                   leftSection={
                     <IconSettings style={{ width: rem(14), height: rem(14) }} />
                   }
@@ -111,7 +112,7 @@ const Header = ({
                 <Menu.Label>Actions</Menu.Label>
                 <Menu.Item
                   onClick={handleLogout}
-                  className="hover:bg-transparent  hover:text-inherit tranform transition-all duration-150 hover:scale-110"
+                  className='hover:bg-transparent  hover:text-inherit tranform transition-all duration-150 hover:scale-110'
                   leftSection={
                     <IconLogout style={{ width: rem(14), height: rem(14) }} />
                   }
