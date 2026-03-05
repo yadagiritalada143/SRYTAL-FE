@@ -276,7 +276,7 @@ const MobileEmployeeCard: React.FC<{
               ))
             ) : (
               <Text size='xs' c='dimmed'>
-                None
+                N/A
               </Text>
             )}
           </Group>
@@ -802,7 +802,7 @@ const Employees = () => {
                               </Table.Td>
                             </>
                           )}
-                          <Table.Td className='p-3'>
+                          <Table.Td className='p-3 text-center'>
                             <ScrollArea h={45}>
                               <Group gap={4} wrap='wrap'>
                                 {employee.employeeRole?.length ? (
@@ -818,7 +818,7 @@ const Employees = () => {
                                   ))
                                 ) : (
                                   <Text size='xs' c='dimmed'>
-                                    None
+                                    N/A
                                   </Text>
                                 )}
                               </Group>
