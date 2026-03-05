@@ -1,0 +1,1 @@
+import{w as n,j as t}from"./index-BLI_TH8X.js";const i=({children:o,className:e="",style:r={}})=>{const{themeConfig:s}=n();return t.jsx("div",{className:`transition-colors duration-300 ease-in-out ${e}`,style:{backgroundColor:s.backgroundColor,...r},children:o})};export{i as T};
