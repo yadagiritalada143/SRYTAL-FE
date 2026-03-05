@@ -7,9 +7,9 @@ import { StandardModal } from './base-model';
 import {
   updatePasswordSchema,
   UpdatePasswordForm
-} from '../../../forms/update-password';
-import { updatePasswordForEmployee } from '../../../services/user-services';
-import { useCustomToast } from '../../../utils/common/toast';
+} from '@forms/update-password';
+import { updatePasswordForEmployee } from '@services/user-services';
+import { useCustomToast } from '@utils/common/toast';
 interface ChangePasswordPopupProps {
   opened: boolean;
   close: () => void;

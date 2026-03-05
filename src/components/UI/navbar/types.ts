@@ -1,5 +1,5 @@
 import { Icon } from '@tabler/icons-react';
-import { OrganizationConfig } from '../../../interfaces/organization';
+import { OrganizationConfig } from '@interfaces/organization';
 
 export interface ChildNavLink {
   name: string;

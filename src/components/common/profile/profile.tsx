@@ -11,8 +11,8 @@ import {
   Paper,
   Title
 } from '@mantine/core';
-import { EmployeeInterface } from '../../../interfaces/employee';
-import ProfileImageUploader from '../profile-image/profile-image';
+import type { EmployeeInterface } from '@interfaces/employee';
+import ProfileImageUploader from '../profile-image/ProfileImage'; // Assuming we standardize this too
 import { useMediaQuery } from '@mantine/hooks';
 import {
   IconUser,
@@ -26,11 +26,7 @@ import {
   IconBuildingBank,
   IconFingerprint
 } from '@tabler/icons-react';
-import { useMemo } from 'react';
-import { organizationThemeAtom } from '../../../atoms/organization-atom';
-import { useRecoilValue } from 'recoil';
-import { themeAtom } from '../../../atoms/theme';
-import { getThemeConfig } from '../../../utils/common/theme-utils';
+import { useAppTheme } from '@hooks/use-app-theme';
 
 // Info Item Component
 const InfoItem: React.FC<{
@@ -57,14 +53,10 @@ const InfoItem: React.FC<{
 );
 
 const Profile = ({ details }: { details: EmployeeInterface }) => {
-  const organizationConfig = useRecoilValue(organizationThemeAtom);
-  const isDarkTheme = useRecoilValue(themeAtom);
   // Responsive breakpoints
   const isMobile = useMediaQuery('(max-width: 768px)');
+  const { themeConfig: currentThemeConfig } = useAppTheme();
   const isSmallMobile = useMediaQuery('(max-width: 500px)');
-  const currentThemeConfig = useMemo(() => {
-    return getThemeConfig(organizationConfig, isDarkTheme);
-  }, [organizationConfig, isDarkTheme]);
 
   // Helper function to format ISO date to readable format
   const formatDate = (isoDate: string): string => {
@@ -245,6 +237,16 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                   iconColor={currentThemeConfig.accentColor}
                 />
               </Grid.Col>
+              <Grid.Col span={{ base: 12, xs: 6, sm: 6, md: 4 }}>
+                <InfoItem
+                  icon={<IconCalendar size={18} />}
+                  label="Date of Joining"
+                  value={formatDate(details.dateOfJoining)}
+                  isMobile={isMobile}
+                  mutedTextColor={currentThemeConfig.mutedTextColor}
+                  iconColor={currentThemeConfig.accentColor}
+                />
+              </Grid.Col>
             </Grid>
           </Stack>
         </Card>
@@ -262,7 +264,7 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
         >
           <Tabs
             defaultValue="employment"
-            orientation={isMobile ? 'horizontal' : 'horizontal'}
+            orientation="horizontal"
             styles={{
               tab: {
                 color: currentThemeConfig.mutedTextColor

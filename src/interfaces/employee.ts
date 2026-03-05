@@ -1,7 +1,7 @@
 export interface EmployeeInterface {
-  _id: string;
   id: string;
   employeeId: string;
+  dateOfJoining: string;
   firstName: string;
   lastName: string;
   email: string;

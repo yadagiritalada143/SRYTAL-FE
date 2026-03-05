@@ -5,10 +5,10 @@ import { toast } from 'react-toastify';
 import {
   getProfileImage,
   uploadProfileImage
-} from '../../../services/user-services';
-import { useCustomToast } from '../../../utils/common/toast';
+} from '@services/user-services';
+import { useCustomToast } from '@utils/common/toast';
 import { useRecoilState } from 'recoil';
-import { profileImageAtom } from '../../../atoms/profile-image';
+import { profileImageAtom } from '@atoms/profile-image';
 
 const ProfileImageUploader = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);

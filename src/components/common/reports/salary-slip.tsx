@@ -27,12 +27,10 @@ import {
   IconCheck
 } from '@tabler/icons-react';
 import { useRecoilValue } from 'recoil';
-import { organizationThemeAtom } from '../../../atoms/organization-atom';
-import { themeAtom } from '../../../atoms/theme';
-import { getThemeConfig } from '../../../utils/common/theme-utils';
+import { useAppTheme } from '@hooks/use-app-theme';
 import { useMediaQuery } from '@mantine/hooks';
-import { userDetailsAtom } from '../../../atoms/user';
-import { downloadSalarySlip } from '../../../services/common-services';
+import { userDetailsAtom } from '@atoms/user';
+import { downloadSalarySlip } from '@services/common-services';
 
 // ─── API ─────────────────────────────────────────────────────────────────────
 
@@ -69,12 +67,7 @@ const SalarySlipReport = () => {
   const [fetchState, setFetchState] = useState<FetchState>('idle');
   const [errorMessage, setErrorMessage] = useState<string>('');
 
-  const organizationConfig = useRecoilValue(organizationThemeAtom);
-  const isDarkTheme = useRecoilValue(themeAtom);
-  const currentThemeConfig = useMemo(
-    () => getThemeConfig(organizationConfig, isDarkTheme),
-    [organizationConfig, isDarkTheme]
-  );
+  const { themeConfig: currentThemeConfig, organizationConfig } = useAppTheme();
   const isMobile = useMediaQuery('(max-width: 768px)');
   const user = useRecoilValue(userDetailsAtom);
 

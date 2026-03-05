@@ -8,13 +8,34 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,
+    "noImplicitAny": false,
     "forceConsistentCasingInFileNames": true,
     "module": "esnext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@components/*": ["src/components/*"],
+      "@pages/*": ["src/pages/*"],
+      "@assets/*": ["src/assets/*"],
+      "@utils/*": ["src/utils/*"],
+      "@constants": ["src/constants/index"],
+      "@constants/*": ["src/constants/*"],
+      "@hooks/*": ["src/hooks/*"],
+      "@services/*": ["src/services/*"],
+      "@admin/*": ["src/admin/*"],
+      "@super-admin/*": ["src/super-admin/*"],
+      "@user/*": ["src/user/*"],
+      "@landing/*": ["src/landing/*"],
+      "@interfaces/*": ["src/interfaces/*"],
+      "@common/*": ["src/components/common/*"],
+      "@UI/*": ["src/components/UI/*"],
+      "@atoms/*": ["src/atoms/*"],
+      "@forms/*": ["src/forms/*"]
+    }
   },
   "include": ["src"]
 }

@@ -1,6 +1,6 @@
 import { Paper, Table, Select, Badge, Text, Stack, Group } from '@mantine/core';
-import { Task } from '../../../interfaces/mentee';
-import { CancelStyledButton } from '../../UI/Buttons/buttons';
+import { Task } from '@interfaces/mentee';
+import { CancelStyledButton } from '@UI/Buttons/buttons';
 import { useMediaQuery } from '@mantine/hooks';
 import { Tooltip } from '@mantine/core';
 

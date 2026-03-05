@@ -2,15 +2,16 @@ import { Paper, Title, Center, useMantineTheme } from '@mantine/core';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useRecoilValue } from 'recoil';
 import { useState, useEffect, useMemo } from 'react';
-import { organizationThemeAtom } from '../../../atoms/organization-atom';
-import { themeAtom } from '../../../atoms/theme';
-import { getThemeConfig } from '../../../utils/common/theme-utils';
-import { organizationEmployeeUrls } from '../../../utils/common/constants';
-import BackButton from '../../UI/Buttonsanimate/BackButton';
-import { Mentee, Task } from '../../../interfaces/mentee';
+
+
+
+import { organizationEmployeeUrls } from '@utils/common/constants';
+import BackButton from '@UI/Buttonsanimate/BackButton';
+import { Mentee, Task } from '@interfaces/mentee';
 import MenteeDetails from './MenteeDetails';
 import AssignedTasks from './AssignedTasks';
 import AssignNewTaskForm from './AssignNewTaskForm';
+import { useAppTheme } from '@hooks/use-app-theme';
 
 // Dummy mentee list
 const mockMentees: Mentee[] = [
@@ -49,12 +50,10 @@ const initialTaskState = {
 
 const UpdateMenteeTasks = () => {
   const { empId } = useParams<{ empId: string }>();
+  const { themeConfig: currentThemeConfig, organizationConfig, isDarkTheme } = useAppTheme();
   const theme = useMantineTheme();
-  const organizationConfig = useRecoilValue(organizationThemeAtom);
-  const isDarkTheme = useRecoilValue(themeAtom);
-  const currentThemeConfig = useMemo(() => {
-    return getThemeConfig(organizationConfig, isDarkTheme);
-  }, [organizationConfig, isDarkTheme]);
+  
+  
   const navigate = useNavigate();
   const [mentee, setMentee] = useState<Mentee | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);

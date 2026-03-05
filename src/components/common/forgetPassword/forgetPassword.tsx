@@ -1,14 +1,15 @@
 import { Button, Loader, TextInput, Text, Group, Stack } from '@mantine/core';
 import { useForm } from 'react-hook-form';
-import { organizationThemeAtom } from '../../../atoms/organization-atom';
+
 import { useRecoilValue } from 'recoil';
 import { useState, useMemo } from 'react';
-import { forgetPassword } from '../../../services/common-services';
-import { useCustomToast } from '../../../utils/common/toast';
-import { themeAtom } from '../../../atoms/theme';
+import { forgetPassword } from '@services/common-services';
+import { useCustomToast } from '@utils/common/toast';
+
 import { IconMail, IconLock, IconArrowLeft } from '@tabler/icons-react';
-import { CancelStyledButton } from '../../UI/Buttons/buttons';
-import { getThemeConfig } from '../../../utils/common/theme-utils';
+import { CancelStyledButton } from '@UI/Buttons/buttons';
+import { useAppTheme } from '@hooks/use-app-theme';
+
 
 interface ForgotPasswordProps {
   closeModal: () => void;
@@ -16,6 +17,7 @@ interface ForgotPasswordProps {
 
 const ForgotPassword = ({ closeModal }: ForgotPasswordProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { themeConfig: currentThemeConfig, organizationConfig, isDarkTheme } = useAppTheme();
   const [emailSent, setEmailSent] = useState(false);
 
   const {
@@ -25,16 +27,13 @@ const ForgotPassword = ({ closeModal }: ForgotPasswordProps) => {
     watch
   } = useForm<{ username: string }>();
 
-  const organizationConfig = useRecoilValue(organizationThemeAtom);
-  const isDarkTheme = useRecoilValue(themeAtom);
+  
+  
   const { showSuccessToast, showErrorToast } = useCustomToast();
 
   const emailValue = watch('username');
 
   // Get current theme configuration
-  const currentThemeConfig = useMemo(() => {
-    return getThemeConfig(organizationConfig, isDarkTheme);
-  }, [organizationConfig, isDarkTheme]);
 
   const onSubmit = async (data: { username: string }) => {
     setIsSubmitting(true);

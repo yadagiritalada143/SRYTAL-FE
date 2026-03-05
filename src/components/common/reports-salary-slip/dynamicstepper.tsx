@@ -1,10 +1,11 @@
 import { Stepper, Stack } from '@mantine/core';
-import { StepConfig } from '../../../interfaces/reports';
+import { StepConfig } from '@interfaces/reports';
 import { useRecoilValue } from 'recoil';
-import { themeAtom } from '../../../atoms/theme';
-import { organizationThemeAtom } from '../../../atoms/organization-atom';
+
+
 import { useMemo } from 'react';
-import { getThemeConfig } from '../../../utils/common/theme-utils';
+import { useAppTheme } from '@hooks/use-app-theme';
+
 
 interface Props {
   steps: StepConfig[];
@@ -13,12 +14,10 @@ interface Props {
 }
 
 const DynamicStepper = ({ steps, active, children }: Props) => {
-  const isDarkTheme = useRecoilValue(themeAtom);
-  const organizationConfig = useRecoilValue(organizationThemeAtom);
+  const { themeConfig: currentThemeConfig, organizationConfig, isDarkTheme } = useAppTheme();
+  
+  
 
-  const currentThemeConfig = useMemo(() => {
-    return getThemeConfig(organizationConfig, isDarkTheme);
-  }, [organizationConfig, isDarkTheme]);
 
   return (
     <Stepper
