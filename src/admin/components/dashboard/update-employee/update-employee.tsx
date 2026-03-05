@@ -780,6 +780,22 @@ const UpdateEmployee = () => {
                           )}
                         />
                       </Grid.Col>
+                    </Grid>
+                  </Card>
+
+                  <Card withBorder shadow='xs' p='lg'>
+                    <Group gap='xs' mb={4}>
+                      <IconId size={18} />
+                      <Text fw={600} size='lg'>
+                        Statutory Details
+                      </Text>
+                    </Group>
+
+                    <Text size='sm' c='dimmed' mb='md'>
+                      Add statutory identification details for the employee.
+                    </Text>
+
+                    <Grid>
                       <Grid.Col span={{ base: 12, md: 6 }}>
                         <TextInput
                           label='UAN Number'
@@ -789,7 +805,7 @@ const UpdateEmployee = () => {
                           leftSection={
                             <IconId
                               size={16}
-                              color={currentThemeConfig.successColor}
+                              color={currentThemeConfig.iconColor}
                             />
                           }
                           {...register('uanNumber')}
