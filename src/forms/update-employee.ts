@@ -1,7 +1,13 @@
-import { z } from 'zod';
+import { date, z } from 'zod';
 
 export const employeeSchema = z.object({
   employeeId: z.string().min(1, 'Employee ID is required'),
+  dateOfJoining: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, {
+      message: 'Date of joining must be in YYYY-MM-DD format'
+    })
+    .optional(),
   firstName: z
     .string()
     .min(1, { message: 'First name is required' })
@@ -57,6 +63,7 @@ export const employeeSchema = z.object({
         z.string().min(1, 'Account Holder Name is required').optional(),
         z.literal('').optional()
       ]),
+      bankName: z.string().trim().optional(),
       ifscCode: z.union([
         z.string().min(1, 'IFSC Code is required').optional(),
         z.literal('').optional()

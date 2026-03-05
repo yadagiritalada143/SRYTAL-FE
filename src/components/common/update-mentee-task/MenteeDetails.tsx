@@ -1,5 +1,5 @@
 import { Box, Stack, Group, Text, useMantineTheme } from '@mantine/core';
-import { Mentee } from '../../../interfaces/mentee';
+import { Mentee } from '@interfaces/mentee';
 
 interface Props {
   mentee: Mentee;

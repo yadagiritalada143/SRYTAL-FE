@@ -9,33 +9,28 @@ import {
   TextInput,
   Title,
   Badge,
-  ActionIcon,
+  ActionIcon
 } from '@mantine/core';
 import { DatePickerInput, DatesRangeValue } from '@mantine/dates';
 import { useRecoilValue } from 'recoil';
-import { organizationThemeAtom } from '../../../atoms/organization-atom';
-import { themeAtom } from '../../../atoms/theme';
-import { getThemeConfig } from '../../../utils/common/theme-utils';
+
 import {
   IconSearch,
   IconX,
   IconDownload,
   IconChevronLeft,
   IconChevronRight,
-  IconCalendar,
+  IconCalendar
 } from '@tabler/icons-react';
 import moment from 'moment';
 import { ColorDiv } from '../style-components/c-div';
-import { getUserDetails } from '../../../services/user-services';
-import { EmployeeInterface } from '../../../interfaces/employee';
+import { getUserDetails } from '@services/user-services';
+import { EmployeeInterface } from '@interfaces/employee';
 import { toast } from 'react-toastify';
+import { useAppTheme } from '@hooks/use-app-theme';
 
 const PayslipList = () => {
-  const organizationConfig = useRecoilValue(organizationThemeAtom);
-  const isDarkTheme = useRecoilValue(themeAtom);
-  const theme = useMemo(() => {
-    return getThemeConfig(organizationConfig, isDarkTheme);
-  }, [organizationConfig, isDarkTheme]);
+  const { themeConfig: theme, themeConfig: currentThemeConfig } = useAppTheme();
   const [userDetails, setUserDetails] = useState<EmployeeInterface | null>(
     null
   );
@@ -58,14 +53,14 @@ const PayslipList = () => {
           employeeName: `${userDetails.firstName} ${userDetails.lastName || ''}`,
           year: '2025',
           month: 'May',
-          status: 'PAID',
+          status: 'PAID'
         },
         {
           employeeName: `${userDetails.firstName} ${userDetails.lastName || ''}`,
           year: '2025',
           month: 'June',
-          status: 'UNPAID',
-        },
+          status: 'UNPAID'
+        }
       ]
     : [];
 
@@ -82,7 +77,7 @@ const PayslipList = () => {
       'September',
       'October',
       'November',
-      'December',
+      'December'
     ];
     return months.indexOf(monthName);
   };
@@ -90,13 +85,13 @@ const PayslipList = () => {
   const [search, setSearch] = useState('');
   const [dateRange, setDateRange] = useState<DatesRangeValue>([
     moment().startOf('month').toDate(),
-    moment().endOf('month').toDate(),
+    moment().endOf('month').toDate()
   ]);
 
   const [filters, setFilters] = useState<{
     range: DatesRangeValue;
   }>({
-    range: [null, null],
+    range: [null, null]
   });
 
   const filteredData = payslipData.filter(item => {
@@ -176,7 +171,7 @@ const PayslipList = () => {
                 onClick={() => setFilters({ range: dateRange })}
                 style={{
                   backgroundColor: theme.button.color,
-                  color: theme.button.textColor,
+                  color: theme.button.textColor
                 }}
               >
                 Search
@@ -215,13 +210,13 @@ const PayslipList = () => {
           style={{
             borderColor: theme.borderColor,
             color: theme.color,
-            fontFamily: theme.fontFamily,
+            fontFamily: theme.fontFamily
           }}
         >
           <thead
             style={{
               backgroundColor: theme.headerBackgroundColor,
-              color: theme.color,
+              color: theme.color
             }}
           >
             <tr>
@@ -249,7 +244,7 @@ const PayslipList = () => {
                     style={{
                       color: '#fff',
                       backgroundColor:
-                        item.status === 'PAID' ? '#4CAF50' : '#F44336',
+                        item.status === 'PAID' ? '#4CAF50' : '#F44336'
                     }}
                   >
                     {item.status === 'PAID' ? '✔ PAID' : '✖ UNPAID'}
@@ -263,7 +258,7 @@ const PayslipList = () => {
                       radius="sm"
                       variant="filled"
                       style={{
-                        color: theme.button.textColor,
+                        color: theme.button.textColor
                       }}
                     >
                       Download

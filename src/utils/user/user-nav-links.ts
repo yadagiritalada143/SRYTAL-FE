@@ -10,66 +10,70 @@ import {
   // IconTool,
   IconUserEdit,
   IconUsersGroup,
-  IconNotebook
+  IconNotebook,
+  IconUserStar
 } from '@tabler/icons-react';
 
 export const NavLinks = [
   {
-    role: 'employee',
+    role: 'Employee',
     url: 'employee/dashboard/profile',
     icon: IconUserEdit,
     name: 'My Profile'
   },
   {
-    role: 'content-writer',
+    role: 'ContentWriter',
     url: 'employee/dashboard/profile',
     icon: IconUserEdit,
     name: 'My Profile'
   },
   {
-    role: 'recruiter',
+    role: 'Recruiter',
     url: 'employee/dashboard/profile',
     icon: IconUserEdit,
     name: 'My Profile'
   },
   {
-    role: 'recruiter',
-    url: 'employee/dashboard/pool-candidates',
-    icon: IconUsersGroup,
-    name: 'Pool Candidates'
+    role: 'Recruiter',
+    icon: IconUserStar,
+    name: 'Talent Pool',
+    children: [
+      {
+        name: 'Pool Candidates',
+        url: 'employee/dashboard/pool-candidates'
+      },
+      {
+        name: 'Pool Companies',
+        url: 'employee/dashboard/pool-companies'
+      }
+    ]
   },
   {
-    role: 'recruiter',
-    url: 'employee/dashboard/pool-companies',
-    icon: IconBuildings,
-    name: 'Pool Companies'
-  },
-  {
-    role: 'employee',
+    role: 'Employee',
     url: 'employee/dashboard/dashboard',
     icon: IconLayoutDashboard,
     name: 'Dashboard'
   },
   {
-    role: 'recruiter',
+    role: 'Recruiter',
     url: 'employee/dashboard/timesheet',
     icon: IconCalendarTime,
     name: 'Timesheet'
   },
   {
-    role: 'employee',
+    role: 'Employee',
     url: 'employee/dashboard/timesheet',
     icon: IconCalendarTime,
     name: 'Timesheet'
   },
   {
-    role: 'content-writer',
+    role: 'ContentWriter',
     url: 'employee/dashboard/content-writer',
     icon: IconBook,
     name: 'Content Writer'
   },
   {
-    role: 'recruiter',
+    role: 'Recruiter',
     name: 'Reports',
     icon: IconNotebook,
     children: [
@@ -80,7 +84,7 @@ export const NavLinks = [
     ]
   },
   {
-    role: 'employee',
+    role: 'Employee',
     name: 'Reports',
     icon: IconNotebook,
     children: [
@@ -91,7 +95,7 @@ export const NavLinks = [
     ]
   },
   {
-    role: 'content-writer',
+    role: 'ContentWriter',
     name: 'Reports',
     icon: IconNotebook,
     children: [
@@ -102,37 +106,37 @@ export const NavLinks = [
     ]
   }
   // {
-  //   role: 'employee',
+  //   role: 'Employee',
   //   url: 'employee/dashboard/announcements',
   //   icon: IconMessageCircle,
   //   name: 'Announcements'
   // },
   // {
-  //   role: 'recruiter',
+  //   role: 'Recruiter',
   //   url: 'employee/dashboard/announcements',
   //   icon: IconMessageCircle,
   //   name: 'Announcements'
   // },
   // {
-  //   role: 'employee',
+  //   role: 'Employee',
   //   url: 'employee/dashboard/mytasks',
   //   icon: IconCheckbox,
   //   name: 'My Tasks'
   // }
   // {
-  //   role: 'employee',
+  //   role: 'Employee',
   //   url: 'employee/dashboard/support',
   //   icon: IconTool,
   //   name: 'Support'
   // },
   // {
-  //   role: 'recruiter',
+  //   role: 'Recruiter',
   //   url: 'employee/dashboard/support',
   //   icon: IconTool,
   //   name: 'Support'
   // },
   // {
-  //   role: 'employee',
+  //   role: 'Employee',
   //   url: 'employee/dashboard/mentees',
   //   icon: IconUsersGroup,
   //   name: 'Mentees'

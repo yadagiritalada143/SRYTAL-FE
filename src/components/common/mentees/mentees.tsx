@@ -14,15 +14,16 @@ import {
   useMantineTheme
 } from '@mantine/core';
 import { useRecoilValue } from 'recoil';
-import { organizationThemeAtom } from '../../../atoms/organization-atom';
-import { themeAtom } from '../../../atoms/theme';
-import { getThemeConfig } from '../../../utils/common/theme-utils';
-// import { menteesAtom } from '../../../atoms/mentees-atom';
+
+
+
+// import { menteesAtom } from '@atoms/mentees-atom';
 import { useNavigate } from 'react-router-dom';
 import { IconSearch } from '@tabler/icons-react';
-import CountButton from '../../UI/Buttonsanimate/Countbutton';
-import ButtonAnimate from '../../UI/Buttonsanimate/Button';
-import { organizationEmployeeUrls } from '../../../utils/common/constants';
+import CountButton from '@UI/Buttonsanimate/Countbutton';
+import ButtonAnimate from '@UI/Buttonsanimate/Button';
+import { organizationEmployeeUrls } from '@utils/common/constants';
+import { useAppTheme } from '@hooks/use-app-theme';
 
 const mockMentees = [
   {
@@ -92,12 +93,10 @@ const mockMentees = [
 
 const Mentees = () => {
   const theme = useMantineTheme();
-  const organizationConfig = useRecoilValue(organizationThemeAtom);
-  const isDarkTheme = useRecoilValue(themeAtom);
+  const { themeConfig: currentThemeConfig, organizationConfig, isDarkTheme } = useAppTheme();
+  
+  
 
-  const currentThemeConfig = useMemo(() => {
-    return getThemeConfig(organizationConfig, isDarkTheme);
-  }, [organizationConfig, isDarkTheme]);
 
   const [mentees, setMentees] = useState<typeof mockMentees>([]);
   //const [mentees, setMentees] = useRecoilValue(menteesAtom);

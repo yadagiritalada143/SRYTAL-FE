@@ -1,26 +1,69 @@
-import { useMemo } from 'react';
-import { Card, Text } from '@mantine/core';
+import { useMemo, useEffect, useState } from 'react';
+import {
+  Text,
+  Group,
+  SimpleGrid,
+  Title,
+  Badge,
+  Avatar,
+  Paper,
+  Stack,
+  Progress,
+  Container,
+  Tooltip,
+  ActionIcon,
+  Box,
+  TextInput,
+  Modal,
+  Button
+} from '@mantine/core';
 import { useRecoilValue } from 'recoil';
-import { organizationThemeAtom } from '../../../atoms/organization-atom';
-import { themeAtom } from '../../../atoms/theme';
-import { getThemeConfig } from '../../../utils/common/theme-utils';
-import { BgDiv } from '../../common/style-components/bg-div';
-import { EmployeeInterface } from '../../../interfaces/employee';
-import { useEffect, useState } from 'react';
-import { getUserDetails } from '../../../services/user-services';
+import {
+  IconChecklist,
+  IconClock,
+  IconAlertCircle,
+  IconCalendarEvent,
+  IconPlayerPlay,
+  IconCoffee,
+  IconPlus,
+  IconConfetti,
+  IconPlayerPause
+} from '@tabler/icons-react';
+
+
+import { EmployeeInterface } from '@interfaces/employee';
+import { getUserDetails } from '@services/user-services';
 import { toast } from 'react-toastify';
 
-const Dashboard = () => {
-  const organizationConfig = useRecoilValue(organizationThemeAtom);
-  const isDarkTheme = useRecoilValue(themeAtom);
+import { useDisclosure } from '@mantine/hooks';
+import { useAppTheme } from '@hooks/use-app-theme';
 
-  const currentThemeConfig = useMemo(() => {
-    return getThemeConfig(organizationConfig, isDarkTheme);
-  }, [organizationConfig, isDarkTheme]);
+const Dashboard = () => {
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const { themeConfig: currentThemeConfig, organizationConfig, isDarkTheme } = useAppTheme();
+  const [opened, { open, close }] = useDisclosure(false);
+
+  
+  
+
+  // Handle Timer Toggle
+  const toggleTimer = () => {
+    setIsTimerRunning(!isTimerRunning);
+    toast.info(
+      isTimerRunning ? 'Timer Paused' : 'Timer Started for Current Task'
+    );
+  };
 
   const [userDetails, setUserDetails] = useState<EmployeeInterface | null>(
     null
   );
+
+  const greeting = useMemo(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good Morning';
+    if (hour < 17) return 'Good Afternoon';
+    return 'Good Evening';
+  }, []);
 
   useEffect(() => {
     getUserDetails()
@@ -34,157 +77,239 @@ const Dashboard = () => {
       );
   }, []);
 
-  return (
-    <div className="flex items-center justify-center min-h-screen">
-      <BgDiv>
-        <div
-          className="w-full p-8 shadow-lg rounded-lg"
-          style={{
-            backgroundColor: currentThemeConfig.backgroundColor,
-            color: currentThemeConfig.color,
-            fontFamily: currentThemeConfig.fontFamily,
-          }}
-        >
-          <div className="mb-8">
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              Welcome Back,{' '}
-              <span className="text-2xl font-semibold">
-                {userDetails?.firstName || ''} {userDetails?.lastName || ''}
-              </span>{' '}
-              <span className="text-3xl">👋</span>
-            </h1>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <Card
-              padding="lg"
-              radius="md"
-              shadow="md"
-              style={{
-                backgroundColor: currentThemeConfig.colors.primary[1],
-                color: currentThemeConfig.button.textColor,
-              }}
-            >
-              <Text size="xl" fw={700}>
-                12
-              </Text>
-              <Text>Completed</Text>
-            </Card>
-
-            <Card
-              padding="lg"
-              radius="md"
-              shadow="md"
-              style={{
-                backgroundColor: currentThemeConfig.colors.primary[2],
-                color: currentThemeConfig.button.textColor,
-              }}
-            >
-              <Text size="xl" fw={700}>
-                5
-              </Text>
-              <Text>In Progress</Text>
-            </Card>
-
-            <Card
-              padding="lg"
-              radius="md"
-              shadow="md"
-              style={{
-                backgroundColor: currentThemeConfig.colors.primary[4],
-                color: currentThemeConfig.button.textColor,
-              }}
-            >
-              <Text size="xl" fw={700}>
-                2
-              </Text>
-              <Text>Pending</Text>
-            </Card>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <Card
-              padding="lg"
-              radius="md"
-              shadow="sm"
-              style={{
-                backgroundColor: currentThemeConfig.backgroundColor,
-                color: currentThemeConfig.color,
-                border: `1px solid ${currentThemeConfig.borderColor}`,
-              }}
-            >
-              <Text size="lg" fw={600} mb="sm">
-                Upcoming Tasks
-              </Text>
-              <ul className="text-sm space-y-2">
-                <li className="flex justify-between">
-                  <span>Implement authentication</span>
-                  <span>May 5, 2024</span>
-                </li>
-                <li className="flex justify-between">
-                  <span>Database optimization</span>
-                  <span>May 7, 2024</span>
-                </li>
-                <li className="flex justify-between">
-                  <span>Write unit tests</span>
-                  <span>May 10, 2024</span>
-                </li>
-              </ul>
-            </Card>
-
-            <Card
-              padding="lg"
-              radius="md"
-              shadow="sm"
-              style={{
-                backgroundColor: currentThemeConfig.backgroundColor,
-                color: currentThemeConfig.color,
-                border: `1px solid ${currentThemeConfig.borderColor}`,
-              }}
-            >
-              <Text size="lg" fw={600} mb="sm">
-                My Schedule
-              </Text>
-              <ul className="text-sm space-y-2">
-                <li className="flex justify-between">
-                  <span>Stand-up Meeting</span>
-                  <span>10:00 AM</span>
-                </li>
-                <li className="flex justify-between">
-                  <span>Sprint Review</span>
-                  <span>2:00 PM</span>
-                </li>
-              </ul>
-            </Card>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card
-              padding="lg"
-              radius="md"
-              shadow="sm"
-              style={{
-                backgroundColor: currentThemeConfig.backgroundColor,
-                color: currentThemeConfig.color,
-                border: `1px solid ${currentThemeConfig.borderColor}`,
-              }}
-            >
-              <Text size="lg" fw={600} mb="sm">
-                Recent Announcements
-              </Text>
-              <ul className="text-sm space-y-2">
-                <li>
-                  <strong>Quarterly Meeting on April 30, 2024</strong>
-                  <p style={{ color: currentThemeConfig.linkColor }}>
-                    Reminder: The quarterly meeting is scheduled for 2:00 PM.
-                  </p>
-                </li>
-              </ul>
-            </Card>
-          </div>
+  const StatsCard = ({ title, value, icon: Icon, color, trend }: any) => (
+    <Paper
+      withBorder
+      p="md"
+      radius="md"
+      style={{ backgroundColor: currentThemeConfig.backgroundColor }}
+    >
+      <Group justify="space-between">
+        <div>
+          <Text c="dimmed" tt="uppercase" fw={700} fz="xs">
+            {title}
+          </Text>
+          <Text fw={700} fz="xl">
+            {value}
+          </Text>
+          {trend && (
+            <Text size="xs" c="teal" fw={500}>
+              {trend} from last week
+            </Text>
+          )}
         </div>
-      </BgDiv>
-    </div>
+        <Avatar color={color} radius="sm" variant="light">
+          <Icon size="1.4rem" />
+        </Avatar>
+      </Group>
+    </Paper>
+  );
+
+  return (
+    <Container size="lg" mt={60} pb={40}>
+      <Modal opened={opened} onClose={close} title="Create New Task" centered>
+        <Stack>
+          <TextInput
+            label="Task Name"
+            placeholder="e.g. API Integration"
+            data-autofocus
+          />
+          <Button onClick={close} color={currentThemeConfig.button.color}>
+            Create Task
+          </Button>
+        </Stack>
+      </Modal>
+      {/* Header Section */}
+      <Group justify="space-between" mb={30} align="flex-end">
+        <Stack gap={4}>
+          <Text size="sm" fw={500} c="dimmed">
+            {greeting}
+          </Text>
+          <Title order={2} style={{ color: currentThemeConfig.color }}>
+            {userDetails?.firstName || 'User'} {userDetails?.lastName || 'User'}
+          </Title>
+        </Stack>
+
+        <Group gap="xs">
+          <Tooltip label={isTimerRunning ? 'Pause Timer' : 'Start Timer'}>
+            <ActionIcon
+              size="lg"
+              variant={isTimerRunning ? 'filled' : 'light'}
+              color={isTimerRunning ? 'red' : 'blue'}
+              onClick={toggleTimer}
+            >
+              {isTimerRunning ? (
+                <IconPlayerPause size="1.2rem" />
+              ) : (
+                <IconPlayerPlay size="1.2rem" />
+              )}
+            </ActionIcon>
+          </Tooltip>
+
+          <Tooltip label="Log Break">
+            <ActionIcon
+              size="lg"
+              variant="light"
+              color="orange"
+              onClick={() => toast.success('Break logged')}
+            >
+              <IconCoffee size="1.2rem" />
+            </ActionIcon>
+          </Tooltip>
+
+          <Tooltip label="Add Task">
+            <ActionIcon
+              size="lg"
+              variant="filled"
+              color={currentThemeConfig.button.color}
+              onClick={open}
+            >
+              <IconPlus size="1.2rem" />
+            </ActionIcon>
+          </Tooltip>
+        </Group>
+      </Group>
+
+      <SimpleGrid cols={{ base: 1, sm: 3 }} mb="xl">
+        <StatsCard
+          title="Tasks Completed"
+          value="12"
+          icon={IconChecklist}
+          color="green"
+          trend="+2"
+        />
+        <StatsCard
+          title="Hours Logged"
+          value="32.5h"
+          icon={IconClock}
+          color="blue"
+        />
+        <StatsCard
+          title="Pending Review"
+          value="02"
+          icon={IconAlertCircle}
+          color="orange"
+        />
+      </SimpleGrid>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <Paper
+            withBorder
+            p="xl"
+            radius="md"
+            mb="lg"
+            style={{ backgroundColor: currentThemeConfig.backgroundColor }}
+          >
+            <Group justify="space-between" mb="lg">
+              <Title order={4}>Project Progress</Title>
+              <Text
+                size="xs"
+                c="dimmed"
+                className="cursor-pointer hover:underline"
+              >
+                View All Tasks
+              </Text>
+            </Group>
+            <Stack gap="xl">
+              {[
+                {
+                  task: 'Implement Authentication',
+                  date: 'In 2 days',
+                  progress: 80,
+                  tag: 'Urgent'
+                },
+                {
+                  task: 'Frontend Optimization',
+                  date: 'May 7',
+                  progress: 30,
+                  tag: 'Medium'
+                }
+              ].map((item, i) => (
+                <Box key={i}>
+                  <Group justify="space-between" mb={8}>
+                    <Text fw={600} size="sm">
+                      {item.task}
+                    </Text>
+                    <Badge
+                      size="xs"
+                      variant="dot"
+                      color={item.tag === 'Urgent' ? 'red' : 'blue'}
+                    >
+                      {item.tag}
+                    </Badge>
+                  </Group>
+                  <Progress
+                    value={item.progress}
+                    size="md"
+                    radius="xl"
+                    color={currentThemeConfig.button.color}
+                  />
+                  <Group justify="space-between" mt={8}>
+                    <Text size="xs" c="dimmed">
+                      Deadline: {item.date}
+                    </Text>
+                    <Text size="xs" fw={700}>
+                      {item.progress}%
+                    </Text>
+                  </Group>
+                </Box>
+              ))}
+            </Stack>
+          </Paper>
+        </div>
+
+        <Stack>
+          <Paper
+            withBorder
+            p="lg"
+            radius="md"
+            style={{ backgroundColor: currentThemeConfig.backgroundColor }}
+          >
+            <Group mb="md">
+              <IconCalendarEvent size="1.1rem" />
+              <Title order={5}>Upcoming Meetings</Title>
+            </Group>
+            <Stack gap="sm">
+              <Paper withBorder p="xs" radius="sm">
+                <Text size="xs" fw={700} c="blue">
+                  11:00 AM
+                </Text>
+                <Text size="sm" fw={500}>
+                  Daily Standup
+                </Text>
+              </Paper>
+              <Paper withBorder p="xs" radius="sm">
+                <Text size="xs" fw={700} c="blue">
+                  07:00 PM
+                </Text>
+                <Text size="sm" fw={500}>
+                  Srytal grooming
+                </Text>
+              </Paper>
+            </Stack>
+          </Paper>
+
+          <Paper
+            withBorder
+            p="lg"
+            radius="md"
+            style={{ backgroundColor: currentThemeConfig.backgroundColor }}
+          >
+            <Group mb="sm">
+              <IconConfetti size="1.1rem" color="pink" />
+              <Title order={5}>Next Holiday</Title>
+            </Group>
+            <Text size="sm" fw={600}>
+              Labour Day
+            </Text>
+            <Text size="xs" c="dimmed">
+              Monday, May 1st (Long Weekend! 🥳)
+            </Text>
+          </Paper>
+        </Stack>
+      </div>
+    </Container>
   );
 };
 

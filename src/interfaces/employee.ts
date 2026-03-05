@@ -1,6 +1,7 @@
 export interface EmployeeInterface {
-  _id: string;
+  id: string;
   employeeId: string;
+  dateOfJoining: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -18,6 +19,7 @@ export interface EmployeeInterface {
   bankDetailsInfo: {
     accountNumber: string;
     accountHolderName: string;
+    bankName: string;
     ifscCode: string;
   };
 }

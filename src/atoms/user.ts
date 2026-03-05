@@ -1,5 +1,5 @@
 import { atom } from 'recoil';
-import { UserDetails } from '../interfaces/user';
+import { UserDetails } from '@interfaces/user';
 
 export const userDetailsAtom = atom<UserDetails>({
   key: 'userDetails',
@@ -7,6 +7,7 @@ export const userDetailsAtom = atom<UserDetails>({
     firstName: '',
     lastName: '',
     userRole: '',
-    passwordResetRequired: 'false'
+    passwordResetRequired: 'false',
+    id: ''
   }
 });

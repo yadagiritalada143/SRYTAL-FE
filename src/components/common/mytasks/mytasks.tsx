@@ -1,12 +1,13 @@
 import { useMantineTheme, Card, Text, Badge } from '@mantine/core';
 import { useRecoilValue } from 'recoil';
-import { organizationThemeAtom } from '../../../atoms/organization-atom';
-import { themeAtom } from '../../../atoms/theme';
+
+
 import { useNavigate } from 'react-router-dom';
 import { useMemo } from 'react';
-import { getThemeConfig } from '../../../utils/common/theme-utils';
-import ProgressBar from '../../UI/Buttonsanimate/ProgressBar';
-import { Task } from '../../../interfaces/mytasks';
+
+import ProgressBar from '@UI/Buttonsanimate/ProgressBar';
+import { Task } from '@interfaces/mytasks';
+import { useAppTheme } from '@hooks/use-app-theme';
 
 const tasks: Task[] = [
   {
@@ -37,12 +38,10 @@ const tasks: Task[] = [
 
 const MyTasks = () => {
   const navigate = useNavigate();
+  const { themeConfig: currentThemeConfig, organizationConfig, isDarkTheme } = useAppTheme();
   const theme = useMantineTheme();
-  const organizationConfig = useRecoilValue(organizationThemeAtom);
-  const isDarkTheme = useRecoilValue(themeAtom);
-  const currentThemeConfig = useMemo(() => {
-    return getThemeConfig(organizationConfig, isDarkTheme);
-  }, [organizationConfig, isDarkTheme]);
+  
+  
 
   return (
     <div

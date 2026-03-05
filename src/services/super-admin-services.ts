@@ -1,18 +1,11 @@
-import axios from "axios";
-import { RegisterAdminBySuperAdminForm } from "../forms/register-admin-superadmin";
-import { OfferLetterForm } from "../forms/offerletter";
-
-const BASE_URL = import.meta.env.VITE_BACKEND_URL;
-
-const apiClient = axios.create({
-  baseURL: BASE_URL,
-  headers: { "Content-Type": "application/json" },
-});
+import { RegisterAdminBySuperAdminForm } from '@forms/register-admin-superadmin';
+import { OfferLetterForm } from '@forms/offerletter';
+import { apiClient } from '@utils/api-client';
 
 export const getOrganizations = async () => {
   try {
     const response = await apiClient.get(
-      "superadmin/getAllOrganisationsBySuperadmin"
+      'superadmin/getAllOrganisationsBySuperadmin'
     );
     return response.data;
   } catch (error) {
@@ -25,7 +18,7 @@ export const registerAdmin = async (
 ) => {
   try {
     const response = await apiClient.post(
-      "/admin/registerEmployeeByAdmin",
+      '/admin/registerEmployeeByAdmin',
       adminDetails
     );
     return response.data;
@@ -53,7 +46,7 @@ export const GenerateOfferletterBySuperAdmin = async (
     const response = await apiClient.post(
       `/superadmin/generateofferletter`,
       data,
-      { responseType: "blob" }
+      { responseType: 'blob' }
     );
     return response.data;
   } catch (error) {

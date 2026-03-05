@@ -19,7 +19,7 @@ export const addEmployeeSchema = z.object({
     .min(10, { message: 'Phone number must be 10 digits' })
     .max(10, { message: 'Phone number must be 10 digits' })
     .regex(/^\d+$/, { message: 'Phone number must contain only digits' }),
-  userRole: z.enum(['employee', 'recruiter', 'content-writer'])
+  userRole: z.enum(['Employee', 'Recruiter', 'ContentWriter'])
 });
 
 export type AddEmployeeForm = z.infer<typeof addEmployeeSchema>;

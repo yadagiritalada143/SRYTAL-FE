@@ -5,19 +5,19 @@ import {
   IconX
 } from '@tabler/icons-react';
 import { useRecoilValue } from 'recoil';
-import { organizationThemeAtom } from '../../atoms/organization-atom';
-import { themeAtom } from '../../atoms/theme';
+
+
 import { useMemo } from 'react';
-import { getThemeConfig } from './theme-utils';
+import { useAppTheme } from '@hooks/use-app-theme';
+
 
 export const useCustomToast = () => {
-  const organizationConfig = useRecoilValue(organizationThemeAtom);
-  const isDarkTheme = useRecoilValue(themeAtom);
+  const { themeConfig: currentThemeConfig, organizationConfig, isDarkTheme } = useAppTheme();
+  
+  
 
   // Get current theme configuration
-  const currentThemeConfig = useMemo(() => {
-    return getThemeConfig(organizationConfig, isDarkTheme);
-  }, [organizationConfig, isDarkTheme]);
+  
 
   const showSuccessToast = (
     message: string,

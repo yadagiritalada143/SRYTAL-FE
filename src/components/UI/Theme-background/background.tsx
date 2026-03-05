@@ -1,8 +1,6 @@
 import React, { useMemo } from 'react';
 import { useRecoilValue } from 'recoil';
-import { organizationThemeAtom } from '../../../atoms/organization-atom';
-import { themeAtom } from '../../../atoms/theme';
-import { getThemeConfig } from '../../../utils/common/theme-utils';
+import { useAppTheme } from '@hooks/use-app-theme';
 
 interface ThemeBackgroundProps {
   children: React.ReactNode;
@@ -15,13 +13,7 @@ export const ThemeBackground: React.FC<ThemeBackgroundProps> = ({
   className = '',
   style = {}
 }) => {
-  const organizationConfig = useRecoilValue(organizationThemeAtom);
-  const isDarkTheme = useRecoilValue(themeAtom);
-
-  // Get the current theme configuration for background styling
-  const currentThemeConfig = useMemo(() => {
-    return getThemeConfig(organizationConfig, isDarkTheme);
-  }, [organizationConfig, isDarkTheme]);
+  const { themeConfig: currentThemeConfig } = useAppTheme();
 
   return (
     <div

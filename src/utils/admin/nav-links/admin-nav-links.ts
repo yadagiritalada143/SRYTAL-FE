@@ -8,8 +8,10 @@ import {
   IconUserEdit,
   IconUsers,
   IconUsersGroup,
+  IconUserStar,
   IconWorldCheck
 } from '@tabler/icons-react';
+import { Children } from 'react';
 
 export const adminNavLinks = [
   {
@@ -32,15 +34,18 @@ export const adminNavLinks = [
   },
   {
     role: 'admin',
-    url: 'admin/dashboard/pool-candidates',
-    icon: IconUsersGroup,
-    name: 'Pool Candidates'
-  },
-  {
-    role: 'admin',
-    url: 'admin/dashboard/pool-companies',
-    icon: IconBuildings,
-    name: 'Pool Companies'
+    icon: IconUserStar,
+    name: 'Talent Pool',
+    children: [
+      {
+        name: 'Pool Candidates',
+        url: 'admin/dashboard/pool-candidates'
+      },
+      {
+        name: 'Pool Companies',
+        url: 'admin/dashboard/pool-companies'
+      }
+    ]
   },
   {
     role: 'admin',

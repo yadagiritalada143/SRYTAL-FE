@@ -3,58 +3,120 @@ import {
   Route,
   useNavigate,
   useParams,
-  Navigate
+  Navigate,
+  Outlet
 } from 'react-router-dom';
-import AddEmployee from '../components/admin/dashboard/add-employee/add-employee';
-import { OrganizationConfig } from '../interfaces/organization';
-import AdminDashboard from '../pages/admin/dashboard/dashboard';
-import AdminLogin from '../pages/admin/login/login';
-import AddCompany from '../components/user/dashboard/add-company/add-company';
-import Employees from '../components/admin/dashboard/employees/employees';
-import UpdateEmployee from '../components/admin/dashboard/update-employee/update-employee';
-import { Outlet } from 'react-router-dom';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, lazy, Suspense } from 'react';
 import { toast } from 'react-toastify';
-import { MantineProvider } from '@mantine/core';
+import { MantineProvider, LoadingOverlay } from '@mantine/core';
 import '@mantine/core/styles.css';
-import { getOrganizationConfig } from '../services/common-services';
-import { LoadingOverlay } from '@mantine/core';
-import Loader from '../components/common/loader/loader';
-import AdminProfile from '../components/admin/dashboard/profile/profile';
-import { useSetRecoilState, useRecoilValue } from 'recoil';
-import { organizationThemeAtom } from '../atoms/organization-atom';
-import { organizationAdminUrls } from '../utils/common/constants';
-import BloodGroupTable from '../components/admin/dashboard/blood-group/all-blood';
-import PoolCandidateList from '../components/user/dashboard/candidate/candidate';
-import UpdatePoolCandidateForm from '../components/user/dashboard/update-candidate/update-candidate';
-import UserProvider from '../hooks/user-context';
-import EmploymentTypes from '../components/admin/dashboard/employement-type/employement-type';
-import Companies from '../components/user/dashboard/companies/companies';
-import AddPoolCandidate from '../components/user/dashboard/add-candidate/add-candidate';
-import UpdateCompany from '../components/user/dashboard/update-company/update-company';
-import EmploymentRoles from '../components/admin/dashboard/employment-roles/employment-roles';
-import Reports from '../components/admin/dashboard/reports/reports';
-import GenerateOfferReport from '../components/admin/dashboard/reports/generate-offer';
-import GenerateSalarySlipReport from '../components/admin/dashboard/reports/generate-salary-slip';
-import Packages from '../components/admin/dashboard/packages/packages';
-import AddPackage from '../components/admin/dashboard/add-package/add-package';
-import UpdatePackage from '../components/admin/dashboard/update-package/update-package';
-import DateTableComponent from '../components/common/timesheet/timesheet';
-import PackagePageWrapper from '../components/admin/dashboard/update-employee/package-wrapper';
-import { EmployeeTimesheetAdminView } from '../components/admin/dashboard/employee-timesheet/employee-timesheet';
-import { ThemeToggleButton } from '../components/UI/Theme-toggle-button/button';
-import { themeAtom } from '../atoms/theme';
-import { getThemeConfig } from '../utils/common/theme-utils';
-import SettingsLayout from '../components/admin/dashboard/settings/SettingsLayout';
-import FeedbackTable from '../components/admin/dashboard/settings/FeedbackTable';
-import EmployeeReports from '../components/admin/dashboard/reports/all-employee-reports';
+import { getOrganizationConfig } from '@services/common-services';
+import Loader from '@components/common/loader/loader';
+import { useSetRecoilState } from 'recoil';
+import { organizationThemeAtom } from '@atoms/organization-atom';
+import { themeAtom } from '@atoms/theme';
+
+import { organizationAdminUrls } from '@utils/common/constants';
+import { ROLES } from '@constants';
+import UserProvider from '@hooks/user-context';
+import { ThemeToggleButton } from '@components/UI/Theme-toggle-button/button';
+import { useAppTheme } from '@hooks/use-app-theme';
+import { OrganizationConfig } from '@interfaces/organization';
+
+// Lazy loaded components
+const AdminDashboard = lazy(() => import('@admin/pages/dashboard/dashboard'));
+const AdminLogin = lazy(() => import('@admin/pages/login/login'));
+const AddEmployee = lazy(
+  () => import('@admin/components/dashboard/add-employee/add-employee')
+);
+const Employees = lazy(
+  () => import('@admin/components/dashboard/employees/employees')
+);
+const UpdateEmployee = lazy(
+  () => import('@admin/components/dashboard/update-employee/update-employee')
+);
+const AdminProfile = lazy(
+  () => import('@admin/components/dashboard/profile/AdminProfile')
+);
+const BloodGroupTable = lazy(
+  () => import('@admin/components/dashboard/blood-group/BloodGroup')
+);
+const EmploymentTypes = lazy(
+  () => import('@admin/components/dashboard/employment-type/EmploymentType')
+);
+const EmploymentRoles = lazy(
+  () => import('@admin/components/dashboard/employment-roles/EmploymentRoles')
+);
+const Reports = lazy(
+  () => import('@admin/components/dashboard/reports/reports')
+);
+const GenerateOfferReport = lazy(
+  () => import('@admin/components/dashboard/reports/generate-offer')
+);
+const GenerateSalarySlipReport = lazy(
+  () => import('@admin/components/dashboard/reports/generate-salary-slip')
+);
+const EmployeeReports = lazy(
+  () => import('@admin/components/dashboard/reports/all-employee-reports')
+);
+const Packages = lazy(
+  () => import('@admin/components/dashboard/packages/packages')
+);
+const AddPackage = lazy(
+  () => import('@admin/components/dashboard/add-package/add-package')
+);
+const UpdatePackage = lazy(
+  () => import('@admin/components/dashboard/update-package/update-package')
+);
+const SettingsLayout = lazy(
+  () => import('@admin/components/dashboard/settings/SettingsLayout')
+);
+const FeedbackTable = lazy(
+  () => import('@admin/components/dashboard/settings/FeedbackTable')
+);
+const DateTableComponent = lazy(
+  () => import('@components/common/timesheet/timesheet')
+);
+const PackagePageWrapper = lazy(
+  () => import('@admin/components/dashboard/update-employee/package-wrapper')
+);
+const EmployeeTimesheetAdminView = lazy(() =>
+  import(
+    '@admin/components/dashboard/employee-timesheet/employee-timesheet'
+  ).then(m => ({ default: m.EmployeeTimesheetAdminView }))
+);
+
+// User domain components reused in Admin
+const Companies = lazy(
+  () => import('@user/components/dashboard/companies/companies')
+);
+const AddCompany = lazy(
+  () => import('@user/components/dashboard/add-company/add-company')
+);
+const UpdateCompany = lazy(
+  () => import('@user/components/dashboard/update-company/update-company')
+);
+const PoolCandidateList = lazy(
+  () => import('@user/components/dashboard/candidate/candidate')
+);
+const AddPoolCandidate = lazy(
+  () => import('@user/components/dashboard/add-candidate/add-candidate')
+);
+const UpdatePoolCandidateForm = lazy(
+  () => import('@user/components/dashboard/update-candidate/update-candidate')
+);
 
 const AdminRoutes = () => {
   const { organization } = useParams<{ organization: string }>();
+  const {
+    themeConfig: currentThemeConfig,
+    organizationConfig,
+    isDarkTheme
+  } = useAppTheme();
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const organizationConfig = useRecoilValue(organizationThemeAtom);
+
   const setOrganizationConfig = useSetRecoilState(organizationThemeAtom);
-  const isDarkTheme = useRecoilValue(themeAtom);
+
   const setTheme = useSetRecoilState(themeAtom);
 
   useEffect(() => {
@@ -70,9 +132,6 @@ const AdminRoutes = () => {
   }, [organization, setOrganizationConfig]);
 
   // Get the current theme configuration based on theme mode
-  const currentThemeConfig = useMemo(() => {
-    return getThemeConfig(organizationConfig, isDarkTheme);
-  }, [organizationConfig, isDarkTheme]);
 
   const mantineTheme = useMemo(() => {
     return {
@@ -432,12 +491,8 @@ const AdminRoutes = () => {
 
   return (
     <MantineProvider theme={mantineTheme}>
-      <LoadingOverlay
-        visible={isLoading}
-        loaderProps={{ children: <Loader /> }}
-      />
       <div
-        className="d-flex justify-end p-4 absolute right-0 transition-colors duration-300 ease-in-out"
+        className='d-flex justify-end p-4 absolute right-0 transition-colors duration-300 ease-in-out'
         style={{
           backgroundColor: 'transparent',
           zIndex: 1000
@@ -446,7 +501,7 @@ const AdminRoutes = () => {
         <ThemeToggleButton isDarkTheme={isDarkTheme} setTheme={setTheme} />
       </div>
       <Routes>
-        <Route path="/login" element={<AdminLogin />} />
+        <Route path='/login' element={<AdminLogin />} />
         <Route
           element={
             <UserProvider>
@@ -454,52 +509,52 @@ const AdminRoutes = () => {
             </UserProvider>
           }
         >
-          <Route path="/dashboard" element={<AdminDashboard />}>
-            <Route path="addemployee" element={<AddEmployee />} />
-            <Route path="" element={<Employees />} />
-            <Route path="profile" element={<AdminProfile />} />
-            <Route path="pool-companies" element={<Companies />} />
-            <Route path="add-pool-companies" element={<AddCompany />} />
-            <Route path="add-pool-candidate" element={<AddPoolCandidate />} />
-            <Route path="packages" element={<Packages />} />
-            <Route path="/dashboard/addPackage" element={<AddPackage />} />
-            <Route path="updates/:packageId" element={<UpdatePackage />} />
-            <Route path="reports" element={<Reports />}>
-              <Route path="generate-offer" element={<GenerateOfferReport />} />
+          <Route path='/dashboard' element={<AdminDashboard />}>
+            <Route path='addemployee' element={<AddEmployee />} />
+            <Route path='' element={<Employees />} />
+            <Route path='profile' element={<AdminProfile />} />
+            <Route path='pool-companies' element={<Companies />} />
+            <Route path='add-pool-companies' element={<AddCompany />} />
+            <Route path='add-pool-candidate' element={<AddPoolCandidate />} />
+            <Route path='packages' element={<Packages />} />
+            <Route path='/dashboard/addPackage' element={<AddPackage />} />
+            <Route path='updates/:packageId' element={<UpdatePackage />} />
+            <Route path='reports' element={<Reports />}>
+              <Route path='generate-offer' element={<GenerateOfferReport />} />
               <Route
-                path="generate-salary-slip"
+                path='generate-salary-slip'
                 element={<GenerateSalarySlipReport />}
               />
               <Route
-                path="all-employee-reports"
+                path='all-employee-reports'
                 element={<EmployeeReports />}
               />
             </Route>
-            <Route path="timesheet" element={<DateTableComponent />} />
+            <Route path='timesheet' element={<DateTableComponent />} />
             <Route
-              path=":candidateId/edit-pool-candidate"
+              path=':candidateId/edit-pool-candidate'
               element={<UpdatePoolCandidateForm />}
             />
-            <Route path="update/:employeeId" element={<UpdateEmployee />} />
+            <Route path='update/:employeeId' element={<UpdateEmployee />} />
             <Route
-              path="package/:employeeId"
+              path='package/:employeeId'
               element={<PackagePageWrapper />}
             />
             <Route
-              path="timesheet/:employeeId"
+              path='timesheet/:employeeId'
               element={<EmployeeTimesheetAdminView />}
             />
-            <Route path="pool-candidates" element={<PoolCandidateList />} />
+            <Route path='pool-candidates' element={<PoolCandidateList />} />
             <Route
-              path="update-pool-company/:companyId"
+              path='update-pool-company/:companyId'
               element={<UpdateCompany />}
             />
-            <Route path="settings" element={<SettingsLayout />}>
-              <Route index element={<Navigate to="blood-groups" replace />} />
-              <Route path="blood-groups" element={<BloodGroupTable />} />
-              <Route path="employment-types" element={<EmploymentTypes />} />
-              <Route path="employment-roles" element={<EmploymentRoles />} />
-              <Route path="feedback" element={<FeedbackTable />} />
+            <Route path='settings' element={<SettingsLayout />}>
+              <Route index element={<Navigate to='blood-groups' replace />} />
+              <Route path='blood-groups' element={<BloodGroupTable />} />
+              <Route path='employment-types' element={<EmploymentTypes />} />
+              <Route path='employment-roles' element={<EmploymentRoles />} />
+              <Route path='feedback' element={<FeedbackTable />} />
             </Route>
           </Route>
         </Route>
@@ -511,11 +566,13 @@ const AdminRoutes = () => {
 const AdminProtectedRoutes = () => {
   const token = localStorage.getItem('token');
   const userRole = localStorage.getItem('userRole');
-  const organizationConfig = useRecoilValue(organizationThemeAtom);
+
   const navigate = useNavigate();
 
+  const { organizationConfig } = useAppTheme();
+
   useEffect(() => {
-    if (!userRole || !token || userRole !== 'admin') {
+    if (!userRole || !token || userRole !== ROLES.ADMIN) {
       setTimeout(() => {
         toast.error('Not authorized to access');
         navigate(
@@ -525,7 +582,7 @@ const AdminProtectedRoutes = () => {
     }
   }, [navigate, userRole, token, organizationConfig.organization_name]);
 
-  if (!userRole || !token || userRole !== 'admin') {
+  if (!userRole || !token || userRole !== ROLES.ADMIN) {
     return null;
   }
 
