@@ -210,7 +210,7 @@ const UpdateEmployee = () => {
         mobileNumber: Number(data.mobileNumber),
         dateOfJoining: data.dateOfJoining ?? undefined,
         dateOfBirth: data.dateOfBirth ?? undefined,
-        uanNumber: data.uanNumber || undefined
+        uanNumber: data.uanNumber ?? ''
       };
 
       // Remove empty bank details
