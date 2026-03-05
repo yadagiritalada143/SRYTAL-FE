@@ -1,0 +1,1 @@
+import{D as a,j as t,s as o}from"./index-BLI_TH8X.js";import{I as r}from"./IconArrowLeft-d7hrFOgT.js";const c=({id:e})=>{const s=a();return t.jsx(o,{className:"flex items-center gap-2 bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition",onClick:()=>{localStorage.setItem("id",e),s(-1)},children:t.jsx(r,{size:20})})};export{c as B};

@@ -1,0 +1,6 @@
+import{w as l,j as r,E as e}from"./index-BLI_TH8X.js";import{c as a}from"./createReactComponent-HfB31U8m.js";import{I as i}from"./IconCircleDashedCheck-B7paiYLp.js";import{I as c}from"./IconX-DY30xroy.js";/**
+ * @license @tabler/icons-react v3.29.0 - MIT
+ *
+ * This source code is licensed under the MIT license.
+ * See the LICENSE file in the root directory of this source tree.
+ */var n=a("filled","exclamation-circle-filled","IconExclamationCircleFilled",[["path",{d:"M17 3.34a10 10 0 1 1 -15 8.66l.005 -.324a10 10 0 0 1 14.995 -8.336m-5 11.66a1 1 0 0 0 -1 1v.01a1 1 0 0 0 2 0v-.01a1 1 0 0 0 -1 -1m0 -7a1 1 0 0 0 -1 1v4a1 1 0 0 0 2 0v-4a1 1 0 0 0 -1 -1",key:"svg-0"}]]);const p=()=>{const{themeConfig:o}=l();return{showSuccessToast:(t,s=r.jsx(i,{width:32,height:32}))=>{e(t,{style:{color:o.color,backgroundColor:o.headerBackgroundColor},progressStyle:{background:o.button.color,accentColor:o.button.textColor,borderColor:o.borderColor},icon:s,closeButton:r.jsx(c,{style:{cursor:"pointer"},width:20,height:20,onClick:()=>e.dismiss()})})},showErrorToast:(t,s=r.jsx(n,{width:32,height:32,color:"red"}))=>{e(t,{style:{color:o.color,backgroundColor:o.headerBackgroundColor},progressStyle:{background:"red",accentColor:"red",borderColor:"red"},icon:s,closeButton:r.jsx(c,{style:{cursor:"pointer"},width:20,height:20,onClick:()=>e.dismiss()})})}}};export{p as u};
