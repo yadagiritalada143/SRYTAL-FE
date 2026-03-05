@@ -50,6 +50,13 @@ export const employeeSchema = z.object({
   employeeRole: z
     .array(z.string())
     .min(1, 'At least one employee role is required'),
+  uanNumber: z
+    .string()
+    .trim()
+    .regex(/^$|^\d{12}$/, {
+      message: 'UAN number must be exactly 12 digits'
+    })
+    .optional(),
   bankDetailsInfo: z
     .object({
       accountNumber: z.union([
