@@ -122,8 +122,8 @@ const UpdatePackage = () => {
       try {
         const response = await getAllEmployeeDetailsByAdmin();
         const filterApprovers = response.map(
-          (approver: { _id: string; firstName: string; lastName: string }) => ({
-            value: approver._id,
+          (approver: { id: string; firstName: string; lastName: string }) => ({
+            value: approver.id,
             label: `${approver.firstName} ${approver.lastName}`
           })
         );
@@ -165,7 +165,6 @@ const UpdatePackage = () => {
       setIsLoading(false);
     }
   };
-
   return (
     <Container size='xl' py='md' my='xl' px={isSmallMobile ? 'xs' : 'md'}>
       <Stack gap='md'>
