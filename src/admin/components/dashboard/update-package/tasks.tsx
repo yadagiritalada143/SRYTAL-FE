@@ -39,28 +39,29 @@ const MobileTaskCard: React.FC<{
   index: number;
   onEdit: (task: any) => void;
   onDelete: (taskId: string) => void;
-}> = ({ task, index, onEdit, onDelete }) => {
+  themeConfig: any;
+}> = ({ task, index, onEdit, onDelete, themeConfig }) => {
   return (
-    <Card shadow="sm" p="md" mb="sm" withBorder>
-      <Stack gap="sm">
-        <Group justify="space-between" align="flex-start">
-          <Badge variant="filled" color="blue">
+    <Card shadow='sm' p='md' mb='sm' withBorder>
+      <Stack gap='sm'>
+        <Group justify='space-between' align='flex-start'>
+          <Badge variant='filled' color={themeConfig.accentColor}>
             #{index + 1}
           </Badge>
-          <Group gap="xs">
+          <Group gap='xs'>
             <ActionIcon
-              variant="subtle"
-              color="blue"
+              variant='subtle'
+              color={themeConfig.button.color}
               onClick={() => onEdit(task)}
-              size="md"
+              size='md'
             >
               <IconEdit size={18} />
             </ActionIcon>
             <ActionIcon
-              variant="subtle"
-              color="red"
+              variant='subtle'
+              color={themeConfig.dangerColor}
               onClick={() => onDelete(task._id)}
-              size="md"
+              size='md'
             >
               <IconTrash size={18} />
             </ActionIcon>
@@ -69,37 +70,37 @@ const MobileTaskCard: React.FC<{
 
         <Divider />
 
-        <Stack gap="xs">
+        <Stack gap='xs'>
           <Stack gap={2}>
-            <Text size="xs" fw={600} c="dimmed">
+            <Text size='xs' fw={600} c='dimmed'>
               Task
             </Text>
-            <Text size="sm" fw={500}>
+            <Text size='sm' fw={500}>
               {task.title}
             </Text>
           </Stack>
 
           <Stack gap={2}>
-            <Text size="xs" fw={600} c="dimmed">
+            <Text size='xs' fw={600} c='dimmed'>
               <Group gap={4}>
                 <IconUser size={12} />
                 Created By
               </Group>
             </Text>
-            <Text size="sm">
+            <Text size='sm'>
               {task?.createdBy?.firstName || ''}{' '}
               {task?.createdBy?.lastName || ''}
             </Text>
           </Stack>
 
           <Stack gap={2}>
-            <Text size="xs" fw={600} c="dimmed">
+            <Text size='xs' fw={600} c='dimmed'>
               <Group gap={4}>
                 <IconCalendar size={12} />
                 Created At
               </Group>
             </Text>
-            <Text size="xs">
+            <Text size='xs'>
               {moment(task.createdAt).format('MMM DD, YYYY - h:mm A')}
             </Text>
           </Stack>
@@ -185,19 +186,19 @@ const PackageTasksTable = ({
 
   return (
     <>
-      <Card shadow="sm" p={0} radius="md" withBorder>
+      <Card shadow='sm' p={0} radius='md' withBorder>
         <Stack gap={0}>
           {/* Header */}
           <Group
             p={isMobile ? 'md' : 'lg'}
-            justify="space-between"
+            justify='space-between'
             style={{
               borderBottom: '1px solid var(--mantine-color-gray-3)'
             }}
           >
-            <Group gap="xs">
+            <Group gap='xs'>
               <IconChecklist size={20} />
-              <Text size="lg" fw={600}>
+              <Text size='lg' fw={600}>
                 Package Tasks ({taskList.length})
               </Text>
             </Group>
@@ -205,19 +206,19 @@ const PackageTasksTable = ({
 
           {/* Content */}
           {taskList.length === 0 ? (
-            <Center p="xl">
-              <Stack align="center" gap="md">
+            <Center p='xl'>
+              <Stack align='center' gap='md'>
                 <IconChecklist size={48} opacity={0.5} />
-                <Text size="lg">No tasks available</Text>
-                <Text size="sm" c="dimmed">
+                <Text size='lg'>No tasks available</Text>
+                <Text size='sm' c='dimmed'>
                   Add your first task to get started
                 </Text>
               </Stack>
             </Center>
           ) : isMobile ? (
             // Mobile Card View
-            <ScrollArea p="md">
-              <Stack gap="sm">
+            <ScrollArea p='md'>
+              <Stack gap='sm'>
                 {taskList.map((task, index) => (
                   <MobileTaskCard
                     key={task._id}
@@ -225,6 +226,7 @@ const PackageTasksTable = ({
                     index={index}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
+                    themeConfig={currentThemeConfig}
                   />
                 ))}
               </Stack>
@@ -241,33 +243,33 @@ const PackageTasksTable = ({
                 >
                   <Table.Tr>
                     <Table.Th
-                      className="p-3 border text-center"
+                      className='p-3 border text-center'
                       style={{ width: '80px' }}
                     >
-                      <Text size="sm" fw={500}>
+                      <Text size='sm' fw={500}>
                         S.No
                       </Text>
                     </Table.Th>
-                    <Table.Th className="p-3 border">
-                      <Text size="sm" fw={500}>
+                    <Table.Th className='p-3 border'>
+                      <Text size='sm' fw={500}>
                         Task
                       </Text>
                     </Table.Th>
-                    <Table.Th className="p-3 border" style={{ width: '200px' }}>
-                      <Text size="sm" fw={500}>
+                    <Table.Th className='p-3 border' style={{ width: '200px' }}>
+                      <Text size='sm' fw={500}>
                         Created By
                       </Text>
                     </Table.Th>
-                    <Table.Th className="p-3 border" style={{ width: '220px' }}>
-                      <Text size="sm" fw={500}>
+                    <Table.Th className='p-3 border' style={{ width: '220px' }}>
+                      <Text size='sm' fw={500}>
                         Created At
                       </Text>
                     </Table.Th>
                     <Table.Th
-                      className="p-3 border text-center"
+                      className='p-3 border text-center'
                       style={{ width: '120px' }}
                     >
-                      <Text size="sm" fw={500}>
+                      <Text size='sm' fw={500}>
                         Actions
                       </Text>
                     </Table.Th>
@@ -275,46 +277,46 @@ const PackageTasksTable = ({
                 </Table.Thead>
                 <Table.Tbody>
                   {taskList.map((task, index) => (
-                    <Table.Tr key={task._id} className="transition-colors">
-                      <Table.Td className="text-center p-3">
-                        <Text size="sm">{index + 1}</Text>
+                    <Table.Tr key={task._id} className='transition-colors'>
+                      <Table.Td className='text-center p-3'>
+                        <Text size='sm'>{index + 1}</Text>
                       </Table.Td>
-                      <Table.Td className="p-3">
-                        <Text size="sm" fw={500}>
+                      <Table.Td className='p-3'>
+                        <Text size='sm' fw={500}>
                           {task.title}
                         </Text>
                       </Table.Td>
-                      <Table.Td className="p-3">
-                        <Text size="sm">
+                      <Table.Td className='p-3'>
+                        <Text size='sm'>
                           {task?.createdBy?.firstName || ''}{' '}
                           {task?.createdBy?.lastName || ''}
                         </Text>
                       </Table.Td>
-                      <Table.Td className="p-3">
-                        <Text size="xs">
+                      <Table.Td className='p-3'>
+                        <Text size='xs'>
                           {moment(task.createdAt).format(
                             'MMM DD, YYYY - h:mm A'
                           )}
                         </Text>
                       </Table.Td>
-                      <Table.Td className="p-3">
-                        <Group gap="xs" justify="center">
-                          <Tooltip label="Edit Task">
+                      <Table.Td className='p-3'>
+                        <Group gap='xs' justify='center'>
+                          <Tooltip label='Edit Task'>
                             <ActionIcon
-                              variant="subtle"
-                              color="blue"
+                              variant='subtle'
+                              color={currentThemeConfig.button.color}
                               onClick={() => handleEdit(task)}
-                              size="sm"
+                              size='sm'
                             >
                               <IconEdit size={16} />
                             </ActionIcon>
                           </Tooltip>
-                          <Tooltip label="Delete Task">
+                          <Tooltip label='Delete Task'>
                             <ActionIcon
-                              variant="subtle"
-                              color="red"
+                              variant='subtle'
+                              color={currentThemeConfig.dangerColor}
                               onClick={() => handleDelete(task._id)}
-                              size="sm"
+                              size='sm'
                             >
                               <IconTrash size={16} />
                             </ActionIcon>
@@ -335,32 +337,33 @@ const PackageTasksTable = ({
         opened={editModalOpened}
         onClose={closeEditModal}
         title={
-          <Group gap="xs">
+          <Group gap='xs'>
             <IconEdit size={20} />
-            <Text fw={600} size="lg">
+            <Text fw={600} size='lg'>
               Edit Task
             </Text>
           </Group>
         }
         centered
-        size="md"
+        size='md'
       >
-        <Stack gap="md">
+        <Stack gap='md'>
           <TextInput
-            label="Task Title"
+            label='Task Title'
             value={selectedTaskObj?.title || ''}
             onChange={e =>
               setSelectedTaskObj({ ...selectedTaskObj, title: e.target.value })
             }
             required
-            size="md"
-            placeholder="Enter task title"
+            size='md'
+            placeholder='Enter task title'
           />
-          <Group justify="flex-end" mt="md">
-            <Button variant="default" onClick={closeEditModal}>
+          <Group justify='flex-end' mt='md'>
+            <Button variant='default' onClick={closeEditModal} radius='md'>
               Cancel
             </Button>
             <Button
+              radius='md'
               onClick={handleUpdateTask}
               leftSection={<IconDeviceFloppy size={16} />}
             >
