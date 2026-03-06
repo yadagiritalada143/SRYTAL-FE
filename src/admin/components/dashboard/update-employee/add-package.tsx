@@ -177,7 +177,10 @@ const PackagesFormComponent = ({ employeeId }: PackagesFormProps) => {
     const loadAllPackages = async () => {
       try {
         const packages = await getAllPackagesByAdmin();
-        setEmploymentPackagesOptions(packages);
+        const filteredPackages = packages.filter(
+          pkg => pkg.endDate >= new Date().toISOString()
+        );
+        setEmploymentPackagesOptions(filteredPackages);
       } catch (error: any) {
         toast.error(error.message, {
           style: {
@@ -299,7 +302,6 @@ const PackagesFormComponent = ({ employeeId }: PackagesFormProps) => {
         return <IconUser size={iconSize} />;
     }
   };
-
   return (
     <Container
       size='lg'
