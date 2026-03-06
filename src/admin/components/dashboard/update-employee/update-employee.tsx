@@ -73,6 +73,20 @@ import {
 import { BackButton } from '@common/style-components/buttons';
 import { useAppTheme } from '@hooks/use-app-theme';
 
+const normalizeDate = (date?: string) => {
+  if (!date) return undefined;
+
+  const parsed = new Date(date);
+
+  if (isNaN(parsed.getTime())) return undefined;
+
+  const year = parsed.getFullYear();
+  const month = String(parsed.getMonth() + 1).padStart(2, '0');
+  const day = String(parsed.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+};
+
 const UpdateEmployee = () => {
   const navigate = useNavigate();
   const {
@@ -173,12 +187,8 @@ const UpdateEmployee = () => {
           bloodGroup: emp.bloodGroup?.id,
           employmentType: emp.employmentType?.id,
           employeeRole: emp.employeeRole.map((role: any) => role.id),
-          dateOfJoining: emp.dateOfJoining
-            ? emp.dateOfJoining.split('T')[0]
-            : undefined,
-          dateOfBirth: emp.dateOfBirth
-            ? emp.dateOfBirth.split('T')[0]
-            : undefined,
+          dateOfJoining: normalizeDate(emp.dateOfJoining),
+          dateOfBirth: normalizeDate(emp.dateOfBirth),
           presentAddress: emp.presentAddress ?? '',
           permanentAddress: emp.permanentAddress ?? '',
           mobileNumber: emp.mobileNumber?.toString(),
@@ -434,7 +444,6 @@ const UpdateEmployee = () => {
                                   color={currentThemeConfig.iconColor}
                                 />
                               }
-                              valueFormat='DD/MMM/YYYY'
                               value={field.value ? new Date(field.value) : null}
                               onChange={date => {
                                 if (!date) {
@@ -634,9 +643,8 @@ const UpdateEmployee = () => {
                                   color={currentThemeConfig.iconColor}
                                 />
                               }
-                              value={field.value}
+                              value={field.value ? new Date(field.value) : null}
                               maxDate={new Date()}
-                              valueFormat='DD/MMM/YYYY'
                               onChange={date => {
                                 if (!date) {
                                   field.onChange('');
