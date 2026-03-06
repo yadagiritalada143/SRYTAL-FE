@@ -166,7 +166,7 @@ const UpdatePackage = () => {
     }
   };
   return (
-    <Container size='xl' py='md' my='xl' px={isSmallMobile ? 'xs' : 'md'}>
+    <Container size='lg' py='md' my='xl' px={isSmallMobile ? 'xs' : 'md'}>
       <Stack gap='md'>
         {/* Header Card */}
         <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md' withBorder>
@@ -272,7 +272,7 @@ const UpdatePackage = () => {
 
                   <Group justify='space-between' mt='lg'>
                     <Button
-                      color='red'
+                      color={currentThemeConfig.dangerColor}
                       variant='outline'
                       leftSection={<IconTrash size={16} />}
                       onClick={open}
