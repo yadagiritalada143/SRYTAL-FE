@@ -1,0 +1,1 @@
+import{X as s,w as n,j as e,O as a}from"./index-BLI_TH8X.js";const m=()=>{const t=s(),{themeConfig:o}=n();return e.jsx("div",{style:{color:o.button.textColor,fontFamily:t.fontFamily},className:"h-auto",children:e.jsx(a,{})})};export{m as default};
