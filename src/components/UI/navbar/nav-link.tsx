@@ -194,8 +194,8 @@ export function NavbarLink({
           }}
         >
           <div style={{ overflow: 'hidden' }}>
-            <div className='pt-1.5 pb-2.5 pl-[18px] pr-1'>
-              <div className='relative pl-5'>
+            <div className='pt-2 pb-2 pl-[26px] pr-2'>
+              <div className='relative pl-6'>
                 {/* Gradient guide rail */}
                 <span
                   className='absolute left-0 top-3 bottom-3 w-px rounded-full'
@@ -204,7 +204,7 @@ export function NavbarLink({
                   }}
                 />
 
-                <div className='flex flex-col gap-1'>
+                <div className='flex flex-col gap-2'>
                   {children.map((child, idx) => {
                     const active = isChildActive(child.url);
                     return (
@@ -269,6 +269,7 @@ function ChildItem({
         color: active ? c : `${c}72`,
         background: active ? `${c}14` : hovered ? `${c}09` : 'transparent',
         borderRadius: 9,
+        padding: active ? 3 : 2,
         border: `1px solid ${active ? `${c}22` : 'transparent'}`,
         fontWeight: active ? 600 : 450,
         letterSpacing: '0.01em',
@@ -288,7 +289,7 @@ function ChildItem({
       {/* Dot on the guide rail */}
       <span
         className='absolute flex items-center justify-center'
-        style={{ left: -21 }}
+        style={{ left: -18 }}
       >
         <span
           style={{
