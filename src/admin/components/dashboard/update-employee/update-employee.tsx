@@ -73,6 +73,20 @@ import {
 import { BackButton } from '@common/style-components/buttons';
 import { useAppTheme } from '@hooks/use-app-theme';
 
+const normalizeDate = (date?: string) => {
+  if (!date) return undefined;
+
+  const parsed = new Date(date);
+
+  if (isNaN(parsed.getTime())) return undefined;
+
+  const day = String(parsed.getDate()).padStart(2, '0');
+  const month = parsed.toLocaleString('en-US', { month: 'short' });
+  const year = parsed.getFullYear();
+
+  return `${day}-${month}-${year}`;
+};
+
 const UpdateEmployee = () => {
   const navigate = useNavigate();
   const {
@@ -173,12 +187,8 @@ const UpdateEmployee = () => {
           bloodGroup: emp.bloodGroup?.id,
           employmentType: emp.employmentType?.id,
           employeeRole: emp.employeeRole.map((role: any) => role.id),
-          dateOfJoining: emp.dateOfJoining
-            ? new Date(emp.dateOfJoining).toISOString().split('T')[0]
-            : undefined,
-          dateOfBirth: emp.dateOfBirth
-            ? new Date(emp.dateOfBirth).toISOString().split('T')[0]
-            : undefined,
+          dateOfJoining: normalizeDate(emp.dateOfJoining),
+          dateOfBirth: normalizeDate(emp.dateOfBirth),
           presentAddress: emp.presentAddress ?? '',
           permanentAddress: emp.permanentAddress ?? '',
           mobileNumber: emp.mobileNumber?.toString(),
@@ -208,8 +218,8 @@ const UpdateEmployee = () => {
         ...data,
         employeeRole: data.employeeRole?.filter(role => role),
         mobileNumber: Number(data.mobileNumber),
-        dateOfJoining: data.dateOfJoining ?? undefined,
-        dateOfBirth: data.dateOfBirth ?? undefined,
+        dateOfJoining: normalizeDate(data.dateOfJoining),
+        dateOfBirth: normalizeDate(data.dateOfBirth),
         uanNumber: data.uanNumber ?? ''
       };
 
@@ -428,21 +438,23 @@ const UpdateEmployee = () => {
                             <DatePickerInput
                               label='Date of Joining'
                               placeholder='Select joining date'
+                              leftSection={
+                                <IconCalendar
+                                  size={16}
+                                  color={currentThemeConfig.iconColor}
+                                />
+                              }
                               value={field.value ? new Date(field.value) : null}
                               onChange={date => {
-                                if (date) {
-                                  const d = new Date(date);
-
-                                  const adjustedDate = new Date(
-                                    d.getTime() - d.getTimezoneOffset() * 60000
-                                  )
-                                    .toISOString()
-                                    .split('T')[0];
-
-                                  field.onChange(adjustedDate);
-                                } else {
-                                  field.onChange(undefined);
+                                if (!date) {
+                                  field.onChange('');
+                                  return;
                                 }
+
+                                const iso = new Date(date)
+                                  .toISOString()
+                                  .split('T')[0];
+                                field.onChange(iso);
                               }}
                               error={errors.dateOfJoining?.message}
                               styles={{
@@ -631,25 +643,18 @@ const UpdateEmployee = () => {
                                   color={currentThemeConfig.iconColor}
                                 />
                               }
-                              value={field.value}
+                              value={field.value ? new Date(field.value) : null}
                               maxDate={new Date()}
                               onChange={date => {
-                                if (date) {
-                                  const d = new Date(date);
-
-                                  if (!isNaN(d.getTime())) {
-                                    const adjustedDate = new Date(
-                                      d.getTime() -
-                                        d.getTimezoneOffset() * 60000
-                                    )
-                                      .toISOString()
-                                      .split('T')[0];
-
-                                    field.onChange(adjustedDate);
-                                  }
-                                } else {
-                                  field.onChange(undefined);
+                                if (!date) {
+                                  field.onChange('');
+                                  return;
                                 }
+
+                                const iso = new Date(date)
+                                  .toISOString()
+                                  .split('T')[0];
+                                field.onChange(iso);
                               }}
                               error={errors.dateOfBirth?.message}
                             />

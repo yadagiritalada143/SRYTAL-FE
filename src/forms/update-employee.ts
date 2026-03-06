@@ -2,12 +2,7 @@ import { date, z } from 'zod';
 
 export const employeeSchema = z.object({
   employeeId: z.string().min(1, 'Employee ID is required'),
-  dateOfJoining: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, {
-      message: 'Date of joining must be in YYYY-MM-DD format'
-    })
-    .optional(),
+  dateOfJoining: z.string().optional(),
   firstName: z
     .string()
     .min(1, { message: 'First name is required' })
@@ -38,12 +33,7 @@ export const employeeSchema = z.object({
     .length(12, { message: 'Aadhaar must be exactly 12 digits' })
     .regex(/^\d+$/, { message: 'Aadhaar must contain only digits' }),
   bloodGroup: z.string().optional(),
-  dateOfBirth: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, {
-      message: 'DOB must be in YYYY-MM-DD format'
-    })
-    .optional(),
+  dateOfBirth: z.string().optional(),
   presentAddress: z.string().optional(),
   permanentAddress: z.string().optional(),
   employmentType: z.string().min(1, 'Employment type is required'),

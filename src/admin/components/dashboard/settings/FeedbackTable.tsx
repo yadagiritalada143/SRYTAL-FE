@@ -351,26 +351,24 @@ export default function FeedbackTable() {
                     }}
                   >
                     <Table.Tr>
-                      <Table.Th
-                        className='p-3 text-center'
-                        style={{ width: '100px' }}
-                      >
-                        <Text size='sm' fw={500}>
-                          S.No
-                        </Text>
+                      <Table.Th className='p-3' style={{ width: '100px' }}>
+                        <Group justify='center'>
+                          <Text size='sm' fw={500}>
+                            S.No
+                          </Text>
+                        </Group>
                       </Table.Th>
                       <Table.Th className='p-3'>
                         <Text size='sm' fw={500}>
                           Feedback Attributes
                         </Text>
                       </Table.Th>
-                      <Table.Th
-                        className='p-3 text-center'
-                        style={{ width: '120px' }}
-                      >
-                        <Text size='sm' fw={500}>
-                          Actions
-                        </Text>
+                      <Table.Th className='p-3' style={{ width: '120px' }}>
+                        <Group justify='center'>
+                          <Text size='sm' fw={500}>
+                            Actions
+                          </Text>
+                        </Group>
                       </Table.Th>
                     </Table.Tr>
                   </Table.Thead>

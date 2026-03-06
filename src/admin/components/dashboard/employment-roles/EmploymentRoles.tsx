@@ -451,12 +451,14 @@ const EmploymentRoles = () => {
                     >
                       <Table.Tr>
                         <Table.Th
-                          className='p-3 border text-center'
+                          className='p-3 border'
                           style={{ width: '100px' }}
                         >
-                          <Text size='sm' fw={500}>
-                            S.No
-                          </Text>
+                          <Group justify='center'>
+                            <Text size='sm' fw={500}>
+                              S.No
+                            </Text>
+                          </Group>
                         </Table.Th>
                         <Table.Th className='p-3 border'>
                           <Text size='sm' fw={500}>
@@ -464,12 +466,14 @@ const EmploymentRoles = () => {
                           </Text>
                         </Table.Th>
                         <Table.Th
-                          className='p-3 border text-center'
+                          className='p-3 border'
                           style={{ width: '120px' }}
                         >
-                          <Text size='sm' fw={500}>
-                            Actions
-                          </Text>
+                          <Group justify='center'>
+                            <Text size='sm' fw={500}>
+                              Actions
+                            </Text>
+                          </Group>
                         </Table.Th>
                       </Table.Tr>
                     </Table.Thead>
