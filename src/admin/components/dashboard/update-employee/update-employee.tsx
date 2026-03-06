@@ -80,11 +80,11 @@ const normalizeDate = (date?: string) => {
 
   if (isNaN(parsed.getTime())) return undefined;
 
-  const year = parsed.getFullYear();
-  const month = String(parsed.getMonth() + 1).padStart(2, '0');
   const day = String(parsed.getDate()).padStart(2, '0');
+  const month = parsed.toLocaleString('en-US', { month: 'short' });
+  const year = parsed.getFullYear();
 
-  return `${year}-${month}-${day}`;
+  return `${day}-${month}-${year}`;
 };
 
 const UpdateEmployee = () => {
@@ -218,8 +218,8 @@ const UpdateEmployee = () => {
         ...data,
         employeeRole: data.employeeRole?.filter(role => role),
         mobileNumber: Number(data.mobileNumber),
-        dateOfJoining: data.dateOfJoining ?? undefined,
-        dateOfBirth: data.dateOfBirth ?? undefined,
+        dateOfJoining: normalizeDate(data.dateOfJoining),
+        dateOfBirth: normalizeDate(data.dateOfBirth),
         uanNumber: data.uanNumber ?? ''
       };
 
