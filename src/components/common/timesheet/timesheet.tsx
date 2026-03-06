@@ -42,10 +42,7 @@ import { toast } from 'react-toastify';
 import { TaskPopover } from './task-popover';
 import { useRecoilValue } from 'recoil';
 
-import {
-  EmployeeTimesheet,
-  TimesheetStatus
-} from '@interfaces/timesheet';
+import { EmployeeTimesheet, TimesheetStatus } from '@interfaces/timesheet';
 import { getTimesheetData } from '@services/common-services';
 
 import {
@@ -67,6 +64,7 @@ import {
 import { TimeEntriesTable } from './time-entries';
 import useHorizontalScroll from '@hooks/horizontal-scroll';
 import { useAppTheme } from '@hooks/use-app-theme';
+import { userDetailsAtom } from '@atoms/user';
 
 const DateTableComponent = () => {
   const [
@@ -100,6 +98,7 @@ const DateTableComponent = () => {
     []
   );
   const [changesMade, setChangesMade] = useState<EmployeeTimesheet[]>([]);
+  const user = useRecoilValue(userDetailsAtom);
 
   // Responsive breakpoints
   const isMobile = useMediaQuery('(max-width: 768px)');
@@ -121,7 +120,7 @@ const DateTableComponent = () => {
     setIsLoading(true);
     try {
       const [start, end] = dateRange;
-      const responseData = await getTimesheetData(start, end);
+      const responseData = await getTimesheetData(start, end, user.id);
       const formattedTimesheet = formatData(responseData);
       setTimeEntries(formattedTimesheet);
       setOriginalEntries(formattedTimesheet);
@@ -288,11 +287,11 @@ const DateTableComponent = () => {
     return (
       <Badge
         color={config.color}
-        variant="light"
+        variant='light'
         leftSection={config.icon}
         style={{ textTransform: 'none' }}
       >
-        <Text className="text-xs">
+        <Text className='text-xs'>
           <TaskPopover
             full={config.comment}
             short={config.label}
@@ -371,20 +370,20 @@ const DateTableComponent = () => {
   };
 
   return (
-    <Container size="xl" py="md" my="xl" px={isSmallMobile ? 'xs' : 'md'}>
-      <Stack gap="md">
+    <Container size='xl' py='md' my='xl' px={isSmallMobile ? 'xs' : 'md'}>
+      <Stack gap='md'>
         {/* Header Card */}
-        <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder>
-          <Stack gap="md">
-            <Group justify="space-between" align="center">
-              <Group gap="xs">
+        <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md' withBorder>
+          <Stack gap='md'>
+            <Group justify='space-between' align='center'>
+              <Group gap='xs'>
                 <IconClock size={28} />
                 <Title order={isMobile ? 4 : 2} fw={700}>
                   Timesheet
                 </Title>
               </Group>
               {changesMade.length > 0 && (
-                <Badge size="lg" variant="filled" color="green">
+                <Badge size='lg' variant='filled' color='green'>
                   {changesMade.length} pending change
                   {changesMade.length !== 1 ? 's' : ''}
                 </Badge>
@@ -394,12 +393,12 @@ const DateTableComponent = () => {
             <Divider />
 
             {/* Date Controls */}
-            <Grid gutter="md">
+            <Grid gutter='md'>
               <Grid.Col span={{ base: 12, md: 7 }}>
-                <Group wrap="nowrap">
+                <Group wrap='nowrap'>
                   <ActionIcon
-                    variant="outline"
-                    radius="xl"
+                    variant='outline'
+                    radius='xl'
                     size={isMobile ? 'md' : 'lg'}
                     onClick={() =>
                       navigateDateRange('previous', dateRange, setDateRange)
@@ -410,7 +409,7 @@ const DateTableComponent = () => {
                   </ActionIcon>
 
                   <DatePickerInput
-                    type="range"
+                    type='range'
                     onChange={value => setDateRange(value)}
                     leftSection={<IconCalendar size={16} />}
                     size={isMobile ? 'xs' : 'sm'}
@@ -421,13 +420,13 @@ const DateTableComponent = () => {
                         : moment().endOf('month').toDate()
                     }
                     value={dateRange}
-                    placeholder="Pick date range"
+                    placeholder='Pick date range'
                     allowSingleDateInRange={false}
                   />
 
                   <ActionIcon
-                    variant="outline"
-                    radius="xl"
+                    variant='outline'
+                    radius='xl'
                     size={isMobile ? 'md' : 'lg'}
                     onClick={() =>
                       navigateDateRange('next', dateRange, setDateRange)
@@ -442,14 +441,14 @@ const DateTableComponent = () => {
               <Grid.Col span={{ base: 12, md: 5 }}>
                 <Group
                   justify={isMobile ? 'stretch' : 'flex-end'}
-                  gap="xs"
+                  gap='xs'
                   grow={isMobile}
                 >
                   <Button
                     onClick={toggleSearch}
-                    variant="outline"
-                    color="gray"
-                    radius="md"
+                    variant='outline'
+                    color='gray'
+                    radius='md'
                     size={isMobile ? 'sm' : 'sm'}
                     leftSection={
                       openedSearch ? (
@@ -465,8 +464,8 @@ const DateTableComponent = () => {
 
                   <Button
                     onClick={openLeaveModal}
-                    color="green"
-                    radius="md"
+                    color='green'
+                    radius='md'
                     size={isMobile ? 'sm' : 'sm'}
                     leftSection={<IconCalendarOff size={16} />}
                     fullWidth={isMobile}
@@ -480,7 +479,7 @@ const DateTableComponent = () => {
             {/* Search Collapse */}
             <Collapse in={openedSearch}>
               <TextInput
-                placeholder="Search projects or tasks..."
+                placeholder='Search projects or tasks...'
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.currentTarget.value)}
                 leftSection={<IconSearch size={16} />}
@@ -488,7 +487,7 @@ const DateTableComponent = () => {
                   searchQuery && (
                     <ActionIcon
                       onClick={() => setSearchQuery('')}
-                      variant="subtle"
+                      variant='subtle'
                     >
                       <IconX size={16} />
                     </ActionIcon>
@@ -502,10 +501,10 @@ const DateTableComponent = () => {
             {changesMade.length > 0 && (
               <>
                 <Divider />
-                <Group justify="flex-end">
+                <Group justify='flex-end'>
                   <Button
                     leftSection={<IconCheck size={16} />}
-                    color="green"
+                    color='green'
                     onClick={openSubmitModal}
                     size={isMobile ? 'sm' : 'md'}
                     fullWidth={isMobile}
@@ -520,22 +519,22 @@ const DateTableComponent = () => {
         </Card>
 
         {/* Timesheet Table Card */}
-        <Card shadow="sm" p={0} radius="md" withBorder>
+        <Card shadow='sm' p={0} radius='md' withBorder>
           {isLoading ? (
-            <Center p="xl">
-              <Stack align="center" gap="md">
-                <Loader size="xl" />
+            <Center p='xl'>
+              <Stack align='center' gap='md'>
+                <Loader size='xl' />
                 <Text>Loading timesheet data...</Text>
               </Stack>
             </Center>
           ) : filteredProjects.length === 0 ? (
-            <Card p="xl">
-              <Stack align="center" gap="md">
+            <Card p='xl'>
+              <Stack align='center' gap='md'>
                 <IconClock size={48} opacity={0.5} />
-                <Text size="lg" ta="center">
+                <Text size='lg' ta='center'>
                   No timesheet entries found
                 </Text>
-                <Text size="sm" ta="center" c="dimmed">
+                <Text size='sm' ta='center' c='dimmed'>
                   {searchQuery
                     ? 'Try adjusting your search filters'
                     : 'Start by logging your hours for the selected date range'}
@@ -566,37 +565,37 @@ const DateTableComponent = () => {
                 >
                   <Table.Tr>
                     <Table.Th
-                      className="p-2 border"
+                      className='p-2 border'
                       style={{ minWidth: '150px' }}
                     >
-                      <Text size="sm" fw={600}>
+                      <Text size='sm' fw={600}>
                         Project
                       </Text>
                     </Table.Th>
                     <Table.Th
-                      className="p-2 border"
+                      className='p-2 border'
                       style={{ minWidth: '150px' }}
                     >
-                      <Text size="sm" fw={600}>
+                      <Text size='sm' fw={600}>
                         Task
                       </Text>
                     </Table.Th>
                     {dateRangeArray.map(date => (
                       <Table.Th
                         key={date}
-                        className="p-2 border"
+                        className='p-2 border'
                         style={{ minWidth: '80px', textAlign: 'center' }}
                       >
-                        <Text size="xs" fw={500}>
+                        <Text size='xs' fw={500}>
                           {formatDisplayDate(date)}
                         </Text>
                       </Table.Th>
                     ))}
                     <Table.Th
-                      className="p-2 border"
+                      className='p-2 border'
                       style={{ minWidth: '80px', textAlign: 'center' }}
                     >
-                      <Text size="sm" fw={600}>
+                      <Text size='sm' fw={600}>
                         Total
                       </Text>
                     </Table.Th>
@@ -615,18 +614,18 @@ const DateTableComponent = () => {
                       <Table.Tr key={`${project.id}-${task.id}`}>
                         {taskIndex === 0 && (
                           <Table.Td
-                            className="p-2 border"
+                            className='p-2 border'
                             rowSpan={tasks.length}
                             style={{ verticalAlign: 'middle' }}
                           >
                             <Center>
-                              <Text fw={500} size="sm" lineClamp={2}>
+                              <Text fw={500} size='sm' lineClamp={2}>
                                 {project.title}
                               </Text>
                             </Center>
                           </Table.Td>
                         )}
-                        <Table.Td className="p-2 border">
+                        <Table.Td className='p-2 border'>
                           <Center>
                             <TaskPopover
                               short={task.title}
@@ -647,7 +646,7 @@ const DateTableComponent = () => {
                           );
                           return (
                             <Table.Td
-                              className="p-2 border"
+                              className='p-2 border'
                               key={`${project.id}-${task.id}-${date}`}
                             >
                               {entry
@@ -672,14 +671,14 @@ const DateTableComponent = () => {
                         })}
                         {taskIndex === 0 && (
                           <Table.Td
-                            className="p-2 border"
+                            className='p-2 border'
                             rowSpan={tasks.length}
                             style={{
                               textAlign: 'center',
                               verticalAlign: 'middle'
                             }}
                           >
-                            <Text fw={600} size="sm">
+                            <Text fw={600} size='sm'>
                               {getProjectTotalHours(
                                 project.id,
                                 timeEntries,
