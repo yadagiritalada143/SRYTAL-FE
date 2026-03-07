@@ -6,7 +6,8 @@ export const BackButton = ({ id }: { id: string }) => {
   const navigate = useNavigate();
   return (
     <Button
-      className="flex items-center gap-2 bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition"
+      radius='md'
+      className='flex items-center gap-2 bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition'
       onClick={() => {
         localStorage.setItem('id', id);
         navigate(-1);

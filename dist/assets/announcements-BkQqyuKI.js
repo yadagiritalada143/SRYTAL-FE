@@ -1,0 +1,1 @@
+import{X as s,w as o,j as e}from"./index-DfnWq7xn.js";const m=()=>{const t=s(),{themeConfig:n}=o();return e.jsx("div",{style:{color:n.button.textColor,fontFamily:t.fontFamily},className:"h-auto",children:e.jsx("div",{children:e.jsx("h1",{className:"text-xl sm:text-2xl md:text-3xl font-extrabold underline text-center px-2 py-4",children:"Announcements"})})})};export{m as default};

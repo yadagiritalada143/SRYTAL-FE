@@ -92,6 +92,7 @@ type Employee = {
   email?: string;
   dateOfBirth?: string;
   dateOfJoining?: string;
+  uanNumber?: string;
   panCardNumber?: string;
   bankDetailsInfo?: {
     accountNumber?: string;
@@ -138,6 +139,7 @@ const GenerateSalarySlipReport = () => {
     designation: '',
     department: '',
     dateOfJoining: '',
+    uanNumber: '',
     email: '',
     dob: '',
     bankAccount: '',
@@ -257,6 +259,7 @@ const GenerateSalarySlipReport = () => {
         designation: '',
         department: '',
         dateOfJoining: '',
+        uanNumber: '',
         email: '',
         dob: '',
         bankAccount: '',
@@ -282,6 +285,7 @@ const GenerateSalarySlipReport = () => {
       designation: selectedEmployee.employeeRole?.[0]?.designation || '',
       department: 'Engineering',
       dateOfJoining: selectedEmployee.dateOfJoining || '',
+      uanNumber: selectedEmployee.uanNumber || '',
       email: selectedEmployee.email ?? '',
       dob: formatDate(selectedEmployee.dateOfBirth || ''),
       bankAccount: selectedEmployee.bankDetailsInfo?.accountNumber || '',
@@ -367,7 +371,7 @@ const GenerateSalarySlipReport = () => {
           transactionType: 'NEFT',
           transactionId: values.transactionId || undefined,
           panNumber: empDetails.pan,
-          uanNumber: 'N/A',
+          uanNumber: empDetails.uanNumber || 'N/A',
 
           totalWorkingDays: values.daysInMonth,
           daysWorked: values.daysInMonth - (values.lopDays || 0),
@@ -462,7 +466,7 @@ const GenerateSalarySlipReport = () => {
         transactionType: 'NEFT',
         transactionId: data.transactionId,
         panNumber: empDetails.pan,
-        uanNumber: 'N/A',
+        uanNumber: empDetails.uanNumber || 'N/A',
 
         totalWorkingDays: data.daysInMonth,
         daysWorked: data.daysInMonth - (data.lopDays || 0),

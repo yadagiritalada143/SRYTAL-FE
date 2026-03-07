@@ -276,7 +276,7 @@ const MobileEmployeeCard: React.FC<{
               ))
             ) : (
               <Text size='xs' c='dimmed'>
-                None
+                N/A
               </Text>
             )}
           </Group>
@@ -311,7 +311,7 @@ const TableHeader: React.FC<{
     children: React.ReactNode;
   }> = ({ field, children }) => (
     <Table.Th
-      className='border cursor-pointer select-none hover:bg-opacity-80 transition-colors'
+      className='border text-center cursor-pointer select-none hover:bg-opacity-80 transition-colors'
       onClick={() => onSort(field)}
       style={{ minWidth: isTablet ? '120px' : 'auto' }}
     >
@@ -352,23 +352,29 @@ const TableHeader: React.FC<{
         )}
         <SortableHeader field='email'>Email</SortableHeader>
         {!isTablet && (
-          <Table.Th className='p-3 border text-center'>
-            <Text size='sm' fw={500}>
-              Mobile
-            </Text>
+          <Table.Th className='p-3 border'>
+            <Group justify='center'>
+              <Text size='sm' fw={500}>
+                Mobile
+              </Text>
+            </Group>
           </Table.Th>
         )}
-        <Table.Th className='p-3 border text-center'>
-          <Text size='sm' fw={500}>
-            Role
-          </Text>
+        <Table.Th className='p-3 border'>
+          <Group justify='center'>
+            <Text size='sm' fw={500}>
+              Role
+            </Text>
+          </Group>
         </Table.Th>
         {!isTablet && (
           <>
-            <Table.Th className='p-3 border text-center'>
-              <Text size='sm' fw={500}>
-                Employment
-              </Text>
+            <Table.Th className='p-3 border'>
+              <Group justify='center'>
+                <Text size='sm' fw={500}>
+                  Employment
+                </Text>
+              </Group>
             </Table.Th>
             <Table.Th className='p-3 border text-center'>
               <Text size='sm' fw={500}>
@@ -377,15 +383,19 @@ const TableHeader: React.FC<{
             </Table.Th>
           </>
         )}
-        <Table.Th className='p-3 border text-center'>
-          <Text size='sm' fw={500}>
-            Designations
-          </Text>
+        <Table.Th className='p-3 border'>
+          <Group justify='center'>
+            <Text size='sm' fw={500}>
+              Designations
+            </Text>
+          </Group>
         </Table.Th>
-        <Table.Th className='p-3 border text-center'>
-          <Text size='sm' fw={500}>
-            Actions
-          </Text>
+        <Table.Th className='p-3 border'>
+          <Group justify='center'>
+            <Text size='sm' fw={500}>
+              Actions
+            </Text>
+          </Group>
         </Table.Th>
       </Table.Tr>
     </Table.Thead>
@@ -641,7 +651,7 @@ const Employees = () => {
               </Group>
 
               {filteredEmployees.length !== employees.length && (
-                <Badge variant='light' color='blue'>
+                <Badge variant='light' color={currentThemeConfig.accentColor}>
                   {filteredEmployees.length} of {employees.length} employees
                 </Badge>
               )}
@@ -757,20 +767,20 @@ const Employees = () => {
                               {index + 1 + (activePage - 1) * itemsPerPage}
                             </Text>
                           </Table.Td>
-                          <Table.Td className='p-3'>
+                          <Table.Td className='p-3 text-center'>
                             <Text size='sm' fw={500}>
                               {employee.employeeId || 'N/A'}
                             </Text>
                           </Table.Td>
-                          <Table.Td className='p-3'>
+                          <Table.Td className='p-3 text-center'>
                             <Text size='sm'>{employee.firstName}</Text>
                           </Table.Td>
                           {!isTablet && (
-                            <Table.Td className='p-3'>
+                            <Table.Td className='p-3 text-center'>
                               <Text size='sm'>{employee.lastName}</Text>
                             </Table.Td>
                           )}
-                          <Table.Td className='p-3'>
+                          <Table.Td className='p-3 text-center'>
                             <Text size='sm' lineClamp={1}>
                               {employee.email}
                             </Text>
@@ -783,7 +793,11 @@ const Employees = () => {
                             </Table.Td>
                           )}
                           <Table.Td className='p-3 text-center'>
-                            <Badge size='sm' color='teal' variant='light'>
+                            <Badge
+                              size='sm'
+                              color={currentThemeConfig.successColor}
+                              variant='light'
+                            >
                               {employee.userRole || 'N/A'}
                             </Badge>
                           </Table.Td>
@@ -796,35 +810,42 @@ const Employees = () => {
                                 </Text>
                               </Table.Td>
                               <Table.Td className='p-3 text-center'>
-                                <Badge size='xs' variant='light' color='red'>
+                                <Badge
+                                  size='xs'
+                                  variant='light'
+                                  color={currentThemeConfig.dangerColor}
+                                >
                                   {employee.bloodGroup?.type || 'N/A'}
                                 </Badge>
                               </Table.Td>
                             </>
                           )}
-                          <Table.Td className='p-3'>
-                            <ScrollArea h={45}>
-                              <Group gap={4} wrap='wrap'>
+                          <Table.Td
+                            className='p-3 text-center'
+                            style={{ verticalAlign: 'middle' }}
+                          >
+                            <ScrollArea h={30}>
+                              <Group gap={4} wrap='wrap' justify='center'>
                                 {employee.employeeRole?.length ? (
                                   employee.employeeRole.map(role => (
                                     <Badge
                                       key={role._id}
                                       size='xs'
                                       variant='outline'
-                                      color='gray'
+                                      color={currentThemeConfig.mutedTextColor}
                                     >
                                       {role.designation}
                                     </Badge>
                                   ))
                                 ) : (
                                   <Text size='xs' c='dimmed'>
-                                    None
+                                    N/A
                                   </Text>
                                 )}
                               </Group>
                             </ScrollArea>
                           </Table.Td>
-                          <Table.Td className='p-3'>
+                          <Table.Td className='p-3 text-center'>
                             <EmployeeActions
                               employeeId={employee.id}
                               onEdit={handleEmployeeEdit}

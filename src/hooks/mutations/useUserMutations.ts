@@ -7,7 +7,6 @@ import {
   addPoolCandidateCommentByRecruiter,
   addPoolCandidateByRecruiter,
   updatePoolCandidateByRecruiter,
-  uploadProfileImage,
   addCourseContentWriter
 } from '@services/user-services';
 import { userQueryKeys } from '../queries/useUserQueries';
@@ -97,16 +96,6 @@ export const useUpdateCandidate = () => {
           queryKey: userQueryKeys.candidate(variables.id!)
         });
       }
-    }
-  });
-};
-
-export const useUploadProfileImage = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (file: File) => uploadProfileImage(file),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: userQueryKeys.profileImage });
     }
   });
 };
