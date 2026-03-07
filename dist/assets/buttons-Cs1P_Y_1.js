@@ -1,0 +1,1 @@
+import{D as a,j as t,s as r}from"./index-DfnWq7xn.js";import{I as o}from"./IconArrowLeft-Db6pxnrU.js";const m=({id:e})=>{const s=a();return t.jsx(r,{radius:"md",className:"flex items-center gap-2 bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition",onClick:()=>{localStorage.setItem("id",e),s(-1)},children:t.jsx(o,{size:20})})};export{m as B};
