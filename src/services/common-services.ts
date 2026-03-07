@@ -76,7 +76,6 @@ export const getTimesheetData = async (
   employeeId: string
 ) => {
   try {
-    console.log(employeeId);
     const { data } = await apiClient.post('/fetchEmployeePackageDetailsById', {
       startDate: moment(startDate).format('YYYY-MM-DD'),
       endDate: moment(endDate).format('YYYY-MM-DD'),
