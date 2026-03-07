@@ -19,7 +19,7 @@ import {
   Stack,
   Divider
 } from '@mantine/core';
-import { DatePickerInput, DatesRangeValue } from '@mantine/dates';
+import { DatePickerInput, DatesRangeValue, DateValue } from '@mantine/dates';
 import {
   IconCalendar,
   IconChevronLeft,
@@ -116,28 +116,30 @@ const DateTableComponent = () => {
     handleTouchStart
   } = useHorizontalScroll();
 
-  const fetchTimesheetData = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const [start, end] = dateRange;
-      const responseData = await getTimesheetData(start, end, user.id);
-      const formattedTimesheet = formatData(responseData);
-      setTimeEntries(formattedTimesheet);
-      setOriginalEntries(formattedTimesheet);
-      setChangesMade([]);
-    } catch {
-      toast.error('Failed to fetch timesheet data');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [dateRange]);
+  const fetchTimesheetData = useCallback(
+    async (start: DateValue, end: DateValue, userId: string) => {
+      setIsLoading(true);
+      try {
+        const responseData = await getTimesheetData(start, end, userId);
+        const formattedTimesheet = formatData(responseData);
+        setTimeEntries(formattedTimesheet);
+        setOriginalEntries(formattedTimesheet);
+        setChangesMade([]);
+      } catch {
+        toast.error('Failed to fetch timesheet data');
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     const [start, end] = dateRange;
-    if (start && end) {
-      fetchTimesheetData();
+    if (start && end && user.id) {
+      fetchTimesheetData(start, end, user.id);
     }
-  }, [fetchTimesheetData, dateRange]);
+  }, [dateRange, user.id, fetchTimesheetData]);
 
   const filteredProjects = useMemo(
     () =>
@@ -245,7 +247,7 @@ const DateTableComponent = () => {
         return updated;
       }
 
-      return prev;
+      return [...prev, newEntry];
     });
 
     trackChanges(newEntry, originalEntries, changesMade, setChangesMade);
@@ -720,6 +722,9 @@ const DateTableComponent = () => {
         closeLeaveModal={closeLeaveModal}
         timeEntries={timeEntries}
         fetchTimesheetData={fetchTimesheetData}
+        userId={user.id}
+        startDate={dateRange[0]}
+        endDate={dateRange[1]}
       />
 
       {changesMade.length > 0 && (
@@ -728,6 +733,10 @@ const DateTableComponent = () => {
           closeSubmitModal={closeSubmitModal}
           changesMade={changesMade}
           setChangesMade={setChangesMade}
+          userId={user.id}
+          fetchTimesheetData={fetchTimesheetData}
+          startDate={dateRange[0]}
+          endDate={dateRange[1]}
         />
       )}
     </Container>

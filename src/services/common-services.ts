@@ -73,9 +73,10 @@ export const getOrganizationConfig = async (organizationName: string) => {
 export const getTimesheetData = async (
   startDate: DateValue,
   endDate: DateValue,
-  employeeId?: string
+  employeeId: string
 ) => {
   try {
+    console.log(employeeId);
     const { data } = await apiClient.post('/fetchEmployeePackageDetailsById', {
       startDate: moment(startDate).format('YYYY-MM-DD'),
       endDate: moment(endDate).format('YYYY-MM-DD'),
@@ -90,12 +91,13 @@ export const getTimesheetData = async (
   }
 };
 
-export const submitTimeSheet = async (data: any, employeeId?: string) => {
+export const submitTimeSheet = async (data: any, employeeId: string) => {
   try {
-    await apiClient.put('updateEmployeeTimesheet', {
+    const response = await apiClient.put('updateEmployeeTimesheet', {
       packages: data,
       ...(employeeId && { employeeId: employeeId })
     });
+    return response.data;
   } catch (error) {
     throw error;
   }

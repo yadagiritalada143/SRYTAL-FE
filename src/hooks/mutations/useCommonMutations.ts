@@ -31,7 +31,7 @@ export const useSendContactUsMail = () => {
 export const useSubmitTimeSheet = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ data, employeeId }: { data: any; employeeId?: string }) =>
+    mutationFn: ({ data, employeeId }: { data: any; employeeId: string }) =>
       submitTimeSheet(data, employeeId),
     onSuccess: () => {
       // Invalidate all timesheet data
