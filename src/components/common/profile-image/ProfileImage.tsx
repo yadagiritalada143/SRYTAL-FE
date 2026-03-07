@@ -4,8 +4,11 @@ import { IconUser, IconUpload, IconLoader } from '@tabler/icons-react';
 import { useGetProfileImage } from '@hooks/queries/useUserQueries';
 import { useCustomToast } from '@utils/common/toast';
 import { useUploadProfileImage } from '@hooks/mutations/useCommonMutations';
+import { useRecoilValue } from 'recoil';
+import { userDetailsAtom } from '@atoms/user';
 
 const ProfileImage = () => {
+  const user = useRecoilValue(userDetailsAtom);
   const {
     data: imageBlob,
     isLoading: isFetching,
@@ -38,7 +41,7 @@ const ProfileImage = () => {
   const handleUpload = async () => {
     if (!selectedFile) return;
     try {
-      await uploadImage(selectedFile);
+      await uploadImage({ file: selectedFile, userId: user.id });
       showSuccessToast('Profile image updated successfully');
       setSelectedFile(null);
     } catch (error: any) {

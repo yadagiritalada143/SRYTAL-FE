@@ -127,10 +127,11 @@ export const downloadSalarySlip = async ({
   }
 };
 
-export const uploadProfileImage = async (image: File) => {
+export const uploadProfileImage = async (image: File, employeeId: string) => {
   try {
     const formData = new FormData();
     formData.append('profileImage', image);
+    formData.append('userId', employeeId);
 
     const response = await apiClient.post('/uploadProfileImage', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }

@@ -54,7 +54,8 @@ export const useDownloadSalarySlip = () => {
 export const useUploadProfileImage = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (file: File) => uploadProfileImage(file),
+    mutationFn: ({ file, userId }: { file: File; userId: string }) =>
+      uploadProfileImage(file, userId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profileImage'] });
     }
