@@ -73,7 +73,7 @@ export const getOrganizationConfig = async (organizationName: string) => {
 export const getTimesheetData = async (
   startDate: DateValue,
   endDate: DateValue,
-  employeeId?: string
+  employeeId: string
 ) => {
   try {
     const { data } = await apiClient.post('/fetchEmployeePackageDetailsById', {
@@ -90,12 +90,13 @@ export const getTimesheetData = async (
   }
 };
 
-export const submitTimeSheet = async (data: any, employeeId?: string) => {
+export const submitTimeSheet = async (data: any, employeeId: string) => {
   try {
-    await apiClient.put('updateEmployeeTimesheet', {
+    const response = await apiClient.put('updateEmployeeTimesheet', {
       packages: data,
       ...(employeeId && { employeeId: employeeId })
     });
+    return response.data;
   } catch (error) {
     throw error;
   }

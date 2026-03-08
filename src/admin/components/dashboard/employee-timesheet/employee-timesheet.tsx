@@ -529,16 +529,21 @@ export const EmployeeTimesheetAdminView = () => {
           status
         );
 
-        await submitTimeSheet(submitData, employeeId);
+        const response = await submitTimeSheet(submitData, employeeId);
         setTimesheets(prev =>
           prev.map(ts =>
             timesheetIds.includes(ts.id) ? { ...ts, status } : ts
           )
         );
         setSelectedTimesheets([]);
-        showSuccessToast(
-          `Successfully ${status === TimesheetStatus.Approved ? 'approved' : 'rejected'} ${timesheetIds.length} timesheet(s)`
-        );
+        if (response?.success === false) {
+          toast.error(response.message || 'Failed to update timesheet status');
+          return;
+        } else {
+          showSuccessToast(
+            `Successfully ${status === TimesheetStatus.Approved ? 'approved' : 'rejected'} ${timesheetIds.length} timesheet(s)`
+          );
+        }
         close();
       } catch (error: any) {
         const errorMessage =
