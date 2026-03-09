@@ -10,44 +10,22 @@ import {
   Badge,
   Modal,
   Select,
-  Checkbox,
   ActionIcon,
-  Tooltip,
-  Table,
   Center,
-  Loader,
-  TextInput,
   Pagination,
-  Collapse,
-  Paper,
-  Divider,
-  Box,
-  rem,
-  SimpleGrid
+  Divider
 } from '@mantine/core';
-import PremiumLoader from '@components/common/loaders/PremiumLoader';
-import DataView from '@components/common/loaders/DataView';
-import { DatePickerInput, DatesRangeValue } from '@mantine/dates';
+import { DatesRangeValue } from '@mantine/dates';
 import {
   useDebouncedValue,
   useDisclosure,
   useMediaQuery
 } from '@mantine/hooks';
 import {
-  IconSearch,
   IconX,
   IconCircleCheck,
   IconCircleX,
-  IconUser,
-  IconMail,
-  IconSortAscending,
-  IconSortDescending,
-  IconCalendar,
-  IconFilter,
-  IconChevronDown,
-  IconChevronUp,
-  IconPhone,
-  IconBriefcase
+  IconCalendar
 } from '@tabler/icons-react';
 import moment from 'moment';
 import { useParams } from 'react-router-dom';
@@ -59,6 +37,10 @@ import { getTimesheetData, submitTimeSheet } from '@services/common-services';
 import { employeeDetailsAtom } from '@atoms/employee-atom';
 import { getEmployeeDetailsByAdmin } from '@services/admin-services';
 import { BackButton } from '@common/style-components/buttons';
+
+import { InfoCard } from './components/InfoCard';
+import { FilterSection } from './components/FilterSection';
+import { TimesheetDataView } from './components/TimesheetDataView';
 
 import { toast } from 'react-toastify';
 import { useCustomToast } from '@utils/common/toast';
@@ -73,11 +55,7 @@ const MOBILE_ITEMS_PER_PAGE = 10;
 // Custom hook for timesheet filtering and sorting
 const useTimesheetFilters = (timesheets: EmployeeTimesheet[]) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const {
-    themeConfig: currentThemeConfig,
-    organizationConfig,
-    isDarkTheme
-  } = useAppTheme();
+
   const [debouncedSearchQuery] = useDebouncedValue(searchQuery, 300);
   const [selectedStatus, setSelectedStatus] = useState<TimesheetStatus | null>(
     TimesheetStatus.WaitingForApproval
@@ -150,259 +128,6 @@ const useTimesheetFilters = (timesheets: EmployeeTimesheet[]) => {
   };
 };
 
-// Status Badge Component
-const StatusBadge: React.FC<{ status: TimesheetStatus }> = ({ status }) => {
-  switch (status) {
-    case TimesheetStatus.Approved:
-      return (
-        <Badge color='green' size='sm'>
-          Approved
-        </Badge>
-      );
-    case TimesheetStatus.Rejected:
-      return (
-        <Badge color='red' size='sm'>
-          Rejected
-        </Badge>
-      );
-    default:
-      return (
-        <Badge color='yellow' size='sm'>
-          Pending
-        </Badge>
-      );
-  }
-};
-
-// Mobile Timesheet Card Component
-const MobileTimesheetCard: React.FC<{
-  timesheet: EmployeeTimesheet;
-  index: number;
-  isSelected: boolean;
-  onToggleSelect: (id: string) => void;
-  onApprove: (id: string) => void;
-  onReject: (id: string) => void;
-}> = ({
-  timesheet,
-  index,
-  isSelected,
-  onToggleSelect,
-  onApprove,
-  onReject
-}) => {
-  const [expanded, setExpanded] = useState(false);
-  const isPending = timesheet.status === TimesheetStatus.WaitingForApproval;
-
-  return (
-    <Paper
-      onClick={() => setExpanded(!expanded)}
-      shadow='xs'
-      p='sm'
-      radius='md'
-      withBorder
-    >
-      <Stack gap='xs'>
-        <Flex justify='space-between' align='center'>
-          <Group gap='xs'>
-            <Checkbox
-              checked={isSelected}
-              onChange={() => onToggleSelect(timesheet.id)}
-            />
-            <Text size='sm' fw={600}>
-              #{index}
-            </Text>
-          </Group>
-        </Flex>
-
-        <Flex justify='space-between' align='center'>
-          <Text size='sm' c='dimmed'>
-            {moment(timesheet.date).format('MMM D, YYYY')}
-          </Text>
-          <StatusBadge status={timesheet.status} />
-        </Flex>
-
-        <Box>
-          <Text size='xs' c='dimmed'>
-            Project
-          </Text>
-          <Text size='sm' fw={500}>
-            {timesheet.project_name}
-          </Text>
-        </Box>
-
-        <Collapse in={expanded}>
-          <Stack gap='xs'>
-            <Divider />
-
-            <Box>
-              <Text size='xs' c='dimmed'>
-                Task
-              </Text>
-              <Text size='sm'>{timesheet.task_name}</Text>
-            </Box>
-
-            <Flex justify='space-between' align='center'>
-              <Box>
-                <Text size='xs' c='dimmed'>
-                  Hours
-                </Text>
-                <Badge size='sm' variant='light'>
-                  {timesheet.hours}h
-                </Badge>
-              </Box>
-            </Flex>
-
-            {timesheet.comments && (
-              <Box>
-                <Text size='xs' c='dimmed'>
-                  Comments
-                </Text>
-                <Text size='sm'>{timesheet.comments}</Text>
-              </Box>
-            )}
-
-            {isPending && (
-              <>
-                <Divider />
-                <Group grow>
-                  <Button
-                    size='xs'
-                    variant='light'
-                    color='green'
-                    onClick={() => onApprove(timesheet.id)}
-                    leftSection={<IconCircleCheck size={14} />}
-                  >
-                    Approve
-                  </Button>
-                  <Button
-                    size='xs'
-                    variant='light'
-                    color='red'
-                    onClick={() => onReject(timesheet.id)}
-                    leftSection={<IconCircleX size={14} />}
-                  >
-                    Reject
-                  </Button>
-                </Group>
-              </>
-            )}
-          </Stack>
-        </Collapse>
-      </Stack>
-    </Paper>
-  );
-};
-
-// Timesheet Actions Component
-const TimesheetActions: React.FC<{
-  timesheet: EmployeeTimesheet;
-  onApprove: (id: string) => void;
-  onReject: (id: string) => void;
-}> = ({ timesheet, onApprove, onReject }) => {
-  const isPending = timesheet.status === TimesheetStatus.WaitingForApproval;
-
-  return (
-    <Group gap='xs' justify='center'>
-      <Tooltip label='Approve timesheet'>
-        <Button
-          size='xs'
-          variant='light'
-          color='green'
-          onClick={() => onApprove(timesheet.id)}
-          disabled={!isPending}
-          leftSection={<IconCircleCheck size={14} />}
-        >
-          Approve
-        </Button>
-      </Tooltip>
-      <Tooltip label='Reject timesheet'>
-        <Button
-          size='xs'
-          variant='light'
-          color='red'
-          onClick={() => onReject(timesheet.id)}
-          disabled={!isPending}
-          leftSection={<IconCircleX size={14} />}
-        >
-          Reject
-        </Button>
-      </Tooltip>
-    </Group>
-  );
-};
-
-// Table Header Component
-const TableHeader: React.FC<{
-  sortOrder: 'asc' | 'desc';
-  onSort: () => void;
-  themeConfig: any;
-  isAllSelected: boolean;
-  onToggleAll: (checked: boolean) => void;
-}> = ({ sortOrder, onSort, themeConfig, isAllSelected, onToggleAll }) => {
-  return (
-    <Table.Thead
-      style={{
-        backgroundColor: themeConfig.backgroundColor,
-        color: themeConfig.color
-      }}
-    >
-      <Table.Tr>
-        <Table.Th style={{ padding: rem(12), textAlign: 'center' }}>
-          <Checkbox
-            checked={isAllSelected}
-            onChange={e => onToggleAll(e.currentTarget.checked)}
-          />
-        </Table.Th>
-        <Table.Th style={{ padding: rem(12), textAlign: 'center' }}>
-          <Text size='sm' fw={500}>
-            S.No
-          </Text>
-        </Table.Th>
-        <Table.Th
-          style={{ cursor: 'pointer', userSelect: 'none' }}
-          onClick={onSort}
-        >
-          <Group justify='center' gap='xs'>
-            <Text size='sm' fw={500}>
-              Date
-            </Text>
-            {sortOrder === 'asc' ? (
-              <IconSortAscending size={14} />
-            ) : (
-              <IconSortDescending size={14} />
-            )}
-          </Group>
-        </Table.Th>
-        <Table.Th style={{ padding: rem(12), textAlign: 'center' }}>
-          <Text size='sm' fw={500}>
-            Project
-          </Text>
-        </Table.Th>
-        <Table.Th style={{ padding: rem(12), textAlign: 'center' }}>
-          <Text size='sm' fw={500}>
-            Task
-          </Text>
-        </Table.Th>
-        <Table.Th style={{ padding: rem(12), textAlign: 'center' }}>
-          <Text size='sm' fw={500}>
-            Hours
-          </Text>
-        </Table.Th>
-        <Table.Th style={{ padding: rem(12), textAlign: 'center' }}>
-          <Text size='sm' fw={500}>
-            Status
-          </Text>
-        </Table.Th>
-        <Table.Th style={{ padding: rem(12), textAlign: 'center' }}>
-          <Text size='sm' fw={500}>
-            Actions
-          </Text>
-        </Table.Th>
-      </Table.Tr>
-    </Table.Thead>
-  );
-};
-
 export const EmployeeTimesheetAdminView = () => {
   const params = useParams();
   const employeeId = params.employeeId as string;
@@ -452,16 +177,34 @@ export const EmployeeTimesheetAdminView = () => {
     filteredTimesheets
   } = useTimesheetFilters(timesheets);
 
-  // Pagination logic
-  const { paginatedTimesheets, totalPages } = useMemo(() => {
+  // Split filtered data into work and leaves
+  const { workEntries, leaveEntries } = useMemo(() => {
+    return {
+      workEntries: filteredTimesheets.filter(ts => !ts.isVacation),
+      leaveEntries: filteredTimesheets.filter(ts => ts.isVacation)
+    };
+  }, [filteredTimesheets]);
+
+  // Pagination logic for work entries
+  const { paginatedWork, totalPagesWork } = useMemo(() => {
     const start = (activePage - 1) * itemsPerPage;
     const end = start + itemsPerPage;
-    const paginated = filteredTimesheets.slice(start, end);
-    const pages = Math.ceil(filteredTimesheets.length / itemsPerPage);
+    const paginated = workEntries.slice(start, end);
+    const pages = Math.ceil(workEntries.length / itemsPerPage);
 
-    return { paginatedTimesheets: paginated, totalPages: pages };
-  }, [filteredTimesheets, activePage, itemsPerPage]);
+    return { paginatedWork: paginated, totalPagesWork: pages };
+  }, [workEntries, activePage, itemsPerPage]);
 
+  // Pagination logic for leave entries (using same activePage for simplicity, or separate if preferred)
+  // Re-evaluating: usually better to have separate pagination for separate sections, but for now I'll use same.
+  const { paginatedLeaves, totalPagesLeaves } = useMemo(() => {
+    const start = (activePage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    const paginated = leaveEntries.slice(start, end);
+    const pages = Math.ceil(leaveEntries.length / itemsPerPage);
+
+    return { paginatedLeaves: paginated, totalPagesLeaves: pages };
+  }, [leaveEntries, activePage, itemsPerPage]);
   // Fetch employee details
   useEffect(() => {
     const fetchEmployeeDetails = async () => {
@@ -494,7 +237,9 @@ export const EmployeeTimesheetAdminView = () => {
         );
 
         const formattedTimesheet = formatData(responseData);
-        setTimesheets(formattedTimesheet.filter(ts => ts.hours > 0));
+        setTimesheets(
+          formattedTimesheet.filter(ts => ts.hours > 0 || ts.isVacation)
+        );
       } catch (error: any) {
         const errorMessage =
           error?.response?.data?.message || 'Failed to load timesheets';
@@ -558,11 +303,9 @@ export const EmployeeTimesheetAdminView = () => {
 
   const toggleSelectAll = useCallback(
     (checked: boolean) => {
-      setSelectedTimesheets(
-        checked ? paginatedTimesheets.map(ts => ts.id) : []
-      );
+      setSelectedTimesheets(checked ? workEntries.map(ts => ts.id) : []);
     },
-    [paginatedTimesheets]
+    [workEntries]
   );
 
   const toggleSingleSelection = useCallback((timesheetId: string) => {
@@ -575,9 +318,9 @@ export const EmployeeTimesheetAdminView = () => {
 
   const isAllSelected = useMemo(
     () =>
-      paginatedTimesheets.length > 0 &&
-      paginatedTimesheets.every(ts => selectedTimesheets.includes(ts.id)),
-    [paginatedTimesheets, selectedTimesheets]
+      workEntries.length > 0 &&
+      workEntries.every(ts => selectedTimesheets.includes(ts.id)),
+    [workEntries, selectedTimesheets]
   );
 
   const statusOptions = useMemo(
@@ -630,24 +373,6 @@ export const EmployeeTimesheetAdminView = () => {
     );
   }
   const employeeInfoItems = getEmployeeInfoItems(employeeDetails);
-  const getInfoIcon = (label: string) => {
-    const iconSize = isMobile ? 14 : 16;
-    switch (label) {
-      case 'Name':
-        return <IconUser size={iconSize} />;
-      case 'Email':
-        return <IconMail size={iconSize} />;
-      case 'Phone':
-        return <IconPhone size={iconSize} />;
-      case 'Join Date':
-        return <IconCalendar size={iconSize} />;
-      case 'Role':
-        return <IconBriefcase size={iconSize} />;
-      default:
-        return <IconUser size={iconSize} />;
-    }
-  };
-
   return (
     <Container
       size={isTablet ? 'lg' : 'xl'}
@@ -697,182 +422,24 @@ export const EmployeeTimesheetAdminView = () => {
             <BackButton id={employeeId} />
           </Group>
         </Card>
-        <Card
-          shadow='lg'
-          radius='md'
-          withBorder
-          p={isMobile ? 'md' : 'lg'}
-          style={{
-            backgroundColor: currentThemeConfig.backgroundColor,
-            borderColor: currentThemeConfig.borderColor
-          }}
-        >
-          <Stack gap={isMobile ? 'md' : 'lg'}>
-            <Group gap='sm'>
-              <IconUser
-                size={isMobile ? 18 : 20}
-                color={currentThemeConfig.button.color}
-              />
-              <Text
-                size={isMobile ? 'md' : 'lg'}
-                fw={600}
-                c={currentThemeConfig.color}
-              >
-                Employee Information
-              </Text>
-            </Group>
-
-            <SimpleGrid
-              cols={{ base: 1, xs: 1, sm: 2, md: 2, lg: 3 }}
-              spacing={isMobile ? 'md' : 'lg'}
-            >
-              {employeeInfoItems.map((item, index) => (
-                <Card
-                  key={index}
-                  radius='md'
-                  p={isMobile ? 'sm' : 'md'}
-                  style={{
-                    border: `1px solid ${currentThemeConfig.borderColor}`
-                  }}
-                >
-                  <Stack gap='xs'>
-                    <Group gap='xs'>
-                      {getInfoIcon(item.label)}
-                      <Text size={isMobile ? 'xs' : 'sm'} c='dimmed'>
-                        {item.label}
-                      </Text>
-                    </Group>
-                    <Text
-                      size={isMobile ? 'sm' : 'md'}
-                      fw={500}
-                      c={currentThemeConfig.color}
-                      className='break-words'
-                    >
-                      {item.value || '-'}
-                    </Text>
-                  </Stack>
-                </Card>
-              ))}
-            </SimpleGrid>
-          </Stack>
-        </Card>
+        <InfoCard
+          employeeDetails={employeeDetails}
+          employeeInfoItems={employeeInfoItems}
+        />
 
         {/* Filters */}
-        <Card
-          shadow='sm'
-          p={isSmallMobile ? 'xs' : isMobile ? 'sm' : 'md'}
-          radius='md'
-          withBorder
-        >
-          <Stack gap='sm'>
-            {isMobile && (
-              <Button
-                variant='light'
-                fullWidth
-                size={isSmallMobile ? 'xs' : 'sm'}
-                onClick={() => setFiltersExpanded(!filtersExpanded)}
-                rightSection={
-                  filtersExpanded ? (
-                    <IconChevronUp size={14} />
-                  ) : (
-                    <IconChevronDown size={14} />
-                  )
-                }
-                leftSection={<IconFilter size={14} />}
-              >
-                {filtersExpanded ? 'Hide Filters' : 'Show Filters'}
-              </Button>
-            )}
-
-            <Collapse in={filtersExpanded || !isMobile}>
-              <Stack gap='md'>
-                <Stack gap='sm'>
-                  <Select
-                    label='Status'
-                    placeholder='Filter by status'
-                    data={statusOptions}
-                    value={selectedStatus}
-                    onChange={value =>
-                      setSelectedStatus(value as TimesheetStatus | null)
-                    }
-                    clearable
-                    leftSection={<IconFilter size={14} />}
-                    radius='md'
-                    size={isSmallMobile ? 'xs' : 'sm'}
-                  />
-                  <DatePickerInput
-                    type='range'
-                    label='Date Range'
-                    placeholder='Select date range'
-                    value={dateRange}
-                    onChange={setDateRange}
-                    leftSection={<IconCalendar size={14} />}
-                    radius='md'
-                    size={isSmallMobile ? 'xs' : 'sm'}
-                    popoverProps={{ withinPortal: true }}
-                  />
-                  <TextInput
-                    label='Search'
-                    placeholder={
-                      isSmallMobile ? 'Search...' : 'Search by project, task...'
-                    }
-                    leftSection={<IconSearch size={14} />}
-                    value={searchQuery}
-                    onChange={e => setSearchQuery(e.currentTarget.value)}
-                    radius='md'
-                    size={isSmallMobile ? 'xs' : 'sm'}
-                  />
-                </Stack>
-
-                <Flex
-                  justify='space-between'
-                  align={isMobile ? 'stretch' : 'center'}
-                  direction={isMobile ? 'column' : 'row'}
-                  gap='sm'
-                >
-                  <Group gap='xs'>
-                    <Text size='xs'>
-                      {isSmallMobile ? 'Per page:' : 'Items per page:'}
-                    </Text>
-                    <Select
-                      data={
-                        isSmallMobile
-                          ? ['5', '10']
-                          : isMobile
-                            ? ['10', '20']
-                            : ITEMS_PER_PAGE_OPTIONS
-                      }
-                      value={itemsPerPage.toString()}
-                      onChange={value =>
-                        setItemsPerPage(Number(value) || DEFAULT_ITEMS_PER_PAGE)
-                      }
-                      w={isSmallMobile ? 60 : 80}
-                      size='xs'
-                    />
-                  </Group>
-
-                  <Group gap='sm' grow={isMobile}>
-                    {filteredTimesheets.length !== timesheets.length && (
-                      <Badge variant='light' color='blue' size='xs'>
-                        {filteredTimesheets.length} / {timesheets.length}
-                      </Badge>
-                    )}
-                    <Button
-                      variant='outline'
-                      onClick={resetFilters}
-                      leftSection={<IconX size={14} />}
-                      size='xs'
-                      fullWidth={isMobile}
-                      radius='md'
-                    >
-                      {isSmallMobile ? 'Clear' : 'Clear Filters'}
-                    </Button>
-                  </Group>
-                </Flex>
-              </Stack>
-            </Collapse>
-          </Stack>
-        </Card>
+        <FilterSection
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          selectedStatus={selectedStatus}
+          setSelectedStatus={setSelectedStatus}
+          dateRange={dateRange}
+          setDateRange={setDateRange}
+          filtersExpanded={filtersExpanded}
+          setFiltersExpanded={setFiltersExpanded}
+          resetFilters={resetFilters}
+          statusOptions={statusOptions}
+        />
 
         {/* Bulk Actions */}
         {selectedTimesheets.length > 0 && (
@@ -951,163 +518,102 @@ export const EmployeeTimesheetAdminView = () => {
         )}
 
         {/* Content - Table or Cards */}
-        <DataView isLoading={isLoading} label='timesheets'>
-          <Stack gap='sm'>
-            {isMobile ? (
-              <Stack gap='sm'>
-                {paginatedTimesheets.length > 0 ? (
-                  paginatedTimesheets.map((timesheet, index) => (
-                    <MobileTimesheetCard
-                      key={timesheet.id}
-                      timesheet={timesheet}
-                      index={index + 1 + (activePage - 1) * itemsPerPage}
-                      isSelected={selectedTimesheets.includes(timesheet.id)}
-                      onToggleSelect={toggleSingleSelection}
-                      onApprove={id =>
-                        handleStatusChange([id], TimesheetStatus.Approved)
-                      }
-                      onReject={id =>
-                        handleStatusChange([id], TimesheetStatus.Rejected)
-                      }
-                    />
-                  ))
-                ) : (
-                  <Card shadow='sm' p='xl' radius='md' withBorder>
-                    <Stack align='center' gap='md'>
-                      <Text size='lg'>No timesheets found</Text>
-                      <Text size='sm' ta='center'>
-                        {searchQuery ||
-                        selectedStatus ||
-                        (dateRange[0] && dateRange[1])
-                          ? 'Try adjusting your filters'
-                          : 'No timesheet entries available'}
-                      </Text>
-                    </Stack>
-                  </Card>
-                )}
-              </Stack>
-            ) : (
-              <Card
-                shadow='sm'
-                p={0}
-                radius='md'
-                withBorder
-                style={{ overflowX: 'auto' }}
-              >
-                <Table stickyHeader withTableBorder withColumnBorders>
-                  <TableHeader
-                    sortOrder={sortOrder}
-                    onSort={toggleSortOrder}
-                    themeConfig={currentThemeConfig}
-                    isAllSelected={isAllSelected}
-                    onToggleAll={toggleSelectAll}
-                  />
-                  <Table.Tbody>
-                    {paginatedTimesheets.length > 0 ? (
-                      paginatedTimesheets.map((timesheet, index) => (
-                        <Table.Tr key={timesheet.id}>
-                          <Table.Td
-                            style={{ textAlign: 'center', padding: rem(12) }}
-                          >
-                            <Checkbox
-                              checked={selectedTimesheets.includes(
-                                timesheet.id
-                              )}
-                              onChange={() =>
-                                toggleSingleSelection(timesheet.id)
-                              }
-                            />
-                          </Table.Td>
-                          <Table.Td
-                            style={{ textAlign: 'center', padding: rem(12) }}
-                          >
-                            <Text size='sm'>
-                              {index + 1 + (activePage - 1) * itemsPerPage}
-                            </Text>
-                          </Table.Td>
-                          <Table.Td
-                            style={{ padding: rem(12), textAlign: 'center' }}
-                          >
-                            <Text size='sm'>
-                              {moment(timesheet.date).format('MMM D, YYYY')}
-                            </Text>
-                          </Table.Td>
-                          <Table.Td style={{ padding: rem(12) }}>
-                            <Text size='sm'>{timesheet.project_name}</Text>
-                          </Table.Td>
-                          <Table.Td style={{ padding: rem(12) }}>
-                            <Text size='sm'>{timesheet.task_name}</Text>
-                          </Table.Td>
-                          <Table.Td
-                            style={{ padding: rem(12), textAlign: 'center' }}
-                          >
-                            <Badge size='sm'>{timesheet.hours}h</Badge>
-                          </Table.Td>
-                          <Table.Td
-                            style={{ padding: rem(12), textAlign: 'center' }}
-                          >
-                            <StatusBadge status={timesheet.status} />
-                          </Table.Td>
-                          <Table.Td style={{ padding: rem(12) }}>
-                            <TimesheetActions
-                              timesheet={timesheet}
-                              onApprove={id =>
-                                handleStatusChange(
-                                  [id],
-                                  TimesheetStatus.Approved
-                                )
-                              }
-                              onReject={id =>
-                                handleStatusChange(
-                                  [id],
-                                  TimesheetStatus.Rejected
-                                )
-                              }
-                            />
-                          </Table.Td>
-                        </Table.Tr>
-                      ))
-                    ) : (
-                      <Table.Tr>
-                        <Table.Td
-                          colSpan={8}
-                          style={{ textAlign: 'center', padding: rem(32) }}
-                        >
-                          <Stack align='center' gap='md'>
-                            <Text size='lg'>No timesheets found</Text>
-                            <Text size='sm'>
-                              {searchQuery ||
-                              selectedStatus ||
-                              (dateRange[0] && dateRange[1])
-                                ? 'Try adjusting your filters'
-                                : 'No timesheet entries available'}
-                            </Text>
-                          </Stack>
-                        </Table.Td>
-                      </Table.Tr>
-                    )}
-                  </Table.Tbody>
-                </Table>
-              </Card>
+        {/* Timesheet Entries Section */}
+        <Stack gap='xs'>
+          <Group justify='space-between'>
+            <Text size='lg' fw={700} c={currentThemeConfig.color}>
+              Timesheet Entries
+            </Text>
+            {!isMobile && (
+              <Group gap='xs'>
+                <Text size='xs'>Items per page:</Text>
+                <Select
+                  data={ITEMS_PER_PAGE_OPTIONS}
+                  value={itemsPerPage.toString()}
+                  onChange={value => setItemsPerPage(Number(value) || 20)}
+                  w={80}
+                  size='xs'
+                />
+              </Group>
             )}
-          </Stack>
-        </DataView>
+          </Group>
+          <TimesheetDataView
+            data={paginatedWork}
+            isLoading={isLoading}
+            label='timesheets'
+            isMobile={!!isMobile}
+            selectedIds={selectedTimesheets}
+            onToggleSelect={toggleSingleSelection}
+            onToggleAll={toggleSelectAll}
+            isAllSelected={isAllSelected}
+            sortOrder={sortOrder}
+            onSort={toggleSortOrder}
+            onApprove={id => handleStatusChange([id], TimesheetStatus.Approved)}
+            onReject={id => handleStatusChange([id], TimesheetStatus.Rejected)}
+            activePage={activePage}
+            itemsPerPage={itemsPerPage}
+            themeConfig={currentThemeConfig}
+            noDataMessage='No timesheet entries found'
+            isLeaves={false}
+          />
+          {totalPagesWork > 1 && (
+            <Center mt='md'>
+              <Pagination
+                value={activePage}
+                onChange={setActivePage}
+                total={totalPagesWork}
+                size='sm'
+                radius='md'
+              />
+            </Center>
+          )}
+        </Stack>
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <Center>
-            <Pagination
-              value={activePage}
-              onChange={setActivePage}
-              total={totalPages}
-              size={isSmallMobile ? 'xs' : isMobile ? 'sm' : 'md'}
-              radius='md'
-              withEdges={!isMobile}
-              siblings={isSmallMobile ? 0 : isMobile ? 0 : 1}
-              boundaries={isSmallMobile ? 1 : isMobile ? 1 : 2}
-            />
-          </Center>
-        )}
+        <Divider my='md' />
+
+        {/* Leaves Section */}
+        <Stack gap='xs'>
+          <Text size='lg' fw={700} c={currentThemeConfig.color}>
+            Leaves
+          </Text>
+          <TimesheetDataView
+            data={paginatedLeaves}
+            isLoading={isLoading}
+            label='leaves'
+            isMobile={!!isMobile}
+            selectedIds={selectedTimesheets}
+            onToggleSelect={toggleSingleSelection}
+            onToggleAll={checked => {
+              setSelectedTimesheets(
+                checked ? leaveEntries.map(ts => ts.id) : []
+              );
+            }}
+            isAllSelected={
+              leaveEntries.length > 0 &&
+              leaveEntries.every(ts => selectedTimesheets.includes(ts.id))
+            }
+            sortOrder={sortOrder}
+            onSort={toggleSortOrder}
+            onApprove={id => handleStatusChange([id], TimesheetStatus.Approved)}
+            onReject={id => handleStatusChange([id], TimesheetStatus.Rejected)}
+            activePage={activePage}
+            itemsPerPage={itemsPerPage}
+            themeConfig={currentThemeConfig}
+            noDataMessage='No leave entries found'
+            isLeaves={true}
+          />
+          {totalPagesLeaves > 1 && (
+            <Center mt='md'>
+              <Pagination
+                value={activePage}
+                onChange={setActivePage}
+                total={totalPagesLeaves}
+                size='sm'
+                radius='md'
+              />
+            </Center>
+          )}
+        </Stack>
       </Stack>
 
       {/* Confirmation Modal */}
