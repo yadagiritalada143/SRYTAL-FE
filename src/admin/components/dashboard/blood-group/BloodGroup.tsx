@@ -217,7 +217,7 @@ const BloodGroup = () => {
   };
 
   const handleDelete = (id: string) => {
-    setSelectedGroup({ id });
+    setSelectedGroup((prev: any) => ({ ...prev, id }));
     openDeleteModal();
   };
 
