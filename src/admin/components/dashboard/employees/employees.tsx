@@ -611,50 +611,51 @@ const Employees = () => {
 
         {/* Filters */}
         <Card shadow='sm' p={isMobile ? 'sm' : 'md'} radius='md' withBorder>
-          <Stack gap='md'>
-            <Group grow={!isMobile}>
-              <TextInput
-                placeholder='Search by name, email, phone, or employee ID...'
-                leftSection={<IconSearch size={16} />}
-                onChange={e => debouncedSearch(e.target.value)}
-                radius='md'
-                size={isMobile ? 'sm' : 'md'}
-                w='100%'
-              />
+          <Flex
+            gap='md'
+            align='center'
+            wrap={isMobile ? 'wrap' : 'nowrap'}
+            justify='space-between'
+          >
+            <TextInput
+              placeholder='Search by name, email, phone, or employee ID...'
+              leftSection={<IconSearch size={16} />}
+              onChange={e => debouncedSearch(e.target.value)}
+              radius='md'
+              size={isMobile ? 'sm' : 'md'}
+              style={{ flex: 1, minWidth: isMobile ? '100%' : '320px' }}
+            />
+            <Select
+              placeholder='Filter by role'
+              data={uniqueRoles.map(role => ({ value: role, label: role }))}
+              value={roleFilter}
+              onChange={value => setRoleFilter(value ?? '')}
+              clearable
+              leftSection={<IconFilter size={16} />}
+              radius='md'
+              size={isMobile ? 'sm' : 'md'}
+              style={{ minWidth: isMobile ? '100%' : '200px' }}
+            />
+
+            <Group gap='xs'>
+              <Text size='sm'>Items per page:</Text>
               <Select
-                placeholder='Filter by role'
-                data={uniqueRoles.map(role => ({ value: role, label: role }))}
-                value={roleFilter}
-                onChange={value => setRoleFilter(value ?? '')}
-                clearable
-                leftSection={<IconFilter size={16} />}
-                radius='md'
-                size={isMobile ? 'sm' : 'md'}
-                w='100%'
+                data={ITEMS_PER_PAGE_OPTIONS}
+                value={itemsPerPage.toString()}
+                onChange={value =>
+                  setItemsPerPage(Number(value) || DEFAULT_ITEMS_PER_PAGE)
+                }
+                w={70}
+                size='sm'
               />
             </Group>
 
-            <Group justify='space-between' wrap={isMobile ? 'wrap' : 'nowrap'}>
-              <Group gap='xs'>
-                <Text size='sm'>Items per page:</Text>
-                <Select
-                  data={ITEMS_PER_PAGE_OPTIONS}
-                  value={itemsPerPage.toString()}
-                  onChange={value =>
-                    setItemsPerPage(Number(value) || DEFAULT_ITEMS_PER_PAGE)
-                  }
-                  w={80}
-                  size='sm'
-                />
-              </Group>
-
-              {filteredEmployees.length !== employees.length && (
-                <Badge variant='light' color={currentThemeConfig.accentColor}>
-                  {filteredEmployees.length} of {employees.length} employees
-                </Badge>
-              )}
-            </Group>
-          </Stack>
+            {filteredEmployees.length !== employees.length && (
+              <Badge variant='light' color={currentThemeConfig.accentColor}>
+                {filteredEmployees.length} of {employees.length} employees
+              </Badge>
+            )}
+          </Flex>
         </Card>
 
         {/* Table or Cards based on screen size */}
