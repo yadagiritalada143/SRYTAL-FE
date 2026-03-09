@@ -704,3 +704,33 @@ export const deleteFeedbackAttributeByAdmin = async (id: string) => {
     throw error;
   }
 };
+
+export const getAllDepartmentsByAdmin = async () => {
+  const token = localStorage.getItem('token');
+  try {
+    if (!token) {
+      throw 'Not authorized to access';
+    }
+
+    const response = await apiClient('/admin/getalldepartmentsbyadmin', {
+      headers: { auth_token: token }
+    });
+
+    return response.data.data.departmentResponse;
+  } catch (error) {
+    throw error;
+  }
+};
+export const addDepartmentByAdmin = async (data: {
+  departmentName: string;
+}) => {
+  const token = localStorage.getItem('token');
+  try {
+    const response = await apiClient.post('/admin/adddepartmentbyadmin', data, {
+      headers: { auth_token: token }
+    });
+    return response.data.data;
+  } catch (error) {
+    throw error;
+  }
+};

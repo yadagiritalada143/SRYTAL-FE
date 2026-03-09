@@ -8,7 +8,8 @@ import {
   IconBriefcase,
   IconDroplet,
   IconMessage2,
-  IconUserCheck
+  IconUserCheck,
+  IconUser
 } from '@tabler/icons-react';
 import { useMediaQuery } from '@mantine/hooks';
 import { useAppTheme } from '@hooks/use-app-theme';
@@ -77,6 +78,12 @@ const SettingsLayout = () => {
               leftSection={<IconUserCheck size={16} stroke={1.8} />}
             >
               Employment Roles
+            </Tabs.Tab>
+            <Tabs.Tab
+              value='department-names'
+              leftSection={<IconUser size={16} stroke={1.8} />}
+            >
+              Department
             </Tabs.Tab>
 
             <Tabs.Tab
