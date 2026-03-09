@@ -213,7 +213,7 @@ const EmploymentType = () => {
   };
 
   const handleDelete = (id: string) => {
-    setSelectedType({ id });
+    setSelectedType((prev: any) => ({ ...prev, id }));
     openDeleteModal();
   };
 
