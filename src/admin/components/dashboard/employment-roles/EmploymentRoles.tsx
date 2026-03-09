@@ -220,7 +220,9 @@ const EmploymentRoles = () => {
   };
 
   const handleDelete = (id: string) => {
-    setSelectedRole({ id, _id: id, designation: '' } as EmployeeRole);
+    setSelectedRole(
+      (prev: EmployeeRole | null) => ({ ...prev, id }) as EmployeeRole
+    );
     openDeleteModal();
   };
 
