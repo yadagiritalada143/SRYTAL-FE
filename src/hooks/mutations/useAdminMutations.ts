@@ -29,7 +29,8 @@ import {
   generateSalarySlip,
   addFeedbackAttributeByAdmin,
   updateFeedbackAttributeByAdmin,
-  deleteFeedbackAttributeByAdmin
+  deleteFeedbackAttributeByAdmin,
+  addDepartmentByAdmin
 } from '@services/admin-services';
 import { adminQueryKeys } from '../queries/useAdminQueries';
 import { AddEmployeeForm } from '@forms/add-employee';
@@ -224,4 +225,9 @@ export const useUpdateFeedbackAttributeByAdmin = createMutationHook(
 export const useDeleteFeedbackAttributeByAdmin = createMutationHook(
   deleteFeedbackAttributeByAdmin,
   [adminQueryKeys.feedbackAttributes]
+);
+
+export const useAddDepartmentByAdmin = createMutationHook(
+  addDepartmentByAdmin,
+  [adminQueryKeys.departments]
 );

@@ -74,6 +74,9 @@ const SettingsLayout = lazy(
 const FeedbackTable = lazy(
   () => import('@admin/components/dashboard/settings/FeedbackTable')
 );
+const DepartmentTable = lazy(
+  () => import('@admin/components/dashboard/settings/DepartmentTable')
+);
 const DateTableComponent = lazy(
   () => import('@components/common/timesheet/timesheet')
 );
@@ -554,6 +557,7 @@ const AdminRoutes = () => {
               <Route path='blood-groups' element={<BloodGroupTable />} />
               <Route path='employment-types' element={<EmploymentTypes />} />
               <Route path='employment-roles' element={<EmploymentRoles />} />
+              <Route path='department-names' element={<DepartmentTable />} />
               <Route path='feedback' element={<FeedbackTable />} />
             </Route>
           </Route>
