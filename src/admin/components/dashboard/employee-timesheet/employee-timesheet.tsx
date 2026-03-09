@@ -5,7 +5,6 @@ import {
   Card,
   Flex,
   Text,
-  Button,
   Group,
   Badge,
   Modal,
@@ -13,16 +12,9 @@ import {
   ActionIcon,
   Center,
   Pagination,
-  Divider,
-  Paper,
-  Checkbox,
-  Box,
-  Collapse,
-  Tooltip,
-  Table,
-  TextInput
+  Divider
 } from '@mantine/core';
-import { DatePickerInput, DatesRangeValue } from '@mantine/dates';
+import { DatesRangeValue } from '@mantine/dates';
 import {
   useDebouncedValue,
   useDisclosure,
@@ -32,13 +24,7 @@ import {
   IconX,
   IconCircleCheck,
   IconCircleX,
-  IconCalendar,
-  IconSortAscending,
-  IconSortDescending,
-  IconFilter,
-  IconSearch,
-  IconChevronUp,
-  IconChevronDown
+  IconCalendar
 } from '@tabler/icons-react';
 import moment from 'moment';
 import { useParams } from 'react-router-dom';
@@ -59,6 +45,7 @@ import { toast } from 'react-toastify';
 import { useCustomToast } from '@utils/common/toast';
 import { getEmployeeInfoItems } from '../update-employee/helper-functions/add-package';
 import { useAppTheme } from '@hooks/use-app-theme';
+import { CommonButton } from '@components/common/button/CommonButton';
 
 // Constants
 const ITEMS_PER_PAGE_OPTIONS = ['10', '20', '50', '100'];
@@ -139,263 +126,6 @@ const useTimesheetFilters = (timesheets: EmployeeTimesheet[]) => {
     resetFilters,
     filteredTimesheets: filteredAndSortedTimesheets
   };
-};
-
-// Status Badge Component
-const StatusBadge: React.FC<{ status: TimesheetStatus }> = ({ status }) => {
-  switch (status) {
-    case TimesheetStatus.Approved:
-      return (
-        <Badge color='green' size='sm'>
-          Approved
-        </Badge>
-      );
-    case TimesheetStatus.Rejected:
-      return (
-        <Badge color='red' size='sm'>
-          Rejected
-        </Badge>
-      );
-    default:
-      return (
-        <Badge color='yellow' size='sm'>
-          Pending
-        </Badge>
-      );
-  }
-};
-
-// Mobile Timesheet Card Component
-const MobileTimesheetCard: React.FC<{
-  timesheet: EmployeeTimesheet;
-  index: number;
-  isSelected: boolean;
-  onToggleSelect: (id: string) => void;
-  onApprove: (id: string) => void;
-  onReject: (id: string) => void;
-}> = ({
-  timesheet,
-  index,
-  isSelected,
-  onToggleSelect,
-  onApprove,
-  onReject
-}) => {
-  const [expanded, setExpanded] = useState(false);
-  const isPending = timesheet.status === TimesheetStatus.WaitingForApproval;
-
-  return (
-    <Paper
-      onClick={() => setExpanded(!expanded)}
-      shadow='xs'
-      p='sm'
-      radius='md'
-      withBorder
-    >
-      <Stack gap='xs'>
-        <Flex justify='space-between' align='center'>
-          <Group gap='xs'>
-            <Checkbox
-              checked={isSelected}
-              onChange={() => onToggleSelect(timesheet.id)}
-            />
-            <Text size='sm' fw={600}>
-              #{index}
-            </Text>
-          </Group>
-        </Flex>
-
-        <Flex justify='space-between' align='center'>
-          <Text size='sm' c='dimmed'>
-            {moment(timesheet.date).format('MMM D, YYYY')}
-          </Text>
-          <StatusBadge status={timesheet.status} />
-        </Flex>
-
-        <Box>
-          <Text size='xs' c='dimmed'>
-            Project
-          </Text>
-          <Text size='sm' fw={500}>
-            {timesheet.project_name}
-          </Text>
-        </Box>
-
-        <Collapse in={expanded}>
-          <Stack gap='xs'>
-            <Divider />
-
-            <Box>
-              <Text size='xs' c='dimmed'>
-                Task
-              </Text>
-              <Text size='sm'>{timesheet.task_name}</Text>
-            </Box>
-
-            <Flex justify='space-between' align='center'>
-              <Box>
-                <Text size='xs' c='dimmed'>
-                  Hours
-                </Text>
-                <Badge size='sm' variant='light'>
-                  {timesheet.hours}h
-                </Badge>
-              </Box>
-            </Flex>
-
-            {timesheet.comments && (
-              <Box>
-                <Text size='xs' c='dimmed'>
-                  Comments
-                </Text>
-                <Text size='sm'>{timesheet.comments}</Text>
-              </Box>
-            )}
-
-            {isPending && (
-              <>
-                <Divider />
-                <Group grow>
-                  <Button
-                    size='xs'
-                    variant='light'
-                    color='green'
-                    onClick={() => onApprove(timesheet.id)}
-                    leftSection={<IconCircleCheck size={14} />}
-                    radius='md'
-                  >
-                    Approve
-                  </Button>
-                  <Button
-                    size='xs'
-                    variant='light'
-                    radius='md'
-                    color='red'
-                    onClick={() => onReject(timesheet.id)}
-                    leftSection={<IconCircleX size={14} />}
-                  >
-                    Reject
-                  </Button>
-                </Group>
-              </>
-            )}
-          </Stack>
-        </Collapse>
-      </Stack>
-    </Paper>
-  );
-};
-
-// Timesheet Actions Component
-const TimesheetActions: React.FC<{
-  timesheet: EmployeeTimesheet;
-  onApprove: (id: string) => void;
-  onReject: (id: string) => void;
-}> = ({ timesheet, onApprove, onReject }) => {
-  const isPending = timesheet.status === TimesheetStatus.WaitingForApproval;
-
-  return (
-    <Group gap='xs' justify='center'>
-      <Tooltip label='Approve timesheet'>
-        <Button
-          size='xs'
-          variant='light'
-          color='green'
-          radius='md'
-          onClick={() => onApprove(timesheet.id)}
-          disabled={!isPending}
-          leftSection={<IconCircleCheck size={14} />}
-        >
-          Approve
-        </Button>
-      </Tooltip>
-      <Tooltip label='Reject timesheet'>
-        <Button
-          size='xs'
-          variant='light'
-          color='red'
-          onClick={() => onReject(timesheet.id)}
-          disabled={!isPending}
-          radius='md'
-          leftSection={<IconCircleX size={14} />}
-        >
-          Reject
-        </Button>
-      </Tooltip>
-    </Group>
-  );
-};
-
-// Table Header Component
-const TableHeader: React.FC<{
-  sortOrder: 'asc' | 'desc';
-  onSort: () => void;
-  themeConfig: any;
-  isAllSelected: boolean;
-  onToggleAll: (checked: boolean) => void;
-}> = ({ sortOrder, onSort, themeConfig, isAllSelected, onToggleAll }) => {
-  return (
-    <Table.Thead
-      style={{
-        backgroundColor: themeConfig.backgroundColor,
-        color: themeConfig.color
-      }}
-    >
-      <Table.Tr>
-        <Table.Th style={{ padding: rem(12), textAlign: 'center' }}>
-          <Checkbox
-            checked={isAllSelected}
-            onChange={e => onToggleAll(e.currentTarget.checked)}
-          />
-        </Table.Th>
-        <Table.Th style={{ padding: rem(12), textAlign: 'center' }}>
-          <Text size='sm' fw={500}>
-            S.No
-          </Text>
-        </Table.Th>
-        <Table.Th
-          style={{ cursor: 'pointer', userSelect: 'none' }}
-          onClick={onSort}
-        >
-          <Group justify='center' gap='xs'>
-            <Text size='sm' fw={500}>
-              Date
-            </Text>
-            {sortOrder === 'asc' ? (
-              <IconSortAscending size={14} />
-            ) : (
-              <IconSortDescending size={14} />
-            )}
-          </Group>
-        </Table.Th>
-        <Table.Th style={{ padding: rem(12), textAlign: 'center' }}>
-          <Text size='sm' fw={500}>
-            Project
-          </Text>
-        </Table.Th>
-        <Table.Th style={{ padding: rem(12), textAlign: 'center' }}>
-          <Text size='sm' fw={500}>
-            Task
-          </Text>
-        </Table.Th>
-        <Table.Th style={{ padding: rem(12), textAlign: 'center' }}>
-          <Text size='sm' fw={500}>
-            Hours
-          </Text>
-        </Table.Th>
-        <Table.Th style={{ padding: rem(12), textAlign: 'center' }}>
-          <Text size='sm' fw={500}>
-            Status
-          </Text>
-        </Table.Th>
-        <Table.Th style={{ padding: rem(12), textAlign: 'center' }}>
-          <Text size='sm' fw={500}>
-            Actions
-          </Text>
-        </Table.Th>
-      </Table.Tr>
-    </Table.Thead>
-  );
 };
 
 export const EmployeeTimesheetAdminView = () => {
@@ -630,14 +360,13 @@ export const EmployeeTimesheetAdminView = () => {
             {error}
           </Text>
           <Center mt='md'>
-            <Button
+            <CommonButton
               onClick={() => window.location.reload()}
               fullWidth={isMobile}
-              radius='md'
               size={isSmallMobile ? 'sm' : 'md'}
             >
               Try Again
-            </Button>
+            </CommonButton>
           </Center>
         </Card>
       </Container>
@@ -699,122 +428,18 @@ export const EmployeeTimesheetAdminView = () => {
         />
 
         {/* Filters */}
-        <Card
-          shadow='sm'
-          p={isSmallMobile ? 'xs' : isMobile ? 'sm' : 'md'}
-          radius='md'
-          withBorder
-        >
-          <Stack gap='sm'>
-            {isMobile && (
-              <Button
-                variant='light'
-                fullWidth
-                radius='md'
-                size={isSmallMobile ? 'xs' : 'sm'}
-                onClick={() => setFiltersExpanded(!filtersExpanded)}
-                rightSection={
-                  filtersExpanded ? (
-                    <IconChevronUp size={14} />
-                  ) : (
-                    <IconChevronDown size={14} />
-                  )
-                }
-                leftSection={<IconFilter size={14} />}
-              >
-                {filtersExpanded ? 'Hide Filters' : 'Show Filters'}
-              </Button>
-            )}
-
-            <Collapse in={filtersExpanded || !isMobile}>
-              <Stack gap='md'>
-                <Stack gap='sm'>
-                  <Select
-                    label='Status'
-                    placeholder='Filter by status'
-                    data={statusOptions}
-                    value={selectedStatus}
-                    onChange={value =>
-                      setSelectedStatus(value as TimesheetStatus | null)
-                    }
-                    clearable
-                    leftSection={<IconFilter size={14} />}
-                    radius='md'
-                    size={isSmallMobile ? 'xs' : 'sm'}
-                  />
-                  <DatePickerInput
-                    type='range'
-                    label='Date Range'
-                    placeholder='Select date range'
-                    value={dateRange}
-                    onChange={setDateRange}
-                    leftSection={<IconCalendar size={14} />}
-                    radius='md'
-                    size={isSmallMobile ? 'xs' : 'sm'}
-                    popoverProps={{ withinPortal: true }}
-                  />
-                  <TextInput
-                    label='Search'
-                    placeholder={
-                      isSmallMobile ? 'Search...' : 'Search by project, task...'
-                    }
-                    leftSection={<IconSearch size={14} />}
-                    value={searchQuery}
-                    onChange={e => setSearchQuery(e.currentTarget.value)}
-                    radius='md'
-                    size={isSmallMobile ? 'xs' : 'sm'}
-                  />
-                </Stack>
-
-                <Flex
-                  justify='space-between'
-                  align={isMobile ? 'stretch' : 'center'}
-                  direction={isMobile ? 'column' : 'row'}
-                  gap='sm'
-                >
-                  <Group gap='xs'>
-                    <Text size='xs'>
-                      {isSmallMobile ? 'Per page:' : 'Items per page:'}
-                    </Text>
-                    <Select
-                      data={
-                        isSmallMobile
-                          ? ['5', '10']
-                          : isMobile
-                            ? ['10', '20']
-                            : ITEMS_PER_PAGE_OPTIONS
-                      }
-                      value={itemsPerPage.toString()}
-                      onChange={value =>
-                        setItemsPerPage(Number(value) || DEFAULT_ITEMS_PER_PAGE)
-                      }
-                      w={isSmallMobile ? 60 : 80}
-                      size='xs'
-                    />
-                  </Group>
-
-                  <Group gap='sm' grow={isMobile}>
-                    {filteredTimesheets.length !== timesheets.length && (
-                      <Badge variant='light' color='blue' size='xs'>
-                        {filteredTimesheets.length} / {timesheets.length}
-                      </Badge>
-                    )}
-                    <Button
-                      variant='outline'
-                      onClick={resetFilters}
-                      leftSection={<IconX size={14} />}
-                      size='xs'
-                      fullWidth={isMobile}
-                      radius='md'
-                    >
-                      {isSmallMobile ? 'Clear' : 'Clear Filters'}
-                    </Button>
-                  </Group>
-                </Flex>
-              </Stack>
-            </Collapse>
-          </Stack>
-        </Card>
+        <FilterSection
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          selectedStatus={selectedStatus}
+          setSelectedStatus={setSelectedStatus}
+          dateRange={dateRange}
+          setDateRange={setDateRange}
+          filtersExpanded={filtersExpanded}
+          setFiltersExpanded={setFiltersExpanded}
+          resetFilters={resetFilters}
+          statusOptions={statusOptions}
+        />
 
         {/* Bulk Actions */}
         {selectedTimesheets.length > 0 && (
@@ -862,12 +487,11 @@ export const EmployeeTimesheetAdminView = () => {
                 />
 
                 <Group gap='xs' grow={isMobile}>
-                  <Button
+                  <CommonButton
                     color={
                       bulkStatus === TimesheetStatus.Approved ? 'green' : 'red'
                     }
                     size={isSmallMobile ? 'xs' : 'sm'}
-                    radius='md'
                     leftSection={
                       bulkStatus === TimesheetStatus.Approved ? (
                         <IconCircleCheck size={16} />
@@ -878,7 +502,7 @@ export const EmployeeTimesheetAdminView = () => {
                     onClick={open}
                   >
                     {isSmallMobile ? 'Apply' : 'Apply Action'}
-                  </Button>
+                  </CommonButton>
 
                   <ActionIcon
                     variant='subtle'
@@ -1017,24 +641,22 @@ export const EmployeeTimesheetAdminView = () => {
             )}
           </Text>
           <Group justify='flex-end' grow={isMobile}>
-            <Button
+            <CommonButton
               variant='outline'
               onClick={close}
               size={isSmallMobile ? 'xs' : 'sm'}
-              radius='md'
             >
               Cancel
-            </Button>
-            <Button
+            </CommonButton>
+            <CommonButton
               color={bulkStatus === TimesheetStatus.Approved ? 'green' : 'red'}
               onClick={() => handleStatusChange(selectedTimesheets, bulkStatus)}
               size={isSmallMobile ? 'xs' : 'sm'}
-              radius='md'
             >
               {isSmallMobile
                 ? 'Confirm'
                 : `Confirm ${bulkStatus === TimesheetStatus.Approved ? 'Approval' : 'Rejection'}`}
-            </Button>
+            </CommonButton>
           </Group>
         </Stack>
       </Modal>

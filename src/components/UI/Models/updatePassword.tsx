@@ -1,4 +1,4 @@
-import { PasswordInput, Button, Text, Title, Stack } from '@mantine/core';
+import { PasswordInput, Text, Title, Stack } from '@mantine/core';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
@@ -10,6 +10,8 @@ import {
 } from '@forms/update-password';
 import { updatePasswordForEmployee } from '@services/user-services';
 import { useCustomToast } from '@utils/common/toast';
+import { CommonButton } from '@components/common/button/CommonButton';
+
 interface ChangePasswordPopupProps {
   opened: boolean;
   close: () => void;
@@ -104,23 +106,21 @@ export const ChangePasswordPopup: React.FC<ChangePasswordPopupProps> = ({
 
           <div className='flex justify-end gap-3 mt-4'>
             {!forceUpdate && (
-              <Button
+              <CommonButton
                 variant='outline'
                 onClick={close}
                 disabled={isLoading}
-                radius='md'
               >
                 Cancel
-              </Button>
+              </CommonButton>
             )}
-            <Button
+            <CommonButton
               type='submit'
               loading={isLoading}
               disabled={isLoading}
-              radius='md'
             >
               Update Password
-            </Button>
+            </CommonButton>
           </div>
         </Stack>
       </form>

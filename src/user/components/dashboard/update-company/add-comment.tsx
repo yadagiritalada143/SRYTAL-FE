@@ -1,9 +1,10 @@
-import { Button, Textarea, Card, Stack, Text } from '@mantine/core';
+import { Textarea, Card, Stack, Text } from '@mantine/core';
 import PremiumLoader from '@components/common/loaders/PremiumLoader';
 import { useAddCompanyComment } from '@hooks/mutations/useUserMutations';
 import { useCustomToast } from '@utils/common/toast';
 import { useState } from 'react';
 import { IconMessagePlus } from '@tabler/icons-react';
+import { CommonButton } from '@components/common/button/CommonButton';
 
 const AddCommentPoolCompany = ({
   companyId,
@@ -47,7 +48,7 @@ const AddCommentPoolCompany = ({
           onChange={e => setNewComment(e.target.value)}
           size={isMobile ? 'sm' : 'md'}
         />
-        <Button
+        <CommonButton
           onClick={handleAddComment}
           disabled={isSubmitting || !newComment.trim()}
           leftSection={
@@ -60,10 +61,9 @@ const AddCommentPoolCompany = ({
           fullWidth={isMobile}
           style={{ alignSelf: isMobile ? 'stretch' : 'flex-end' }}
           size={isMobile ? 'md' : 'sm'}
-          radius='md'
         >
           {isSubmitting ? 'Adding...' : 'Add Comment'}
-        </Button>
+        </CommonButton>
       </Stack>
     </Card>
   );

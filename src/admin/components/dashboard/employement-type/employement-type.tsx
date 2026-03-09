@@ -1,9 +1,7 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
-  Button,
   Group,
   Text,
-  Loader,
   Pagination,
   Modal,
   TextInput,
@@ -20,7 +18,6 @@ import {
   Flex,
   Divider
 } from '@mantine/core';
-import PremiumLoader from '@components/common/loaders/PremiumLoader';
 import DataView from '@components/common/loaders/DataView';
 import { useDisclosure, useMediaQuery } from '@mantine/hooks';
 import {
@@ -41,6 +38,8 @@ import {
   useUpdateEmploymentTypeByAdmin,
   useDeleteEmploymentTypeByAdmin
 } from '@hooks/mutations/useAdminMutations';
+import { CommonButton } from '@components/common/button/CommonButton';
+
 const ITEMS_PER_PAGE_OPTIONS = ['5', '10', '20', '50'];
 const DEFAULT_ITEMS_PER_PAGE = 10;
 
@@ -129,27 +128,22 @@ const HeadingComponent: React.FC<{
       >
         Manage Employment Types ({filteredCount} types)
       </Text>
-      <Button
+      <CommonButton
         leftSection={<IconPlus size={16} />}
         onClick={onAdd}
         variant='filled'
         fullWidth={isMobile}
         size={isMobile ? 'md' : 'sm'}
-        radius='md'
       >
         Add Type
-      </Button>
+      </CommonButton>
     </Flex>
   </Card>
 );
 
 const EmploymentTypes = () => {
   const { showErrorToast, showSuccessToast } = useCustomToast();
-  const {
-    themeConfig: currentThemeConfig,
-    organizationConfig,
-    isDarkTheme
-  } = useAppTheme();
+  const { themeConfig: currentThemeConfig, isDarkTheme } = useAppTheme();
   const {
     data: employmentTypes = [],
     isLoading,
@@ -338,7 +332,6 @@ const EmploymentTypes = () => {
                 leftSection={<IconSearch size={16} />}
                 value={searchQuery}
                 onChange={handleSearch}
-                radius='md'
                 style={{ flex: 1 }}
               />
 
@@ -397,14 +390,14 @@ const EmploymentTypes = () => {
                             : 'Start by adding your first employment type'}
                         </Text>
                         {!searchQuery && (
-                          <Button
+                          <CommonButton
                             variant='light'
                             leftSection={<IconPlus size={16} />}
                             onClick={openAddModal}
                             fullWidth={isSmallMobile}
                           >
                             Add Type
-                          </Button>
+                          </CommonButton>
                         )}
                       </Stack>
                     </Card>
@@ -493,13 +486,13 @@ const EmploymentTypes = () => {
                                 : 'Start by adding your first employment type'}
                             </Text>
                             {!searchQuery && (
-                              <Button
+                              <CommonButton
                                 variant='light'
                                 leftSection={<IconPlus size={16} />}
                                 onClick={openAddModal}
                               >
                                 Add Type
-                              </Button>
+                              </CommonButton>
                             )}
                           </Stack>
                         </Table.Td>
@@ -568,17 +561,16 @@ const EmploymentTypes = () => {
               size='md'
             />
             <Group justify='flex-end' mt='xs'>
-              <Button variant='default' onClick={closeAddModal} radius='md'>
+              <CommonButton variant='default' onClick={closeAddModal}>
                 Cancel
-              </Button>
-              <Button
+              </CommonButton>
+              <CommonButton
                 onClick={handleAdd}
                 disabled={isMutating || !newTypeName.trim()}
                 leftSection={<IconDeviceFloppy size={16} />}
-                radius='md'
               >
                 {isAdding ? 'Adding...' : 'Add Type'}
-              </Button>
+              </CommonButton>
             </Group>
           </Stack>
         </Modal>
@@ -624,38 +616,35 @@ const EmploymentTypes = () => {
             <Group justify='space-between'>
               {isMobile ? (
                 <Tooltip label='Delete Type'>
-                  <Button
+                  <CommonButton
                     onClick={openDeleteModal}
                     p='xs'
-                    radius='md'
                     variant='outline'
                   >
                     <IconTrash size={16} />
-                  </Button>
+                  </CommonButton>
                 </Tooltip>
               ) : (
-                <Button
+                <CommonButton
                   color={currentThemeConfig.dangerColor}
                   variant='outline'
                   leftSection={<IconTrash size={16} />}
                   onClick={() => handleDelete(selectedType.id)}
-                  radius='md'
                 >
                   Delete
-                </Button>
+                </CommonButton>
               )}
               <Group>
-                <Button variant='default' onClick={closeEditModal} radius='md'>
+                <CommonButton variant='default' onClick={closeEditModal}>
                   Cancel
-                </Button>
-                <Button
+                </CommonButton>
+                <CommonButton
                   onClick={confirmEdit}
                   disabled={isMutating}
                   leftSection={<IconDeviceFloppy size={16} />}
-                  radius='md'
                 >
                   {isUpdating ? 'Saving...' : 'Save'}
-                </Button>
+                </CommonButton>
               </Group>
             </Group>
           </Stack>
@@ -685,18 +674,17 @@ const EmploymentTypes = () => {
               cannot be undone.
             </Text>
             <Group justify='flex-end' mt='md'>
-              <Button variant='default' onClick={closeDeleteModal} radius='md'>
+              <CommonButton variant='default' onClick={closeDeleteModal}>
                 Cancel
-              </Button>
-              <Button
+              </CommonButton>
+              <CommonButton
                 color={currentThemeConfig.dangerColor}
                 onClick={confirmDelete}
                 disabled={isMutating}
                 leftSection={<IconTrash size={16} />}
-                radius='md'
               >
                 {isDeleting ? 'Deleting...' : 'Delete'}
-              </Button>
+              </CommonButton>
             </Group>
           </Stack>
         </Modal>

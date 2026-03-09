@@ -1,9 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
-  Button,
   Group,
   Text,
-  Loader,
   Pagination,
   Modal,
   TextInput,
@@ -40,6 +38,7 @@ import {
   useUpdateEmployeeRoleByAdmin,
   useDeleteEmployeeRoleByAdmin
 } from '@hooks/mutations/useAdminMutations';
+import { CommonButton } from '@components/common/button/CommonButton';
 
 const ITEMS_PER_PAGE_OPTIONS = ['5', '10', '20', '50'];
 const DEFAULT_ITEMS_PER_PAGE = 10;
@@ -135,16 +134,15 @@ const HeadingComponent: React.FC<{
       >
         Manage Employment Roles ({filteredCount} roles)
       </Text>
-      <Button
+      <CommonButton
         leftSection={<IconPlus size={16} />}
         onClick={onAdd}
         variant='filled'
         fullWidth={isMobile}
         size={isMobile ? 'md' : 'sm'}
-        radius='md'
       >
         Add Role
-      </Button>
+      </CommonButton>
     </Flex>
   </Card>
 );
@@ -412,15 +410,14 @@ const EmploymentRoles = () => {
                               : 'Start by adding your first employment role'}
                           </Text>
                           {!searchQuery && (
-                            <Button
+                            <CommonButton
                               variant='light'
                               leftSection={<IconPlus size={16} />}
                               onClick={openAddModal}
                               fullWidth={isSmallMobile}
-                              radius='md'
                             >
                               Add Role
-                            </Button>
+                            </CommonButton>
                           )}
                         </Stack>
                       </Card>
@@ -517,13 +514,13 @@ const EmploymentRoles = () => {
                                   : 'Start by adding your first employment role'}
                               </Text>
                               {!searchQuery && (
-                                <Button
+                                <CommonButton
                                   variant='light'
                                   leftSection={<IconPlus size={16} />}
                                   onClick={openAddModal}
                                 >
                                   Add Role
-                                </Button>
+                                </CommonButton>
                               )}
                             </Stack>
                           </Table.Td>
@@ -593,17 +590,16 @@ const EmploymentRoles = () => {
               size='md'
             />
             <Group justify='flex-end' mt='xs'>
-              <Button variant='default' onClick={closeAddModal} radius='md'>
+              <CommonButton variant='default' onClick={closeAddModal}>
                 Cancel
-              </Button>
-              <Button
+              </CommonButton>
+              <CommonButton
                 onClick={handleAdd}
                 disabled={isMutating || !newRoleName.trim()}
                 leftSection={<IconDeviceFloppy size={16} />}
-                radius='md'
               >
                 {isAdding ? 'Adding...' : 'Add Role'}
-              </Button>
+              </CommonButton>
             </Group>
           </Stack>
         </Modal>
@@ -653,38 +649,35 @@ const EmploymentRoles = () => {
             <Group justify='space-between' mt='xs'>
               {isMobile ? (
                 <Tooltip label='Delete Role'>
-                  <Button
+                  <CommonButton
                     onClick={openDeleteModal}
                     p='xs'
-                    radius='md'
                     variant='outline'
                   >
                     <IconTrash size={16} />
-                  </Button>
+                  </CommonButton>
                 </Tooltip>
               ) : (
-                <Button
+                <CommonButton
                   color='red'
                   variant='outline'
                   leftSection={<IconTrash size={16} />}
                   onClick={() => selectedRole && handleDelete(selectedRole.id)}
-                  radius='md'
                 >
                   Delete
-                </Button>
+                </CommonButton>
               )}
               <Group>
-                <Button variant='default' onClick={closeEditModal} radius='md'>
+                <CommonButton variant='default' onClick={closeEditModal}>
                   Cancel
-                </Button>
-                <Button
+                </CommonButton>
+                <CommonButton
                   onClick={confirmEdit}
                   disabled={isMutating}
                   leftSection={<IconDeviceFloppy size={16} />}
-                  radius='md'
                 >
                   {isUpdating ? 'Saving...' : 'Save'}
-                </Button>
+                </CommonButton>
               </Group>
             </Group>
           </Stack>
@@ -711,18 +704,17 @@ const EmploymentRoles = () => {
               cannot be undone.
             </Text>
             <Group justify='flex-end' mt='md'>
-              <Button variant='default' onClick={closeDeleteModal} radius='md'>
+              <CommonButton variant='default' onClick={closeDeleteModal}>
                 Cancel
-              </Button>
-              <Button
+              </CommonButton>
+              <CommonButton
                 color='red'
                 onClick={confirmDelete}
                 disabled={isMutating}
                 leftSection={<IconTrash size={16} />}
-                radius='md'
               >
                 {isDeleting ? 'Deleting...' : 'Delete'}
-              </Button>
+              </CommonButton>
             </Group>
           </Stack>
         </Modal>

@@ -2,34 +2,26 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { AddCompanyForm, addCompanySchema } from '@forms/add-company';
 import { useForm } from 'react-hook-form';
 import {
-  Button,
   TextInput,
   Container,
   Card,
   Stack,
   Text,
   Group,
-  Divider,
-  Loader,
-  Grid,
-  Title
+  Divider
 } from '@mantine/core';
 import PremiumLoader from '@components/common/loaders/PremiumLoader';
 import { IconArrowLeft, IconBuilding } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom';
 import { useMediaQuery } from '@mantine/hooks';
-import { useMemo } from 'react';
 import { useCustomToast } from '@utils/common/toast';
 import { useAppTheme } from '@hooks/use-app-theme';
 import { useAddCompany } from '@hooks/mutations/useUserMutations';
+import { CommonButton } from '@components/common/button/CommonButton';
 
 const AddCompany = () => {
   const navigate = useNavigate();
-  const {
-    themeConfig: currentThemeConfig,
-    organizationConfig,
-    isDarkTheme
-  } = useAppTheme();
+  const { themeConfig: currentThemeConfig } = useAppTheme();
   const { showSuccessToast, showErrorToast } = useCustomToast();
   const { mutateAsync: addCompany, isPending: isPendingMutation } =
     useAddCompany();
@@ -91,14 +83,13 @@ const AddCompany = () => {
                 Add New Company
               </Text>
             </Group>
-            <Button
+            <CommonButton
               onClick={handleGoBack}
               variant='light'
               size={isMobile ? 'xs' : 'sm'}
-              radius='md'
             >
               <IconArrowLeft size={18} />
-            </Button>
+            </CommonButton>
           </Group>
         </Card>
 
@@ -245,23 +236,21 @@ const AddCompany = () => {
 
               {/* Submit Button */}
               <Group justify='flex-end' mt='md'>
-                <Button
+                <CommonButton
                   type='button'
                   variant='light'
                   onClick={handleGoBack}
                   disabled={isSubmitting}
                   size={isMobile ? 'sm' : 'md'}
                   fullWidth={isMobile}
-                  radius='md'
                 >
                   Cancel
-                </Button>
-                <Button
+                </CommonButton>
+                <CommonButton
                   type='submit'
                   disabled={isSubmitting}
                   size={isMobile ? 'sm' : 'md'}
                   fullWidth={isMobile}
-                  radius='md'
                   leftSection={
                     isSubmitting ? (
                       <PremiumLoader size='xs' minHeight='20px' />
@@ -271,7 +260,7 @@ const AddCompany = () => {
                   }
                 >
                   {isSubmitting ? 'Adding Company...' : 'Add Company'}
-                </Button>
+                </CommonButton>
               </Group>
             </Stack>
           </form>

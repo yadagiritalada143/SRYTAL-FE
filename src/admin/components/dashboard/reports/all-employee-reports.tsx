@@ -2,7 +2,6 @@ import {
   ActionIcon,
   Badge,
   Box,
-  Button,
   Card,
   Divider,
   Group,
@@ -16,7 +15,6 @@ import {
   Grid,
   ScrollArea,
   Container,
-  Modal,
   rgba
 } from '@mantine/core';
 import { MonthPickerInput } from '@mantine/dates';
@@ -32,10 +30,7 @@ import {
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAllEmployeeDetailsByAdmin } from '@services/admin-services';
-import {
-  organizationEmployeeAtom,
-  organizationThemeAtom
-} from '@atoms/organization-atom';
+import { organizationEmployeeAtom } from '@atoms/organization-atom';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { toast } from 'react-toastify';
 import { EmployeeInterface } from '@interfaces/employee';
@@ -43,6 +38,7 @@ import { EmployeeInterface } from '@interfaces/employee';
 import { downloadSalarySlip } from '@services/common-services';
 import { useMediaQuery } from '@mantine/hooks';
 import { useAppTheme } from '@hooks/use-app-theme';
+import { CommonButton } from '@components/common/button/CommonButton';
 
 const PayrollManagement = () => {
   const navigate = useNavigate();
@@ -173,14 +169,13 @@ const PayrollManagement = () => {
               Manage salary processing and employee pay records{' '}
             </Text>
           </Box>
-          <Button
+          <CommonButton
             leftSection={<IconArrowLeft size={16} />}
             onClick={() => navigate(-1)}
             variant='filled'
-            radius='md'
           >
             Back
-          </Button>
+          </CommonButton>
         </Group>
 
         <Grid gutter='xl'>

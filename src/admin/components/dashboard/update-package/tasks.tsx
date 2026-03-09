@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
 import {
-  Button,
   Group,
   Modal,
   Table,
@@ -30,8 +29,8 @@ import { OrganizationConfig } from '@interfaces/organization';
 import { deleteTaskByAdmin, updateTaskByAdmin } from '@services/admin-services';
 import { DeleteTaskModel } from './delete-task';
 import { useCustomToast } from '@utils/common/toast';
-import { useRecoilValue } from 'recoil';
 import { useAppTheme } from '@hooks/use-app-theme';
+import { CommonButton } from '@components/common/button/CommonButton';
 
 // Mobile Task Card Component
 const MobileTaskCard: React.FC<{
@@ -359,16 +358,15 @@ const PackageTasksTable = ({
             placeholder='Enter task title'
           />
           <Group justify='flex-end' mt='md'>
-            <Button variant='default' onClick={closeEditModal} radius='md'>
+            <CommonButton variant='default' onClick={closeEditModal}>
               Cancel
-            </Button>
-            <Button
-              radius='md'
+            </CommonButton>
+            <CommonButton
               onClick={handleUpdateTask}
               leftSection={<IconDeviceFloppy size={16} />}
             >
               Save Changes
-            </Button>
+            </CommonButton>
           </Group>
         </Stack>
       </Modal>

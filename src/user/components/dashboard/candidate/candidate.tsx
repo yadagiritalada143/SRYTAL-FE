@@ -1,6 +1,4 @@
 import {
-  Button,
-  Loader,
   TextInput,
   Pagination,
   Center,
@@ -43,12 +41,11 @@ import {
   organizationAdminUrls,
   organizationEmployeeUrls
 } from '@utils/common/constants';
-import { useRecoilValue } from 'recoil';
-
 import moment from 'moment';
 import useHorizontalScroll from '@hooks/horizontal-scroll';
 import { CandidateInterface } from '@interfaces/candidate';
 import { debounce } from '@utils/common/debounce';
+import { CommonButton } from '@components/common/button/CommonButton';
 
 // Constants
 const ITEMS_PER_PAGE_OPTIONS = ['5', '10', '20', '50'];
@@ -387,16 +384,15 @@ const HeadingComponent: React.FC<{
       >
         Manage Candidates ({filteredCount} candidates)
       </Text>
-      <Button
+      <CommonButton
         leftSection={<IconPlus size={16} />}
         onClick={handleAddCandidate}
         variant='filled'
         fullWidth={isMobile}
         size={isMobile ? 'md' : 'sm'}
-        radius='md'
       >
         Add Candidate
-      </Button>
+      </CommonButton>
     </Flex>
   </Card>
 );
@@ -539,7 +535,9 @@ const PoolCandidateList = () => {
             {errorMessage}
           </Text>
           <Center mt='md'>
-            <Button onClick={() => window.location.reload()}>Try Again</Button>
+            <CommonButton onClick={() => window.location.reload()}>
+              Try Again
+            </CommonButton>
           </Center>
         </Card>
       </Container>
@@ -630,14 +628,14 @@ const PoolCandidateList = () => {
                             : 'Start by adding your first candidate'}
                         </Text>
                         {!searchQuery && (
-                          <Button
+                          <CommonButton
                             variant='light'
                             leftSection={<IconPlus size={16} />}
                             onClick={handleAddCandidate}
                             fullWidth={isSmallMobile}
                           >
                             Add Candidate
-                          </Button>
+                          </CommonButton>
                         )}
                       </Stack>
                     </Card>
@@ -764,13 +762,13 @@ const PoolCandidateList = () => {
                                 : 'Start by adding your first candidate'}
                             </Text>
                             {!searchQuery && (
-                              <Button
+                              <CommonButton
                                 variant='light'
                                 leftSection={<IconPlus size={16} />}
                                 onClick={handleAddCandidate}
                               >
                                 Add Candidate
-                              </Button>
+                              </CommonButton>
                             )}
                           </Stack>
                         </Table.Td>

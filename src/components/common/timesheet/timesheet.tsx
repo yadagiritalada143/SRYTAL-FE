@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  Button,
   Title,
   Table,
   Grid,
@@ -65,6 +64,7 @@ import { TimeEntriesTable } from './time-entries';
 import useHorizontalScroll from '@hooks/horizontal-scroll';
 import { useAppTheme } from '@hooks/use-app-theme';
 import { userDetailsAtom } from '@atoms/user';
+import { CommonButton } from '../button/CommonButton';
 
 const DateTableComponent = () => {
   const [
@@ -76,11 +76,7 @@ const DateTableComponent = () => {
   const [openedEntryModal, { open: openEntryModal, close: closeEntryModal }] =
     useDisclosure(false);
   const [openedSearch, { toggle: toggleSearch }] = useDisclosure(false);
-  const {
-    themeConfig: currentThemeConfig,
-    organizationConfig,
-    isDarkTheme
-  } = useAppTheme();
+  const { themeConfig: currentThemeConfig } = useAppTheme();
 
   const [dateRange, setDateRange] = useState<DatesRangeValue>(() => {
     const today = moment().tz('Asia/Kolkata');
@@ -447,11 +443,10 @@ const DateTableComponent = () => {
                   justify={isMobile ? 'center' : 'flex-end'}
                   wrap={isMobile ? 'wrap' : 'nowrap'}
                 >
-                  <Button
+                  <CommonButton
                     onClick={toggleSearch}
                     variant='outline'
                     color='gray'
-                    radius='md'
                     size={isMobile ? 'sm' : 'sm'}
                     leftSection={
                       openedSearch ? (
@@ -463,18 +458,17 @@ const DateTableComponent = () => {
                     fullWidth={isMobile}
                   >
                     {openedSearch ? 'Close' : 'Search'}
-                  </Button>
+                  </CommonButton>
 
-                  <Button
+                  <CommonButton
                     onClick={openLeaveModal}
                     color='green'
-                    radius='md'
                     size={isMobile ? 'sm' : 'sm'}
                     leftSection={<IconCalendarOff size={16} />}
                     fullWidth={isMobile}
                   >
                     Apply Leave
-                  </Button>
+                  </CommonButton>
                 </Group>
               </Grid.Col>
             </Grid>
@@ -505,17 +499,16 @@ const DateTableComponent = () => {
               <>
                 <Divider />
                 <Group justify='flex-end'>
-                  <Button
+                  <CommonButton
                     leftSection={<IconCheck size={16} />}
                     color='green'
                     onClick={openSubmitModal}
                     size={isMobile ? 'xs' : 'sm'}
-                    radius='md'
                     fullWidth={isMobile}
                   >
                     Submit {changesMade.length} Change
                     {changesMade.length !== 1 ? 's' : ''}
-                  </Button>
+                  </CommonButton>
                 </Group>
               </>
             )}

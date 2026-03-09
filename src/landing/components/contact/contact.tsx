@@ -1,9 +1,10 @@
 import { useForm } from 'react-hook-form';
-import { TextInput, Textarea, Button } from '@mantine/core';
+import { TextInput, Textarea } from '@mantine/core';
 import { ContactForm, contactForm } from '@forms/contact';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { sendContactUsMail } from '@services/common-services';
 import { useState } from 'react';
+import { CommonButton } from '@components/common/button/CommonButton';
 
 const ContactComponent = () => {
   const {
@@ -90,13 +91,12 @@ const ContactComponent = () => {
         {submit.status && <p className='my-8 '>{submit.message}</p>}
 
         <div className='mt-2 text-right'>
-          <Button
+          <CommonButton
             type='submit'
             className='bg-blue-500 mt-4 hover:bg-blue-600'
-            radius='md'
           >
             Send Message
-          </Button>
+          </CommonButton>
         </div>
       </form>
     </div>

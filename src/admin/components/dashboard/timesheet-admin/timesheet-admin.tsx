@@ -4,19 +4,18 @@ import {
   Select,
   Table,
   Text,
-  Button,
   Group,
   Badge,
   Modal,
   Title,
   TextInput
 } from '@mantine/core';
-import PremiumLoader from '@components/common/loaders/PremiumLoader';
 import DataView from '@components/common/loaders/DataView';
 import { DatePickerInput, DatesRangeValue } from '@mantine/dates';
 import { useDisclosure } from '@mantine/hooks';
 import { IconSearch, IconCheck, IconX } from '@tabler/icons-react';
 import moment from 'moment';
+import { CommonButton } from '@components/common/button/CommonButton';
 
 interface EmployeeTimesheet {
   id: string;
@@ -216,15 +215,14 @@ export const EmployeeTimesheetUpdateByAdmin = () => {
       >
         <Group mb='md' justify='space-between'>
           <Text fw={500}>Filters</Text>
-          <Button
+          <CommonButton
             variant='outline'
             size='sm'
             onClick={resetFilters}
             leftSection={<IconX size={16} />}
-            radius='md'
           >
             Clear Filters
-          </Button>
+          </CommonButton>
         </Group>
 
         <Group grow>
@@ -301,18 +299,17 @@ export const EmployeeTimesheetUpdateByAdmin = () => {
                   <td>
                     {timesheet.status === 'pending' && (
                       <Group gap='xs'>
-                        <Button
+                        <CommonButton
                           size='xs'
                           variant='outline'
                           color='green'
-                          radius='md'
                           onClick={() => {
                             setSelectedTimesheet(timesheet);
                             open();
                           }}
                         >
                           Review
-                        </Button>
+                        </CommonButton>
                       </Group>
                     )}
                   </td>
@@ -350,26 +347,24 @@ export const EmployeeTimesheetUpdateByAdmin = () => {
             </Text>
 
             <Group justify='center' mt='xl'>
-              <Button
+              <CommonButton
                 color='red'
                 leftSection={<IconX size={16} />}
-                radius='md'
                 onClick={() =>
                   handleStatusChange(selectedTimesheet.id, 'rejected')
                 }
               >
                 Reject
-              </Button>
-              <Button
+              </CommonButton>
+              <CommonButton
                 color='green'
-                radius='md'
                 leftSection={<IconCheck size={16} />}
                 onClick={() =>
                   handleStatusChange(selectedTimesheet.id, 'approved')
                 }
               >
                 Approve
-              </Button>
+              </CommonButton>
             </Group>
           </Box>
         )}

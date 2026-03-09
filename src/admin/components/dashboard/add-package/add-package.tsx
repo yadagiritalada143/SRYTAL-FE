@@ -1,14 +1,6 @@
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  TextInput,
-  Button,
-  Textarea,
-  Group,
-  Stack,
-  Text,
-  Card
-} from '@mantine/core';
+import { TextInput, Textarea, Group, Stack, Text, Card } from '@mantine/core';
 import PremiumLoader from '@components/common/loaders/PremiumLoader';
 import { DateInput } from '@mantine/dates';
 import { useRegisterPackage } from '@hooks/mutations/useAdminMutations';
@@ -19,6 +11,7 @@ import { AddPackageForm, addPackageSchema } from '@forms/add-package';
 import { toast } from 'react-toastify';
 import { BackButton } from '@common/style-components/buttons';
 import { useAppTheme } from '@hooks/use-app-theme';
+import { CommonButton } from '@components/common/button/CommonButton';
 
 const AddPackage = () => {
   const navigate = useNavigate();
@@ -128,9 +121,8 @@ const AddPackage = () => {
               />
 
               <Group justify='flex-end' mt='md'>
-                <Button
+                <CommonButton
                   type='submit'
-                  radius='md'
                   data-testid='submitButton'
                   loading={isSubmitting}
                   leftSection={
@@ -139,7 +131,7 @@ const AddPackage = () => {
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? 'Creating...' : 'Create Package'}
-                </Button>
+                </CommonButton>
               </Group>
             </Stack>
           </form>

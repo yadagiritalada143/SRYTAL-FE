@@ -1,6 +1,4 @@
 import {
-  Button,
-  Loader,
   Tooltip,
   Center,
   Pagination,
@@ -37,6 +35,7 @@ import DataView from '@components/common/loaders/DataView';
 import { debounce } from '@utils/common/debounce';
 import { useAppTheme } from '@hooks/use-app-theme';
 import { useGetAllPackagesByAdmin } from '@hooks/queries/useAdminQueries';
+import { CommonButton } from '@components/common/button/CommonButton';
 
 const ITEMS_PER_PAGE_OPTIONS = ['5', '10', '20', '50'];
 const DEFAULT_ITEMS_PER_PAGE = 10;
@@ -293,16 +292,15 @@ const HeadingComponent = ({
       >
         Manage Packages ({filteredCount} packages)
       </Text>
-      <Button
+      <CommonButton
         leftSection={<IconPlus size={16} />}
         onClick={handleAddPackage}
         variant='filled'
         fullWidth={isMobile}
         size={isMobile ? 'md' : 'sm'}
-        radius='md'
       >
         Add Package
-      </Button>
+      </CommonButton>
     </Flex>
   </Card>
 );
@@ -429,9 +427,9 @@ const Packages = () => {
             Failed to fetch packages.
           </Text>
           <Center mt='md'>
-            <Button radius='md' onClick={() => window.location.reload()}>
+            <CommonButton onClick={() => window.location.reload()}>
               Try Again
-            </Button>
+            </CommonButton>
           </Center>
         </Card>
       </Container>
@@ -518,15 +516,14 @@ const Packages = () => {
                             : 'Start by adding your first package'}
                         </Text>
                         {!searchQuery && (
-                          <Button
-                            radius='md'
+                          <CommonButton
                             variant='light'
                             leftSection={<IconPlus size={16} />}
                             onClick={handleAddPackage}
                             fullWidth={isSmallMobile}
                           >
                             Add Package
-                          </Button>
+                          </CommonButton>
                         )}
                       </Stack>
                     </Card>
@@ -638,14 +635,13 @@ const Packages = () => {
                                 : 'Start by adding your first package'}
                             </Text>
                             {!searchQuery && (
-                              <Button
-                                radius='md'
+                              <CommonButton
                                 variant='light'
                                 leftSection={<IconPlus size={16} />}
                                 onClick={handleAddPackage}
                               >
                                 Add Package
-                              </Button>
+                              </CommonButton>
                             )}
                           </Stack>
                         </Table.Td>

@@ -1,7 +1,8 @@
 import React from 'react';
-import { Center, Stack, Text, Button } from '@mantine/core';
+import { Center, Stack, Text } from '@mantine/core';
 import { IconAlertTriangle, IconInbox } from '@tabler/icons-react';
 import PremiumLoader from './PremiumLoader';
+import { CommonButton } from '../button/CommonButton';
 
 interface DataViewProps {
   isLoading: boolean;
@@ -37,9 +38,9 @@ const DataView: React.FC<DataViewProps> = ({
             Failed to load {label}
           </Text>
           {onRetry && (
-            <Button variant='light' color='blue' onClick={onRetry} radius='md'>
+            <CommonButton variant='light' color='blue' onClick={onRetry}>
               Try Again
-            </Button>
+            </CommonButton>
           )}
         </Stack>
       </Center>

@@ -1,6 +1,4 @@
 import {
-  Button,
-  Loader,
   TextInput,
   Pagination,
   Center,
@@ -43,6 +41,7 @@ import moment from 'moment';
 import useHorizontalScroll from '@hooks/horizontal-scroll';
 import { debounce } from '@utils/common/debounce';
 import { commonUrls } from '@utils/common/constants';
+import { CommonButton } from '@components/common/button/CommonButton';
 
 // Constants
 const ITEMS_PER_PAGE_OPTIONS = ['5', '10', '20', '50'];
@@ -469,16 +468,15 @@ const HeadingComponent: React.FC<{
       >
         Manage Pool Companies ({filteredCompanies} companies)
       </Text>
-      <Button
+      <CommonButton
         leftSection={<IconPlus size={16} />}
         onClick={handleAddCompany}
         variant='filled'
         fullWidth={isMobile}
         size={isMobile ? 'md' : 'sm'}
-        radius='md'
       >
         Add Company
-      </Button>
+      </CommonButton>
     </Flex>
   </Card>
 );
@@ -618,7 +616,9 @@ const Companies = () => {
             {errorMessage}
           </Text>
           <Center mt='md'>
-            <Button onClick={() => window.location.reload()}>Try Again</Button>
+            <CommonButton onClick={() => window.location.reload()}>
+              Try Again
+            </CommonButton>
           </Center>
         </Card>
       </Container>
@@ -719,14 +719,14 @@ const Companies = () => {
                             : 'Start by adding your first company'}
                         </Text>
                         {!searchQuery && !statusFilter && (
-                          <Button
+                          <CommonButton
                             variant='light'
                             leftSection={<IconPlus size={16} />}
                             onClick={handleAddCompany}
                             fullWidth={isSmallMobile}
                           >
                             Add Company
-                          </Button>
+                          </CommonButton>
                         )}
                       </Stack>
                     </Card>
@@ -856,13 +856,13 @@ const Companies = () => {
                                 : 'Start by adding your first company'}
                             </Text>
                             {!searchQuery && !statusFilter && (
-                              <Button
+                              <CommonButton
                                 variant='light'
                                 leftSection={<IconPlus size={16} />}
                                 onClick={handleAddCompany}
                               >
                                 Add Company
-                              </Button>
+                              </CommonButton>
                             )}
                           </Stack>
                         </Table.Td>

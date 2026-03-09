@@ -1,7 +1,8 @@
 import React from 'react';
-import { Group, Tooltip, Button } from '@mantine/core';
+import { Group, Tooltip } from '@mantine/core';
 import { IconCircleCheck, IconCircleX } from '@tabler/icons-react';
 import { EmployeeTimesheet, TimesheetStatus } from '@interfaces/timesheet';
+import { CommonButton } from '@components/common/button/CommonButton';
 
 interface TimesheetActionsProps {
   timesheet: EmployeeTimesheet;
@@ -19,7 +20,7 @@ export const TimesheetActions: React.FC<TimesheetActionsProps> = ({
   return (
     <Group gap='xs' justify='center'>
       <Tooltip label='Approve'>
-        <Button
+        <CommonButton
           size='xs'
           variant='light'
           color='green'
@@ -31,10 +32,10 @@ export const TimesheetActions: React.FC<TimesheetActionsProps> = ({
           leftSection={<IconCircleCheck size={14} />}
         >
           Approve
-        </Button>
+        </CommonButton>
       </Tooltip>
       <Tooltip label='Reject'>
-        <Button
+        <CommonButton
           size='xs'
           variant='light'
           color='red'
@@ -46,7 +47,7 @@ export const TimesheetActions: React.FC<TimesheetActionsProps> = ({
           leftSection={<IconCircleX size={14} />}
         >
           Reject
-        </Button>
+        </CommonButton>
       </Tooltip>
     </Group>
   );

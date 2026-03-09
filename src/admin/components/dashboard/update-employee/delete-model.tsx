@@ -1,4 +1,5 @@
-import { Button, Checkbox, Title } from '@mantine/core';
+import { CommonButton } from '@components/common/button/CommonButton';
+import { Checkbox, Title } from '@mantine/core';
 import { StandardModal } from '@UI/Models/base-model';
 
 interface DeleteEmployeeModalProps {
@@ -60,9 +61,7 @@ export const DeleteEmployeeModel: React.FC<DeleteEmployeeModalProps> = ({
           >
             Delete
           </button>
-          <Button onClick={close} radius='md'>
-            Cancel
-          </Button>
+          <CommonButton onClick={close}>Cancel</CommonButton>
         </div>
       </div>
     </StandardModal>

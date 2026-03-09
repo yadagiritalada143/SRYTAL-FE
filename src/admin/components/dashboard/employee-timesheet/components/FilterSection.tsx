@@ -1,13 +1,5 @@
 import React from 'react';
-import {
-  Card,
-  Stack,
-  Button,
-  Collapse,
-  Select,
-  TextInput,
-  Group
-} from '@mantine/core';
+import { Card, Stack, Collapse, Select, TextInput, Group } from '@mantine/core';
 import { DatePickerInput, DatesRangeValue } from '@mantine/dates';
 import {
   IconFilter,
@@ -19,6 +11,7 @@ import {
 } from '@tabler/icons-react';
 import { useMediaQuery } from '@mantine/hooks';
 import { TimesheetStatus } from '@interfaces/timesheet';
+import { CommonButton } from '@components/common/button/CommonButton';
 
 interface FilterSectionProps {
   searchQuery: string;
@@ -57,7 +50,7 @@ export const FilterSection: React.FC<FilterSectionProps> = ({
     >
       <Stack gap='sm'>
         {isMobile && (
-          <Button
+          <CommonButton
             variant='light'
             fullWidth
             size={isSmallMobile ? 'xs' : 'sm'}
@@ -72,7 +65,7 @@ export const FilterSection: React.FC<FilterSectionProps> = ({
             leftSection={<IconFilter size={14} />}
           >
             {filtersExpanded ? 'Hide Filters' : 'Show Filters'}
-          </Button>
+          </CommonButton>
         )}
 
         <Collapse in={filtersExpanded || !isMobile}>
@@ -112,16 +105,15 @@ export const FilterSection: React.FC<FilterSectionProps> = ({
             </Stack>
 
             <Group grow>
-              <Button
+              <CommonButton
                 variant='outline'
                 color='gray'
                 onClick={resetFilters}
                 leftSection={<IconX size={14} />}
-                radius='md'
                 size={isSmallMobile ? 'xs' : 'sm'}
               >
                 Reset Filters
-              </Button>
+              </CommonButton>
             </Group>
           </Stack>
         </Collapse>

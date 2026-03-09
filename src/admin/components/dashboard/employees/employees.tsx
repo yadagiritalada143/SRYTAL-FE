@@ -1,10 +1,7 @@
 import {
-  Button,
   Group,
   Text,
-  Loader,
   Pagination,
-  Modal,
   TextInput,
   Center,
   Container,
@@ -17,10 +14,9 @@ import {
   Select,
   ScrollArea,
   Flex,
-  Divider,
-  Skeleton
+  Divider
 } from '@mantine/core';
-import { useDisclosure, useMediaQuery } from '@mantine/hooks';
+import { useMediaQuery } from '@mantine/hooks';
 import DataView from '@components/common/loaders/DataView';
 import {
   IconCalendarTime,
@@ -46,6 +42,7 @@ import { debounce } from '@utils/common/debounce';
 import type { EmployeeInterface } from '@interfaces/employee';
 import { useAppTheme } from '@hooks/use-app-theme';
 import { useGetAllEmployeesByAdmin } from '@hooks/queries/useAdminQueries';
+import { CommonButton } from '@components/common/button/CommonButton';
 
 // Constants
 const ITEMS_PER_PAGE_OPTIONS = ['5', '10', '20', '50'];
@@ -421,16 +418,15 @@ const HeadingComponent: React.FC<{
       >
         Employee Management ({filteredEmployees} employees)
       </Text>
-      <Button
+      <CommonButton
         leftSection={<IconPlus size={16} />}
         onClick={handleAddEmployee}
         variant='filled'
         fullWidth={isMobile}
         size={isMobile ? 'md' : 'sm'}
-        radius='md'
       >
         Add Employee
-      </Button>
+      </CommonButton>
     </Flex>
   </Card>
 );
@@ -594,7 +590,9 @@ const Employees = () => {
             Failed to load employees.
           </Text>
           <Center mt='md'>
-            <Button onClick={() => window.location.reload()}>Try Again</Button>
+            <CommonButton onClick={() => window.location.reload()}>
+              Try Again
+            </CommonButton>
           </Center>
         </Card>
       </Container>
@@ -697,15 +695,14 @@ const Employees = () => {
                             : 'Start by adding your first employee'}
                         </Text>
                         {!searchQuery && !roleFilter && (
-                          <Button
+                          <CommonButton
                             variant='light'
-                            radius='md'
                             leftSection={<IconPlus size={16} />}
                             onClick={handleAddEmployee}
                             fullWidth={isSmallMobile}
                           >
                             Add Employee
-                          </Button>
+                          </CommonButton>
                         )}
                       </Stack>
                     </Card>
@@ -868,14 +865,13 @@ const Employees = () => {
                                 : 'Start by adding your first employee'}
                             </Text>
                             {!searchQuery && !roleFilter && (
-                              <Button
+                              <CommonButton
                                 variant='light'
-                                radius='md'
                                 leftSection={<IconPlus size={16} />}
                                 onClick={handleAddEmployee}
                               >
                                 Add Employee
-                              </Button>
+                              </CommonButton>
                             )}
                           </Stack>
                         </Table.Td>

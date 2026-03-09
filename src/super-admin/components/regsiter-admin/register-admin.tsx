@@ -14,6 +14,7 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
+import { CommonButton } from '@components/common/button/CommonButton';
 
 interface organization {
   organizationName: string;
@@ -137,7 +138,7 @@ const RegisterAdminBySuperAdmin = () => {
           />
           <div></div>
 
-          <Button
+          <CommonButton
             className=' mt-7 rounded-md'
             type='submit'
             data-testid='submitButton'
@@ -147,7 +148,7 @@ const RegisterAdminBySuperAdmin = () => {
             disabled={isSubmitting}
           >
             {isSubmitting ? 'Creating...' : 'Create Admin'}
-          </Button>
+          </CommonButton>
         </div>
       </form>
     </div>

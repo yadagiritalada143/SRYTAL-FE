@@ -1,4 +1,5 @@
-import { Button, Checkbox, Stack, Text, Group } from '@mantine/core';
+import { CommonButton } from '@components/common/button/CommonButton';
+import { Checkbox, Stack, Text, Group } from '@mantine/core';
 import { IconAlertTriangle, IconTrash } from '@tabler/icons-react';
 import { StandardModal } from '@UI/Models/base-model';
 
@@ -62,18 +63,17 @@ export const DeleteTaskModel: React.FC<DeleteTaskModalProps> = ({
         </Stack>
 
         <Group justify='flex-end' mt='lg'>
-          <Button variant='default' onClick={close} radius='md'>
+          <CommonButton variant='default' onClick={close}>
             Cancel
-          </Button>
-          <Button
+          </CommonButton>
+          <CommonButton
             color='red'
             onClick={() => handleDeleteTask(selectedTask, agreeTerms)}
             disabled={!confirmDelete}
-            radius='md'
             leftSection={<IconTrash size={16} />}
           >
             Delete Task
-          </Button>
+          </CommonButton>
         </Group>
       </Stack>
     </StandardModal>

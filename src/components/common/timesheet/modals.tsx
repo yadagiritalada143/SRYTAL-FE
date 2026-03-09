@@ -1,5 +1,4 @@
 import {
-  Button,
   Group,
   Textarea,
   TextInput,
@@ -29,6 +28,7 @@ import {
 } from '@tabler/icons-react';
 import React from 'react';
 import { useMediaQuery } from '@mantine/hooks';
+import { CommonButton } from '../button/CommonButton';
 
 export const EditTimeEntryModal = React.memo(
   ({
@@ -166,26 +166,24 @@ export const EditTimeEntryModal = React.memo(
 
           {/* Action Buttons */}
           <Group justify='flex-end' gap='xs'>
-            <Button
+            <CommonButton
               variant='default'
               onClick={closeEntryModal}
               leftSection={<IconX size={16} />}
               size={isMobile ? 'xs' : 'sm'}
-              radius='md'
             >
               Cancel
-            </Button>
-            <Button
+            </CommonButton>
+            <CommonButton
               onClick={handleEntrySubmit}
               leftSection={<IconCheck size={16} />}
               disabled={
                 !currentEntry.comments.trim() || currentEntry.hours === 0
               }
               size={isMobile ? 'xs' : 'sm'}
-              radius='md'
             >
               Save Entry
-            </Button>
+            </CommonButton>
           </Group>
         </Stack>
       </StandardModal>
@@ -431,27 +429,25 @@ export const ApplyLeaveTimesheetModal = React.memo(
           />
           <Divider />
           <Group justify='flex-end' gap='xs'>
-            <Button
+            <CommonButton
               variant='default'
               onClick={closeLeaveModal}
               disabled={isLoading}
               leftSection={<IconX size={16} />}
               size={isMobile ? 'xs' : 'sm'}
-              radius='md'
             >
               Cancel
-            </Button>
-            <Button
+            </CommonButton>
+            <CommonButton
               color='green'
               onClick={handleLeaveSubmit}
               loading={isLoading}
               disabled={!leaveDate || !leaveReason.trim()}
               leftSection={<IconCheck size={16} />}
               size={isMobile ? 'xs' : 'sm'}
-              radius='md'
             >
               Submit Leave
-            </Button>
+            </CommonButton>
           </Group>
         </Stack>
       </StandardModal>
@@ -716,26 +712,24 @@ export const ConfirmTimesheetSubmitModal = React.memo(
 
           {/* Action Buttons */}
           <Group justify='flex-end' gap='xs'>
-            <Button
+            <CommonButton
               variant='default'
               onClick={closeSubmitModal}
               disabled={isSubmitting}
               leftSection={<IconX size={16} />}
               size={isMobile ? 'xs' : 'sm'}
-              radius='md'
             >
               Cancel
-            </Button>
-            <Button
+            </CommonButton>
+            <CommonButton
               color='green'
               onClick={handleSubmit}
               loading={isSubmitting}
               leftSection={<IconCheck size={16} />}
               size={isMobile ? 'xs' : 'sm'}
-              radius='md'
             >
               Confirm & Submit
-            </Button>
+            </CommonButton>
           </Group>
         </Stack>
       </StandardModal>
