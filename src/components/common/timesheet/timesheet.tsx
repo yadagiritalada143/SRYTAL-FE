@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  Button,
   Title,
   Table,
   Grid,
@@ -65,6 +64,7 @@ import { TimeEntriesTable } from './time-entries';
 import useHorizontalScroll from '@hooks/horizontal-scroll';
 import { useAppTheme } from '@hooks/use-app-theme';
 import { userDetailsAtom } from '@atoms/user';
+import { CommonButton } from '../button/CommonButton';
 
 const DateTableComponent = () => {
   const [
@@ -76,11 +76,7 @@ const DateTableComponent = () => {
   const [openedEntryModal, { open: openEntryModal, close: closeEntryModal }] =
     useDisclosure(false);
   const [openedSearch, { toggle: toggleSearch }] = useDisclosure(false);
-  const {
-    themeConfig: currentThemeConfig,
-    organizationConfig,
-    isDarkTheme
-  } = useAppTheme();
+  const { themeConfig: currentThemeConfig } = useAppTheme();
 
   const [dateRange, setDateRange] = useState<DatesRangeValue>(() => {
     const today = moment().tz('Asia/Kolkata');
@@ -348,7 +344,7 @@ const DateTableComponent = () => {
             openEditModal(timesheet, setCurrentEntry, openEntryModal)
           }
           style={{
-            height: '28px',
+            height: isMobile ? '36px' : '28px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -370,7 +366,7 @@ const DateTableComponent = () => {
   };
 
   return (
-    <Container size='xl' py='md' my='xl' px={isSmallMobile ? 'xs' : 'md'}>
+    <Container size='xl' py='xl' my='xl' px={isSmallMobile ? 'xs' : 'md'}>
       <Stack gap='md'>
         {/* Header Card */}
         <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md' withBorder>
@@ -395,7 +391,12 @@ const DateTableComponent = () => {
             {/* Date Controls */}
             <Grid gutter='md'>
               <Grid.Col span={{ base: 12, md: 7 }}>
-                <Group wrap='nowrap'>
+                <Group
+                  wrap={isMobile ? 'wrap' : 'nowrap'}
+                  gap='xs'
+                  justify={isMobile ? 'center' : 'flex-start'}
+                >
+                  {' '}
                   <ActionIcon
                     variant='outline'
                     radius='xl'
@@ -407,7 +408,6 @@ const DateTableComponent = () => {
                   >
                     <IconChevronLeft size={isMobile ? 16 : 18} />
                   </ActionIcon>
-
                   <DatePickerInput
                     type='range'
                     onChange={value => setDateRange(value)}
@@ -423,7 +423,6 @@ const DateTableComponent = () => {
                     placeholder='Pick date range'
                     allowSingleDateInRange={false}
                   />
-
                   <ActionIcon
                     variant='outline'
                     radius='xl'
@@ -440,15 +439,14 @@ const DateTableComponent = () => {
 
               <Grid.Col span={{ base: 12, md: 5 }}>
                 <Group
-                  justify={isMobile ? 'stretch' : 'flex-end'}
                   gap='xs'
-                  grow={isMobile}
+                  justify={isMobile ? 'center' : 'flex-end'}
+                  wrap={isMobile ? 'wrap' : 'nowrap'}
                 >
-                  <Button
+                  <CommonButton
                     onClick={toggleSearch}
                     variant='outline'
                     color='gray'
-                    radius='md'
                     size={isMobile ? 'sm' : 'sm'}
                     leftSection={
                       openedSearch ? (
@@ -460,18 +458,17 @@ const DateTableComponent = () => {
                     fullWidth={isMobile}
                   >
                     {openedSearch ? 'Close' : 'Search'}
-                  </Button>
+                  </CommonButton>
 
-                  <Button
+                  <CommonButton
                     onClick={openLeaveModal}
                     color='green'
-                    radius='md'
                     size={isMobile ? 'sm' : 'sm'}
                     leftSection={<IconCalendarOff size={16} />}
                     fullWidth={isMobile}
                   >
                     Apply Leave
-                  </Button>
+                  </CommonButton>
                 </Group>
               </Grid.Col>
             </Grid>
@@ -502,16 +499,16 @@ const DateTableComponent = () => {
               <>
                 <Divider />
                 <Group justify='flex-end'>
-                  <Button
+                  <CommonButton
                     leftSection={<IconCheck size={16} />}
                     color='green'
                     onClick={openSubmitModal}
-                    size={isMobile ? 'sm' : 'md'}
+                    size={isMobile ? 'xs' : 'sm'}
                     fullWidth={isMobile}
                   >
                     Submit {changesMade.length} Change
                     {changesMade.length !== 1 ? 's' : ''}
-                  </Button>
+                  </CommonButton>
                 </Group>
               </>
             )}
@@ -553,6 +550,7 @@ const DateTableComponent = () => {
               onTouchEnd={handleTouchEnd}
               style={{
                 overflowX: 'auto',
+                WebkitOverflowScrolling: 'touch',
                 cursor: 'grab'
               }}
             >
@@ -565,7 +563,7 @@ const DateTableComponent = () => {
                 >
                   <Table.Tr>
                     <Table.Th
-                      className='p-2 border'
+                      className={isMobile ? 'p-1 border' : 'p-2 border'}
                       style={{ minWidth: '150px' }}
                     >
                       <Text size='sm' fw={600}>
@@ -619,7 +617,14 @@ const DateTableComponent = () => {
                             style={{ verticalAlign: 'middle' }}
                           >
                             <Center>
-                              <Text fw={500} size='sm' lineClamp={2}>
+                              <Text
+                                fw={500}
+                                size='sm'
+                                style={{
+                                  whiteSpace: 'normal',
+                                  wordBreak: 'break-word'
+                                }}
+                              >
                                 {project.title}
                               </Text>
                             </Center>

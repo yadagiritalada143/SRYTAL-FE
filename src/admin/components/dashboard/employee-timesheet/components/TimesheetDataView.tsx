@@ -11,7 +11,6 @@ import {
   Flex,
   Group,
   Collapse,
-  Button,
   Box,
   Paper
 } from '@mantine/core';
@@ -26,6 +25,7 @@ import { EmployeeTimesheet, TimesheetStatus } from '@interfaces/timesheet';
 import { StatusBadge } from './StatusBadge';
 import { TimesheetActions } from './TimesheetActions';
 import DataView from '@components/common/loaders/DataView';
+import { CommonButton } from '@components/common/button/CommonButton';
 
 interface TimesheetDataViewProps {
   data: EmployeeTimesheet[];
@@ -145,7 +145,7 @@ const MobileCard: React.FC<{
               <>
                 <Divider />
                 <Group grow>
-                  <Button
+                  <CommonButton
                     size='xs'
                     variant='light'
                     color='green'
@@ -156,8 +156,8 @@ const MobileCard: React.FC<{
                     leftSection={<IconCircleCheck size={14} />}
                   >
                     Approve
-                  </Button>
-                  <Button
+                  </CommonButton>
+                  <CommonButton
                     size='xs'
                     variant='light'
                     color='red'
@@ -168,7 +168,7 @@ const MobileCard: React.FC<{
                     leftSection={<IconCircleX size={14} />}
                   >
                     Reject
-                  </Button>
+                  </CommonButton>
                 </Group>
               </>
             )}

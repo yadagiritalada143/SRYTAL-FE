@@ -1,15 +1,14 @@
-import { Button, Loader, TextInput, Text, Group, Stack } from '@mantine/core';
+import { Loader, TextInput, Text, Group, Stack } from '@mantine/core';
 import { useForm } from 'react-hook-form';
 
-import { useRecoilValue } from 'recoil';
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { forgetPassword } from '@services/common-services';
 import { useCustomToast } from '@utils/common/toast';
 
 import { IconMail, IconLock, IconArrowLeft } from '@tabler/icons-react';
 import { CancelStyledButton } from '@UI/Buttons/buttons';
 import { useAppTheme } from '@hooks/use-app-theme';
-
+import { CommonButton } from '../button/CommonButton';
 
 interface ForgotPasswordProps {
   closeModal: () => void;
@@ -17,7 +16,7 @@ interface ForgotPasswordProps {
 
 const ForgotPassword = ({ closeModal }: ForgotPasswordProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { themeConfig: currentThemeConfig, organizationConfig, isDarkTheme } = useAppTheme();
+  const { themeConfig: currentThemeConfig } = useAppTheme();
   const [emailSent, setEmailSent] = useState(false);
 
   const {
@@ -27,8 +26,6 @@ const ForgotPassword = ({ closeModal }: ForgotPasswordProps) => {
     watch
   } = useForm<{ username: string }>();
 
-  
-  
   const { showSuccessToast, showErrorToast } = useCustomToast();
 
   const emailValue = watch('username');
@@ -66,9 +63,9 @@ const ForgotPassword = ({ closeModal }: ForgotPasswordProps) => {
 
   if (emailSent) {
     return (
-      <Stack gap="lg" align="center" className="py-4">
+      <Stack gap='lg' align='center' className='py-4'>
         <div
-          className="w-16 h-16 rounded-full flex items-center justify-center mb-2"
+          className='w-16 h-16 rounded-full flex items-center justify-center mb-2'
           style={{
             backgroundColor: `${currentThemeConfig.button.color}20`,
             border: `2px solid ${currentThemeConfig.button.color}`
@@ -80,25 +77,25 @@ const ForgotPassword = ({ closeModal }: ForgotPasswordProps) => {
           />
         </div>
 
-        <div className="text-center">
+        <div className='text-center'>
           <Text
-            size="lg"
+            size='lg'
             fw={600}
-            mb="xs"
+            mb='xs'
             style={{ color: currentThemeConfig.color }}
           >
             Check Your Email
           </Text>
           <Text
-            size="sm"
-            c="dimmed"
-            mb="md"
+            size='sm'
+            c='dimmed'
+            mb='md'
             style={{ color: `${currentThemeConfig.color}80` }}
           >
             We've sent a temporary password to ${emailValue}
           </Text>
           <Text
-            size="sm"
+            size='sm'
             fw={500}
             style={{ color: currentThemeConfig.button.color }}
           >
@@ -107,16 +104,16 @@ const ForgotPassword = ({ closeModal }: ForgotPasswordProps) => {
         </div>
 
         <Text
-          size="xs"
-          ta="center"
-          c="dimmed"
+          size='xs'
+          ta='center'
+          c='dimmed'
           style={{ color: `${currentThemeConfig.color}60` }}
         >
           Didn't receive the email? Check your spam folder or try again.
         </Text>
 
-        <Button
-          variant="subtle"
+        <CommonButton
+          variant='subtle'
           leftSection={<IconArrowLeft size={16} />}
           onClick={handleBackToLogin}
           style={{
@@ -127,17 +124,17 @@ const ForgotPassword = ({ closeModal }: ForgotPasswordProps) => {
           }}
         >
           Back to Login
-        </Button>
+        </CommonButton>
       </Stack>
     );
   }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <Stack gap="lg">
-        <div className="text-center mb-2">
+      <Stack gap='lg'>
+        <div className='text-center mb-2'>
           <div
-            className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"
+            className='w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3'
             style={{
               backgroundColor: `${currentThemeConfig.button.color}15`
             }}
@@ -149,8 +146,8 @@ const ForgotPassword = ({ closeModal }: ForgotPasswordProps) => {
           </div>
 
           <Text
-            size="sm"
-            c="dimmed"
+            size='sm'
+            c='dimmed'
             style={{ color: `${currentThemeConfig.color}70` }}
           >
             Enter your email address and we'll send you a temporary password to
@@ -167,10 +164,10 @@ const ForgotPassword = ({ closeModal }: ForgotPasswordProps) => {
               message: 'Please enter a valid email address'
             }
           })}
-          label="Email Address"
-          autoComplete="off"
-          placeholder="Enter your email address"
-          size="md"
+          label='Email Address'
+          autoComplete='off'
+          placeholder='Enter your email address'
+          size='md'
           leftSection={<IconMail size={16} />}
           error={errors.username?.message}
           onChange={e => {
@@ -179,11 +176,11 @@ const ForgotPassword = ({ closeModal }: ForgotPasswordProps) => {
         />
 
         {/* Action Buttons */}
-        <Group justify="space-between" mt="md">
+        <Group justify='space-between' mt='md'>
           <CancelStyledButton
-            size="md"
-            label="Cancel"
-            variant="subtle"
+            size='md'
+            label='Cancel'
+            variant='subtle'
             style={{ borderRadius: 8 }}
             onClick={(e: { preventDefault: () => void }) => {
               e.preventDefault();
@@ -195,9 +192,8 @@ const ForgotPassword = ({ closeModal }: ForgotPasswordProps) => {
             Cancel
           </CancelStyledButton>
 
-          <Button
-            type="submit"
-            radius="md"
+          <CommonButton
+            type='submit'
             disabled={isSubmitting}
             loading={isSubmitting}
             style={{
@@ -207,28 +203,28 @@ const ForgotPassword = ({ closeModal }: ForgotPasswordProps) => {
             }}
             leftSection={
               isSubmitting ? (
-                <Loader size="xs" color={currentThemeConfig.button.textColor} />
+                <Loader size='xs' color={currentThemeConfig.button.textColor} />
               ) : (
                 <IconMail size={16} />
               )
             }
           >
             {isSubmitting ? 'Sending...' : 'Send '}
-          </Button>
+          </CommonButton>
         </Group>
 
         {/* Helper Text */}
         <Text
-          size="xs"
-          ta="center"
-          c="dimmed"
+          size='xs'
+          ta='center'
+          c='dimmed'
           style={{ color: `${currentThemeConfig.color}50` }}
         >
           Remember your password?{' '}
           <button
-            type="button"
+            type='button'
             onClick={closeModal}
-            className="underline hover:opacity-80 transition-opacity"
+            className='underline hover:opacity-80 transition-opacity'
             style={{ color: currentThemeConfig.linkColor }}
           >
             Back to Login

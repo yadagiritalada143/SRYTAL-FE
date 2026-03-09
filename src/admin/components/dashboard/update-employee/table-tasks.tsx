@@ -1,12 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
 import {
-  Button,
   Group,
   Modal,
   TextInput,
   Text,
   Pagination,
-  Loader,
   Card,
   Stack,
   ActionIcon,
@@ -16,7 +14,6 @@ import {
   Tooltip,
   Grid
 } from '@mantine/core';
-import PremiumLoader from '@components/common/loaders/PremiumLoader';
 import DataView from '@components/common/loaders/DataView';
 import {
   IconTrash,
@@ -31,7 +28,6 @@ import {
   IconChevronRight,
   IconSubtask
 } from '@tabler/icons-react';
-import { OrganizationConfig } from '@interfaces/organization';
 import {
   deleteEmployeePackagesByAdmin,
   updateTaskByAdmin,
@@ -41,6 +37,7 @@ import {
 import { toast } from 'react-toastify';
 import { useDisclosure } from '@mantine/hooks';
 import { useAppTheme } from '@hooks/use-app-theme';
+import { CommonButton } from '@components/common/button/CommonButton';
 
 const PackagesTaskTable = ({
   selectedPackagesData = {},
@@ -412,10 +409,9 @@ const PackagesTaskTable = ({
             />
 
             <Group gap='sm'>
-              <Button
+              <CommonButton
                 variant='light'
                 size='sm'
-                radius='md'
                 onClick={() => {
                   const allPackageIds = new Set(
                     packagesList.map(pkg => pkg.packageId)
@@ -424,15 +420,14 @@ const PackagesTaskTable = ({
                 }}
               >
                 Expand All
-              </Button>
-              <Button
+              </CommonButton>
+              <CommonButton
                 variant='light'
                 size='sm'
                 onClick={() => setExpandedPackages(new Set())}
-                radius='md'
               >
                 Collapse All
-              </Button>
+              </CommonButton>
             </Group>
           </Group>
         </Card>
@@ -674,13 +669,13 @@ const PackagesTaskTable = ({
                   </Text>
                 </Stack>
                 {searchTerm && (
-                  <Button
+                  <CommonButton
                     variant='light'
                     onClick={() => setSearchTerm('')}
                     leftSection={<IconX size={16} />}
                   >
                     Clear Search
-                  </Button>
+                  </CommonButton>
                 )}
               </Stack>
             </Card>
@@ -734,16 +729,15 @@ const PackagesTaskTable = ({
             />
 
             <Group justify='space-between' mt='md'>
-              <Button
+              <CommonButton
                 variant='subtle'
                 leftSection={<IconX size={16} />}
                 onClick={closeEditModal}
-                radius='md'
               >
                 Cancel
-              </Button>
+              </CommonButton>
 
-              <Button
+              <CommonButton
                 leftSection={<IconCheck size={16} />}
                 onClick={handleSaveTask}
                 disabled={!selectedTaskObj?.title?.trim()}
@@ -751,10 +745,9 @@ const PackagesTaskTable = ({
                   backgroundColor: currentThemeConfig.button.color,
                   color: currentThemeConfig.button.textColor
                 }}
-                radius='md'
               >
                 Save Changes
-              </Button>
+              </CommonButton>
             </Group>
           </Stack>
         </Modal>
@@ -817,23 +810,21 @@ const PackagesTaskTable = ({
             </Text>
 
             <Group justify='space-between' mt='md'>
-              <Button
+              <CommonButton
                 variant='subtle'
                 leftSection={<IconX size={16} />}
                 onClick={closeDeleteModal}
-                radius='md'
               >
                 Cancel
-              </Button>
+              </CommonButton>
 
-              <Button
+              <CommonButton
                 color='red'
                 leftSection={<IconTrash size={16} />}
                 onClick={handleDeleteConfirm}
-                radius='md'
               >
                 Delete {itemToDelete?.type}
-              </Button>
+              </CommonButton>
             </Group>
           </Stack>
         </Modal>

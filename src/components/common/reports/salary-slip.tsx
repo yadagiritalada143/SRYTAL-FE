@@ -4,7 +4,6 @@ import {
   Paper,
   Title,
   Group,
-  Button,
   Stack,
   Text,
   Box,
@@ -31,6 +30,7 @@ import { useAppTheme } from '@hooks/use-app-theme';
 import { useMediaQuery } from '@mantine/hooks';
 import { userDetailsAtom } from '@atoms/user';
 import { downloadSalarySlip } from '@services/common-services';
+import { CommonButton } from '../button/CommonButton';
 
 // ─── API ─────────────────────────────────────────────────────────────────────
 
@@ -124,43 +124,42 @@ const SalarySlipReport = () => {
   );
 
   return (
-    <Box style={{ minHeight: '100vh' }} py="xl" m="xl">
-      <Container size="lg">
-        <Stack gap="lg">
+    <Box style={{ minHeight: '100vh' }} py='xl' m='xl'>
+      <Container size='lg'>
+        <Stack gap='lg'>
           {/* ── Header ─────────────────────────────────────────────── */}
           <Group
-            justify="space-between"
+            justify='space-between'
             align={isMobile ? 'flex-start' : 'center'}
             wrap={isMobile ? 'wrap' : 'nowrap'}
-            gap="md"
+            gap='md'
           >
             <div>
-              <Group gap="xs" mb={4} align="center">
+              <Group gap='xs' mb={4} align='center'>
                 <Title order={2} lts={-0.5}>
                   My Salary Slips
                 </Title>
                 {fetchState === 'success' && (
                   <Badge
-                    color="green"
-                    variant="light"
-                    radius="sm"
+                    color='green'
+                    variant='light'
+                    radius='sm'
                     leftSection={<IconCheck size={12} />}
                   >
                     Loaded
                   </Badge>
                 )}
               </Group>
-              <Text c={currentThemeConfig.mutedTextColor} fz="sm">
+              <Text c={currentThemeConfig.mutedTextColor} fz='sm'>
                 Access and download your verified monthly earnings statements.
               </Text>
             </div>
 
             {fetchState === 'success' && pdfUrl && (
-              <Button
+              <CommonButton
                 fullWidth={isMobile}
                 leftSection={<IconDownload size={16} />}
-                radius="md"
-                variant="filled"
+                variant='filled'
                 onClick={handleDownload}
                 style={{
                   backgroundColor: currentThemeConfig.button.color,
@@ -168,30 +167,30 @@ const SalarySlipReport = () => {
                 }}
               >
                 Download {fileName ?? 'Statement'}
-              </Button>
+              </CommonButton>
             )}
           </Group>
 
           {/* ── Body Grid ──────────────────────────────────────────── */}
-          <Grid gutter="xl">
+          <Grid gutter='xl'>
             {/* Left: Filters */}
             <Grid.Col span={{ base: 12, md: 4, lg: 3.8 }}>
               <Paper
                 withBorder
                 p={isMobile ? 'md' : 'lg'}
-                radius="md"
-                shadow="xs"
+                radius='md'
+                shadow='xs'
               >
-                <Stack gap="lg">
-                  <Group gap="xs">
+                <Stack gap='lg'>
+                  <Group gap='xs'>
                     <ThemeIcon
-                      size="sm"
-                      variant="light"
+                      size='sm'
+                      variant='light'
                       color={currentThemeConfig.accentColor}
                     >
                       <IconSearch size={14} />
                     </ThemeIcon>
-                    <Text fw={600} fz="sm">
+                    <Text fw={600} fz='sm'>
                       Pay Period
                     </Text>
                   </Group>
@@ -199,8 +198,8 @@ const SalarySlipReport = () => {
                   <Divider />
 
                   <MonthPickerInput
-                    label="Month"
-                    placeholder="Choose month"
+                    label='Month'
+                    placeholder='Choose month'
                     leftSection={<IconCalendar size={16} stroke={1.5} />}
                     value={month}
                     maxDate={maxSelectableMonth}
@@ -210,8 +209,8 @@ const SalarySlipReport = () => {
                       setFetchState('idle');
                       setPdfUrl(null);
                     }}
-                    radius="md"
-                    size="md"
+                    radius='md'
+                    size='md'
                     styles={{
                       input: {
                         backgroundColor:
@@ -223,10 +222,9 @@ const SalarySlipReport = () => {
                     }}
                   />
 
-                  <Button
+                  <CommonButton
                     fullWidth
-                    size="md"
-                    radius="md"
+                    size='md'
                     loading={fetchState === 'loading'}
                     onClick={handleShow}
                     disabled={!month}
@@ -236,15 +234,15 @@ const SalarySlipReport = () => {
                     }}
                   >
                     View Salary Slip
-                  </Button>
+                  </CommonButton>
 
-                  <Group gap={8} wrap="nowrap" align="flex-start">
+                  <Group gap={8} wrap='nowrap' align='flex-start'>
                     <IconInfoCircle
                       size={15}
                       color={currentThemeConfig.mutedTextColor}
                       style={{ marginTop: 1, flexShrink: 0 }}
                     />
-                    <Text fz="xs" c={currentThemeConfig.mutedTextColor}>
+                    <Text fz='xs' c={currentThemeConfig.mutedTextColor}>
                       Salary slips are available after monthly payroll
                       processing is completed.
                     </Text>
@@ -257,8 +255,8 @@ const SalarySlipReport = () => {
             <Grid.Col span={{ base: 12, md: 8, lg: 8.2 }}>
               <Paper
                 withBorder
-                radius="md"
-                shadow="xs"
+                radius='md'
+                shadow='xs'
                 style={{
                   position: 'relative',
                   overflow: 'hidden',
@@ -282,10 +280,10 @@ const SalarySlipReport = () => {
                 {/* ── IDLE state ── */}
                 {fetchState === 'idle' && (
                   <Stack
-                    align="center"
-                    justify="center"
+                    align='center'
+                    justify='center'
                     flex={1}
-                    gap="md"
+                    gap='md'
                     py={isMobile ? 50 : 100}
                   >
                     <Box
@@ -301,15 +299,15 @@ const SalarySlipReport = () => {
                         stroke={1}
                       />
                     </Box>
-                    <Stack gap={4} align="center">
-                      <Text fw={600} fz="lg">
+                    <Stack gap={4} align='center'>
+                      <Text fw={600} fz='lg'>
                         No Statement Selected
                       </Text>
                       <Text
                         c={currentThemeConfig.mutedTextColor}
-                        fz="sm"
+                        fz='sm'
                         maw={300}
-                        ta="center"
+                        ta='center'
                       >
                         Select a month and click "View Salary Slip" to see your
                         earnings breakdown.
@@ -321,12 +319,12 @@ const SalarySlipReport = () => {
                 {/* ── NOT FOUND state ── */}
                 {fetchState === 'not_found' && (
                   <Stack
-                    align="center"
-                    justify="center"
+                    align='center'
+                    justify='center'
                     flex={1}
-                    gap="md"
+                    gap='md'
                     py={isMobile ? 50 : 100}
-                    px="xl"
+                    px='xl'
                   >
                     <Box
                       p={20}
@@ -335,17 +333,17 @@ const SalarySlipReport = () => {
                         backgroundColor: '#fd7e1415'
                       }}
                     >
-                      <IconFileOff size={48} color="#fd7e14" stroke={1} />
+                      <IconFileOff size={48} color='#fd7e14' stroke={1} />
                     </Box>
-                    <Stack gap={4} align="center">
-                      <Text fw={600} fz="lg">
+                    <Stack gap={4} align='center'>
+                      <Text fw={600} fz='lg'>
                         No Salary Slip Found
                       </Text>
                       <Text
                         c={currentThemeConfig.mutedTextColor}
-                        fz="sm"
+                        fz='sm'
                         maw={340}
-                        ta="center"
+                        ta='center'
                       >
                         {errorMessage ||
                           `We couldn't find a salary slip for ${formattedMonth}. It may not have been generated yet.`}
@@ -353,12 +351,12 @@ const SalarySlipReport = () => {
                     </Stack>
                     <Alert
                       icon={<IconInfoCircle size={16} />}
-                      color="orange"
-                      variant="light"
-                      radius="md"
+                      color='orange'
+                      variant='light'
+                      radius='md'
                       maw={380}
                     >
-                      <Text size="sm" c={currentThemeConfig.mutedTextColor}>
+                      <Text size='sm' c={currentThemeConfig.mutedTextColor}>
                         Salary slips are available after the completion of the
                         monthly payroll process.. If you believe this is an
                         error, please contact HR.
@@ -370,66 +368,65 @@ const SalarySlipReport = () => {
                 {/* ── ERROR state ── */}
                 {fetchState === 'error' && (
                   <Stack
-                    align="center"
-                    justify="center"
+                    align='center'
+                    justify='center'
                     flex={1}
-                    gap="md"
+                    gap='md'
                     py={isMobile ? 50 : 100}
-                    px="xl"
+                    px='xl'
                   >
                     <Alert
                       icon={<IconAlertCircle size={16} />}
-                      title="Something went wrong"
-                      color="red"
-                      variant="light"
-                      radius="md"
+                      title='Something went wrong'
+                      color='red'
+                      variant='light'
+                      radius='md'
                       maw={400}
                     >
                       {errorMessage ||
                         'Salary slip not found for the specified month and year.'}
                     </Alert>
-                    <Button
-                      variant="outline"
-                      color="red"
-                      radius="md"
+                    <CommonButton
+                      variant='outline'
+                      color='red'
                       onClick={handleShow}
-                      size="sm"
+                      size='sm'
                     >
                       Retry
-                    </Button>
+                    </CommonButton>
                   </Stack>
                 )}
 
                 {/* ── SUCCESS state ── */}
                 {fetchState === 'success' && pdfUrl && (
-                  <Stack h="100%" gap={0} style={{ flex: 1 }}>
+                  <Stack h='100%' gap={0} style={{ flex: 1 }}>
                     <Box
-                      px="md"
-                      py="sm"
+                      px='md'
+                      py='sm'
                       style={{
                         borderBottom: `1px solid ${currentThemeConfig.borderColor}`,
                         backgroundColor:
                           currentThemeConfig.headerBackgroundColor
                       }}
                     >
-                      <Group justify="space-between" align="center">
-                        <Group gap="xs">
+                      <Group justify='space-between' align='center'>
+                        <Group gap='xs'>
                           <IconFileText
                             size={15}
                             color={currentThemeConfig.accentColor}
                           />
                           <Text
-                            fz="xs"
+                            fz='xs'
                             fw={600}
                             c={currentThemeConfig.mutedTextColor}
-                            tt="uppercase"
+                            tt='uppercase'
                             lts={0.8}
                           >
                             Preview — {formattedMonth}
                           </Text>
                         </Group>
                         {fileName && (
-                          <Text fz="xs" c={currentThemeConfig.mutedTextColor}>
+                          <Text fz='xs' c={currentThemeConfig.mutedTextColor}>
                             {fileName}
                           </Text>
                         )}
@@ -437,14 +434,14 @@ const SalarySlipReport = () => {
                     </Box>
                     <iframe
                       src={`${pdfUrl}#toolbar=0&navpanes=0`}
-                      width="100%"
-                      height="100%"
+                      width='100%'
+                      height='100%'
                       style={{
                         border: 'none',
                         flexGrow: 1,
                         minHeight: '500px'
                       }}
-                      title="Salary Slip"
+                      title='Salary Slip'
                     />
                   </Stack>
                 )}

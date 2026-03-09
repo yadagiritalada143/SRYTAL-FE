@@ -1,6 +1,4 @@
 import {
-  Button,
-  Loader,
   Tooltip,
   Center,
   Pagination,
@@ -37,6 +35,7 @@ import DataView from '@components/common/loaders/DataView';
 import { debounce } from '@utils/common/debounce';
 import { useAppTheme } from '@hooks/use-app-theme';
 import { useGetAllPackagesByAdmin } from '@hooks/queries/useAdminQueries';
+import { CommonButton } from '@components/common/button/CommonButton';
 
 const ITEMS_PER_PAGE_OPTIONS = ['5', '10', '20', '50'];
 const DEFAULT_ITEMS_PER_PAGE = 10;
@@ -293,16 +292,15 @@ const HeadingComponent = ({
       >
         Manage Packages ({filteredCount} packages)
       </Text>
-      <Button
+      <CommonButton
         leftSection={<IconPlus size={16} />}
         onClick={handleAddPackage}
         variant='filled'
         fullWidth={isMobile}
         size={isMobile ? 'md' : 'sm'}
-        radius='md'
       >
         Add Package
-      </Button>
+      </CommonButton>
     </Flex>
   </Card>
 );
@@ -429,9 +427,9 @@ const Packages = () => {
             Failed to fetch packages.
           </Text>
           <Center mt='md'>
-            <Button radius='md' onClick={() => window.location.reload()}>
+            <CommonButton onClick={() => window.location.reload()}>
               Try Again
-            </Button>
+            </CommonButton>
           </Center>
         </Card>
       </Container>
@@ -448,36 +446,40 @@ const Packages = () => {
         />
 
         <Card shadow='sm' p={isMobile ? 'sm' : 'md'} radius='md' withBorder>
-          <Stack gap='md'>
+          <Flex
+            gap='md'
+            align='center'
+            wrap={isMobile ? 'wrap' : 'nowrap'}
+            justify='space-between'
+          >
             <TextInput
               placeholder='Search by title or description...'
               leftSection={<IconSearch size={16} />}
               onChange={e => debouncedSearch(e.target.value)}
               radius='md'
               size={isMobile ? 'sm' : 'md'}
+              style={{ flex: 1, minWidth: isMobile ? '100%' : '320px' }}
             />
 
-            <Group justify='space-between' wrap={isMobile ? 'wrap' : 'nowrap'}>
-              <Group gap='xs'>
-                <Text size='sm'>Items per page:</Text>
-                <Select
-                  data={ITEMS_PER_PAGE_OPTIONS}
-                  value={itemsPerPage.toString()}
-                  onChange={value =>
-                    setItemsPerPage(Number(value) || DEFAULT_ITEMS_PER_PAGE)
-                  }
-                  w={80}
-                  size='sm'
-                />
-              </Group>
-
-              {filteredPackages.length !== packages.length && (
-                <Badge variant='light' color={currentThemeConfig.accentColor}>
-                  {filteredPackages.length} of {packages.length} packages
-                </Badge>
-              )}
+            <Group gap='xs'>
+              <Text size='sm'>Items per page:</Text>
+              <Select
+                data={ITEMS_PER_PAGE_OPTIONS}
+                value={itemsPerPage.toString()}
+                onChange={value =>
+                  setItemsPerPage(Number(value) || DEFAULT_ITEMS_PER_PAGE)
+                }
+                w={70}
+                size='sm'
+              />
             </Group>
-          </Stack>
+
+            {filteredPackages.length !== packages.length && (
+              <Badge variant='light' color={currentThemeConfig.accentColor}>
+                {filteredPackages.length} of {packages.length} packages
+              </Badge>
+            )}
+          </Flex>
         </Card>
 
         <Card shadow='sm' p={0} radius='md' withBorder>
@@ -514,15 +516,14 @@ const Packages = () => {
                             : 'Start by adding your first package'}
                         </Text>
                         {!searchQuery && (
-                          <Button
-                            radius='md'
+                          <CommonButton
                             variant='light'
                             leftSection={<IconPlus size={16} />}
                             onClick={handleAddPackage}
                             fullWidth={isSmallMobile}
                           >
                             Add Package
-                          </Button>
+                          </CommonButton>
                         )}
                       </Stack>
                     </Card>
@@ -634,14 +635,13 @@ const Packages = () => {
                                 : 'Start by adding your first package'}
                             </Text>
                             {!searchQuery && (
-                              <Button
-                                radius='md'
+                              <CommonButton
                                 variant='light'
                                 leftSection={<IconPlus size={16} />}
                                 onClick={handleAddPackage}
                               >
                                 Add Package
-                              </Button>
+                              </CommonButton>
                             )}
                           </Stack>
                         </Table.Td>

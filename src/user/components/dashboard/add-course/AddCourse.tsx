@@ -5,7 +5,6 @@ import {
   Title,
   Text,
   TextInput,
-  Button,
   Group,
   FileInput,
   Image,
@@ -36,6 +35,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCustomToast } from '@utils/common/toast';
 import { useAppTheme } from '@hooks/use-app-theme';
 import { useAddCourse } from '@hooks/mutations/useUserMutations';
+import { CommonButton } from '@components/common/button/CommonButton';
 
 const AddCourse = () => {
   const [courseName, setCourseName] = useState('');
@@ -100,18 +100,18 @@ const AddCourse = () => {
 
   return (
     <Container
-      size="lg"
+      size='lg'
       py={{ base: 'md', sm: 'xl' }}
       px={{ base: 'xs', sm: 'md' }}
     >
-      <Stack gap="lg">
+      <Stack gap='lg'>
         {/* Header */}
-        <Stack gap="sm">
-          <Group justify="space-between" align="flex-start" wrap="wrap">
-            <Group gap="sm" align="flex-start" style={{ flex: 1 }}>
+        <Stack gap='sm'>
+          <Group justify='space-between' align='flex-start' wrap='wrap'>
+            <Group gap='sm' align='flex-start' style={{ flex: 1 }}>
               <ActionIcon
-                variant="subtle"
-                color="gray"
+                variant='subtle'
+                color='gray'
                 size={isMobile ? 'md' : 'lg'}
                 onClick={() => navigate(-1)}
                 mt={{ base: 4, sm: 0 }}
@@ -120,15 +120,15 @@ const AddCourse = () => {
               </ActionIcon>
               <Stack gap={4} style={{ flex: 1 }}>
                 <Title order={isMobile ? 2 : 1}>Create New Course</Title>
-                <Text size={isMobile ? 'xs' : 'sm'} c="dimmed">
+                <Text size={isMobile ? 'xs' : 'sm'} c='dimmed'>
                   Fill in the details below to create a new course
                 </Text>
               </Stack>
             </Group>
             <Badge
               size={isMobile ? 'md' : 'lg'}
-              variant="light"
-              color="blue"
+              variant='light'
+              color='blue'
               mt={{ base: 'xs', sm: 0 }}
             >
               Draft
@@ -139,9 +139,9 @@ const AddCourse = () => {
 
         {/* Main Form */}
         <Card
-          shadow="sm"
+          shadow='sm'
           p={{ base: 'md', sm: 'xl' }}
-          radius="md"
+          radius='md'
           withBorder
           style={{
             backgroundColor: currentThemeConfig.headerBackgroundColor,
@@ -149,17 +149,17 @@ const AddCourse = () => {
             borderColor: currentThemeConfig.borderColor
           }}
         >
-          <Stack gap="lg">
+          <Stack gap='lg'>
             {/* Course Name */}
             <Box>
               <TextInput
-                label="Course Name"
-                placeholder="Enter course name"
+                label='Course Name'
+                placeholder='Enter course name'
                 size={isMobile ? 'sm' : 'md'}
                 value={courseName}
                 onChange={e => setCourseName(e.target.value)}
                 required
-                description="Give your course a clear and descriptive name"
+                description='Give your course a clear and descriptive name'
                 styles={{
                   input: {
                     backgroundColor: currentThemeConfig.headerBackgroundColor,
@@ -185,23 +185,23 @@ const AddCourse = () => {
               <Text
                 size={isMobile ? 'sm' : 'md'}
                 fw={600}
-                mb="xs"
+                mb='xs'
                 c={currentThemeConfig.color}
               >
                 Course Thumbnail{' '}
-                <Text component="span" c="red">
+                <Text component='span' c='red'>
                   *
                 </Text>
               </Text>
-              <Text size={isMobile ? 'xs' : 'sm'} c={'dimmed'} mb="md">
+              <Text size={isMobile ? 'xs' : 'sm'} c={'dimmed'} mb='md'>
                 Upload a high-quality image that represents your course
                 {!isMobile && ' (Recommended: 1280x720px)'}
               </Text>
 
               {!thumbnailPreview ? (
                 <FileInput
-                  placeholder="Click to upload or drag and drop"
-                  accept="image/*"
+                  placeholder='Click to upload or drag and drop'
+                  accept='image/*'
                   value={thumbnailFile}
                   onChange={handleThumbnailChange}
                   leftSection={<IconUpload size={isMobile ? 16 : 18} />}
@@ -221,7 +221,7 @@ const AddCourse = () => {
                 />
               ) : (
                 <Paper
-                  radius="md"
+                  radius='md'
                   withBorder
                   p={isMobile ? 'sm' : 'md'}
                   style={{
@@ -231,21 +231,21 @@ const AddCourse = () => {
                     borderColor: currentThemeConfig.borderColor
                   }}
                 >
-                  <Stack gap="md">
+                  <Stack gap='md'>
                     <Group
                       gap={isMobile ? 'sm' : 'md'}
-                      align="center"
+                      align='center'
                       wrap={isMobile ? 'wrap' : 'nowrap'}
                     >
                       <Image
                         src={thumbnailPreview}
                         height={isMobile ? 80 : 120}
                         style={{ maxWidth: isMobile ? '100%' : '200px' }}
-                        radius="md"
-                        fit="cover"
-                        alt="Course thumbnail"
+                        radius='md'
+                        fit='cover'
+                        alt='Course thumbnail'
                       />
-                      <Stack gap="xs" style={{ flex: 1, minWidth: 0 }}>
+                      <Stack gap='xs' style={{ flex: 1, minWidth: 0 }}>
                         <Text
                           size={isMobile ? 'xs' : 'sm'}
                           fw={500}
@@ -254,22 +254,22 @@ const AddCourse = () => {
                         >
                           {thumbnailFile?.name}
                         </Text>
-                        <Text size="xs" c={'dimmed'}>
+                        <Text size='xs' c={'dimmed'}>
                           {thumbnailFile
                             ? (thumbnailFile.size / 1024 / 1024).toFixed(2)
                             : 0}{' '}
                           MB
                         </Text>
-                        <Button
-                          variant="light"
-                          color="red"
-                          size="xs"
+                        <CommonButton
+                          variant='light'
+                          color='red'
+                          size='xs'
                           leftSection={<IconX size={12} />}
                           onClick={handleRemoveThumbnail}
                           style={{ width: 'fit-content' }}
                         >
                           Remove
-                        </Button>
+                        </CommonButton>
                       </Stack>
                     </Group>
                   </Stack>
@@ -282,15 +282,15 @@ const AddCourse = () => {
               <Text
                 size={isMobile ? 'sm' : 'md'}
                 fw={600}
-                mb="xs"
+                mb='xs'
                 c={currentThemeConfig.color}
               >
                 Course Description{' '}
-                <Text component="span" c="red">
+                <Text component='span' c='red'>
                   *
                 </Text>
               </Text>
-              <Text size={isMobile ? 'xs' : 'sm'} c={'dimmed'} mb="md">
+              <Text size={isMobile ? 'xs' : 'sm'} c={'dimmed'} mb='md'>
                 Provide a detailed description of what students will learn
               </Text>
 
@@ -381,16 +381,16 @@ const AddCourse = () => {
         </Card>
 
         {/* Action Buttons */}
-        <Card shadow="sm" p={{ base: 'md', sm: 'lg' }} radius="md" withBorder>
-          <Group justify="space-between" wrap="wrap">
-            <Button
-              variant="default"
+        <Card shadow='sm' p={{ base: 'md', sm: 'lg' }} radius='md' withBorder>
+          <Group justify='space-between' wrap='wrap'>
+            <CommonButton
+              variant='default'
               onClick={() => navigate(-1)}
               fullWidth={isMobile}
             >
               Cancel
-            </Button>
-            <Button
+            </CommonButton>
+            <CommonButton
               leftSection={<IconCheck size={18} />}
               disabled={!isFormValid}
               loading={isSubmitting}
@@ -398,25 +398,25 @@ const AddCourse = () => {
               fullWidth={isMobile}
             >
               Create Course
-            </Button>
+            </CommonButton>
           </Group>
         </Card>
 
         {/* Help Card */}
         <Card
-          shadow="sm"
+          shadow='sm'
           p={{ base: 'md', sm: 'lg' }}
-          radius="md"
+          radius='md'
           withBorder
-          bg="blue.0"
+          bg='blue.0'
         >
-          <Group gap={isMobile ? 'sm' : 'md'} align="flex-start">
-            <IconPhoto size={isMobile ? 24 : 32} color="#228BE6" />
+          <Group gap={isMobile ? 'sm' : 'md'} align='flex-start'>
+            <IconPhoto size={isMobile ? 24 : 32} color='#228BE6' />
             <Stack gap={4} style={{ flex: 1 }}>
               <Text size={isMobile ? 'xs' : 'sm'} fw={600}>
                 Tips for a Great Course
               </Text>
-              <Text size="xs" c="dimmed" style={{ lineHeight: 1.6 }}>
+              <Text size='xs' c='dimmed' style={{ lineHeight: 1.6 }}>
                 • Use a clear, high-resolution thumbnail image
                 <br />
                 • Write a compelling description that highlights key learning

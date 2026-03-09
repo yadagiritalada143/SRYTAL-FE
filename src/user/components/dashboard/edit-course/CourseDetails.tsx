@@ -10,7 +10,6 @@ import {
   ActionIcon,
   Badge,
   Divider,
-  Button,
   Paper
 } from '@mantine/core';
 import {
@@ -25,6 +24,7 @@ import React, { useState } from 'react';
 import { useMediaQuery } from '@mantine/hooks';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAppTheme } from '@hooks/use-app-theme';
+import { CommonButton } from '@components/common/button/CommonButton';
 
 // Mock course data - replace with actual data from API when available
 const mockCourse = {
@@ -76,18 +76,18 @@ const CourseDetails = () => {
 
   return (
     <Container
-      size="lg"
+      size='lg'
       py={{ base: 'md', sm: 'xl' }}
       px={{ base: 'xs', sm: 'md' }}
     >
-      <Stack gap="lg">
+      <Stack gap='lg'>
         {/* Header */}
-        <Stack gap="sm">
-          <Group justify="space-between" align="flex-start" wrap="wrap">
-            <Group gap="sm" align="flex-start" style={{ flex: 1 }}>
+        <Stack gap='sm'>
+          <Group justify='space-between' align='flex-start' wrap='wrap'>
+            <Group gap='sm' align='flex-start' style={{ flex: 1 }}>
               <ActionIcon
-                variant="subtle"
-                color="gray"
+                variant='subtle'
+                color='gray'
                 size={isMobile ? 'md' : 'lg'}
                 onClick={() => navigate(-1)}
                 mt={{ base: 4, sm: 0 }}
@@ -96,7 +96,7 @@ const CourseDetails = () => {
               </ActionIcon>
               <Stack gap={4} style={{ flex: 1 }}>
                 <Title order={isMobile ? 2 : 1}>{course.courseName}</Title>
-                <Text size={isMobile ? 'xs' : 'sm'} c="dimmed">
+                <Text size={isMobile ? 'xs' : 'sm'} c='dimmed'>
                   Created on{' '}
                   {new Date(course.createdAt).toLocaleDateString('en-US', {
                     year: 'numeric',
@@ -108,7 +108,7 @@ const CourseDetails = () => {
             </Group>
             <Badge
               size={isMobile ? 'md' : 'lg'}
-              variant="light"
+              variant='light'
               color={course.status === 'published' ? 'green' : 'blue'}
               mt={{ base: 'xs', sm: 0 }}
             >
@@ -120,9 +120,9 @@ const CourseDetails = () => {
 
         {/* Course Stats */}
         <Card
-          shadow="sm"
+          shadow='sm'
           p={{ base: 'md', sm: 'lg' }}
-          radius="md"
+          radius='md'
           withBorder
           style={{
             backgroundColor: currentThemeConfig.headerBackgroundColor,
@@ -132,41 +132,41 @@ const CourseDetails = () => {
         >
           <Group
             gap={isMobile ? 'md' : 'xl'}
-            justify="space-around"
-            wrap="wrap"
+            justify='space-around'
+            wrap='wrap'
           >
-            <Stack gap={4} align="center">
-              <Group gap="xs">
-                <IconUsers size={isMobile ? 18 : 20} color="#228BE6" />
+            <Stack gap={4} align='center'>
+              <Group gap='xs'>
+                <IconUsers size={isMobile ? 18 : 20} color='#228BE6' />
                 <Text size={isMobile ? 'lg' : 'xl'} fw={700}>
                   {course.students}
                 </Text>
               </Group>
-              <Text size={isMobile ? 'xs' : 'sm'} c="dimmed">
+              <Text size={isMobile ? 'xs' : 'sm'} c='dimmed'>
                 Students
               </Text>
             </Stack>
 
-            <Stack gap={4} align="center">
-              <Group gap="xs">
-                <IconBook size={isMobile ? 18 : 20} color="#228BE6" />
+            <Stack gap={4} align='center'>
+              <Group gap='xs'>
+                <IconBook size={isMobile ? 18 : 20} color='#228BE6' />
                 <Text size={isMobile ? 'lg' : 'xl'} fw={700}>
                   {course.modules}
                 </Text>
               </Group>
-              <Text size={isMobile ? 'xs' : 'sm'} c="dimmed">
+              <Text size={isMobile ? 'xs' : 'sm'} c='dimmed'>
                 Modules
               </Text>
             </Stack>
 
-            <Stack gap={4} align="center">
-              <Group gap="xs">
-                <IconClock size={isMobile ? 18 : 20} color="#228BE6" />
+            <Stack gap={4} align='center'>
+              <Group gap='xs'>
+                <IconClock size={isMobile ? 18 : 20} color='#228BE6' />
                 <Text size={isMobile ? 'lg' : 'xl'} fw={700}>
                   {course.duration}
                 </Text>
               </Group>
-              <Text size={isMobile ? 'xs' : 'sm'} c="dimmed">
+              <Text size={isMobile ? 'xs' : 'sm'} c='dimmed'>
                 Duration
               </Text>
             </Stack>
@@ -175,9 +175,9 @@ const CourseDetails = () => {
 
         {/* Course Thumbnail */}
         <Card
-          shadow="sm"
+          shadow='sm'
           p={{ base: 'md', sm: 'xl' }}
-          radius="md"
+          radius='md'
           withBorder
           style={{
             backgroundColor: currentThemeConfig.headerBackgroundColor,
@@ -185,25 +185,25 @@ const CourseDetails = () => {
             borderColor: currentThemeConfig.borderColor
           }}
         >
-          <Stack gap="md">
+          <Stack gap='md'>
             <Text size={isMobile ? 'sm' : 'md'} fw={600}>
               Course Thumbnail
             </Text>
             <Image
               src={course.thumbnailUrl}
               height={isMobile ? 200 : 400}
-              radius="md"
-              fit="cover"
-              alt="Course thumbnail"
+              radius='md'
+              fit='cover'
+              alt='Course thumbnail'
             />
           </Stack>
         </Card>
 
         {/* Course Description */}
         <Card
-          shadow="sm"
+          shadow='sm'
           p={{ base: 'md', sm: 'xl' }}
-          radius="md"
+          radius='md'
           withBorder
           style={{
             backgroundColor: currentThemeConfig.headerBackgroundColor,
@@ -211,13 +211,13 @@ const CourseDetails = () => {
             borderColor: currentThemeConfig.borderColor
           }}
         >
-          <Stack gap="md">
+          <Stack gap='md'>
             <Text size={isMobile ? 'sm' : 'md'} fw={600}>
               Course Description
             </Text>
             <Paper
               p={{ base: 'sm', sm: 'md' }}
-              radius="md"
+              radius='md'
               style={{
                 backgroundColor: isDarkTheme ? '#1a1b1e' : '#f8f9fa',
                 border: `1px solid ${currentThemeConfig.borderColor}`
@@ -236,24 +236,24 @@ const CourseDetails = () => {
         </Card>
 
         {/* Action Buttons */}
-        <Card shadow="sm" p={{ base: 'md', sm: 'lg' }} radius="md" withBorder>
-          <Group justify="space-between" wrap="nowrap">
-            <Button
-              variant="light"
-              color="red"
+        <Card shadow='sm' p={{ base: 'md', sm: 'lg' }} radius='md' withBorder>
+          <Group justify='space-between' wrap='nowrap'>
+            <CommonButton
+              variant='light'
+              color='red'
               leftSection={<IconTrash size={18} />}
               onClick={handleDelete}
               fullWidth={isMobile}
             >
               Delete Course
-            </Button>
-            <Button
+            </CommonButton>
+            <CommonButton
               leftSection={<IconEdit size={18} />}
               onClick={handleEdit}
               fullWidth={isMobile}
             >
               Edit Course
-            </Button>
+            </CommonButton>
           </Group>
         </Card>
       </Stack>

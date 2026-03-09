@@ -1,7 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import {
   Box,
-  Button,
   Grid,
   Group,
   Table,
@@ -12,7 +11,6 @@ import {
   ActionIcon
 } from '@mantine/core';
 import { DatePickerInput, DatesRangeValue } from '@mantine/dates';
-import { useRecoilValue } from 'recoil';
 
 import {
   IconSearch,
@@ -28,6 +26,7 @@ import { getUserDetails } from '@services/user-services';
 import { EmployeeInterface } from '@interfaces/employee';
 import { toast } from 'react-toastify';
 import { useAppTheme } from '@hooks/use-app-theme';
+import { CommonButton } from '../button/CommonButton';
 
 const PayslipList = () => {
   const { themeConfig: theme, themeConfig: currentThemeConfig } = useAppTheme();
@@ -121,53 +120,52 @@ const PayslipList = () => {
   };
 
   return (
-    <ColorDiv className="w-100 p-5">
+    <ColorDiv className='w-100 p-5'>
       <Title
         order={2}
-        className="text-xl sm:text-2xl md:text-3xl font-extrabold underline text-center px-2 py-6"
+        className='text-xl sm:text-2xl md:text-3xl font-extrabold underline text-center px-2 py-6'
       >
         Payslip List
       </Title>
 
-      <Grid align="center" gutter="md" className="mb-4 p-4 rounded-md">
+      <Grid align='center' gutter='md' className='mb-4 p-4 rounded-md'>
         <Grid.Col span={12}>
-          <Group justify="space-between" wrap="wrap">
-            <Group gap="sm" wrap="wrap">
+          <Group justify='space-between' wrap='wrap'>
+            <Group gap='sm' wrap='wrap'>
               <ActionIcon
-                variant="outline"
-                radius="xl"
+                variant='outline'
+                radius='xl'
                 color={theme.color}
-                size="lg"
+                size='lg'
                 onClick={() => navigateDateRange('previous')}
               >
                 <IconChevronLeft size={18} />
               </ActionIcon>
 
               <DatePickerInput
-                type="range"
+                type='range'
                 value={dateRange}
                 onChange={setDateRange}
                 leftSection={<IconCalendar size={16} />}
-                size="sm"
-                radius="md"
-                valueFormat="MMMM YYYY"
+                size='sm'
+                radius='md'
+                valueFormat='MMMM YYYY'
                 allowSingleDateInRange={false}
-                placeholder="Select from and to month"
+                placeholder='Select from and to month'
               />
 
               <ActionIcon
-                variant="outline"
-                radius="xl"
+                variant='outline'
+                radius='xl'
                 color={theme.color}
-                size="lg"
+                size='lg'
                 onClick={() => navigateDateRange('next')}
               >
                 <IconChevronRight size={18} />
               </ActionIcon>
 
-              <Button
-                size="sm"
-                radius="md"
+              <CommonButton
+                size='sm'
                 onClick={() => setFilters({ range: dateRange })}
                 style={{
                   backgroundColor: theme.button.color,
@@ -175,11 +173,11 @@ const PayslipList = () => {
                 }}
               >
                 Search
-              </Button>
+              </CommonButton>
             </Group>
 
             <TextInput
-              placeholder="Search by name..."
+              placeholder='Search by name...'
               leftSection={<IconSearch size={16} />}
               rightSection={
                 search && (
@@ -192,8 +190,8 @@ const PayslipList = () => {
               }
               value={search}
               onChange={e => setSearch(e.currentTarget.value)}
-              size="sm"
-              radius="md"
+              size='sm'
+              radius='md'
               style={{ minWidth: '200px' }}
             />
           </Group>
@@ -204,9 +202,9 @@ const PayslipList = () => {
         <Table
           striped
           highlightOnHover
-          verticalSpacing="sm"
-          horizontalSpacing="sm"
-          className="border"
+          verticalSpacing='sm'
+          horizontalSpacing='sm'
+          className='border'
           style={{
             borderColor: theme.borderColor,
             color: theme.color,
@@ -220,27 +218,27 @@ const PayslipList = () => {
             }}
           >
             <tr>
-              <th className="border px-1 py-1 text-center">S.No</th>
-              <th className="border px-1 py-1 text-center">Employee Name</th>
-              <th className="border px-1 py-1 text-center">Year</th>
-              <th className="border px-1 py-1 text-center">Month</th>
-              <th className="border px-1 py-1 text-center">Status</th>
-              <th className="border px-1 py-1 text-center">Action</th>
+              <th className='border px-1 py-1 text-center'>S.No</th>
+              <th className='border px-1 py-1 text-center'>Employee Name</th>
+              <th className='border px-1 py-1 text-center'>Year</th>
+              <th className='border px-1 py-1 text-center'>Month</th>
+              <th className='border px-1 py-1 text-center'>Status</th>
+              <th className='border px-1 py-1 text-center'>Action</th>
             </tr>
           </thead>
           <tbody>
             {filteredData.map((item, index) => (
               <tr key={index}>
-                <td className="border px-1 py-1 text-center">{index + 1}</td>
-                <td className="border px-1 py-1 text-center">
+                <td className='border px-1 py-1 text-center'>{index + 1}</td>
+                <td className='border px-1 py-1 text-center'>
                   {item.employeeName}
                 </td>
-                <td className="border px-1 py-1 text-center">{item.year}</td>
-                <td className="border px-1 py-1 text-center">{item.month}</td>
-                <td className="border px-1 py-1 text-center">
+                <td className='border px-1 py-1 text-center'>{item.year}</td>
+                <td className='border px-1 py-1 text-center'>{item.month}</td>
+                <td className='border px-1 py-1 text-center'>
                   <Badge
-                    variant="light"
-                    size="sm"
+                    variant='light'
+                    size='sm'
                     style={{
                       color: '#fff',
                       backgroundColor:
@@ -250,19 +248,18 @@ const PayslipList = () => {
                     {item.status === 'PAID' ? '✔ PAID' : '✖ UNPAID'}
                   </Badge>
                 </td>
-                <td className="border px-1 py-1 text-center">
-                  <Group justify="center" gap="xs" wrap="nowrap">
-                    <Button
+                <td className='border px-1 py-1 text-center'>
+                  <Group justify='center' gap='xs' wrap='nowrap'>
+                    <CommonButton
                       leftSection={<IconDownload size={14} />}
-                      size="xs"
-                      radius="sm"
-                      variant="filled"
+                      size='xs'
+                      variant='filled'
                       style={{
                         color: theme.button.textColor
                       }}
                     >
                       Download
-                    </Button>
+                    </CommonButton>
                   </Group>
                 </td>
               </tr>
@@ -270,7 +267,7 @@ const PayslipList = () => {
           </tbody>
         </Table>
 
-        <Text size="xs" mt="sm" style={{ color: theme.color }}>
+        <Text size='xs' mt='sm' style={{ color: theme.color }}>
           Showing {filteredData.length} of {payslipData.length} entries
         </Text>
       </Box>

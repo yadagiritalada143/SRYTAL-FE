@@ -1,4 +1,4 @@
-import { Button, Select } from '@mantine/core';
+import { Select } from '@mantine/core';
 import PremiumLoader from '@components/common/loaders/PremiumLoader';
 import DataView from '@components/common/loaders/DataView';
 import { IconEdit, IconUser } from '@tabler/icons-react';
@@ -15,6 +15,7 @@ import {
   getAllEmployeesSearchForm
 } from '@forms/register-admin-superadmin';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { CommonButton } from '@components/common/button/CommonButton';
 
 interface organization {
   organizationName: string;
@@ -83,7 +84,7 @@ const EmployeesForSuperadmin = () => {
                 )}
               />
 
-              <Button
+              <CommonButton
                 className=' mt-7 rounded-md'
                 type='submit'
                 data-testid='submitButton'
@@ -93,7 +94,7 @@ const EmployeesForSuperadmin = () => {
                 disabled={isSubmitting}
               >
                 {isSubmitting ? 'Searching...' : 'Search'}
-              </Button>
+              </CommonButton>
             </div>
           </form>
         </div>
@@ -166,7 +167,7 @@ const EmployeesForSuperadmin = () => {
                         </ul>
                       </td>
                       <td className='px-4 py-2 border whitespace-nowrap overflow-hidden text-ellipsis'>
-                        <Button
+                        <CommonButton
                         // onClick={() =>
                         //   navigate(
                         //     `/admin/${organizationConfig.organization_name}/dashboard/update/${employee._id}`
@@ -175,7 +176,7 @@ const EmployeesForSuperadmin = () => {
                         >
                           <IconUser /> {'  '}
                           <IconEdit />
-                        </Button>
+                        </CommonButton>
                       </td>
                     </tr>
                   ))}

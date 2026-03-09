@@ -1,6 +1,5 @@
 import {
   Group,
-  Button,
   TextInput,
   NumberInput,
   Input,
@@ -13,8 +12,7 @@ import {
   Badge,
   Divider,
   Flex,
-  Container,
-  Center
+  Container
 } from '@mantine/core';
 import PremiumLoader from '@components/common/loaders/PremiumLoader';
 import DataView from '@components/common/loaders/DataView';
@@ -27,8 +25,6 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useRecoilValue } from 'recoil';
-import { PoolCandidatesComments } from '@interfaces/candidate';
 import { organizationAdminUrls } from '@utils/common/constants';
 import AddComment from './add-comment';
 import CommentsTable from './comments-table';
@@ -45,6 +41,7 @@ import {
   IconTrash,
   IconDeviceFloppy
 } from '@tabler/icons-react';
+import { CommonButton } from '@components/common/button/CommonButton';
 
 const UpdatePoolCandidateForm = () => {
   const [skills, setSkills] = useState<string[]>([]);
@@ -128,7 +125,7 @@ const UpdatePoolCandidateForm = () => {
   };
 
   return (
-    <Container size='xl' py='md' my='xl' px={isSmallMobile ? 'xs' : 'md'}>
+    <Container size='lg' py='md' my='xl' px={isSmallMobile ? 'xs' : 'md'}>
       <Stack gap='md'>
         {/* Header Card */}
         <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md' withBorder>
@@ -256,14 +253,13 @@ const UpdatePoolCandidateForm = () => {
                           style={{ flex: 1 }}
                           size={isMobile ? 'sm' : 'md'}
                         />
-                        <Button
+                        <CommonButton
                           onClick={handleSkillAdd}
                           leftSection={<IconPlus size={16} />}
-                          size={isMobile ? 'sm' : 'md'}
-                          radius='md'
+                          size={isMobile ? 'xs' : 'sm'}
                         >
                           Add
-                        </Button>
+                        </CommonButton>
                       </Group>
                     </Input.Wrapper>
 
@@ -298,18 +294,17 @@ const UpdatePoolCandidateForm = () => {
                     justify='space-between'
                     wrap={isMobile ? 'wrap' : 'nowrap'}
                   >
-                    <Button
+                    <CommonButton
                       color='red'
                       variant='filled'
                       leftSection={<IconTrash size={16} />}
                       onClick={open}
                       fullWidth={isMobile}
                       size={isMobile ? 'md' : 'sm'}
-                      radius='md'
                     >
                       Delete Candidate
-                    </Button>
-                    <Button
+                    </CommonButton>
+                    <CommonButton
                       type='submit'
                       disabled={isSubmitting}
                       loading={isSubmitting}
@@ -319,10 +314,9 @@ const UpdatePoolCandidateForm = () => {
                       leftSection={<IconDeviceFloppy size={16} />}
                       fullWidth={isMobile}
                       size={isMobile ? 'md' : 'sm'}
-                      radius='md'
                     >
                       {isSubmitting ? 'Updating...' : 'Update Candidate'}
-                    </Button>
+                    </CommonButton>
                   </Group>
                 </Stack>
               </form>
@@ -363,7 +357,7 @@ const UpdatePoolCandidateForm = () => {
                 </Stack>
 
                 <Group justify='space-between' mt='xl'>
-                  <Button
+                  <CommonButton
                     color='red'
                     variant='filled'
                     onClick={() =>
@@ -371,13 +365,12 @@ const UpdatePoolCandidateForm = () => {
                     }
                     disabled={!confirmDelete}
                     leftSection={<IconTrash size={16} />}
-                    radius='md'
                   >
                     Delete
-                  </Button>
-                  <Button variant='default' onClick={close} radius='md'>
+                  </CommonButton>
+                  <CommonButton variant='default' onClick={close}>
                     Cancel
-                  </Button>
+                  </CommonButton>
                 </Group>
               </Stack>
             </StandardModal>

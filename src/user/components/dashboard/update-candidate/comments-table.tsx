@@ -40,13 +40,13 @@ const MobileCommentCard = ({
   };
 
   return (
-    <Card shadow="sm" p="md" mb="sm" withBorder>
-      <Stack gap="sm">
-        <Group justify="space-between" align="center">
-          <Badge variant="filled" color="blue">
+    <Card shadow='sm' p='md' mb='sm' withBorder>
+      <Stack gap='sm'>
+        <Group justify='space-between' align='center'>
+          <Badge variant='filled' color='blue'>
             Comment #{index + 1}
           </Badge>
-          <Badge variant="light" color="teal">
+          <Badge variant='light' color='teal'>
             {calculateDuration(comment.callStartsAt, comment.callEndsAt)}
           </Badge>
         </Group>
@@ -54,18 +54,18 @@ const MobileCommentCard = ({
         <Divider />
 
         <Stack gap={2}>
-          <Text size="xs" fw={600} c="dimmed">
+          <Text size='xs' fw={600} c='dimmed'>
             Comment
           </Text>
-          <Text size="sm">{comment.comment}</Text>
+          <Text size='sm'>{comment.comment}</Text>
         </Stack>
 
         <Group grow>
           <Stack gap={2}>
-            <Text size="xs" fw={600} c="dimmed">
+            <Text size='xs' fw={600} c='dimmed'>
               Created By
             </Text>
-            <Text size="sm">
+            <Text size='sm'>
               {comment?.userId?.firstName || ''}{' '}
               {comment?.userId?.lastName || 'N/A'}
             </Text>
@@ -73,13 +73,13 @@ const MobileCommentCard = ({
         </Group>
 
         <Stack gap={2}>
-          <Text size="xs" fw={600} c="dimmed">
+          <Text size='xs' fw={600} c='dimmed'>
             Created At
           </Text>
-          <Text size="sm">
+          <Text size='sm'>
             {moment(new Date(comment.updateAt)).format('MMM DD, YYYY')}
           </Text>
-          <Text size="xs" c="dimmed">
+          <Text size='xs' c='dimmed'>
             {moment(new Date(comment.updateAt)).format('h:mm A')}
           </Text>
         </Stack>
@@ -88,17 +88,17 @@ const MobileCommentCard = ({
           <>
             <Divider />
             <Stack gap={2}>
-              <Text size="xs" fw={600} c="dimmed">
+              <Text size='xs' fw={600} c='dimmed'>
                 Call Duration
               </Text>
-              <Group gap="xs">
-                <Text size="xs">
+              <Group gap='xs'>
+                <Text size='xs'>
                   {moment(new Date(comment.callStartsAt)).format('h:mm A')}
                 </Text>
-                <Text size="xs" c="dimmed">
+                <Text size='xs' c='dimmed'>
                   to
                 </Text>
-                <Text size="xs">
+                <Text size='xs'>
                   {moment(new Date(comment.callEndsAt)).format('h:mm A')}
                 </Text>
               </Group>
@@ -130,14 +130,14 @@ const CommentsTable = ({ comments }: CommentsTableProps) => {
 
   if (!comments || comments.length === 0) {
     return (
-      <div className="w-full max-w-3xl mx-auto my-6">
-        <Card shadow="sm" p="xl" radius="md" withBorder>
-          <Stack align="center" gap="md">
+      <div className='w-full max-w-4xl mx-auto my-6'>
+        <Card shadow='sm' p='xl' radius='md' withBorder>
+          <Stack align='center' gap='md'>
             <IconMessageCircle size={48} opacity={0.5} />
-            <Text size="lg" fw={500}>
+            <Text size='lg' fw={500}>
               No Comments Yet
             </Text>
-            <Text size="sm" c="dimmed" ta="center">
+            <Text size='sm' c='dimmed' ta='center'>
               Comments will appear here once added
             </Text>
           </Stack>
@@ -147,24 +147,24 @@ const CommentsTable = ({ comments }: CommentsTableProps) => {
   }
 
   return (
-    <div className="w-full max-w-3xl mx-auto my-6">
-      <Card shadow="sm" p={0} radius="md" withBorder>
+    <div className='w-full max-w-4xl mx-auto my-6'>
+      <Card shadow='sm' p={0} radius='md' withBorder>
         <Stack gap={0}>
           <div
             style={{
               backgroundColor: currentThemeConfig.backgroundColor,
               color: currentThemeConfig.color
             }}
-            className="p-4 border-b"
+            className='p-4 border-b'
           >
-            <Text size="xl" fw={700}>
+            <Text size='xl' fw={700}>
               Comments ({comments.length})
             </Text>
           </div>
 
           {isMobile ? (
-            <ScrollArea p="md">
-              <Stack gap="sm">
+            <ScrollArea p='md'>
+              <Stack gap='sm'>
                 {comments.map((comment, index) => (
                   <MobileCommentCard
                     key={index}
@@ -185,46 +185,46 @@ const CommentsTable = ({ comments }: CommentsTableProps) => {
                 >
                   <Table.Tr>
                     <Table.Th
-                      className="p-3 border text-center"
+                      className='p-3 border text-center'
                       style={{ minWidth: '60px' }}
                     >
-                      <Text size="sm" fw={500}>
+                      <Text size='sm' fw={500}>
                         S.No
                       </Text>
                     </Table.Th>
                     <Table.Th
-                      className="p-3 border"
+                      className='p-3 border'
                       style={{ minWidth: isTablet ? '200px' : '300px' }}
                     >
-                      <Text size="sm" fw={500}>
+                      <Text size='sm' fw={500}>
                         Comment
                       </Text>
                     </Table.Th>
                     {!isTablet && (
                       <>
                         <Table.Th
-                          className="p-3 border text-center"
+                          className='p-3 border text-center'
                           style={{ minWidth: '150px' }}
                         >
-                          <Text size="sm" fw={500}>
+                          <Text size='sm' fw={500}>
                             Created By
                           </Text>
                         </Table.Th>
                         <Table.Th
-                          className="p-3 border text-center"
+                          className='p-3 border text-center'
                           style={{ minWidth: '180px' }}
                         >
-                          <Text size="sm" fw={500}>
+                          <Text size='sm' fw={500}>
                             Created At
                           </Text>
                         </Table.Th>
                       </>
                     )}
                     <Table.Th
-                      className="p-3 border text-center"
+                      className='p-3 border text-center'
                       style={{ minWidth: '120px' }}
                     >
-                      <Text size="sm" fw={500}>
+                      <Text size='sm' fw={500}>
                         Duration
                       </Text>
                     </Table.Th>
@@ -232,30 +232,30 @@ const CommentsTable = ({ comments }: CommentsTableProps) => {
                 </Table.Thead>
                 <Table.Tbody>
                   {comments.map((comment, index) => (
-                    <Table.Tr key={index} className="transition-colors">
-                      <Table.Td className="text-center p-3">
-                        <Text size="sm">{index + 1}</Text>
+                    <Table.Tr key={index} className='transition-colors'>
+                      <Table.Td className='text-center p-3'>
+                        <Text size='sm'>{index + 1}</Text>
                       </Table.Td>
-                      <Table.Td className="p-3">
-                        <Text size="sm" lineClamp={isTablet ? 2 : 3}>
+                      <Table.Td className='p-3'>
+                        <Text size='sm' lineClamp={isTablet ? 2 : 3}>
                           {comment.comment}
                         </Text>
                       </Table.Td>
                       {!isTablet && (
                         <>
-                          <Table.Td className="p-3">
-                            <Text size="sm">
+                          <Table.Td className='p-3'>
+                            <Text size='sm'>
                               {comment?.userId?.firstName || ''}{' '}
                               {comment?.userId?.lastName || 'N/A'}
                             </Text>
                           </Table.Td>
-                          <Table.Td className="p-3">
-                            <Text size="sm">
+                          <Table.Td className='p-3'>
+                            <Text size='sm'>
                               {moment(new Date(comment.updateAt)).format(
                                 'MMM DD, YYYY'
                               )}
                             </Text>
-                            <Text size="xs" c="dimmed">
+                            <Text size='xs' c='dimmed'>
                               {moment(new Date(comment.updateAt)).format(
                                 'h:mm A'
                               )}
@@ -263,8 +263,8 @@ const CommentsTable = ({ comments }: CommentsTableProps) => {
                           </Table.Td>
                         </>
                       )}
-                      <Table.Td className="p-3 text-center">
-                        <Badge size="sm" variant="light" color="teal">
+                      <Table.Td className='p-3 text-center'>
+                        <Badge size='sm' variant='light' color='teal'>
                           {calculateDuration(
                             comment.callStartsAt,
                             comment.callEndsAt

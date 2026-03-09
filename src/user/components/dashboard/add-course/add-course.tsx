@@ -5,7 +5,6 @@ import {
   Title,
   Text,
   TextInput,
-  Button,
   Group,
   FileInput,
   Image,
@@ -14,8 +13,7 @@ import {
   ActionIcon,
   Badge,
   Divider,
-  Loader,
-  Flex
+  Loader
 } from '@mantine/core';
 import PremiumLoader from '@components/common/loaders/PremiumLoader';
 import { RichTextEditor, Link } from '@mantine/tiptap';
@@ -39,6 +37,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCustomToast } from '@utils/common/toast';
 import { useAppTheme } from '@hooks/use-app-theme';
 import { useAddCourse } from '@hooks/mutations/useUserMutations';
+import { CommonButton } from '@components/common/button/CommonButton';
 
 export const ContentWriterAddCourse = () => {
   const [courseName, setCourseName] = useState('');
@@ -261,7 +260,7 @@ export const ContentWriterAddCourse = () => {
                             : '0'}{' '}
                           MB
                         </Text>
-                        <Button
+                        <CommonButton
                           variant='light'
                           color='red'
                           size='xs'
@@ -270,7 +269,7 @@ export const ContentWriterAddCourse = () => {
                           style={{ width: 'fit-content' }}
                         >
                           Remove
-                        </Button>
+                        </CommonButton>
                       </Stack>
                     </Group>
                   </Stack>
@@ -425,7 +424,7 @@ export const ContentWriterAddCourse = () => {
 
         <Card shadow='sm' p={{ base: 'md', sm: 'lg' }} radius='md' withBorder>
           <Stack gap='sm' hiddenFrom='sm'>
-            <Button
+            <CommonButton
               fullWidth
               leftSection={
                 isSubmitting ? (
@@ -438,19 +437,23 @@ export const ContentWriterAddCourse = () => {
               onClick={handleSubmit}
             >
               {isSubmitting ? 'Creating...' : 'Create Course'}
-            </Button>
+            </CommonButton>
 
-            <Button fullWidth variant='default' onClick={() => navigate(-1)}>
+            <CommonButton
+              fullWidth
+              variant='default'
+              onClick={() => navigate(-1)}
+            >
               Cancel
-            </Button>
+            </CommonButton>
           </Stack>
 
           <Group justify='space-between' wrap='nowrap' visibleFrom='sm'>
-            <Button variant='default' onClick={() => navigate(-1)}>
+            <CommonButton variant='default' onClick={() => navigate(-1)}>
               Cancel
-            </Button>
+            </CommonButton>
             <Group gap='sm'>
-              <Button
+              <CommonButton
                 leftSection={
                   isSubmitting ? (
                     <PremiumLoader size='xs' minHeight='20px' />
@@ -462,7 +465,7 @@ export const ContentWriterAddCourse = () => {
                 onClick={handleSubmit}
               >
                 {isSubmitting ? 'Creating...' : 'Create Course'}
-              </Button>
+              </CommonButton>
             </Group>
           </Group>
         </Card>

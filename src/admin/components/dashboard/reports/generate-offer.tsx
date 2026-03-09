@@ -1,5 +1,4 @@
 import {
-  Button,
   Select,
   Textarea,
   TextInput,
@@ -13,6 +12,7 @@ import PremiumLoader from '@components/common/loaders/PremiumLoader';
 import { Controller, useForm } from 'react-hook-form';
 import { OfferLetterForm, offerLetterForm } from '@forms/offerletter';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { CommonButton } from '@components/common/button/CommonButton';
 
 const GenerateOfferReport = () => {
   const {
@@ -92,7 +92,7 @@ const GenerateOfferReport = () => {
               />
 
               <Group justify='flex-end'>
-                <Button
+                <CommonButton
                   type='submit'
                   disabled={isSubmitting}
                   leftSection={
@@ -100,7 +100,7 @@ const GenerateOfferReport = () => {
                   }
                 >
                   {isSubmitting ? 'Generating...' : 'Generate Offer Letter'}
-                </Button>
+                </CommonButton>
               </Group>
             </Stack>
           </form>

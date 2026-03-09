@@ -1,10 +1,7 @@
 import {
-  Button,
   Group,
   Text,
-  Loader,
   Pagination,
-  Modal,
   TextInput,
   Center,
   Container,
@@ -17,10 +14,9 @@ import {
   Select,
   ScrollArea,
   Flex,
-  Divider,
-  Skeleton
+  Divider
 } from '@mantine/core';
-import { useDisclosure, useMediaQuery } from '@mantine/hooks';
+import { useMediaQuery } from '@mantine/hooks';
 import DataView from '@components/common/loaders/DataView';
 import {
   IconCalendarTime,
@@ -46,6 +42,7 @@ import { debounce } from '@utils/common/debounce';
 import type { EmployeeInterface } from '@interfaces/employee';
 import { useAppTheme } from '@hooks/use-app-theme';
 import { useGetAllEmployeesByAdmin } from '@hooks/queries/useAdminQueries';
+import { CommonButton } from '@components/common/button/CommonButton';
 
 // Constants
 const ITEMS_PER_PAGE_OPTIONS = ['5', '10', '20', '50'];
@@ -421,16 +418,15 @@ const HeadingComponent: React.FC<{
       >
         Employee Management ({filteredEmployees} employees)
       </Text>
-      <Button
+      <CommonButton
         leftSection={<IconPlus size={16} />}
         onClick={handleAddEmployee}
         variant='filled'
         fullWidth={isMobile}
         size={isMobile ? 'md' : 'sm'}
-        radius='md'
       >
         Add Employee
-      </Button>
+      </CommonButton>
     </Flex>
   </Card>
 );
@@ -594,7 +590,9 @@ const Employees = () => {
             Failed to load employees.
           </Text>
           <Center mt='md'>
-            <Button onClick={() => window.location.reload()}>Try Again</Button>
+            <CommonButton onClick={() => window.location.reload()}>
+              Try Again
+            </CommonButton>
           </Center>
         </Card>
       </Container>
@@ -613,50 +611,51 @@ const Employees = () => {
 
         {/* Filters */}
         <Card shadow='sm' p={isMobile ? 'sm' : 'md'} radius='md' withBorder>
-          <Stack gap='md'>
-            <Group grow={!isMobile}>
-              <TextInput
-                placeholder='Search by name, email, phone, or employee ID...'
-                leftSection={<IconSearch size={16} />}
-                onChange={e => debouncedSearch(e.target.value)}
-                radius='md'
-                size={isMobile ? 'sm' : 'md'}
-                w='100%'
-              />
+          <Flex
+            gap='md'
+            align='center'
+            wrap={isMobile ? 'wrap' : 'nowrap'}
+            justify='space-between'
+          >
+            <TextInput
+              placeholder='Search by name, email, phone, or employee ID...'
+              leftSection={<IconSearch size={16} />}
+              onChange={e => debouncedSearch(e.target.value)}
+              radius='md'
+              size={isMobile ? 'sm' : 'md'}
+              style={{ flex: 1, minWidth: isMobile ? '100%' : '320px' }}
+            />
+            <Select
+              placeholder='Filter by role'
+              data={uniqueRoles.map(role => ({ value: role, label: role }))}
+              value={roleFilter}
+              onChange={value => setRoleFilter(value ?? '')}
+              clearable
+              leftSection={<IconFilter size={16} />}
+              radius='md'
+              size={isMobile ? 'sm' : 'md'}
+              style={{ minWidth: isMobile ? '100%' : '200px' }}
+            />
+
+            <Group gap='xs'>
+              <Text size='sm'>Items per page:</Text>
               <Select
-                placeholder='Filter by role'
-                data={uniqueRoles.map(role => ({ value: role, label: role }))}
-                value={roleFilter}
-                onChange={value => setRoleFilter(value ?? '')}
-                clearable
-                leftSection={<IconFilter size={16} />}
-                radius='md'
-                size={isMobile ? 'sm' : 'md'}
-                w='100%'
+                data={ITEMS_PER_PAGE_OPTIONS}
+                value={itemsPerPage.toString()}
+                onChange={value =>
+                  setItemsPerPage(Number(value) || DEFAULT_ITEMS_PER_PAGE)
+                }
+                w={70}
+                size='sm'
               />
             </Group>
 
-            <Group justify='space-between' wrap={isMobile ? 'wrap' : 'nowrap'}>
-              <Group gap='xs'>
-                <Text size='sm'>Items per page:</Text>
-                <Select
-                  data={ITEMS_PER_PAGE_OPTIONS}
-                  value={itemsPerPage.toString()}
-                  onChange={value =>
-                    setItemsPerPage(Number(value) || DEFAULT_ITEMS_PER_PAGE)
-                  }
-                  w={80}
-                  size='sm'
-                />
-              </Group>
-
-              {filteredEmployees.length !== employees.length && (
-                <Badge variant='light' color={currentThemeConfig.accentColor}>
-                  {filteredEmployees.length} of {employees.length} employees
-                </Badge>
-              )}
-            </Group>
-          </Stack>
+            {filteredEmployees.length !== employees.length && (
+              <Badge variant='light' color={currentThemeConfig.accentColor}>
+                {filteredEmployees.length} of {employees.length} employees
+              </Badge>
+            )}
+          </Flex>
         </Card>
 
         {/* Table or Cards based on screen size */}
@@ -697,14 +696,14 @@ const Employees = () => {
                             : 'Start by adding your first employee'}
                         </Text>
                         {!searchQuery && !roleFilter && (
-                          <Button
+                          <CommonButton
                             variant='light'
                             leftSection={<IconPlus size={16} />}
                             onClick={handleAddEmployee}
                             fullWidth={isSmallMobile}
                           >
                             Add Employee
-                          </Button>
+                          </CommonButton>
                         )}
                       </Stack>
                     </Card>
@@ -867,13 +866,13 @@ const Employees = () => {
                                 : 'Start by adding your first employee'}
                             </Text>
                             {!searchQuery && !roleFilter && (
-                              <Button
+                              <CommonButton
                                 variant='light'
                                 leftSection={<IconPlus size={16} />}
                                 onClick={handleAddEmployee}
                               >
                                 Add Employee
-                              </Button>
+                              </CommonButton>
                             )}
                           </Stack>
                         </Table.Td>

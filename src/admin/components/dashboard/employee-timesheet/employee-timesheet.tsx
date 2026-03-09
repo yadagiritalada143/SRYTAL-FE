@@ -5,7 +5,6 @@ import {
   Card,
   Flex,
   Text,
-  Button,
   Group,
   Badge,
   Modal,
@@ -46,6 +45,7 @@ import { toast } from 'react-toastify';
 import { useCustomToast } from '@utils/common/toast';
 import { getEmployeeInfoItems } from '../update-employee/helper-functions/add-package';
 import { useAppTheme } from '@hooks/use-app-theme';
+import { CommonButton } from '@components/common/button/CommonButton';
 
 // Constants
 const ITEMS_PER_PAGE_OPTIONS = ['10', '20', '50', '100'];
@@ -360,13 +360,13 @@ export const EmployeeTimesheetAdminView = () => {
             {error}
           </Text>
           <Center mt='md'>
-            <Button
+            <CommonButton
               onClick={() => window.location.reload()}
               fullWidth={isMobile}
               size={isSmallMobile ? 'sm' : 'md'}
             >
               Try Again
-            </Button>
+            </CommonButton>
           </Center>
         </Card>
       </Container>
@@ -487,7 +487,7 @@ export const EmployeeTimesheetAdminView = () => {
                 />
 
                 <Group gap='xs' grow={isMobile}>
-                  <Button
+                  <CommonButton
                     color={
                       bulkStatus === TimesheetStatus.Approved ? 'green' : 'red'
                     }
@@ -502,7 +502,7 @@ export const EmployeeTimesheetAdminView = () => {
                     onClick={open}
                   >
                     {isSmallMobile ? 'Apply' : 'Apply Action'}
-                  </Button>
+                  </CommonButton>
 
                   <ActionIcon
                     variant='subtle'
@@ -641,14 +641,14 @@ export const EmployeeTimesheetAdminView = () => {
             )}
           </Text>
           <Group justify='flex-end' grow={isMobile}>
-            <Button
+            <CommonButton
               variant='outline'
               onClick={close}
               size={isSmallMobile ? 'xs' : 'sm'}
             >
               Cancel
-            </Button>
-            <Button
+            </CommonButton>
+            <CommonButton
               color={bulkStatus === TimesheetStatus.Approved ? 'green' : 'red'}
               onClick={() => handleStatusChange(selectedTimesheets, bulkStatus)}
               size={isSmallMobile ? 'xs' : 'sm'}
@@ -656,7 +656,7 @@ export const EmployeeTimesheetAdminView = () => {
               {isSmallMobile
                 ? 'Confirm'
                 : `Confirm ${bulkStatus === TimesheetStatus.Approved ? 'Approval' : 'Rejection'}`}
-            </Button>
+            </CommonButton>
           </Group>
         </Stack>
       </Modal>

@@ -3,7 +3,6 @@ import {
   Container,
   Card,
   Title,
-  Button,
   Group,
   TextInput,
   Select,
@@ -34,7 +33,6 @@ import {
   GenerateSalarySlipForm
 } from '@forms/generate-salary-slip';
 import { PreviewSalarySlipResponse } from '@interfaces/salary-slip';
-import { useRecoilValue } from 'recoil';
 
 import { useMediaQuery } from '@mantine/hooks';
 import { useCustomToast } from '@utils/common/toast';
@@ -42,6 +40,7 @@ import DynamicStepper from '@common/reports-salary-slip/dynamicstepper';
 
 import GlobalLoader from '@UI/Loaders/GlobalLoader';
 import { useAppTheme } from '@hooks/use-app-theme';
+import { CommonButton } from '@components/common/button/CommonButton';
 
 type ReadOnlyFieldProps = {
   label: string;
@@ -686,9 +685,7 @@ const GenerateSalarySlipReport = () => {
               </Grid>
 
               <Group justify='flex-end' mt='xl'>
-                <Button onClick={nextStep} radius='md'>
-                  Next
-                </Button>
+                <CommonButton onClick={nextStep}>Next</CommonButton>
               </Group>
             </Stack>,
             //{/* ================= STEP 2 ================= */}
@@ -866,16 +863,15 @@ const GenerateSalarySlipReport = () => {
                 <Group justify='space-between' mb='md'>
                   <Title order={6}>Additional Allowances</Title>
 
-                  <Button
+                  <CommonButton
                     type='button'
                     variant='light'
-                    radius='md'
                     onClick={() =>
                       append({ label: '', amount: 0, type: 'add' })
                     }
                   >
                     + Add More
-                  </Button>
+                  </CommonButton>
                 </Group>
 
                 <Stack>
@@ -922,15 +918,14 @@ const GenerateSalarySlipReport = () => {
                           />
                         </Grid.Col>
                         <Grid.Col span={2}>
-                          <Button
+                          <CommonButton
                             type='button'
                             color='red'
-                            radius='md'
                             variant='subtle'
                             onClick={() => remove(index)}
                           >
                             Remove
-                          </Button>
+                          </CommonButton>
                         </Grid.Col>
                       </Grid>
                     </Group>
@@ -939,17 +934,13 @@ const GenerateSalarySlipReport = () => {
               </Card>
 
               <Group justify='space-between' mt='xl'>
-                <Button variant='default' radius='md' onClick={prevStep}>
+                <CommonButton variant='default' onClick={prevStep}>
                   Back
-                </Button>
+                </CommonButton>
 
-                <Button
-                  loading={isPreviewLoading}
-                  onClick={nextStep}
-                  radius='md'
-                >
+                <CommonButton loading={isPreviewLoading} onClick={nextStep}>
                   Preview
-                </Button>
+                </CommonButton>
               </Group>
             </Stack>,
 
@@ -1379,19 +1370,17 @@ const GenerateSalarySlipReport = () => {
                 </Grid>
                 <Divider mt='xl' />
                 <Group justify='space-between' pb='md'>
-                  <Button
+                  <CommonButton
                     variant='subtle'
                     color='gray'
-                    radius='md'
                     onClick={prevStep}
                     disabled={activeStep === 3}
                   >
                     Back
-                  </Button>
+                  </CommonButton>
 
-                  <Button
+                  <CommonButton
                     type='submit'
-                    radius='md'
                     loading={isGenerating}
                     leftSection={
                       activeStep === 3 ? <IconCheck size={16} /> : null
@@ -1400,7 +1389,7 @@ const GenerateSalarySlipReport = () => {
                     {activeStep === 3
                       ? 'Salary Slip Generated'
                       : 'Download Salary Slip'}
-                  </Button>
+                  </CommonButton>
                 </Group>
               </Stack>
             </form>,
@@ -1420,13 +1409,12 @@ const GenerateSalarySlipReport = () => {
                 The salary slip has been successfully generated and downloaded.
               </Text>
 
-              <Button
+              <CommonButton
                 variant='light'
-                radius='md'
                 onClick={() => window.location.reload()}
               >
                 Generate Another Salary Slip
-              </Button>
+              </CommonButton>
             </Stack>
           ]}
         </DynamicStepper>

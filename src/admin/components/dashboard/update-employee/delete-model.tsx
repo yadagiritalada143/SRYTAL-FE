@@ -1,4 +1,5 @@
-import { Button, Checkbox, Title } from '@mantine/core';
+import { CommonButton } from '@components/common/button/CommonButton';
+import { Checkbox, Title } from '@mantine/core';
 import { StandardModal } from '@UI/Models/base-model';
 
 interface DeleteEmployeeModalProps {
@@ -18,30 +19,30 @@ export const DeleteEmployeeModel: React.FC<DeleteEmployeeModalProps> = ({
   setConfirmDelete,
   agreeTerms,
   setAgreeTerms,
-  handleDeleteEmployee,
+  handleDeleteEmployee
 }) => {
   return (
     <StandardModal
       title={
-        <Title order={3} c="red">
+        <Title order={3} c='red'>
           Delete Action
         </Title>
       }
-      size="md"
+      size='md'
       opened={opened}
       onClose={close}
     >
       <div>
-        <h2 className="font-bold text-lg">
+        <h2 className='font-bold text-lg'>
           Are you sure you want to delete this employee?
         </h2>
-        <p className="mt-4 font-bold text-gray-600">
+        <p className='mt-4 font-bold text-gray-600'>
           This action is irreversible. Deleting an employee will permanently
           remove their details from the system.
         </p>
-        <div className="mt-4 space-y-2">
+        <div className='mt-4 space-y-2'>
           <Checkbox
-            label="I understand the consequences of this action."
+            label='I understand the consequences of this action.'
             checked={confirmDelete}
             onChange={e => setConfirmDelete(e.currentTarget.checked)}
             required
@@ -52,15 +53,15 @@ export const DeleteEmployeeModel: React.FC<DeleteEmployeeModalProps> = ({
             onChange={e => setAgreeTerms(e.currentTarget.checked)}
           />
         </div>
-        <div className="flex justify-between mt-8">
+        <div className='flex justify-between mt-8'>
           <button
-            className="bg-red-500 text-white py-2 px-4 rounded disabled:opacity-50"
+            className='bg-red-500 text-white py-2 px-4 rounded disabled:opacity-50'
             onClick={handleDeleteEmployee}
             disabled={!confirmDelete}
           >
             Delete
           </button>
-          <Button onClick={close}>Cancel</Button>
+          <CommonButton onClick={close}>Cancel</CommonButton>
         </div>
       </div>
     </StandardModal>
