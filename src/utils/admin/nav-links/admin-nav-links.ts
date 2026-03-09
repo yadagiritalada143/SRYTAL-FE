@@ -3,6 +3,7 @@ import {
   IconDroplet,
   IconNetwork,
   IconNotebook,
+  IconNotification,
   IconPackage,
   IconSettings,
   IconUserEdit,
@@ -31,6 +32,12 @@ export const adminNavLinks = [
     url: 'admin/dashboard/packages',
     icon: IconPackage,
     name: 'Packages'
+  },
+  {
+    role: 'admin',
+    url: 'admin/dashboard/notification',
+    icon: IconNotification,
+    name: 'Notification'
   },
   {
     role: 'admin',

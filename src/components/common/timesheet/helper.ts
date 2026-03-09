@@ -66,7 +66,7 @@ export const formatData = (data: { packageId: Package; tasks: Task[] }[]) => {
       task.timesheet.map(timesheet => {
         const status = timesheet.status;
         return {
-          date: moment(timesheet.date).format('YYYY-MM-DD'),
+          date: moment.utc(timesheet.date).format('YYYY-MM-DD'),
           isVacation: timesheet.isVacation ?? false,
           isHoliday: timesheet.isHoliday ?? false,
           isWeekOff: timesheet.isWeekOff ?? false,
@@ -253,11 +253,11 @@ export const prepareSubmitData = (
       date: moment(entry.date).format('YYYY-MM-DD'),
       hours: entry.hours,
       comments: entry.comments,
-      isVacation: false,
-      isHoliday: false,
-      isWeekOff: false,
+      isVacation: entry.isVacation,
+      isHoliday: entry.isHoliday,
+      isWeekOff: entry.isWeekOff,
       id: entry.id,
-      leaveReason: '',
+      leaveReason: entry.leaveReason,
       status: status
         ? status === 'Not Submitted'
           ? 'Waiting For Approval'

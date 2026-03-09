@@ -215,10 +215,8 @@ const DateTableComponent = () => {
       return;
     }
 
-    const formattedDate = moment(currentEntry.date).format('YYYY-MM-DD');
-
     const newEntry = {
-      date: formattedDate,
+      date: currentEntry.date,
       isVacation: false,
       isHoliday: false,
       isWeekOff: false,
@@ -238,7 +236,7 @@ const DateTableComponent = () => {
         e =>
           e.project_id === currentEntry.project_id &&
           e.task_id === currentEntry.task_id &&
-          e.date === formattedDate
+          e.date === currentEntry.date
       );
 
       if (existingIndex >= 0) {
@@ -656,7 +654,7 @@ const DateTableComponent = () => {
                             e =>
                               e.project_id === project.id &&
                               e.task_id === task.id &&
-                              e.date === moment(date).format('YYYY-MM-DD')
+                              e.date === date.split('T')[0]
                           );
                           return (
                             <Table.Td
@@ -666,7 +664,7 @@ const DateTableComponent = () => {
                               {entry
                                 ? renderHoursCell(entry)
                                 : renderHoursCell({
-                                    date: moment(date).format('YYYY-MM-DD'),
+                                    date: date.split('T')[0],
                                     isVacation: false,
                                     isHoliday: false,
                                     isWeekOff: false,
@@ -710,6 +708,65 @@ const DateTableComponent = () => {
             </div>
           )}
         </Card>
+
+        {/* Leave Summary */}
+        {timeEntries.some(ts => ts.isVacation) && (
+          <Card shadow='sm' p='md' radius='md' withBorder>
+            <Stack gap='sm'>
+              <Group gap='xs'>
+                <IconCalendarOff size={20} />
+                <Text size='lg' fw={600}>
+                  Leave Summary
+                </Text>
+              </Group>
+              <Group gap='md'>
+                <Badge
+                  color='orange'
+                  variant='light'
+                  size='lg'
+                  leftSection={<IconClock size={14} />}
+                >
+                  Pending:{' '}
+                  {
+                    timeEntries.filter(
+                      ts =>
+                        ts.isVacation &&
+                        ts.status === TimesheetStatus.WaitingForApproval
+                    ).length
+                  }
+                </Badge>
+                <Badge
+                  color='green'
+                  variant='light'
+                  size='lg'
+                  leftSection={<IconCheck size={14} />}
+                >
+                  Approved:{' '}
+                  {
+                    timeEntries.filter(
+                      ts =>
+                        ts.isVacation && ts.status === TimesheetStatus.Approved
+                    ).length
+                  }
+                </Badge>
+                <Badge
+                  color='red'
+                  variant='light'
+                  size='lg'
+                  leftSection={<IconX size={14} />}
+                >
+                  Rejected:{' '}
+                  {
+                    timeEntries.filter(
+                      ts =>
+                        ts.isVacation && ts.status === TimesheetStatus.Rejected
+                    ).length
+                  }
+                </Badge>
+              </Group>
+            </Stack>
+          </Card>
+        )}
 
         {/* Time Entries Summary */}
         <TimeEntriesTable

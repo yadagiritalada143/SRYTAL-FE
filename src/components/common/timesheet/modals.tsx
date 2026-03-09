@@ -9,7 +9,8 @@ import {
   Stack,
   ScrollArea,
   Divider,
-  Card
+  Card,
+  Tooltip
 } from '@mantine/core';
 import { StandardModal } from '@UI/Models/base-model';
 import moment from 'moment';
@@ -295,7 +296,7 @@ export const ApplyLeaveTimesheetModal = React.memo(
                   task_id: task.id,
                   project_name: project.name,
                   task_name: task.name,
-                  status: 'pending'
+                  status: 'Waiting For Approval'
                 }
               ]
             }))
@@ -360,6 +361,55 @@ export const ApplyLeaveTimesheetModal = React.memo(
             placeholder='Select leave date'
             value={leaveDate}
             onChange={handleDateChange}
+            excludeDate={date => {
+              const d = new Date(date);
+              const day = d.getDay();
+              const isWeekend = day === 0 || day === 6;
+              const formattedDate = moment.utc(d).format('YYYY-MM-DD');
+              const hasExistingLeave = timeEntries.some(
+                ts =>
+                  ts.isVacation &&
+                  moment.utc(ts.date).format('YYYY-MM-DD') === formattedDate
+              );
+              return isWeekend || hasExistingLeave;
+            }}
+            renderDay={date => {
+              const d = new Date(date);
+              const day = d.getDay();
+              const isWeekend = day === 0 || day === 6;
+              const formattedDate = moment.utc(d).format('YYYY-MM-DD');
+              const hasExistingLeave = timeEntries.some(
+                ts =>
+                  ts.isVacation &&
+                  moment.utc(ts.date).format('YYYY-MM-DD') === formattedDate
+              );
+
+              const tooltipLabel = isWeekend
+                ? 'Week Off'
+                : hasExistingLeave
+                  ? 'Leave Already Applied'
+                  : null;
+
+              if (tooltipLabel) {
+                return (
+                  <Tooltip label={tooltipLabel} withArrow position='top'>
+                    <div
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                    >
+                      {new Date(date).getDate()}
+                    </div>
+                  </Tooltip>
+                );
+              }
+
+              return <div>{new Date(date).getDate()}</div>;
+            }}
             minDate={new Date()}
             maxDate={moment().add(3, 'months').toDate()}
             clearable
@@ -367,7 +417,6 @@ export const ApplyLeaveTimesheetModal = React.memo(
             size={isMobile ? 'sm' : 'md'}
             leftSection={<IconCalendarOff size={16} />}
           />
-
           <Textarea
             label='Leave Reason'
             description='Please provide a reason for your leave'
@@ -380,9 +429,7 @@ export const ApplyLeaveTimesheetModal = React.memo(
             maxRows={6}
             size={isMobile ? 'sm' : 'md'}
           />
-
           <Divider />
-
           <Group justify='flex-end' gap='xs'>
             <Button
               variant='default'
