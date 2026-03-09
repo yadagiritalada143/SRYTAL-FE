@@ -50,17 +50,11 @@ export const TimeEntriesTable = ({
       <Stack gap='md'>
         <Group justify='space-between' align='center'>
           <Group gap='xs'>
-    <Card shadow='sm' p={isMobile ? 'sm' : 'md'} radius='md' withBorder>
-      <Stack gap='md'>
-        <Group justify='space-between' align='center'>
-          <Group gap='xs'>
             <IconClock size={20} />
-            <Text size='lg' fw={600}>
             <Text size='lg' fw={600}>
               Time Entries Summary
             </Text>
           </Group>
-          <Badge size='lg' variant='light' color='blue'>
           <Badge size='lg' variant='light' color='blue'>
             {changesMade.length}{' '}
             {changesMade.length === 1 ? 'entry' : 'entries'}
@@ -96,17 +90,14 @@ export const TimeEntriesTable = ({
                   style={{ width: isMobile ? '70px' : '100px' }}
                 >
                   <Text size='sm' fw={500}>
-                  <Text size='sm' fw={500}>
                     Hours
                   </Text>
                 </Table.Th>
                 {!isMobile && (
                   <Table.Th
                     className='p-2 border'
-                    className='p-2 border'
                     style={{ minWidth: '180px' }}
                   >
-                    <Text size='sm' fw={500}>
                     <Text size='sm' fw={500}>
                       Comment
                     </Text>
@@ -117,7 +108,6 @@ export const TimeEntriesTable = ({
                   ta='center'
                   style={{ width: isMobile ? '100px' : '230px' }}
                 >
-                  <Text size='sm' fw={500}>
                   <Text size='sm' fw={500}>
                     Status
                   </Text>
@@ -141,8 +131,6 @@ export const TimeEntriesTable = ({
                     )}
                     <Table.Td className='p-2 border text-center'>
                       <Text fw={500} size='sm'>
-                    <Table.Td className='p-2 border text-center'>
-                      <Text fw={500} size='sm'>
                         {entry.hours}
                       </Text>
                     </Table.Td>
@@ -160,9 +148,7 @@ export const TimeEntriesTable = ({
                       </Table.Td>
                     )}
                     <Table.Td className='p-2 border text-center'>
-                    <Table.Td className='p-2 border text-center'>
                       <Badge
-                        size='sm'
                         size='sm'
                         color={
                           entry.status === 'Approved'
@@ -173,7 +159,6 @@ export const TimeEntriesTable = ({
                                 ? 'orange'
                                 : 'gray'
                         }
-                        variant='light'
                         variant='light'
                       >
                         {!pendingChanges && entry.status === 'Not Submitted'
