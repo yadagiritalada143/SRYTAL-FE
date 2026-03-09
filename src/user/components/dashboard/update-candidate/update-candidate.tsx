@@ -256,7 +256,7 @@ const UpdatePoolCandidateForm = () => {
                         <CommonButton
                           onClick={handleSkillAdd}
                           leftSection={<IconPlus size={16} />}
-                          size={isMobile ? 'sm' : 'md'}
+                          size={isMobile ? 'xs' : 'sm'}
                         >
                           Add
                         </CommonButton>

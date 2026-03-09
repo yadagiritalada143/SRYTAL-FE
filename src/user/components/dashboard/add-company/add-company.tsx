@@ -241,7 +241,7 @@ const AddCompany = () => {
                   variant='light'
                   onClick={handleGoBack}
                   disabled={isSubmitting}
-                  size={isMobile ? 'sm' : 'md'}
+                  size={isMobile ? 'xs' : 'sm'}
                   fullWidth={isMobile}
                 >
                   Cancel
@@ -249,7 +249,7 @@ const AddCompany = () => {
                 <CommonButton
                   type='submit'
                   disabled={isSubmitting}
-                  size={isMobile ? 'sm' : 'md'}
+                  size={isMobile ? 'xs' : 'sm'}
                   fullWidth={isMobile}
                   leftSection={
                     isSubmitting ? (

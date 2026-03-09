@@ -560,7 +560,7 @@ const PackagesFormComponent = ({ employeeId }: PackagesFormProps) => {
                   <CommonButton
                     onClick={proceedToTaskSelection}
                     disabled={selectedPackages.length === 0}
-                    size={isMobile ? 'sm' : 'md'}
+                    size={isMobile ? 'xs' : 'sm'}
                     fullWidth={isSmallMobile}
                     rightSection={<IconArrowRight size={isMobile ? 14 : 16} />}
                     style={{
