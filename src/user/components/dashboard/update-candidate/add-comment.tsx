@@ -57,7 +57,7 @@ const AddComment = ({ candidateId }: AddCommentProps) => {
   };
 
   return (
-    <div className='w-full max-w-3xl mx-auto my-6'>
+    <div className='w-full max-w-4xl mx-auto my-6'>
       <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md' withBorder>
         <Stack gap='md'>
           <Text size={isMobile ? 'lg' : 'xl'} fw={700}>

@@ -767,6 +767,7 @@ const PackagesFormComponent = ({ employeeId }: PackagesFormProps) => {
                     onClick={close}
                     size={isMobile ? 'sm' : 'md'}
                     fullWidth={isSmallMobile}
+                    radius='md'
                   >
                     Cancel
                   </Button>

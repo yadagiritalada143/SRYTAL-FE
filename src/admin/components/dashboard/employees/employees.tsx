@@ -699,6 +699,7 @@ const Employees = () => {
                         {!searchQuery && !roleFilter && (
                           <Button
                             variant='light'
+                            radius='md'
                             leftSection={<IconPlus size={16} />}
                             onClick={handleAddEmployee}
                             fullWidth={isSmallMobile}
@@ -869,6 +870,7 @@ const Employees = () => {
                             {!searchQuery && !roleFilter && (
                               <Button
                                 variant='light'
+                                radius='md'
                                 leftSection={<IconPlus size={16} />}
                                 onClick={handleAddEmployee}
                               >

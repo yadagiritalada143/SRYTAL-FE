@@ -112,7 +112,7 @@ const AddPoolCandidate = () => {
 
   return (
     <Container
-      size='xl'
+      size='lg'
       py='md'
       my='xl'
       mt={70}
@@ -136,13 +136,12 @@ const AddPoolCandidate = () => {
               </Text>
             </Group>
             <Button
-              leftSection={<IconArrowLeft size={16} />}
               onClick={handleGoBack}
               variant='light'
-              size={isMobile ? 'sm' : 'md'}
+              size={isMobile ? 'xs' : 'sm'}
               radius='md'
             >
-              Go Back
+              <IconArrowLeft size={18} />
             </Button>
           </Group>
         </Card>
@@ -316,7 +315,7 @@ const AddPoolCandidate = () => {
                       <Button
                         onClick={handleSkillAdd}
                         leftSection={<IconPlus size={16} />}
-                        size={isMobile ? 'sm' : 'md'}
+                        size={isMobile ? 'xs' : 'sm'}
                         disabled={!skillInput.trim()}
                         radius='md'
                       >
@@ -454,7 +453,7 @@ const AddPoolCandidate = () => {
                   variant='light'
                   onClick={handleGoBack}
                   disabled={isSubmitting}
-                  size={isMobile ? 'sm' : 'md'}
+                  size={isMobile ? 'xs' : 'sm'}
                   fullWidth={isMobile}
                   radius='md'
                 >
@@ -463,7 +462,7 @@ const AddPoolCandidate = () => {
                 <Button
                   type='submit'
                   disabled={isSubmitting}
-                  size={isMobile ? 'sm' : 'md'}
+                  size={isMobile ? 'xs' : 'sm'}
                   fullWidth={isMobile}
                   radius='md'
                   leftSection={

@@ -47,6 +47,7 @@ const AdminProfile = () => {
             <Button
               leftSection={<IconRefresh size={16} />}
               onClick={() => refetch()}
+              radius='md'
             >
               Try Again
             </Button>

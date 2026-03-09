@@ -271,12 +271,14 @@ const MobileTimesheetCard: React.FC<{
                     color='green'
                     onClick={() => onApprove(timesheet.id)}
                     leftSection={<IconCircleCheck size={14} />}
+                    radius='md'
                   >
                     Approve
                   </Button>
                   <Button
                     size='xs'
                     variant='light'
+                    radius='md'
                     color='red'
                     onClick={() => onReject(timesheet.id)}
                     leftSection={<IconCircleX size={14} />}
@@ -308,6 +310,7 @@ const TimesheetActions: React.FC<{
           size='xs'
           variant='light'
           color='green'
+          radius='md'
           onClick={() => onApprove(timesheet.id)}
           disabled={!isPending}
           leftSection={<IconCircleCheck size={14} />}
@@ -322,6 +325,7 @@ const TimesheetActions: React.FC<{
           color='red'
           onClick={() => onReject(timesheet.id)}
           disabled={!isPending}
+          radius='md'
           leftSection={<IconCircleX size={14} />}
         >
           Reject
@@ -620,6 +624,7 @@ export const EmployeeTimesheetAdminView = () => {
             <Button
               onClick={() => window.location.reload()}
               fullWidth={isMobile}
+              radius='md'
               size={isSmallMobile ? 'sm' : 'md'}
             >
               Try Again
@@ -769,6 +774,7 @@ export const EmployeeTimesheetAdminView = () => {
               <Button
                 variant='light'
                 fullWidth
+                radius='md'
                 size={isSmallMobile ? 'xs' : 'sm'}
                 onClick={() => setFiltersExpanded(!filtersExpanded)}
                 rightSection={
@@ -925,6 +931,7 @@ export const EmployeeTimesheetAdminView = () => {
                       bulkStatus === TimesheetStatus.Approved ? 'green' : 'red'
                     }
                     size={isSmallMobile ? 'xs' : 'sm'}
+                    radius='md'
                     leftSection={
                       bulkStatus === TimesheetStatus.Approved ? (
                         <IconCircleCheck size={16} />
@@ -1139,6 +1146,7 @@ export const EmployeeTimesheetAdminView = () => {
               variant='outline'
               onClick={close}
               size={isSmallMobile ? 'xs' : 'sm'}
+              radius='md'
             >
               Cancel
             </Button>
@@ -1146,6 +1154,7 @@ export const EmployeeTimesheetAdminView = () => {
               color={bulkStatus === TimesheetStatus.Approved ? 'green' : 'red'}
               onClick={() => handleStatusChange(selectedTimesheets, bulkStatus)}
               size={isSmallMobile ? 'xs' : 'sm'}
+              radius='md'
             >
               {isSmallMobile
                 ? 'Confirm'

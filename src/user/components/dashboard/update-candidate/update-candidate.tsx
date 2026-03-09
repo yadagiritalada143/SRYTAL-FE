@@ -128,7 +128,7 @@ const UpdatePoolCandidateForm = () => {
   };
 
   return (
-    <Container size='xl' py='md' my='xl' px={isSmallMobile ? 'xs' : 'md'}>
+    <Container size='lg' py='md' my='xl' px={isSmallMobile ? 'xs' : 'md'}>
       <Stack gap='md'>
         {/* Header Card */}
         <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md' withBorder>

@@ -95,6 +95,7 @@ const GenerateOfferReport = () => {
                 <Button
                   type='submit'
                   disabled={isSubmitting}
+                  radius='md'
                   leftSection={
                     isSubmitting && <PremiumLoader size='xs' minHeight='20px' />
                   }

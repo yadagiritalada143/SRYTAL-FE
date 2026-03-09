@@ -91,6 +91,7 @@ const EmployeesForSuperadmin = () => {
                   isSubmitting && <PremiumLoader size='xs' minHeight='20px' />
                 }
                 disabled={isSubmitting}
+                radius='md'
               >
                 {isSubmitting ? 'Searching...' : 'Search'}
               </Button>

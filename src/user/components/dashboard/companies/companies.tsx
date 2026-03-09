@@ -637,48 +637,51 @@ const Companies = () => {
 
         {/* Filters */}
         <Card shadow='sm' p={isMobile ? 'sm' : 'md'} radius='md' withBorder>
-          <Stack gap='md'>
-            <Group grow={!isMobile}>
-              <TextInput
-                placeholder='Search by company name, contact name, email, or phone...'
-                leftSection={<IconSearch size={16} />}
-                onChange={e => debouncedSearch(e.target.value)}
-                radius='md'
-                size={isMobile ? 'sm' : 'md'}
-              />
+          <Flex
+            gap='md'
+            align='center'
+            wrap={isMobile ? 'wrap' : 'nowrap'}
+            justify='space-between'
+          >
+            <TextInput
+              placeholder='Search by company name, contact name, email, or phone...'
+              leftSection={<IconSearch size={16} />}
+              onChange={e => debouncedSearch(e.target.value)}
+              radius='md'
+              size={isMobile ? 'sm' : 'md'}
+              style={{ flex: 1, minWidth: isMobile ? '100%' : '320px' }}
+            />
+            <Select
+              placeholder='Filter by status'
+              data={uniqueStatuses}
+              value={statusFilter}
+              onChange={value => setStatusFilter(value ?? '')}
+              clearable
+              leftSection={<IconFilter size={16} />}
+              radius='md'
+              size={isMobile ? 'sm' : 'md'}
+              style={{ minWidth: isMobile ? '100%' : '180px' }}
+            />
+
+            <Group gap='xs'>
+              <Text size='sm'>Items per page:</Text>
               <Select
-                placeholder='Filter by status'
-                data={uniqueStatuses}
-                value={statusFilter}
-                onChange={value => setStatusFilter(value ?? '')}
-                clearable
-                leftSection={<IconFilter size={16} />}
-                radius='md'
-                size={isMobile ? 'sm' : 'md'}
+                data={ITEMS_PER_PAGE_OPTIONS}
+                value={itemsPerPage.toString()}
+                onChange={value =>
+                  setItemsPerPage(Number(value) || DEFAULT_ITEMS_PER_PAGE)
+                }
+                w={70}
+                size='sm'
               />
             </Group>
 
-            <Group justify='space-between' wrap={isMobile ? 'wrap' : 'nowrap'}>
-              <Group gap='xs'>
-                <Text size='sm'>Items per page:</Text>
-                <Select
-                  data={ITEMS_PER_PAGE_OPTIONS}
-                  value={itemsPerPage.toString()}
-                  onChange={value =>
-                    setItemsPerPage(Number(value) || DEFAULT_ITEMS_PER_PAGE)
-                  }
-                  w={80}
-                  size='sm'
-                />
-              </Group>
-
-              {filteredCompanies.length !== companies.length && (
-                <Badge variant='light' color='blue'>
-                  {filteredCompanies.length} of {companies.length} companies
-                </Badge>
-              )}
-            </Group>
-          </Stack>
+            {filteredCompanies.length !== companies.length && (
+              <Badge variant='light' color='blue'>
+                {filteredCompanies.length} of {companies.length} companies
+              </Badge>
+            )}
+          </Flex>
         </Card>
 
         <Card shadow='sm' p={0} radius='md' withBorder>

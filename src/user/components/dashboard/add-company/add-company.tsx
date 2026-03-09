@@ -68,7 +68,7 @@ const AddCompany = () => {
 
   return (
     <Container
-      size='xl'
+      size='lg'
       py='md'
       my='xl'
       mt={70}
@@ -92,13 +92,12 @@ const AddCompany = () => {
               </Text>
             </Group>
             <Button
-              leftSection={<IconArrowLeft size={16} />}
               onClick={handleGoBack}
               variant='light'
-              size={isMobile ? 'sm' : 'md'}
+              size={isMobile ? 'xs' : 'sm'}
               radius='md'
             >
-              Go Back
+              <IconArrowLeft size={18} />
             </Button>
           </Group>
         </Card>

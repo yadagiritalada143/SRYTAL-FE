@@ -72,47 +72,52 @@ export const ChangePasswordPopup: React.FC<ChangePasswordPopupProps> = ({
       forceAction={forceUpdate}
       title={<Title order={3}>Update Your Password</Title>}
     >
-      <Text size="sm" color="dimmed" mb="lg">
+      <Text size='sm' color='dimmed' mb='lg'>
         For security reasons, please update your password regularly.
       </Text>
 
       <form onSubmit={handleSubmit(onSubmit)}>
-        <Stack gap="md">
+        <Stack gap='md'>
           <PasswordInput
             {...register('oldPassword')}
-            label="Current Password"
-            placeholder="Enter your current password"
+            label='Current Password'
+            placeholder='Enter your current password'
             error={errors.oldPassword?.message}
             withAsterisk
           />
 
           <PasswordInput
             {...register('newPassword')}
-            label="New Password"
-            placeholder="Enter your new password"
+            label='New Password'
+            placeholder='Enter your new password'
             error={errors.newPassword?.message}
             withAsterisk
           />
 
           <PasswordInput
             {...register('confirmNewPassword')}
-            label="Confirm New Password"
-            placeholder="Re-enter your new password"
+            label='Confirm New Password'
+            placeholder='Re-enter your new password'
             error={errors.confirmNewPassword?.message}
             withAsterisk
           />
 
-          <div className="flex justify-end gap-3 mt-4">
+          <div className='flex justify-end gap-3 mt-4'>
             {!forceUpdate && (
-              <Button variant="outline" onClick={close} disabled={isLoading}>
+              <Button
+                variant='outline'
+                onClick={close}
+                disabled={isLoading}
+                radius='md'
+              >
                 Cancel
               </Button>
             )}
             <Button
-              type="submit"
+              type='submit'
               loading={isLoading}
               disabled={isLoading}
-              radius="md"
+              radius='md'
             >
               Update Password
             </Button>

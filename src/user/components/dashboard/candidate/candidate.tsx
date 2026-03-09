@@ -558,36 +558,40 @@ const PoolCandidateList = () => {
 
         {/* Filters */}
         <Card shadow='sm' p={isMobile ? 'sm' : 'md'} radius='md' withBorder>
-          <Stack gap='md'>
+          <Flex
+            gap='md'
+            align='center'
+            wrap={isMobile ? 'wrap' : 'nowrap'}
+            justify='space-between'
+          >
             <TextInput
               placeholder='Search by name, email, phone, or skills...'
               leftSection={<IconSearch size={16} />}
               onChange={e => debouncedSearch(e.target.value)}
               radius='md'
               size={isMobile ? 'sm' : 'md'}
+              style={{ flex: 1, minWidth: isMobile ? '100%' : '320px' }}
             />
 
-            <Group justify='space-between' wrap={isMobile ? 'wrap' : 'nowrap'}>
-              <Group gap='xs'>
-                <Text size='sm'>Items per page:</Text>
-                <Select
-                  data={ITEMS_PER_PAGE_OPTIONS}
-                  value={itemsPerPage.toString()}
-                  onChange={value =>
-                    setItemsPerPage(Number(value) || DEFAULT_ITEMS_PER_PAGE)
-                  }
-                  w={80}
-                  size='sm'
-                />
-              </Group>
-
-              {filteredCandidates.length !== candidates.length && (
-                <Badge variant='light' color='blue'>
-                  {filteredCandidates.length} of {candidates.length} candidates
-                </Badge>
-              )}
+            <Group gap='xs'>
+              <Text size='sm'>Items per page:</Text>
+              <Select
+                data={ITEMS_PER_PAGE_OPTIONS}
+                value={itemsPerPage.toString()}
+                onChange={value =>
+                  setItemsPerPage(Number(value) || DEFAULT_ITEMS_PER_PAGE)
+                }
+                w={70}
+                size='sm'
+              />
             </Group>
-          </Stack>
+
+            {filteredCandidates.length !== candidates.length && (
+              <Badge variant='light' color='blue'>
+                {filteredCandidates.length} of {candidates.length} candidates
+              </Badge>
+            )}
+          </Flex>
         </Card>
 
         <Card shadow='sm' p={0} radius='md' withBorder>

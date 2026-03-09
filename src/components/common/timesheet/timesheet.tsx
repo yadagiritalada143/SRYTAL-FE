@@ -350,7 +350,7 @@ const DateTableComponent = () => {
             openEditModal(timesheet, setCurrentEntry, openEntryModal)
           }
           style={{
-            height: '28px',
+            height: isMobile ? '36px' : '28px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -372,7 +372,7 @@ const DateTableComponent = () => {
   };
 
   return (
-    <Container size='xl' py='md' my='xl' px={isSmallMobile ? 'xs' : 'md'}>
+    <Container size='xl' py='xl' my='xl' px={isSmallMobile ? 'xs' : 'md'}>
       <Stack gap='md'>
         {/* Header Card */}
         <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md' withBorder>
@@ -397,7 +397,12 @@ const DateTableComponent = () => {
             {/* Date Controls */}
             <Grid gutter='md'>
               <Grid.Col span={{ base: 12, md: 7 }}>
-                <Group wrap='nowrap'>
+                <Group
+                  wrap={isMobile ? 'wrap' : 'nowrap'}
+                  gap='xs'
+                  justify={isMobile ? 'center' : 'flex-start'}
+                >
+                  {' '}
                   <ActionIcon
                     variant='outline'
                     radius='xl'
@@ -409,7 +414,6 @@ const DateTableComponent = () => {
                   >
                     <IconChevronLeft size={isMobile ? 16 : 18} />
                   </ActionIcon>
-
                   <DatePickerInput
                     type='range'
                     onChange={value => setDateRange(value)}
@@ -425,7 +429,6 @@ const DateTableComponent = () => {
                     placeholder='Pick date range'
                     allowSingleDateInRange={false}
                   />
-
                   <ActionIcon
                     variant='outline'
                     radius='xl'
@@ -442,9 +445,9 @@ const DateTableComponent = () => {
 
               <Grid.Col span={{ base: 12, md: 5 }}>
                 <Group
-                  justify={isMobile ? 'stretch' : 'flex-end'}
                   gap='xs'
-                  grow={isMobile}
+                  justify={isMobile ? 'center' : 'flex-end'}
+                  wrap={isMobile ? 'wrap' : 'nowrap'}
                 >
                   <Button
                     onClick={toggleSearch}
@@ -508,7 +511,8 @@ const DateTableComponent = () => {
                     leftSection={<IconCheck size={16} />}
                     color='green'
                     onClick={openSubmitModal}
-                    size={isMobile ? 'sm' : 'md'}
+                    size={isMobile ? 'xs' : 'sm'}
+                    radius='md'
                     fullWidth={isMobile}
                   >
                     Submit {changesMade.length} Change
@@ -555,6 +559,7 @@ const DateTableComponent = () => {
               onTouchEnd={handleTouchEnd}
               style={{
                 overflowX: 'auto',
+                WebkitOverflowScrolling: 'touch',
                 cursor: 'grab'
               }}
             >
@@ -567,7 +572,7 @@ const DateTableComponent = () => {
                 >
                   <Table.Tr>
                     <Table.Th
-                      className='p-2 border'
+                      className={isMobile ? 'p-1 border' : 'p-2 border'}
                       style={{ minWidth: '150px' }}
                     >
                       <Text size='sm' fw={600}>
@@ -621,7 +626,14 @@ const DateTableComponent = () => {
                             style={{ verticalAlign: 'middle' }}
                           >
                             <Center>
-                              <Text fw={500} size='sm' lineClamp={2}>
+                              <Text
+                                fw={500}
+                                size='sm'
+                                style={{
+                                  whiteSpace: 'normal',
+                                  wordBreak: 'break-word'
+                                }}
+                              >
                                 {project.title}
                               </Text>
                             </Center>

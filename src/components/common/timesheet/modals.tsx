@@ -169,7 +169,8 @@ export const EditTimeEntryModal = React.memo(
               variant='default'
               onClick={closeEntryModal}
               leftSection={<IconX size={16} />}
-              size={isMobile ? 'sm' : 'md'}
+              size={isMobile ? 'xs' : 'sm'}
+              radius='md'
             >
               Cancel
             </Button>
@@ -179,7 +180,8 @@ export const EditTimeEntryModal = React.memo(
               disabled={
                 !currentEntry.comments.trim() || currentEntry.hours === 0
               }
-              size={isMobile ? 'sm' : 'md'}
+              size={isMobile ? 'xs' : 'sm'}
+              radius='md'
             >
               Save Entry
             </Button>
@@ -387,7 +389,8 @@ export const ApplyLeaveTimesheetModal = React.memo(
               onClick={closeLeaveModal}
               disabled={isLoading}
               leftSection={<IconX size={16} />}
-              size={isMobile ? 'sm' : 'md'}
+              size={isMobile ? 'xs' : 'sm'}
+              radius='md'
             >
               Cancel
             </Button>
@@ -397,7 +400,8 @@ export const ApplyLeaveTimesheetModal = React.memo(
               loading={isLoading}
               disabled={!leaveDate || !leaveReason.trim()}
               leftSection={<IconCheck size={16} />}
-              size={isMobile ? 'sm' : 'md'}
+              size={isMobile ? 'xs' : 'sm'}
+              radius='md'
             >
               Submit Leave
             </Button>
@@ -451,7 +455,14 @@ const ChangeRow = React.memo(({ change, isMobile = false }: ChangeRowProps) => {
         </Badge>
       </Table.Td>
       <Table.Td className='p-2 border'>
-        <Text size='sm' lineClamp={isMobile ? 1 : 2}>
+        <Text
+          size='sm'
+          lineClamp={isMobile ? 1 : 2}
+          style={{
+            whiteSpace: 'normal',
+            wordBreak: 'break-word'
+          }}
+        >
           {change.comments}
         </Text>
       </Table.Td>
@@ -593,6 +604,7 @@ export const ConfirmTimesheetSubmitModal = React.memo(
                 <Table.Tr>
                   <Table.Th
                     className='p-2 border'
+                    ta='center'
                     style={{ minWidth: '100px' }}
                   >
                     <Text size='sm' fw={500}>
@@ -603,7 +615,8 @@ export const ConfirmTimesheetSubmitModal = React.memo(
                     <>
                       <Table.Th
                         className='p-2 border'
-                        style={{ minWidth: '150px' }}
+                        ta='center'
+                        style={{ minWidth: '140px' }}
                       >
                         <Text size='sm' fw={500}>
                           Project
@@ -611,6 +624,7 @@ export const ConfirmTimesheetSubmitModal = React.memo(
                       </Table.Th>
                       <Table.Th
                         className='p-2 border'
+                        ta='center'
                         style={{ minWidth: '150px' }}
                       >
                         <Text size='sm' fw={500}>
@@ -620,7 +634,8 @@ export const ConfirmTimesheetSubmitModal = React.memo(
                     </>
                   )}
                   <Table.Th
-                    className='p-2 border text-center'
+                    className='p-2 border'
+                    ta='center'
                     style={{ width: isMobile ? '80px' : '100px' }}
                   >
                     <Text size='sm' fw={500}>
@@ -629,6 +644,7 @@ export const ConfirmTimesheetSubmitModal = React.memo(
                   </Table.Th>
                   <Table.Th
                     className='p-2 border'
+                    ta='center'
                     style={{ minWidth: '180px' }}
                   >
                     <Text size='sm' fw={500}>
@@ -658,7 +674,8 @@ export const ConfirmTimesheetSubmitModal = React.memo(
               onClick={closeSubmitModal}
               disabled={isSubmitting}
               leftSection={<IconX size={16} />}
-              size={isMobile ? 'sm' : 'md'}
+              size={isMobile ? 'xs' : 'sm'}
+              radius='md'
             >
               Cancel
             </Button>
@@ -667,7 +684,8 @@ export const ConfirmTimesheetSubmitModal = React.memo(
               onClick={handleSubmit}
               loading={isSubmitting}
               leftSection={<IconCheck size={16} />}
-              size={isMobile ? 'sm' : 'md'}
+              size={isMobile ? 'xs' : 'sm'}
+              radius='md'
             >
               Confirm & Submit
             </Button>

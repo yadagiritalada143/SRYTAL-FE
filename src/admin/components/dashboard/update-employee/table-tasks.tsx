@@ -675,6 +675,7 @@ const PackagesTaskTable = ({
                 </Stack>
                 {searchTerm && (
                   <Button
+                    radius='md'
                     variant='light'
                     onClick={() => setSearchTerm('')}
                     leftSection={<IconX size={16} />}

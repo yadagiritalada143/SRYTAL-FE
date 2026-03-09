@@ -305,6 +305,7 @@ export const EmployeeTimesheetUpdateByAdmin = () => {
                           size='xs'
                           variant='outline'
                           color='green'
+                          radius='md'
                           onClick={() => {
                             setSelectedTimesheet(timesheet);
                             open();
@@ -352,6 +353,7 @@ export const EmployeeTimesheetUpdateByAdmin = () => {
               <Button
                 color='red'
                 leftSection={<IconX size={16} />}
+                radius='md'
                 onClick={() =>
                   handleStatusChange(selectedTimesheet.id, 'rejected')
                 }
@@ -360,6 +362,7 @@ export const EmployeeTimesheetUpdateByAdmin = () => {
               </Button>
               <Button
                 color='green'
+                radius='md'
                 leftSection={<IconCheck size={16} />}
                 onClick={() =>
                   handleStatusChange(selectedTimesheet.id, 'approved')

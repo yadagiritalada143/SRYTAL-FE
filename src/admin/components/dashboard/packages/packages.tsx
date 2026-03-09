@@ -448,36 +448,40 @@ const Packages = () => {
         />
 
         <Card shadow='sm' p={isMobile ? 'sm' : 'md'} radius='md' withBorder>
-          <Stack gap='md'>
+          <Flex
+            gap='md'
+            align='center'
+            wrap={isMobile ? 'wrap' : 'nowrap'}
+            justify='space-between'
+          >
             <TextInput
               placeholder='Search by title or description...'
               leftSection={<IconSearch size={16} />}
               onChange={e => debouncedSearch(e.target.value)}
               radius='md'
               size={isMobile ? 'sm' : 'md'}
+              style={{ flex: 1, minWidth: isMobile ? '100%' : '320px' }}
             />
 
-            <Group justify='space-between' wrap={isMobile ? 'wrap' : 'nowrap'}>
-              <Group gap='xs'>
-                <Text size='sm'>Items per page:</Text>
-                <Select
-                  data={ITEMS_PER_PAGE_OPTIONS}
-                  value={itemsPerPage.toString()}
-                  onChange={value =>
-                    setItemsPerPage(Number(value) || DEFAULT_ITEMS_PER_PAGE)
-                  }
-                  w={80}
-                  size='sm'
-                />
-              </Group>
-
-              {filteredPackages.length !== packages.length && (
-                <Badge variant='light' color={currentThemeConfig.accentColor}>
-                  {filteredPackages.length} of {packages.length} packages
-                </Badge>
-              )}
+            <Group gap='xs'>
+              <Text size='sm'>Items per page:</Text>
+              <Select
+                data={ITEMS_PER_PAGE_OPTIONS}
+                value={itemsPerPage.toString()}
+                onChange={value =>
+                  setItemsPerPage(Number(value) || DEFAULT_ITEMS_PER_PAGE)
+                }
+                w={70}
+                size='sm'
+              />
             </Group>
-          </Stack>
+
+            {filteredPackages.length !== packages.length && (
+              <Badge variant='light' color={currentThemeConfig.accentColor}>
+                {filteredPackages.length} of {packages.length} packages
+              </Badge>
+            )}
+          </Flex>
         </Card>
 
         <Card shadow='sm' p={0} radius='md' withBorder>

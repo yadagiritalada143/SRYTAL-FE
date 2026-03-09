@@ -37,7 +37,7 @@ const DataView: React.FC<DataViewProps> = ({
             Failed to load {label}
           </Text>
           {onRetry && (
-            <Button variant='light' color='blue' onClick={onRetry}>
+            <Button variant='light' color='blue' onClick={onRetry} radius='md'>
               Try Again
             </Button>
           )}
