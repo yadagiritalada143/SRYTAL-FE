@@ -29,7 +29,8 @@ import {
   getAllBloodGroupByAdmin,
   getEmployeeDetailsByAdmin,
   getAllEmploymentTypes,
-  getAllEmployeeRoleByAdmin
+  getAllEmployeeRoleByAdmin,
+  getAllDepartmentsByAdmin
 } from '@services/admin-services';
 import { toast } from 'react-toastify';
 import { useEffect, useState, useMemo } from 'react';
@@ -42,7 +43,8 @@ import {
   employeeDetailsAtom,
   bloodGroupOptionsAtom,
   employmentTypesAtom,
-  employeeRolesAtom
+  employeeRolesAtom,
+  departmentsAtom
 } from '@atoms/employee-atom';
 import {
   IconUser,
@@ -110,6 +112,8 @@ const UpdateEmployee = () => {
     useRecoilState(employeeRolesAtom);
   const [employmentTypeOptions, setEmploymentTypes] =
     useRecoilState(employmentTypesAtom);
+  const [departmentOptions, setDepartmentOptions] =
+    useRecoilState(departmentsAtom);
   const setEmployeeDetails = useSetRecoilState(employeeDetailsAtom);
 
   // Get current theme configuration
@@ -117,7 +121,7 @@ const UpdateEmployee = () => {
   const {
     register,
     handleSubmit,
-    formState: { errors, isDirty, isValid },
+    formState: { errors, isDirty },
     control,
     reset,
     watch
@@ -131,13 +135,13 @@ const UpdateEmployee = () => {
   useEffect(() => {
     const loadOptions = async () => {
       try {
-        const [employmentTypes, employeeRoles, bloodGroups] = await Promise.all(
-          [
+        const [employmentTypes, employeeRoles, bloodGroups, departments] =
+          await Promise.all([
             getAllEmploymentTypes(),
             getAllEmployeeRoleByAdmin(),
-            getAllBloodGroupByAdmin()
-          ]
-        );
+            getAllBloodGroupByAdmin(),
+            getAllDepartmentsByAdmin()
+          ]);
 
         setEmploymentTypes(
           employmentTypes.map((res: any) => ({
@@ -159,6 +163,13 @@ const UpdateEmployee = () => {
             label: res.type
           }))
         );
+
+        setDepartmentOptions(
+          departments.map((res: any) => ({
+            value: res._id,
+            label: res.departmentName
+          }))
+        );
       } catch (error: any) {
         toast.error(error?.response?.data?.message || 'Failed to load options');
       }
@@ -178,6 +189,7 @@ const UpdateEmployee = () => {
           bloodGroup: emp.bloodGroup?.id,
           employmentType: emp.employmentType?.id,
           employeeRole: emp.employeeRole.map((role: any) => role.id),
+          department: emp.department?.id,
           dateOfJoining: normalizeDate(emp.dateOfJoining),
           dateOfBirth: normalizeDate(emp.dateOfBirth),
           presentAddress: emp.presentAddress ?? '',
@@ -768,6 +780,33 @@ const UpdateEmployee = () => {
                               autoComplete='off'
                               required
                               error={errors.employeeRole?.message}
+                              searchable
+                              clearable
+                            />
+                          )}
+                        />
+                      </Grid.Col>
+
+                      <Grid.Col span={{ base: 12, md: 6 }}>
+                        <Controller
+                          name='department'
+                          control={control}
+                          render={({ field }) => (
+                            <Select
+                              label='Department'
+                              placeholder='Select department'
+                              leftSection={
+                                <IconBuildingBank
+                                  size={16}
+                                  color={currentThemeConfig.iconColor}
+                                />
+                              }
+                              data={departmentOptions || []}
+                              value={field.value ?? null}
+                              onChange={value =>
+                                field.onChange(value ?? undefined)
+                              }
+                              error={errors.department?.message}
                               searchable
                               clearable
                             />

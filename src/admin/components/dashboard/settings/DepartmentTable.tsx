@@ -1,9 +1,8 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Button,
   Group,
   Text,
-  Loader,
   Pagination,
   Modal,
   TextInput,
@@ -20,7 +19,6 @@ import {
   Flex,
   Divider
 } from '@mantine/core';
-import PremiumLoader from '@components/common/loaders/PremiumLoader';
 import DataView from '@components/common/loaders/DataView';
 import { useDisclosure, useMediaQuery } from '@mantine/hooks';
 import {
@@ -28,9 +26,9 @@ import {
   IconPlus,
   IconTrash,
   IconSearch,
-  IconAlertTriangle,
   IconDeviceFloppy,
-  IconCategory
+  IconCategory,
+  IconBuildingBank
 } from '@tabler/icons-react';
 import { debounce } from '@utils/common/debounce';
 import { useCustomToast } from '@utils/common/toast';
@@ -47,11 +45,7 @@ const DEFAULT_ITEMS_PER_PAGE = 10;
 
 export default function DepartmentTable() {
   const { showErrorToast, showSuccessToast } = useCustomToast();
-  const {
-    themeConfig: currentThemeConfig,
-    organizationConfig,
-    isDarkTheme
-  } = useAppTheme();
+  const { themeConfig: currentThemeConfig, isDarkTheme } = useAppTheme();
 
   const { data: departments = [], isLoading } = useGetAllDepartmentsByAdmin();
   const { mutateAsync: addDepartment, isPending: isAdding } =
@@ -430,7 +424,7 @@ export default function DepartmentTable() {
           onClose={closeAdd}
           title={
             <Group gap='xs'>
-              <IconCategory
+              <IconBuildingBank
                 size={20}
                 stroke={1.8}
                 color={currentThemeConfig.button.color}

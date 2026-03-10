@@ -40,6 +40,7 @@ export const employeeSchema = z.object({
   employeeRole: z
     .array(z.string())
     .min(1, 'At least one employee role is required'),
+  department: z.string().optional(),
   uanNumber: z
     .string()
     .trim()

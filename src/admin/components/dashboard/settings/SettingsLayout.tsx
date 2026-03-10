@@ -1,26 +1,18 @@
 import { Tabs, Container, Box } from '@mantine/core';
-import { useMemo } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-
-import { useRecoilValue } from 'recoil';
-
 import {
   IconBriefcase,
   IconDroplet,
   IconMessage2,
   IconUserCheck,
-  IconUser
+  IconBuildingBank
 } from '@tabler/icons-react';
 import { useMediaQuery } from '@mantine/hooks';
 import { useAppTheme } from '@hooks/use-app-theme';
 
 const SettingsLayout = () => {
   const location = useLocation();
-  const {
-    themeConfig: currentThemeConfig,
-    organizationConfig,
-    isDarkTheme
-  } = useAppTheme();
+  const { themeConfig: currentThemeConfig, isDarkTheme } = useAppTheme();
   const navigate = useNavigate();
   const isMobile = useMediaQuery('(max-width: 768px)');
 
@@ -81,7 +73,7 @@ const SettingsLayout = () => {
             </Tabs.Tab>
             <Tabs.Tab
               value='department-names'
-              leftSection={<IconUser size={16} stroke={1.8} />}
+              leftSection={<IconBuildingBank size={16} stroke={1.8} />}
             >
               Department
             </Tabs.Tab>
