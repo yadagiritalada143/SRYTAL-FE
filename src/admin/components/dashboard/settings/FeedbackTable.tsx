@@ -26,7 +26,8 @@ import {
   IconTrash,
   IconAlertTriangle,
   IconDeviceFloppy,
-  IconCategory
+  IconCategory,
+  IconMessage2
 } from '@tabler/icons-react';
 
 import { useEffect, useMemo, useState } from 'react';
@@ -447,7 +448,7 @@ export default function FeedbackTable() {
           onClose={closeAdd}
           title={
             <Group gap='xs'>
-              <IconCategory
+              <IconMessage2
                 size={20}
                 stroke={1.8}
                 color={currentThemeConfig.button.color}

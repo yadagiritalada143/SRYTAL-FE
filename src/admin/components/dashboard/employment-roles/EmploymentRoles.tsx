@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Group,
   Text,
@@ -27,7 +27,8 @@ import {
   IconSearch,
   IconAlertTriangle,
   IconDeviceFloppy,
-  IconBriefcase
+  IconBriefcase,
+  IconUserCheck
 } from '@tabler/icons-react';
 import { debounce } from '@utils/common/debounce';
 import { useCustomToast } from '@utils/common/toast';
@@ -555,7 +556,7 @@ const EmploymentRoles = () => {
           onClose={closeAddModal}
           title={
             <Group gap='xs'>
-              <IconBriefcase
+              <IconUserCheck
                 size={20}
                 stroke={1.8}
                 color={currentThemeConfig.button.color}

@@ -27,7 +27,8 @@ import {
   IconSearch,
   IconAlertTriangle,
   IconDeviceFloppy,
-  IconCategory
+  IconCategory,
+  IconBriefcase
 } from '@tabler/icons-react';
 import { debounce } from '@utils/common/debounce';
 import { useCustomToast } from '@utils/common/toast';
@@ -526,7 +527,7 @@ const EmploymentTypes = () => {
           onClose={closeAddModal}
           title={
             <Group gap='xs'>
-              <IconCategory
+              <IconBriefcase
                 size={20}
                 stroke={1.8}
                 color={currentThemeConfig.button.color}
