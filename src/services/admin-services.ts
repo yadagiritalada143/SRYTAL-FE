@@ -734,3 +734,22 @@ export const addDepartmentByAdmin = async (data: {
     throw error;
   }
 };
+
+export const updateDepartmentByAdmin = async (
+  _id: string,
+  departmentName: string
+) => {
+  const token = localStorage.getItem('token');
+  try {
+    const response = await apiClient.put(
+      '/admin/updatedepartmentbyadmin',
+      { _id, departmentName },
+      {
+        headers: { auth_token: token }
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};

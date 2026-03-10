@@ -37,7 +37,10 @@ import { useCustomToast } from '@utils/common/toast';
 import { useAppTheme } from '@hooks/use-app-theme';
 import type { Department } from '@interfaces/department';
 import { useGetAllDepartmentsByAdmin } from '@hooks/queries/useAdminQueries';
-import { useAddDepartmentByAdmin } from '@hooks/mutations/useAdminMutations';
+import {
+  useAddDepartmentByAdmin,
+  useUpdateDepartmentByAdmin
+} from '@hooks/mutations/useAdminMutations';
 
 const ITEMS_PER_PAGE_OPTIONS = ['5', '10', '20', '50'];
 const DEFAULT_ITEMS_PER_PAGE = 10;
@@ -53,8 +56,10 @@ export default function DepartmentTable() {
   const { data: departments = [], isLoading } = useGetAllDepartmentsByAdmin();
   const { mutateAsync: addDepartment, isPending: isAdding } =
     useAddDepartmentByAdmin();
+  const { mutateAsync: updateDepartment, isPending: isUpdating } =
+    useUpdateDepartmentByAdmin();
 
-  const isMutating = isAdding;
+  const isMutating = isAdding || isUpdating;
 
   const [activePage, setActivePage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(DEFAULT_ITEMS_PER_PAGE);
@@ -98,10 +103,10 @@ export default function DepartmentTable() {
 
   const handleAdd = async () => {
     if (!newDepartmentName.trim())
-      return showErrorToast('Department name is required');
+      return showErrorToast('Department is required');
     try {
       await addDepartment({ departmentName: newDepartmentName.trim() } as any);
-      showSuccessToast('Department Name added successfully !!');
+      showSuccessToast('Department added successfully !!');
       setNewDepartmentName('');
       closeAdd();
     } catch {
@@ -112,6 +117,21 @@ export default function DepartmentTable() {
   const handleEdit = (item: Department) => {
     setSelected(item);
     openEdit();
+  };
+
+  const confirmEdit = async () => {
+    if (!selected?.departmentName.trim()) return showErrorToast('Required');
+
+    try {
+      await updateDepartment({
+        id: selected._id,
+        departmentName: selected.departmentName.trim()
+      });
+      showSuccessToast('Department updated successfully !!');
+      closeEdit();
+    } catch {
+      showErrorToast('Failed to update');
+    }
   };
 
   /*---------------PAGINATION----------------*/
@@ -156,7 +176,7 @@ export default function DepartmentTable() {
 
           <Stack gap={2}>
             <Text size='xs' fw={600} c='dimmed'>
-              Department Name
+              Department
             </Text>
             <Text size='lg' fw={600}>
               {type.departmentName}
@@ -189,7 +209,7 @@ export default function DepartmentTable() {
               gap='md'
             >
               <Text size={isMobile ? 'lg' : 'xl'} fw={700}>
-                Manage Department Names ({filtered.length})
+                Manage Departments ({filtered.length})
               </Text>
 
               <Button
@@ -198,7 +218,7 @@ export default function DepartmentTable() {
                 fullWidth={isMobile}
                 radius='md'
               >
-                Add Department Name
+                Add Department
               </Button>
             </Flex>
           </Card>
@@ -211,7 +231,7 @@ export default function DepartmentTable() {
               gap='md'
             >
               <TextInput
-                placeholder='Search department name....'
+                placeholder='Search department....'
                 leftSection={<IconSearch size={16} />}
                 value={searchQuery}
                 onChange={handleSearch}
@@ -243,7 +263,7 @@ export default function DepartmentTable() {
           </Card>
 
           {/*TABLE*/}
-          <DataView isLoading={isLoading} label='Department Names'>
+          <DataView isLoading={isLoading} label='Departments'>
             {isMobile ? (
               <ScrollArea p='md'>
                 <Stack gap='sm'>
@@ -252,12 +272,12 @@ export default function DepartmentTable() {
                       <Stack align='center' gap='md'>
                         <IconCategory size={48} opacity={0.5} />
                         <Text size='lg' ta='center'>
-                          No Department Names found
+                          No Department found
                         </Text>
                         <Text size='sm' ta='center'>
                           {searchQuery
                             ? 'Try adjusting your search'
-                            : 'Start by adding your first department names'}
+                            : 'Start by adding your first departments'}
                         </Text>
                         {!searchQuery && (
                           <Button
@@ -266,7 +286,7 @@ export default function DepartmentTable() {
                             onClick={openAdd}
                             fullWidth={isSmallMobile}
                           >
-                            Add Department Name
+                            Add Department
                           </Button>
                         )}
                       </Stack>
@@ -319,7 +339,7 @@ export default function DepartmentTable() {
                       </Table.Th>
                       <Table.Th className='p-3'>
                         <Text size='sm' fw={500}>
-                          Department Names
+                          Departments
                         </Text>
                       </Table.Th>
                       <Table.Th className='p-3' style={{ width: '100px' }}>
@@ -339,11 +359,11 @@ export default function DepartmentTable() {
                           <Center py='xl'>
                             <Stack align='center' gap='xs'>
                               <IconCategory size={40} opacity={0.5} />
-                              <Text> No Department Names found </Text>
+                              <Text> No Departments found </Text>
                               <Text size='sm'>
                                 {searchQuery
                                   ? 'Try adjusting your search'
-                                  : 'Start by adding your first department name'}
+                                  : 'Start by adding your first department'}
                               </Text>
                               {!searchQuery && (
                                 <Button
@@ -353,7 +373,7 @@ export default function DepartmentTable() {
                                   radius='md'
                                   color={currentThemeConfig.button.color}
                                 >
-                                  Add Department Name
+                                  Add Department
                                 </Button>
                               )}
                             </Stack>
@@ -416,7 +436,7 @@ export default function DepartmentTable() {
                 color={currentThemeConfig.button.color}
               />
               <Text fw={600} size='lg'>
-                Add New Department Name
+                Add New Department
               </Text>
             </Group>
           }
@@ -432,10 +452,10 @@ export default function DepartmentTable() {
           <Stack>
             <TextInput
               mt='md'
-              label='Department Name'
+              label='Department'
               value={newDepartmentName}
               onChange={e => setNewDepartmentName(e.target.value)}
-              placeholder='Enter the department Name'
+              placeholder='Enter the department'
               required
             />
             <Group justify='flex-end'>
@@ -449,6 +469,83 @@ export default function DepartmentTable() {
               >
                 {isAdding ? 'Adding...' : 'Add'}
               </Button>
+            </Group>
+          </Stack>
+        </Modal>
+
+        {/* EDIT MODAL */}
+        <Modal
+          opened={editOpened}
+          onClose={closeEdit}
+          title={
+            <Group gap='xs'>
+              <IconEdit size={20} color={currentThemeConfig.button.color} />
+              <Text fw={600} size='lg'>
+                Edit Department
+              </Text>
+            </Group>
+          }
+          centered
+          size='md'
+          styles={{
+            header: {
+              paddingBottom: 4,
+              paddingTop: 5
+            }
+          }}
+        >
+          <Stack>
+            <TextInput
+              mt='md'
+              label='Department'
+              placeholder='Enter the department'
+              value={selected?.departmentName || ''}
+              onChange={e =>
+                setSelected(prev =>
+                  prev ? { ...prev, departmentName: e.target.value } : prev
+                )
+              }
+              required
+              size='md'
+            />
+
+            <Group justify='space-between'>
+              {isMobile ? (
+                <Tooltip label='Delete'>
+                  <Button
+                    onClick={openDelete}
+                    p='xs'
+                    radius='md'
+                    variant='outline'
+                  >
+                    <IconTrash size={16} />
+                  </Button>
+                </Tooltip>
+              ) : (
+                <Button
+                  color='red'
+                  variant='outline'
+                  onClick={openDelete}
+                  radius='md'
+                  leftSection={<IconTrash size={16} />}
+                >
+                  Delete
+                </Button>
+              )}
+
+              <Group>
+                <Button variant='default' onClick={closeEdit} radius='md'>
+                  Cancel
+                </Button>
+                <Button
+                  onClick={confirmEdit}
+                  leftSection={<IconDeviceFloppy size={16} />}
+                  disabled={isMutating}
+                  radius='md'
+                >
+                  {isUpdating ? 'Saving....' : 'Save'}
+                </Button>
+              </Group>
             </Group>
           </Stack>
         </Modal>
