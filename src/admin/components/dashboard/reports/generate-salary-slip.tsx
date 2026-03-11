@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Container,
   Card,
@@ -90,6 +90,9 @@ type Employee = {
   lastName?: string;
   email?: string;
   dateOfBirth?: string;
+  department?: {
+    departmentName?: string;
+  };
   dateOfJoining?: string;
   uanNumber?: string;
   panCardNumber?: string;
@@ -114,11 +117,7 @@ const stepsConfig = [
 
 const GenerateSalarySlipReport = () => {
   const [activeStep, setActiveStep] = useState(0);
-  const {
-    themeConfig: currentThemeConfig,
-    organizationConfig,
-    isDarkTheme
-  } = useAppTheme();
+  const { themeConfig: currentThemeConfig, isDarkTheme } = useAppTheme();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [isLoadingEmployees, setIsLoadingEmployees] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -282,7 +281,7 @@ const GenerateSalarySlipReport = () => {
       empName:
         selectedEmployee.firstName + ' ' + (selectedEmployee.lastName || ''),
       designation: selectedEmployee.employeeRole?.[0]?.designation || '',
-      department: 'Engineering',
+      department: selectedEmployee.department?.departmentName || '',
       dateOfJoining: selectedEmployee.dateOfJoining || '',
       uanNumber: selectedEmployee.uanNumber || '',
       email: selectedEmployee.email ?? '',
@@ -579,6 +578,14 @@ const GenerateSalarySlipReport = () => {
                   <ReadOnlyField
                     label='Date of Birth'
                     value={empDetails.dob}
+                    color={currentThemeConfig.color}
+                  />
+                </Grid.Col>
+
+                <Grid.Col span={{ base: 12, sm: 6 }}>
+                  <ReadOnlyField
+                    label='Department'
+                    value={empDetails.department}
                     color={currentThemeConfig.color}
                   />
                 </Grid.Col>
@@ -1069,6 +1076,13 @@ const GenerateSalarySlipReport = () => {
                           <Text size='sm'>Designation</Text>
                           <Text size='sm' fw={600}>
                             {empDetails.designation}
+                          </Text>
+                        </Group>
+
+                        <Group justify='space-between'>
+                          <Text size='sm'>Department</Text>
+                          <Text size='sm' fw={600}>
+                            {empDetails.department}
                           </Text>
                         </Group>
 
