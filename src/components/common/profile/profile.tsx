@@ -24,9 +24,11 @@ import {
   IconMapPin,
   IconBriefcase,
   IconBuildingBank,
-  IconFingerprint
+  IconFingerprint,
+  IconUserCog
 } from '@tabler/icons-react';
 import { useAppTheme } from '@hooks/use-app-theme';
+import { useState } from 'react';
 
 // Info Item Component
 const InfoItem: React.FC<{
@@ -55,8 +57,9 @@ const InfoItem: React.FC<{
 const Profile = ({ details }: { details: EmployeeInterface }) => {
   // Responsive breakpoints
   const isMobile = useMediaQuery('(max-width: 768px)');
-  const { themeConfig: currentThemeConfig } = useAppTheme();
+  const { themeConfig: currentThemeConfig, isDarkTheme } = useAppTheme();
   const isSmallMobile = useMediaQuery('(max-width: 500px)');
+  const [activeTab, setActiveTab] = useState<string | null>('employment');
 
   // Helper function to format ISO date to readable format
   const formatDate = (isoDate: string): string => {
@@ -79,7 +82,7 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
         {/* Header Card with Profile Image */}
         <Card
           shadow='sm'
-          p={isMobile ? 'md' : 'lg'}
+          p='xs'
           radius='md'
           withBorder
           mt='xl'
@@ -119,7 +122,7 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                     <Badge
                       size={isMobile ? 'sm' : 'md'}
                       variant='light'
-                      color='blue'
+                      color={currentThemeConfig.accentColor}
                       w='fit-content'
                     >
                       {details.userRole}
@@ -128,7 +131,11 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                 </Stack>
               </Group>
               {!isMobile && details.userRole && (
-                <Badge size='md' variant='light' color='blue'>
+                <Badge
+                  size='md'
+                  variant='light'
+                  color={currentThemeConfig.accentColor}
+                >
                   {details.userRole}
                 </Badge>
               )}
@@ -235,6 +242,18 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                   iconColor={currentThemeConfig.accentColor}
                 />
               </Grid.Col>
+
+              <Grid.Col span={{ base: 12, xs: 6, sm: 6, md: 4 }}>
+                <InfoItem
+                  icon={<IconFingerprint size={18} />}
+                  label='UAN Number'
+                  value={details.uanNumber}
+                  isMobile={isMobile}
+                  mutedTextColor={currentThemeConfig.mutedTextColor}
+                  iconColor={currentThemeConfig.accentColor}
+                />
+              </Grid.Col>
+
               <Grid.Col span={{ base: 12, xs: 6, sm: 6, md: 4 }}>
                 <InfoItem
                   icon={<IconCalendar size={18} />}
@@ -261,54 +280,52 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
           }}
         >
           <Tabs
-            defaultValue='employment'
+            value={activeTab}
+            onChange={setActiveTab}
+            variant='default'
             orientation='horizontal'
+            classNames={{
+              tab: 'settings-tab'
+            }}
             styles={{
-              tab: {
-                color: currentThemeConfig.mutedTextColor
-              },
-              tabLabel: {
-                color: currentThemeConfig.mutedTextColor
-              },
-              tabSection: {
-                color: currentThemeConfig.accentColor
-              },
               list: {
-                borderColor: currentThemeConfig.borderColor
+                flexWrap: isMobile ? 'wrap' : 'nowrap',
+                justifyContent: isMobile ? 'center' : 'flex-start',
+                gap: isMobile ? 8 : 0
+              },
+              tab: {
+                fontWeight: 500,
+                transition: 'color 0.2s ease',
+                ...(isDarkTheme && {
+                  color: currentThemeConfig.color,
+                  '&[data-active]': {
+                    color: '#ffffff'
+                  },
+                  '&[data-active] svg': {
+                    color: '#ffffff'
+                  }
+                })
               }
             }}
           >
-            <Tabs.List
-              p='md'
-              style={{
-                display: 'flex',
-                flexWrap: isMobile ? 'wrap' : 'nowrap',
-                justifyContent: 'flex-start'
-              }}
-            >
+            <Tabs.List mb='md'>
               <Tabs.Tab
                 value='employment'
-                leftSection={
-                  <IconBriefcase
-                    size={16}
-                    color={currentThemeConfig.iconColor}
-                  />
-                }
+                leftSection={<IconBriefcase size={16} stroke={1.8} />}
                 w={isMobile ? '50%' : 'auto'}
               >
                 Employment
               </Tabs.Tab>
               <Tabs.Tab
                 value='address'
-                leftSection={<IconMapPin size={16} />}
+                leftSection={<IconMapPin size={16} stroke={1.8} />}
                 w={isMobile ? '40%' : 'auto'}
               >
                 Address
               </Tabs.Tab>
               <Tabs.Tab
                 value='bankDetails'
-                leftSection={<IconBuildingBank size={16} />}
-                w={isMobile ? '50%' : 'auto'}
+                leftSection={<IconBuildingBank size={16} stroke={1.8} />}
                 mt={isMobile ? 'sm' : '0'}
               >
                 Bank Details
@@ -342,7 +359,11 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                             Employment Type
                           </Text>
                         </Group>
-                        <Badge size='md' variant='light' color='teal'>
+                        <Badge
+                          size='md'
+                          variant='light'
+                          color={currentThemeConfig.successColor}
+                        >
                           {details.employmentType?.employmentType || 'N/A'}
                         </Badge>
                       </Stack>
@@ -360,7 +381,7 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                     >
                       <Stack gap='xs'>
                         <Group gap='xs' align='center'>
-                          <IconBriefcase
+                          <IconUserCog
                             size={16}
                             color={currentThemeConfig.iconColor}
                           />
@@ -380,7 +401,7 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                                 key={role._id}
                                 size='md'
                                 variant='outline'
-                                color='blue'
+                                color={currentThemeConfig.accentColor}
                               >
                                 {role.designation}
                               </Badge>
@@ -394,6 +415,47 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                             </Text>
                           )}
                         </Group>
+                      </Stack>
+                    </Paper>
+                  </Grid.Col>
+                  <Grid.Col span={{ base: 12, sm: 6 }}>
+                    <Paper
+                      p='md'
+                      withBorder
+                      radius='md'
+                      style={{
+                        color: currentThemeConfig.color,
+                        borderColor: currentThemeConfig.borderColor
+                      }}
+                    >
+                      <Stack gap='xs'>
+                        <Group gap='xs' align='center'>
+                          <IconBuildingBank
+                            size={16}
+                            color={currentThemeConfig.iconColor}
+                          />
+                          <Text
+                            size='xs'
+                            c={currentThemeConfig.mutedTextColor}
+                            fw={500}
+                          >
+                            Department
+                          </Text>
+                        </Group>
+
+                        {details.department?.departmentName ? (
+                          <Badge
+                            size='md'
+                            variant='outline'
+                            color={currentThemeConfig.accentColor}
+                          >
+                            {details.department.departmentName}
+                          </Badge>
+                        ) : (
+                          <Text size='sm' c={currentThemeConfig.mutedTextColor}>
+                            N/A
+                          </Text>
+                        )}
                       </Stack>
                     </Paper>
                   </Grid.Col>

@@ -75,7 +75,11 @@ const ProfileImage = () => {
         <div
           className={`absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 ${
             localImageUrl ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'
-          } transition-opacity rounded-lg`}
+          } transition-opacity`}
+          style={{
+            borderRadius: '55px',
+            overflow: 'hidden'
+          }}
         >
           <label className='cursor-pointer flex flex-col items-center justify-center'>
             <IconUpload className='text-white' size={24} />
