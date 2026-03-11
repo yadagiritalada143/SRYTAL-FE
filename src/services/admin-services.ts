@@ -716,7 +716,7 @@ export const getAllDepartmentsByAdmin = async () => {
       headers: { auth_token: token }
     });
 
-    return response.data.data.departmentResponse;
+    return response.data.data.departments;
   } catch (error) {
     throw error;
   }
