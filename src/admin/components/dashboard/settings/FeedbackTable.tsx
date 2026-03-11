@@ -349,19 +349,25 @@ export default function FeedbackTable() {
                     }}
                   >
                     <Table.Tr>
-                      <Table.Th className='p-3' style={{ width: '100px' }}>
+                      <Table.Th
+                        className='p-3 border'
+                        style={{ width: '100px' }}
+                      >
                         <Group justify='center'>
                           <Text size='sm' fw={500}>
                             S.No
                           </Text>
                         </Group>
                       </Table.Th>
-                      <Table.Th className='p-3'>
+                      <Table.Th className='p-3 border'>
                         <Text size='sm' fw={500}>
                           Feedback Attributes
                         </Text>
                       </Table.Th>
-                      <Table.Th className='p-3' style={{ width: '120px' }}>
+                      <Table.Th
+                        className='p-3 border'
+                        style={{ width: '120px' }}
+                      >
                         <Group justify='center'>
                           <Text size='sm' fw={500}>
                             Actions

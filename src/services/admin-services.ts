@@ -716,7 +716,7 @@ export const getAllDepartmentsByAdmin = async () => {
       headers: { auth_token: token }
     });
 
-    return response.data.data.departmentResponse;
+    return response.data.data.departments;
   } catch (error) {
     throw error;
   }
@@ -744,6 +744,21 @@ export const updateDepartmentByAdmin = async (
     const response = await apiClient.put(
       '/admin/updatedepartmentbyadmin',
       { _id, departmentName },
+      {
+        headers: { auth_token: token }
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const deleteDepartmentByAdmin = async (id: string) => {
+  const token = localStorage.getItem('token');
+  try {
+    const response = await apiClient.delete(
+      `/admin/deletedepartmentbyadmin/${id}`,
       {
         headers: { auth_token: token }
       }

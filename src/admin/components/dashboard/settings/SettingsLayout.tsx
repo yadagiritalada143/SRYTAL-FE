@@ -72,7 +72,7 @@ const SettingsLayout = () => {
               Employment Roles
             </Tabs.Tab>
             <Tabs.Tab
-              value='department-names'
+              value='departments'
               leftSection={<IconBuildingBank size={16} stroke={1.8} />}
             >
               Department
