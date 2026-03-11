@@ -753,3 +753,18 @@ export const updateDepartmentByAdmin = async (
     throw error;
   }
 };
+
+export const deleteDepartmentByAdmin = async (id: string) => {
+  const token = localStorage.getItem('token');
+  try {
+    const response = await apiClient.delete(
+      `/admin/deletedepartmentbyadmin/${id}`,
+      {
+        headers: { auth_token: token }
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};

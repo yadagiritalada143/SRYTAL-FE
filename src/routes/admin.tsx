@@ -557,7 +557,7 @@ const AdminRoutes = () => {
               <Route path='blood-groups' element={<BloodGroupTable />} />
               <Route path='employment-types' element={<EmploymentTypes />} />
               <Route path='employment-roles' element={<EmploymentRoles />} />
-              <Route path='department-names' element={<DepartmentTable />} />
+              <Route path='departments' element={<DepartmentTable />} />
               <Route path='feedback' element={<FeedbackTable />} />
             </Route>
           </Route>

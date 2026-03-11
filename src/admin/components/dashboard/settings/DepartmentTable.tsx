@@ -26,6 +26,7 @@ import {
   IconPlus,
   IconTrash,
   IconSearch,
+  IconAlertTriangle,
   IconDeviceFloppy,
   IconCategory,
   IconBuildingBank
@@ -37,7 +38,8 @@ import type { Department } from '@interfaces/department';
 import { useGetAllDepartmentsByAdmin } from '@hooks/queries/useAdminQueries';
 import {
   useAddDepartmentByAdmin,
-  useUpdateDepartmentByAdmin
+  useUpdateDepartmentByAdmin,
+  useDeleteDepartmentByAdmin
 } from '@hooks/mutations/useAdminMutations';
 
 const ITEMS_PER_PAGE_OPTIONS = ['5', '10', '20', '50'];
@@ -52,8 +54,10 @@ export default function DepartmentTable() {
     useAddDepartmentByAdmin();
   const { mutateAsync: updateDepartment, isPending: isUpdating } =
     useUpdateDepartmentByAdmin();
+  const { mutateAsync: deleteDepartment, isPending: isDeleting } =
+    useDeleteDepartmentByAdmin();
 
-  const isMutating = isAdding || isUpdating;
+  const isMutating = isAdding || isUpdating || isDeleting;
 
   const [activePage, setActivePage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(DEFAULT_ITEMS_PER_PAGE);
@@ -125,6 +129,19 @@ export default function DepartmentTable() {
       closeEdit();
     } catch {
       showErrorToast('Failed to update');
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (!selected) return;
+
+    try {
+      await deleteDepartment(selected._id);
+      showSuccessToast('Department deleted successfully !! ');
+      closeDelete();
+      closeEdit();
+    } catch {
+      showErrorToast('Failed to delete');
     }
   };
 
@@ -266,7 +283,7 @@ export default function DepartmentTable() {
                       <Stack align='center' gap='md'>
                         <IconCategory size={48} opacity={0.5} />
                         <Text size='lg' ta='center'>
-                          No Department found
+                          No Departments found
                         </Text>
                         <Text size='sm' ta='center'>
                           {searchQuery
@@ -324,19 +341,25 @@ export default function DepartmentTable() {
                     }}
                   >
                     <Table.Tr>
-                      <Table.Th className='p-3' style={{ width: '100px' }}>
+                      <Table.Th
+                        className='p-3 border'
+                        style={{ width: '100px' }}
+                      >
                         <Group justify='center'>
                           <Text size='sm' fw={500}>
                             S.No
                           </Text>
                         </Group>
                       </Table.Th>
-                      <Table.Th className='p-3'>
+                      <Table.Th className='p-3 border'>
                         <Text size='sm' fw={500}>
                           Departments
                         </Text>
                       </Table.Th>
-                      <Table.Th className='p-3' style={{ width: '100px' }}>
+                      <Table.Th
+                        className='p-3 border'
+                        style={{ width: '100px' }}
+                      >
                         <Group justify='center'>
                           <Text size='sm' fw={500}>
                             Actions
@@ -540,6 +563,43 @@ export default function DepartmentTable() {
                   {isUpdating ? 'Saving....' : 'Save'}
                 </Button>
               </Group>
+            </Group>
+          </Stack>
+        </Modal>
+
+        {/* DELETE MODAL */}
+        <Modal
+          opened={deleteOpened}
+          onClose={closeDelete}
+          title={
+            <Group gap='xs'>
+              <IconAlertTriangle size={24} color='red' />
+              <Text fw={600} size='lg' c='red'>
+                Delete Department
+              </Text>
+            </Group>
+          }
+          centered
+          size='md'
+        >
+          <Stack gap='md'>
+            <Text size='md' mt='sm'>
+              Are you sure you want to delete this department? This action
+              cannot be undone.
+            </Text>
+            <Group justify='flex-end' mt='md'>
+              <Button variant='default' onClick={closeDelete} radius='md'>
+                Cancel
+              </Button>
+              <Button
+                color='red'
+                onClick={confirmDelete}
+                disabled={isMutating}
+                leftSection={<IconTrash size={16} />}
+                radius='md'
+              >
+                {isDeleting ? 'Deleting...' : 'Delete'}
+              </Button>
             </Group>
           </Stack>
         </Modal>
