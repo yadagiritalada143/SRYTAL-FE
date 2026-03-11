@@ -583,7 +583,7 @@ export default function DepartmentTable() {
           size='md'
         >
           <Stack gap='md'>
-            <Text size='md' mt='sm'>
+            <Text size='sm' mt='sm'>
               Are you sure you want to delete this department? This action
               cannot be undone.
             </Text>

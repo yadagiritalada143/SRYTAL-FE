@@ -582,7 +582,7 @@ export default function FeedbackTable() {
           size='md'
         >
           <Stack gap='md'>
-            <Text size='md' mt='sm'>
+            <Text size='sm' mt='sm'>
               Are you sure you want to delete this feedback attribute? This
               action cannot be undone.
             </Text>
