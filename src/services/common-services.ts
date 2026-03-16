@@ -73,7 +73,7 @@ export const getOrganizationConfig = async (organizationName: string) => {
 export const getTimesheetData = async (
   startDate: DateValue,
   endDate: DateValue,
-  employeeId?: string
+  employeeId: string
 ) => {
   try {
     const { data } = await apiClient.post('/fetchEmployeePackageDetailsById', {
@@ -90,12 +90,13 @@ export const getTimesheetData = async (
   }
 };
 
-export const submitTimeSheet = async (data: any, employeeId?: string) => {
+export const submitTimeSheet = async (data: any, employeeId: string) => {
   try {
-    await apiClient.put('updateEmployeeTimesheet', {
+    const response = await apiClient.put('updateEmployeeTimesheet', {
       packages: data,
       ...(employeeId && { employeeId: employeeId })
     });
+    return response.data;
   } catch (error) {
     throw error;
   }
@@ -124,5 +125,45 @@ export const downloadSalarySlip = async ({
     if (error?.response?.data) {
       return error.response.data;
     }
+  }
+};
+
+export const uploadProfileImage = async (image: File, employeeId: string) => {
+  try {
+    const formData = new FormData();
+    formData.append('profileImage', image);
+    formData.append('userId', employeeId);
+
+    const response = await apiClient.post('/uploadProfileImage', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+
+    return response.data;
+  } catch (error: any) {
+    console.error(
+      'Profile Image Upload Error:',
+      error?.response?.data || error.message
+    );
+    throw new Error('Failed to upload profile image');
+  }
+};
+
+export const getProfileImage = async (): Promise<Blob> => {
+  try {
+    const response = await apiClient.get('/getProfileImage', {
+      responseType: 'blob'
+    });
+
+    if (response.data.size === 0) {
+      throw new Error('No image found');
+    }
+
+    return response.data;
+  } catch (error: any) {
+    console.error(
+      'Error fetching profile image:',
+      error?.response?.data || error.message
+    );
+    throw new Error('Failed to fetch profile image');
   }
 };

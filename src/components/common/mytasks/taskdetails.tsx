@@ -15,9 +15,6 @@ import { useRecoilState } from 'recoil';
 import ProgressBar from '@UI/Buttonsanimate/ProgressBar';
 import { taskAtom } from '@atoms/mytasks-atom';
 import { Lesson, Task } from '@interfaces/mytasks';
-import { useRecoilValue } from 'recoil';
-
-
 
 import {
   IconArrowLeft,
@@ -31,6 +28,7 @@ import { organizationEmployeeUrls } from '@utils/common/constants';
 import { toast } from 'react-toastify';
 import { StandardModal } from '@UI/Models/base-model';
 import { useAppTheme } from '@hooks/use-app-theme';
+import { CommonButton } from '../button/CommonButton';
 
 const fakeTask: Task = {
   id: '1',
@@ -91,7 +89,11 @@ const fakeTask: Task = {
 
 const TaskDetail = () => {
   const { taskId } = useParams();
-  const { themeConfig: currentThemeConfig, organizationConfig, isDarkTheme } = useAppTheme();
+  const {
+    themeConfig: currentThemeConfig,
+    organizationConfig,
+    isDarkTheme
+  } = useAppTheme();
   const [task, setTask] = useRecoilState<Task | null>(taskAtom);
   const [openSection, setOpenSection] = useState<string | null>(null);
   const [completedLessons, setCompletedLessons] = useState<string[]>([]);
@@ -102,8 +104,6 @@ const TaskDetail = () => {
   );
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  
-  
 
   useEffect(() => {
     setLoading(true);
@@ -210,8 +210,8 @@ const TaskDetail = () => {
       <Center h={250}>
         <Loader
           mt={300}
-          size="lg"
-          type="bars"
+          size='lg'
+          type='bars'
           color={currentThemeConfig.button.color}
         />
       </Center>
@@ -220,7 +220,7 @@ const TaskDetail = () => {
 
   if (!task) {
     return (
-      <Center h="80vh">
+      <Center h='80vh'>
         <Text>No task found</Text>
       </Center>
     );
@@ -232,10 +232,10 @@ const TaskDetail = () => {
   const progress = Math.round((completedLessons.length / totalLessons) * 100);
 
   return (
-    <div className="flex flex-col gap-6 px-5 sm:px-8 lg:px-20">
+    <div className='flex flex-col gap-6 px-5 sm:px-8 lg:px-20'>
       {/* Back Button */}
       <BackButton
-        label="Back"
+        label='Back'
         onClick={() =>
           navigate(
             `${organizationEmployeeUrls(
@@ -245,92 +245,90 @@ const TaskDetail = () => {
         }
       />
 
-      <div className="flex flex-col lg:flex-row gap-8">
-        <div className="w-full lg:w-1/3 flex-shrink-0">
-          <Card shadow="md" radius="lg" withBorder p="lg">
-            <div className="rounded-lg overflow-hidden">
+      <div className='flex flex-col lg:flex-row gap-8'>
+        <div className='w-full lg:w-1/3 flex-shrink-0'>
+          <Card shadow='md' radius='lg' withBorder p='lg'>
+            <div className='rounded-lg overflow-hidden'>
               <img
                 src={task.image}
                 alt={task.name}
-                className="w-full h-50 object-cover"
+                className='w-full h-50 object-cover'
               />
             </div>
-            <Text size="xl" fw={700} mt="md">
+            <Text size='xl' fw={700} mt='md'>
               {task.name}
             </Text>
-            <Text size="sm" c="dimmed" mt="xs">
+            <Text size='sm' c='dimmed' mt='xs'>
               {task.description}
             </Text>
-            <div className="mt-4 flex gap-2 flex-wrap">
-              <Badge variant="outline" radius="sm" size="lg" color="gray">
+            <div className='mt-4 flex gap-2 flex-wrap'>
+              <Badge variant='outline' radius='sm' size='lg' color='gray'>
                 {totalLessons} lessons
               </Badge>
-              <Badge variant="outline" radius="sm" size="lg" color="gray">
+              <Badge variant='outline' radius='sm' size='lg' color='gray'>
                 {task.duration}
               </Badge>
             </div>
           </Card>
         </div>
-        <div className="flex-1">
-          <Card shadow="lg" radius="lg" withBorder p="lg" className="bg-white">
+        <div className='flex-1'>
+          <Card shadow='lg' radius='lg' withBorder p='lg' className='bg-white'>
             {/* Header */}
-            <div className="flex justify-between items-center mb-4">
-              <Text fw={700} size="lg" className="text-gray-800">
+            <div className='flex justify-between items-center mb-4'>
+              <Text fw={700} size='lg' className='text-gray-800'>
                 Course Progress
               </Text>
               <Badge
                 color={progress === 100 ? 'green' : 'yellow'}
-                size="lg"
-                radius="md"
-                variant="light"
+                size='lg'
+                radius='md'
+                variant='light'
               >
                 {progress === 100 ? 'Completed' : 'In Progress'}
               </Badge>
             </div>
 
             {/* Progress Bar */}
-            <div className="mb-3">
+            <div className='mb-3'>
               <ProgressBar progress={progress} />
             </div>
-            <Text size="sm" c="dimmed" className="mb-4">
+            <Text size='sm' c='dimmed' className='mb-4'>
               {completedLessons.length} of {totalLessons} lessons completed
             </Text>
 
             {/* Actions */}
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full items-center">
-              <Button
-                color="teal"
-                radius="md"
-                className="shadow-sm hover:shadow-md transition text-sm sm:text-base py-2 sm:py-3 [&>span]:whitespace-normal [&>span]:leading-snug text-center w-[90%] sm:w-1/2"
+            <div className='flex flex-col sm:flex-row gap-2 sm:gap-3 w-full items-center'>
+              <CommonButton
+                color='teal'
+                className='shadow-sm hover:shadow-md transition text-sm sm:text-base py-2 sm:py-3 [&>span]:whitespace-normal [&>span]:leading-snug text-center w-[90%] sm:w-1/2'
                 onClick={handleResumeCourse}
               >
                 Resume Course
-              </Button>
-              <Button
-                variant="light"
-                color="blue"
-                radius="md"
-                className="shadow-sm hover:shadow-md transition text-sm sm:text-base py-2 sm:py-3 [&>span]:whitespace-normal [&>span]:leading-snug text-center w-[90%] sm:w-1/2"
+              </CommonButton>
+              <CommonButton
+                variant='light'
+                color='blue'
+                className='shadow-sm hover:shadow-md transition text-sm sm:text-base py-2 sm:py-3 [&>span]:whitespace-normal [&>span]:leading-snug text-center w-[90%] sm:w-1/2'
                 onClick={handleMarkAsCompleted}
               >
                 Mark as Completed
-              </Button>
+              </CommonButton>
             </div>
           </Card>
 
           {/* Sections */}
-          <div className="mt-6">
+          <div className='mt-6'>
             {task.sections?.map((section, secIndex) => (
               <Card
                 key={section.id}
-                shadow="xs"
-                radius="md"
+                shadow='xs'
+                radius='md'
                 withBorder
-                p="md"
-                className="mb-4 hover:shadow-lg transition-all"
+                p='md'
+                className='mb-4 hover:shadow-lg transition-all'
               >
                 <div
-                  className="flex justify-between items-center cursor-pointer"
+                  className='flex justify-between items-center cursor-pointer'
                   onClick={() =>
                     setOpenSection(
                       openSection === section.id ? null : section.id
@@ -340,22 +338,22 @@ const TaskDetail = () => {
                   <Text fw={600}>
                     {secIndex + 1}. {section.title}{' '}
                   </Text>
-                  <Text size="sm" c="dimmed">
+                  <Text size='sm' c='dimmed'>
                     {section.lessons.length} lessons
                   </Text>
-                  <Text size="lg" fw={700}>
+                  <Text size='lg' fw={700}>
                     {openSection === section.id ? '−' : '+'}
                   </Text>
                 </div>
 
                 {/* Lessons List */}
                 <Collapse in={openSection === section.id}>
-                  <div className="mt-3 divide-y divide-gray-200">
+                  <div className='mt-3 divide-y divide-gray-200'>
                     {section.lessons.map(lesson => (
                       <div
                         key={lesson.id}
                         id={lesson.id}
-                        className="flex items-center justify-between py-2 group hover:bg-gray-50 rounded-md px-2 cursor-pointer flex-wrap"
+                        className='flex items-center justify-between py-2 group hover:bg-gray-50 rounded-md px-2 cursor-pointer flex-wrap'
                         onClick={() => {
                           const index = allLessons.findIndex(
                             (less: Lesson) => less.id === lesson.id
@@ -377,11 +375,11 @@ const TaskDetail = () => {
                         />
 
                         {/* Right side: dynamic icon */}
-                        <Group gap="xs" className="text-gray-500">
+                        <Group gap='xs' className='text-gray-500'>
                           {lesson.videoUrl && (
                             <>
                               <IconVideo size={18} />
-                              <Text size="sm" c="dimmed">
+                              <Text size='sm' c='dimmed'>
                                 {lesson.duration}
                               </Text>
                             </>
@@ -408,23 +406,23 @@ const TaskDetail = () => {
             centered
             title={selectedLesson?.title}
           >
-            <div className="overflow-y-hidden">
+            <div className='overflow-y-hidden'>
               {selectedLesson && (
                 <div>
                   {/* Right-side badges */}
-                  <Group mb="md" mt={10} justify="space-between">
+                  <Group mb='md' mt={10} justify='space-between'>
                     {selectedLesson.videoUrl && (
-                      <Badge color="red" leftSection={<IconVideo size={16} />}>
+                      <Badge color='red' leftSection={<IconVideo size={16} />}>
                         {selectedLesson.duration ?? 'Video'}
                       </Badge>
                     )}
                     {selectedLesson.pdfUrl && (
-                      <Badge color="blue" leftSection={<IconFile size={16} />}>
+                      <Badge color='blue' leftSection={<IconFile size={16} />}>
                         PDF
                       </Badge>
                     )}
                     {selectedLesson.link && (
-                      <Badge color="teal" leftSection={<IconLink size={16} />}>
+                      <Badge color='teal' leftSection={<IconLink size={16} />}>
                         Link
                       </Badge>
                     )}
@@ -432,10 +430,10 @@ const TaskDetail = () => {
 
                   {/* Video */}
                   {selectedLesson.videoUrl && (
-                    <div className="mb-4 rounded-lg overflow-hidden shadow-sm">
+                    <div className='mb-4 rounded-lg overflow-hidden shadow-sm'>
                       <video
                         controls
-                        className="w-full rounded-lg"
+                        className='w-full rounded-lg'
                         onEnded={() => {
                           handleLessonComplete();
                           handleNext();
@@ -443,7 +441,7 @@ const TaskDetail = () => {
                       >
                         <source
                           src={selectedLesson.videoUrl}
-                          type="video/mp4"
+                          type='video/mp4'
                         />
                         Your browser does not support video.
                       </video>
@@ -453,83 +451,80 @@ const TaskDetail = () => {
                   {/* PDF */}
                   {selectedLesson.pdfUrl && (
                     <Button
-                      component="a"
+                      component='a'
                       href={selectedLesson.pdfUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      variant="light"
-                      color="blue"
-                      radius="md"
+                      target='_blank'
+                      rel='noopener noreferrer'
+                      variant='light'
+                      color='blue'
+                      radius='md'
                       fullWidth
-                      mt="sm"
+                      mt='sm'
                     >
-                      <IconFile size={16} className="mr-2" /> View PDF
+                      <IconFile size={16} className='mr-2' /> View PDF
                     </Button>
                   )}
 
                   {/* Link */}
                   {selectedLesson.link && (
                     <Button
-                      component="a"
+                      component='a'
                       href={selectedLesson.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      variant="light"
-                      color="teal"
-                      radius="md"
+                      target='_blank'
+                      rel='noopener noreferrer'
+                      variant='light'
+                      color='teal'
+                      radius='md'
                       fullWidth
-                      mt="sm"
+                      mt='sm'
                     >
-                      <IconLink size={16} className="mr-2" /> Open Resource
+                      <IconLink size={16} className='mr-2' /> Open Resource
                     </Button>
                   )}
 
                   {!selectedLesson.videoUrl &&
                     !selectedLesson.pdfUrl &&
                     !selectedLesson.link && (
-                      <p className="mt-6 text-center text-sm text-gray-500">
+                      <p className='mt-6 text-center text-sm text-gray-500'>
                         No content available for this lesson.
                       </p>
                     )}
 
                   {/* Action Buttons */}
-                  <Group mt="xl" justify="space-between">
-                    <Button
-                      variant="default"
-                      radius="md"
+                  <Group mt='xl' justify='space-between'>
+                    <CommonButton
+                      variant='default'
                       onClick={handlePrev}
                       disabled={selectedLessonIndex === 0}
                     >
-                      <IconArrowLeft className="mr-1" /> Previous
-                    </Button>
+                      <IconArrowLeft className='mr-1' /> Previous
+                    </CommonButton>
 
                     {(selectedLesson.videoUrl ||
                       selectedLesson.pdfUrl ||
                       selectedLesson.link) && (
-                      <Button
-                        color="teal"
-                        radius="md"
+                      <CommonButton
+                        color='teal'
                         onClick={handleLessonComplete}
                         disabled={completedLessons.includes(selectedLesson?.id)}
                       >
                         {completedLessons.includes(selectedLesson?.id)
                           ? 'Lesson Completed'
                           : 'Mark Lesson Completed'}
-                      </Button>
+                      </CommonButton>
                     )}
 
-                    <Button
-                      variant="filled"
-                      color="blue"
-                      radius="md"
+                    <CommonButton
+                      variant='filled'
+                      color='blue'
                       onClick={handleNext}
                       disabled={
                         selectedLessonIndex === null ||
                         selectedLessonIndex === allLessons.length - 1
                       }
                     >
-                      Next <IconArrowRight className="ml-1" />
-                    </Button>
+                      Next <IconArrowRight className='ml-1' />
+                    </CommonButton>
                   </Group>
                 </div>
               )}

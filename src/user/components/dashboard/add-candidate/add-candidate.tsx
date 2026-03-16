@@ -1,6 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
-  Button,
   Grid,
   NumberInput,
   TextInput,
@@ -12,21 +11,17 @@ import {
   Stack,
   Text,
   Divider,
-  Loader,
   Badge
 } from '@mantine/core';
 import PremiumLoader from '@components/common/loaders/PremiumLoader';
 import { Controller, useForm } from 'react-hook-form';
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { AddCandidateForm, candidateSchema } from '@forms/add-candidate';
-import { toast } from 'react-toastify';
-import { addPoolCandidateByRecruiter } from '@services/user-services';
 import { useMediaQuery } from '@mantine/hooks';
 import { useAppTheme } from '@hooks/use-app-theme';
 import { useAddCandidate } from '@hooks/mutations/useUserMutations';
 import { useCustomToast } from '@utils/common/toast';
 import { DateTimePicker } from '@mantine/dates';
-import { useRecoilValue } from 'recoil';
 import { useNavigate } from 'react-router-dom';
 
 import {
@@ -40,14 +35,11 @@ import {
   IconMessage,
   IconClock
 } from '@tabler/icons-react';
+import { CommonButton } from '@components/common/button/CommonButton';
 
 const AddPoolCandidate = () => {
   const navigate = useNavigate();
-  const {
-    themeConfig: currentThemeConfig,
-    organizationConfig,
-    isDarkTheme
-  } = useAppTheme();
+  const { themeConfig: currentThemeConfig } = useAppTheme();
   const { showSuccessToast, showErrorToast } = useCustomToast();
   const { mutateAsync: addCandidate, isPending: isPendingMutation } =
     useAddCandidate();
@@ -112,7 +104,7 @@ const AddPoolCandidate = () => {
 
   return (
     <Container
-      size='xl'
+      size='lg'
       py='md'
       my='xl'
       mt={70}
@@ -135,15 +127,13 @@ const AddPoolCandidate = () => {
                 Add New Candidate
               </Text>
             </Group>
-            <Button
-              leftSection={<IconArrowLeft size={16} />}
+            <CommonButton
               onClick={handleGoBack}
               variant='light'
-              size={isMobile ? 'sm' : 'md'}
-              radius='md'
+              size={isMobile ? 'xs' : 'sm'}
             >
-              Go Back
-            </Button>
+              <IconArrowLeft size={18} />
+            </CommonButton>
           </Group>
         </Card>
 
@@ -313,15 +303,14 @@ const AddPoolCandidate = () => {
                         size={isMobile ? 'sm' : 'md'}
                         autoComplete='off'
                       />
-                      <Button
+                      <CommonButton
                         onClick={handleSkillAdd}
                         leftSection={<IconPlus size={16} />}
-                        size={isMobile ? 'sm' : 'md'}
+                        size={isMobile ? 'xs' : 'sm'}
                         disabled={!skillInput.trim()}
-                        radius='md'
                       >
                         Add
-                      </Button>
+                      </CommonButton>
                     </Group>
                   </Input.Wrapper>
 
@@ -449,23 +438,21 @@ const AddPoolCandidate = () => {
 
               {/* Submit Buttons */}
               <Group justify='flex-end' mt='md'>
-                <Button
+                <CommonButton
                   type='button'
                   variant='light'
                   onClick={handleGoBack}
                   disabled={isSubmitting}
-                  size={isMobile ? 'sm' : 'md'}
+                  size={isMobile ? 'xs' : 'sm'}
                   fullWidth={isMobile}
-                  radius='md'
                 >
                   Cancel
-                </Button>
-                <Button
+                </CommonButton>
+                <CommonButton
                   type='submit'
                   disabled={isSubmitting}
-                  size={isMobile ? 'sm' : 'md'}
+                  size={isMobile ? 'xs' : 'sm'}
                   fullWidth={isMobile}
-                  radius='md'
                   leftSection={
                     isSubmitting ? (
                       <PremiumLoader size='xs' minHeight='20px' />
@@ -475,7 +462,7 @@ const AddPoolCandidate = () => {
                   }
                 >
                   {isSubmitting ? 'Adding Candidate...' : 'Add Candidate'}
-                </Button>
+                </CommonButton>
               </Group>
             </Stack>
           </form>

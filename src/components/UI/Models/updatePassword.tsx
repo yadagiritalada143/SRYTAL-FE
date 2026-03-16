@@ -1,4 +1,4 @@
-import { PasswordInput, Button, Text, Title, Stack } from '@mantine/core';
+import { PasswordInput, Text, Title, Stack } from '@mantine/core';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
@@ -10,6 +10,8 @@ import {
 } from '@forms/update-password';
 import { updatePasswordForEmployee } from '@services/user-services';
 import { useCustomToast } from '@utils/common/toast';
+import { CommonButton } from '@components/common/button/CommonButton';
+
 interface ChangePasswordPopupProps {
   opened: boolean;
   close: () => void;
@@ -72,50 +74,53 @@ export const ChangePasswordPopup: React.FC<ChangePasswordPopupProps> = ({
       forceAction={forceUpdate}
       title={<Title order={3}>Update Your Password</Title>}
     >
-      <Text size="sm" color="dimmed" mb="lg">
+      <Text size='sm' color='dimmed' mb='lg'>
         For security reasons, please update your password regularly.
       </Text>
 
       <form onSubmit={handleSubmit(onSubmit)}>
-        <Stack gap="md">
+        <Stack gap='md'>
           <PasswordInput
             {...register('oldPassword')}
-            label="Current Password"
-            placeholder="Enter your current password"
+            label='Current Password'
+            placeholder='Enter your current password'
             error={errors.oldPassword?.message}
             withAsterisk
           />
 
           <PasswordInput
             {...register('newPassword')}
-            label="New Password"
-            placeholder="Enter your new password"
+            label='New Password'
+            placeholder='Enter your new password'
             error={errors.newPassword?.message}
             withAsterisk
           />
 
           <PasswordInput
             {...register('confirmNewPassword')}
-            label="Confirm New Password"
-            placeholder="Re-enter your new password"
+            label='Confirm New Password'
+            placeholder='Re-enter your new password'
             error={errors.confirmNewPassword?.message}
             withAsterisk
           />
 
-          <div className="flex justify-end gap-3 mt-4">
+          <div className='flex justify-end gap-3 mt-4'>
             {!forceUpdate && (
-              <Button variant="outline" onClick={close} disabled={isLoading}>
+              <CommonButton
+                variant='outline'
+                onClick={close}
+                disabled={isLoading}
+              >
                 Cancel
-              </Button>
+              </CommonButton>
             )}
-            <Button
-              type="submit"
+            <CommonButton
+              type='submit'
               loading={isLoading}
               disabled={isLoading}
-              radius="md"
             >
               Update Password
-            </Button>
+            </CommonButton>
           </div>
         </Stack>
       </form>

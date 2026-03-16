@@ -1,10 +1,11 @@
 import { useMemo } from 'react';
 import Profile from '@common/profile/profile';
-import { Button, Container, Card, Stack, Text, Center } from '@mantine/core';
+import { Container, Card, Stack, Text, Center } from '@mantine/core';
 import PremiumLoader from '@components/common/loaders/PremiumLoader';
 import { useGetUserDetails } from '@hooks/queries/useUserQueries';
 import { useMediaQuery } from '@mantine/hooks';
 import { IconRefresh } from '@tabler/icons-react';
+import { CommonButton } from '@components/common/button/CommonButton';
 
 const AdminProfile = () => {
   const isMobile = useMediaQuery('(max-width: 768px)');
@@ -44,12 +45,12 @@ const AdminProfile = () => {
             <Text ta='center' size='lg' c='red'>
               {errorMessage}
             </Text>
-            <Button
+            <CommonButton
               leftSection={<IconRefresh size={16} />}
               onClick={() => refetch()}
             >
               Try Again
-            </Button>
+            </CommonButton>
           </Stack>
         </Card>
       </Container>

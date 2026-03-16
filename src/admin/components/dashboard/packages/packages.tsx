@@ -1,6 +1,4 @@
 import {
-  Button,
-  Loader,
   Tooltip,
   Center,
   Pagination,
@@ -37,6 +35,7 @@ import DataView from '@components/common/loaders/DataView';
 import { debounce } from '@utils/common/debounce';
 import { useAppTheme } from '@hooks/use-app-theme';
 import { useGetAllPackagesByAdmin } from '@hooks/queries/useAdminQueries';
+import { CommonButton } from '@components/common/button/CommonButton';
 
 const ITEMS_PER_PAGE_OPTIONS = ['5', '10', '20', '50'];
 const DEFAULT_ITEMS_PER_PAGE = 10;
@@ -110,14 +109,17 @@ const MobilePackageCard = ({
   index,
   activePage,
   itemsPerPage,
-  onEdit
+  onEdit,
+  themeConfig
 }: {
   pkg: PackageInterface;
   index: number;
   activePage: number;
   itemsPerPage: number;
   onEdit: (id: string) => void;
+  themeConfig: any;
 }) => {
+  const isExpired = moment(pkg.endDate).isBefore(moment(), 'day');
   return (
     <Card
       key={pkg._id}
@@ -129,12 +131,12 @@ const MobilePackageCard = ({
     >
       <Stack gap='sm'>
         <Group justify='space-between' align='center'>
-          <Badge variant='filled' color='blue'>
+          <Badge variant='filled' color={themeConfig.accentColor}>
             #{index + 1 + (activePage - 1) * itemsPerPage}
           </Badge>
           <ActionIcon
             variant='subtle'
-            color='blue'
+            color={themeConfig.button.color}
             onClick={() => onEdit(pkg._id)}
             size='md'
           >
@@ -167,7 +169,7 @@ const MobilePackageCard = ({
             <Text size='xs' fw={600} c='dimmed'>
               Start Date
             </Text>
-            <Badge size='sm' variant='light' color='green'>
+            <Badge size='sm' variant='light' color={themeConfig.successColor}>
               {moment(pkg.startDate).format('MMM DD, YYYY')}
             </Badge>
           </Stack>
@@ -175,7 +177,13 @@ const MobilePackageCard = ({
             <Text size='xs' fw={600} c='dimmed'>
               End Date
             </Text>
-            <Badge size='sm' variant='light' color='red'>
+            <Badge
+              size='sm'
+              variant='light'
+              color={
+                isExpired ? themeConfig.dangerColor : themeConfig.successColor
+              }
+            >
               {moment(pkg.endDate).format('MMM DD, YYYY')}
             </Badge>
           </Stack>
@@ -230,7 +238,8 @@ const TableHeader = ({
     >
       <Table.Tr>
         <Table.Th
-          className='p-3 border text-center'
+          className='p-3 border'
+          ta='center'
           style={{ minWidth: '60px' }}
         >
           <Text size='sm' fw={500}>
@@ -250,7 +259,7 @@ const TableHeader = ({
         )}
         <SortableHeader field='startDate'>Start Date</SortableHeader>
         <SortableHeader field='endDate'>End Date</SortableHeader>
-        <Table.Th className='p-3 border text-center'>
+        <Table.Th className='p-3 border' ta='center'>
           <Text size='sm' fw={500}>
             Actions
           </Text>
@@ -283,16 +292,15 @@ const HeadingComponent = ({
       >
         Manage Packages ({filteredCount} packages)
       </Text>
-      <Button
+      <CommonButton
         leftSection={<IconPlus size={16} />}
         onClick={handleAddPackage}
         variant='filled'
         fullWidth={isMobile}
         size={isMobile ? 'md' : 'sm'}
-        radius='md'
       >
         Add Package
-      </Button>
+      </CommonButton>
     </Flex>
   </Card>
 );
@@ -419,7 +427,9 @@ const Packages = () => {
             Failed to fetch packages.
           </Text>
           <Center mt='md'>
-            <Button onClick={() => window.location.reload()}>Try Again</Button>
+            <CommonButton onClick={() => window.location.reload()}>
+              Try Again
+            </CommonButton>
           </Center>
         </Card>
       </Container>
@@ -436,36 +446,40 @@ const Packages = () => {
         />
 
         <Card shadow='sm' p={isMobile ? 'sm' : 'md'} radius='md' withBorder>
-          <Stack gap='md'>
+          <Flex
+            gap='md'
+            align='center'
+            wrap={isMobile ? 'wrap' : 'nowrap'}
+            justify='space-between'
+          >
             <TextInput
               placeholder='Search by title or description...'
               leftSection={<IconSearch size={16} />}
               onChange={e => debouncedSearch(e.target.value)}
               radius='md'
               size={isMobile ? 'sm' : 'md'}
+              style={{ flex: 1, minWidth: isMobile ? '100%' : '320px' }}
             />
 
-            <Group justify='space-between' wrap={isMobile ? 'wrap' : 'nowrap'}>
-              <Group gap='xs'>
-                <Text size='sm'>Items per page:</Text>
-                <Select
-                  data={ITEMS_PER_PAGE_OPTIONS}
-                  value={itemsPerPage.toString()}
-                  onChange={value =>
-                    setItemsPerPage(Number(value) || DEFAULT_ITEMS_PER_PAGE)
-                  }
-                  w={80}
-                  size='sm'
-                />
-              </Group>
-
-              {filteredPackages.length !== packages.length && (
-                <Badge variant='light' color='blue'>
-                  {filteredPackages.length} of {packages.length} packages
-                </Badge>
-              )}
+            <Group gap='xs'>
+              <Text size='sm'>Items per page:</Text>
+              <Select
+                data={ITEMS_PER_PAGE_OPTIONS}
+                value={itemsPerPage.toString()}
+                onChange={value =>
+                  setItemsPerPage(Number(value) || DEFAULT_ITEMS_PER_PAGE)
+                }
+                w={70}
+                size='sm'
+              />
             </Group>
-          </Stack>
+
+            {filteredPackages.length !== packages.length && (
+              <Badge variant='light' color={currentThemeConfig.accentColor}>
+                {filteredPackages.length} of {packages.length} packages
+              </Badge>
+            )}
+          </Flex>
         </Card>
 
         <Card shadow='sm' p={0} radius='md' withBorder>
@@ -486,6 +500,7 @@ const Packages = () => {
                         activePage={activePage}
                         itemsPerPage={itemsPerPage}
                         onEdit={handlePackageEdit}
+                        themeConfig={currentThemeConfig}
                       />
                     ))
                   ) : (
@@ -501,14 +516,14 @@ const Packages = () => {
                             : 'Start by adding your first package'}
                         </Text>
                         {!searchQuery && (
-                          <Button
+                          <CommonButton
                             variant='light'
                             leftSection={<IconPlus size={16} />}
                             onClick={handleAddPackage}
                             fullWidth={isSmallMobile}
                           >
                             Add Package
-                          </Button>
+                          </CommonButton>
                         )}
                       </Stack>
                     </Card>
@@ -536,57 +551,75 @@ const Packages = () => {
                   />
                   <Table.Tbody>
                     {paginatedPackages.length > 0 ? (
-                      paginatedPackages.map((pkg, index) => (
-                        <Table.Tr
-                          key={pkg._id}
-                          id={`package-${pkg._id}`}
-                          className='transition-colors'
-                        >
-                          <Table.Td className='text-center p-3'>
-                            <Text size='sm'>
-                              {index + 1 + (activePage - 1) * itemsPerPage}
-                            </Text>
-                          </Table.Td>
-                          <Table.Td className='p-3'>
-                            <Text size='sm' fw={500}>
-                              {pkg.title}
-                            </Text>
-                          </Table.Td>
-                          {!isTablet && (
-                            <Table.Td className='p-3'>
-                              <Tooltip label={pkg.description} withArrow>
-                                <Text size='sm' lineClamp={2}>
-                                  {pkg.description}
-                                </Text>
-                              </Tooltip>
+                      paginatedPackages.map((pkg, index) => {
+                        const isExpired = moment(pkg.endDate).isBefore(
+                          moment(),
+                          'day'
+                        );
+                        return (
+                          <Table.Tr
+                            key={pkg._id}
+                            id={`package-${pkg._id}`}
+                            className='transition-colors'
+                          >
+                            <Table.Td className='text-center p-3'>
+                              <Text size='sm'>
+                                {index + 1 + (activePage - 1) * itemsPerPage}
+                              </Text>
                             </Table.Td>
-                          )}
-                          <Table.Td className='p-3 text-center'>
-                            <Badge size='sm' variant='light' color='green'>
-                              {moment(pkg.startDate).format('MMM DD, YYYY')}
-                            </Badge>
-                          </Table.Td>
-                          <Table.Td className='p-3 text-center'>
-                            <Badge size='sm' variant='light' color='red'>
-                              {moment(pkg.endDate).format('MMM DD, YYYY')}
-                            </Badge>
-                          </Table.Td>
-                          <Table.Td className='p-3'>
-                            <Group gap='xs' justify='center'>
-                              <Tooltip label='Edit Package'>
-                                <ActionIcon
-                                  variant='subtle'
-                                  color='blue'
-                                  onClick={() => handlePackageEdit(pkg._id)}
-                                  size='sm'
-                                >
-                                  <IconEdit size={16} />
-                                </ActionIcon>
-                              </Tooltip>
-                            </Group>
-                          </Table.Td>
-                        </Table.Tr>
-                      ))
+                            <Table.Td className='p-3'>
+                              <Text size='sm' fw={500}>
+                                {pkg.title}
+                              </Text>
+                            </Table.Td>
+                            {!isTablet && (
+                              <Table.Td className='p-3'>
+                                <Tooltip label={pkg.description} withArrow>
+                                  <Text size='sm' lineClamp={2}>
+                                    {pkg.description}
+                                  </Text>
+                                </Tooltip>
+                              </Table.Td>
+                            )}
+                            <Table.Td className='p-3 text-center'>
+                              <Badge
+                                size='sm'
+                                variant='light'
+                                color={currentThemeConfig.successColor}
+                              >
+                                {moment(pkg.startDate).format('MMM DD, YYYY')}
+                              </Badge>
+                            </Table.Td>
+                            <Table.Td className='p-3 text-center'>
+                              <Badge
+                                size='sm'
+                                variant='light'
+                                color={
+                                  isExpired
+                                    ? currentThemeConfig.dangerColor
+                                    : currentThemeConfig.successColor
+                                }
+                              >
+                                {moment(pkg.endDate).format('MMM DD, YYYY')}
+                              </Badge>
+                            </Table.Td>
+                            <Table.Td className='p-3 text-center'>
+                              <Group gap='xs' justify='center'>
+                                <Tooltip label='Edit Package'>
+                                  <ActionIcon
+                                    variant='subtle'
+                                    color={currentThemeConfig.button.color}
+                                    onClick={() => handlePackageEdit(pkg._id)}
+                                    size='sm'
+                                  >
+                                    <IconEdit size={16} />
+                                  </ActionIcon>
+                                </Tooltip>
+                              </Group>
+                            </Table.Td>
+                          </Table.Tr>
+                        );
+                      })
                     ) : (
                       <Table.Tr>
                         <Table.Td
@@ -602,13 +635,13 @@ const Packages = () => {
                                 : 'Start by adding your first package'}
                             </Text>
                             {!searchQuery && (
-                              <Button
+                              <CommonButton
                                 variant='light'
                                 leftSection={<IconPlus size={16} />}
                                 onClick={handleAddPackage}
                               >
                                 Add Package
-                              </Button>
+                              </CommonButton>
                             )}
                           </Stack>
                         </Table.Td>

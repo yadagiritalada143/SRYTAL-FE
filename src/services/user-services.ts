@@ -155,45 +155,6 @@ export const getUserDetails = async () => {
   }
 };
 
-export const uploadProfileImage = async (image: File) => {
-  try {
-    const formData = new FormData();
-    formData.append('profileImage', image);
-
-    const response = await apiClient.post('/uploadProfileImage', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    });
-
-    return response.data;
-  } catch (error: any) {
-    console.error(
-      'Profile Image Upload Error:',
-      error?.response?.data || error.message
-    );
-    throw new Error('Failed to upload profile image');
-  }
-};
-
-export const getProfileImage = async (): Promise<Blob> => {
-  try {
-    const response = await apiClient.get('/getProfileImage', {
-      responseType: 'blob'
-    });
-
-    if (response.data.size === 0) {
-      throw new Error('No image found');
-    }
-
-    return response.data;
-  } catch (error: any) {
-    console.error(
-      'Error fetching profile image:',
-      error?.response?.data || error.message
-    );
-    throw new Error('Failed to fetch profile image');
-  }
-};
-
 export const getAllCoursesByUser = async () => {
   const token = localStorage.getItem('token');
   try {

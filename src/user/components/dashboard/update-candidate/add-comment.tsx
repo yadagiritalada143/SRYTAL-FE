@@ -1,21 +1,13 @@
 import { Controller, useForm } from 'react-hook-form';
 import { DateTimePicker } from '@mantine/dates';
-import {
-  Button,
-  Grid,
-  Group,
-  Textarea,
-  Card,
-  Stack,
-  Text
-} from '@mantine/core';
+import { Grid, Group, Textarea, Card, Stack, Text } from '@mantine/core';
 import PremiumLoader from '@components/common/loaders/PremiumLoader';
-import React from 'react';
 import { AddCommentForm, commentSchema } from '@forms/add-candidate';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAddCandidateComment } from '@hooks/mutations/useUserMutations';
 import { useCustomToast } from '@utils/common/toast';
 import { useMediaQuery } from '@mantine/hooks';
+import { CommonButton } from '@components/common/button/CommonButton';
 
 interface AddCommentProps {
   candidateId: string;
@@ -57,7 +49,7 @@ const AddComment = ({ candidateId }: AddCommentProps) => {
   };
 
   return (
-    <div className='w-full max-w-3xl mx-auto my-6'>
+    <div className='w-full max-w-4xl mx-auto my-6'>
       <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md' withBorder>
         <Stack gap='md'>
           <Text size={isMobile ? 'lg' : 'xl'} fw={700}>
@@ -134,18 +126,17 @@ const AddComment = ({ candidateId }: AddCommentProps) => {
               </Grid>
 
               <Group justify='flex-end' mt='md'>
-                <Button
+                <CommonButton
                   type='submit'
                   disabled={isSubmitting}
                   size={isMobile ? 'md' : 'sm'}
                   fullWidth={isMobile}
-                  radius='md'
                   leftSection={
                     isSubmitting && <PremiumLoader size='xs' minHeight='20px' />
                   }
                 >
                   {isSubmitting ? 'Adding...' : 'Add Comment'}
-                </Button>
+                </CommonButton>
               </Group>
             </Stack>
           </form>

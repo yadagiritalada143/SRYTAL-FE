@@ -2,7 +2,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, Controller } from 'react-hook-form';
 import { AddCompanyForm, addCompanySchema } from '@forms/add-company';
 import {
-  Button,
   Checkbox,
   Select,
   TextInput,
@@ -13,16 +12,13 @@ import {
   Group,
   Text,
   Divider,
-  Grid,
-  Center
+  Grid
 } from '@mantine/core';
 import PremiumLoader from '@components/common/loaders/PremiumLoader';
 import DataView from '@components/common/loaders/DataView';
 import { useDisclosure, useMediaQuery } from '@mantine/hooks';
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useRecoilValue } from 'recoil';
-import { userDetailsAtom } from '@atoms/user';
 import { useCustomToast } from '@utils/common/toast';
 import PoolCompaniesCommentsTable from './comments';
 import AddCommentPoolCompany from './add-comment';
@@ -37,19 +33,13 @@ import {
   IconDeviceFloppy,
   IconAlertTriangle
 } from '@tabler/icons-react';
+import { CommonButton } from '@components/common/button/CommonButton';
 
 const UpdateCompany = () => {
   const params = useParams();
-  const {
-    themeConfig: currentThemeConfig,
-    organizationConfig,
-    isDarkTheme
-  } = useAppTheme();
+  const { themeConfig: currentThemeConfig, organizationConfig } = useAppTheme();
   const companyId = params.companyId as string;
   const navigate = useNavigate();
-
-  const user = useRecoilValue(userDetailsAtom);
-
   const [opened, { open, close }] = useDisclosure(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
@@ -121,7 +111,7 @@ const UpdateCompany = () => {
   };
 
   return (
-    <Container size='xl' py='md' my='xl' px={isSmallMobile ? 'xs' : 'md'}>
+    <Container size='lg' py='md' my='xl' px={isSmallMobile ? 'xs' : 'md'}>
       <Stack gap='md'>
         {/* Header Card */}
         <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md' withBorder>
@@ -298,11 +288,10 @@ const UpdateCompany = () => {
                     justify='space-between'
                     wrap={isMobile ? 'wrap' : 'nowrap'}
                   >
-                    <Button
+                    <CommonButton
                       color='red'
                       variant='filled'
                       leftSection={<IconTrash size={16} />}
-                      radius='md'
                       onClick={e => {
                         e.preventDefault();
                         open();
@@ -311,8 +300,8 @@ const UpdateCompany = () => {
                       size={isMobile ? 'md' : 'sm'}
                     >
                       Delete Company
-                    </Button>
-                    <Button
+                    </CommonButton>
+                    <CommonButton
                       type='submit'
                       disabled={isSubmitting}
                       loaderProps={{
@@ -322,10 +311,9 @@ const UpdateCompany = () => {
                       leftSection={<IconDeviceFloppy size={16} />}
                       fullWidth={isMobile}
                       size={isMobile ? 'md' : 'sm'}
-                      radius='md'
                     >
                       {isSubmitting ? 'Updating...' : 'Update Company'}
-                    </Button>
+                    </CommonButton>
                   </Group>
                 </Stack>
               </form>
@@ -383,18 +371,17 @@ const UpdateCompany = () => {
           </Stack>
 
           <Group justify='space-between' mt='xl'>
-            <Button
+            <CommonButton
               color='red'
               onClick={() => handleDeleteCompany(companyId!, agreeTerms)}
               disabled={!confirmDelete}
               leftSection={<IconTrash size={16} />}
-              radius='md'
             >
               Delete
-            </Button>
-            <Button variant='default' onClick={close} radius='md'>
+            </CommonButton>
+            <CommonButton variant='default' onClick={close}>
               Cancel
-            </Button>
+            </CommonButton>
           </Group>
         </Stack>
       </StandardModal>

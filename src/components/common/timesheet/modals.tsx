@@ -1,5 +1,4 @@
 import {
-  Button,
   Group,
   Textarea,
   TextInput,
@@ -9,14 +8,12 @@ import {
   Stack,
   ScrollArea,
   Divider,
-  Card
+  Card,
+  Tooltip
 } from '@mantine/core';
 import { StandardModal } from '@UI/Models/base-model';
 import moment from 'moment';
-import {
-  EmployeeTimesheet,
-  TimesheetStatus
-} from '@interfaces/timesheet';
+import { EmployeeTimesheet, TimesheetStatus } from '@interfaces/timesheet';
 import { useCallback, useMemo, useState } from 'react';
 import { DatePickerInput, DateValue } from '@mantine/dates';
 import { toast } from 'react-toastify';
@@ -31,6 +28,7 @@ import {
 } from '@tabler/icons-react';
 import React from 'react';
 import { useMediaQuery } from '@mantine/hooks';
+import { CommonButton } from '../button/CommonButton';
 
 export const EditTimeEntryModal = React.memo(
   ({
@@ -95,40 +93,40 @@ export const EditTimeEntryModal = React.memo(
         opened={openedEntryModal}
         onClose={closeEntryModal}
         title={
-          <Group gap="xs">
+          <Group gap='xs'>
             <IconClock size={20} />
-            <Text fw={600} size="lg">
+            <Text fw={600} size='lg'>
               Edit Time Entry
             </Text>
           </Group>
         }
-        size="lg"
+        size='lg'
       >
-        <Stack gap="md" p={isMobile ? 'sm' : 'md'}>
+        <Stack gap='md' p={isMobile ? 'sm' : 'md'}>
           {/* Entry Details */}
-          <Card withBorder p="sm" radius="md">
-            <Stack gap="xs">
-              <Group gap="xs">
-                <Text size="sm" c="dimmed" fw={500}>
+          <Card withBorder p='sm' radius='md'>
+            <Stack gap='xs'>
+              <Group gap='xs'>
+                <Text size='sm' c='dimmed' fw={500}>
                   Project:
                 </Text>
-                <Text size="sm" fw={600}>
+                <Text size='sm' fw={600}>
                   {currentEntry.project_name}
                 </Text>
               </Group>
-              <Group gap="xs">
-                <Text size="sm" c="dimmed" fw={500}>
+              <Group gap='xs'>
+                <Text size='sm' c='dimmed' fw={500}>
                   Task:
                 </Text>
-                <Text size="sm" fw={600}>
+                <Text size='sm' fw={600}>
                   {currentEntry.task_name}
                 </Text>
               </Group>
-              <Group gap="xs">
-                <Text size="sm" c="dimmed" fw={500}>
+              <Group gap='xs'>
+                <Text size='sm' c='dimmed' fw={500}>
                   Date:
                 </Text>
-                <Badge variant="light" color="blue">
+                <Badge variant='light' color='blue'>
                   {formattedDate}
                 </Badge>
               </Group>
@@ -139,9 +137,9 @@ export const EditTimeEntryModal = React.memo(
 
           {/* Input Fields */}
           <TextInput
-            label="Hours"
-            description="Enter hours worked (0-24)"
-            type="number"
+            label='Hours'
+            description='Enter hours worked (0-24)'
+            type='number'
             min={0}
             max={24}
             step={0.5}
@@ -152,9 +150,9 @@ export const EditTimeEntryModal = React.memo(
           />
 
           <Textarea
-            label="Comments"
-            description="Please provide details about your work"
-            placeholder="Enter comments (required)"
+            label='Comments'
+            description='Please provide details about your work'
+            placeholder='Enter comments (required)'
             value={currentEntry.comments}
             onChange={handleCommentsChange}
             autosize
@@ -167,25 +165,25 @@ export const EditTimeEntryModal = React.memo(
           <Divider />
 
           {/* Action Buttons */}
-          <Group justify="flex-end" gap="xs">
-            <Button
-              variant="default"
+          <Group justify='flex-end' gap='xs'>
+            <CommonButton
+              variant='default'
               onClick={closeEntryModal}
               leftSection={<IconX size={16} />}
-              size={isMobile ? 'sm' : 'md'}
+              size={isMobile ? 'xs' : 'sm'}
             >
               Cancel
-            </Button>
-            <Button
+            </CommonButton>
+            <CommonButton
               onClick={handleEntrySubmit}
               leftSection={<IconCheck size={16} />}
               disabled={
                 !currentEntry.comments.trim() || currentEntry.hours === 0
               }
-              size={isMobile ? 'sm' : 'md'}
+              size={isMobile ? 'xs' : 'sm'}
             >
               Save Entry
-            </Button>
+            </CommonButton>
           </Group>
         </Stack>
       </StandardModal>
@@ -198,12 +196,22 @@ export const ApplyLeaveTimesheetModal = React.memo(
     openedLeaveModal,
     closeLeaveModal,
     timeEntries,
-    fetchTimesheetData
+    fetchTimesheetData,
+    userId,
+    startDate,
+    endDate
   }: {
     openedLeaveModal: boolean;
     closeLeaveModal: () => void;
     timeEntries: EmployeeTimesheet[];
-    fetchTimesheetData: () => Promise<void>;
+    fetchTimesheetData: (
+      start: DateValue,
+      end: DateValue,
+      userId: string
+    ) => Promise<void>;
+    userId: string;
+    startDate: DateValue;
+    endDate: DateValue;
   }) => {
     const isMobile = useMediaQuery('(max-width: 768px)');
     const [leaveReason, setLeaveReason] = useState('');
@@ -286,16 +294,21 @@ export const ApplyLeaveTimesheetModal = React.memo(
                   task_id: task.id,
                   project_name: project.name,
                   task_name: task.name,
-                  status: 'pending'
+                  status: 'Waiting For Approval'
                 }
               ]
             }))
           })
         );
 
-        await submitTimeSheet(leaveData);
-        showSuccessToast('Leave applied successfully');
-        await fetchTimesheetData();
+        const response = await submitTimeSheet(leaveData, userId);
+        if (response?.success === false) {
+          toast.error(response.message || 'Failed to apply leave');
+          return;
+        } else {
+          showSuccessToast('Leave applied successfully');
+        }
+        await fetchTimesheetData(startDate, endDate, userId);
         setLeaveReason('');
         setLeaveDate(null);
         closeLeaveModal();
@@ -330,22 +343,71 @@ export const ApplyLeaveTimesheetModal = React.memo(
         opened={openedLeaveModal}
         onClose={closeLeaveModal}
         title={
-          <Group gap="xs">
+          <Group gap='xs'>
             <IconCalendarOff size={20} />
-            <Text fw={600} size="lg">
+            <Text fw={600} size='lg'>
               Apply for Leave
             </Text>
           </Group>
         }
-        size="lg"
+        size='lg'
       >
-        <Stack gap="md" p={isMobile ? 'sm' : 'md'}>
+        <Stack gap='md' p={isMobile ? 'sm' : 'md'}>
           <DatePickerInput
-            label="Leave Date"
-            description="Select the date for your leave"
-            placeholder="Select leave date"
+            label='Leave Date'
+            description='Select the date for your leave'
+            placeholder='Select leave date'
             value={leaveDate}
             onChange={handleDateChange}
+            excludeDate={date => {
+              const d = new Date(date);
+              const day = d.getDay();
+              const isWeekend = day === 0 || day === 6;
+              const formattedDate = moment.utc(d).format('YYYY-MM-DD');
+              const hasExistingLeave = timeEntries.some(
+                ts =>
+                  ts.isVacation &&
+                  moment.utc(ts.date).format('YYYY-MM-DD') === formattedDate
+              );
+              return isWeekend || hasExistingLeave;
+            }}
+            renderDay={date => {
+              const d = new Date(date);
+              const day = d.getDay();
+              const isWeekend = day === 0 || day === 6;
+              const formattedDate = moment.utc(d).format('YYYY-MM-DD');
+              const hasExistingLeave = timeEntries.some(
+                ts =>
+                  ts.isVacation &&
+                  moment.utc(ts.date).format('YYYY-MM-DD') === formattedDate
+              );
+
+              const tooltipLabel = isWeekend
+                ? 'Week Off'
+                : hasExistingLeave
+                  ? 'Leave Already Applied'
+                  : null;
+
+              if (tooltipLabel) {
+                return (
+                  <Tooltip label={tooltipLabel} withArrow position='top'>
+                    <div
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                    >
+                      {new Date(date).getDate()}
+                    </div>
+                  </Tooltip>
+                );
+              }
+
+              return <div>{new Date(date).getDate()}</div>;
+            }}
             minDate={new Date()}
             maxDate={moment().add(3, 'months').toDate()}
             clearable
@@ -353,11 +415,10 @@ export const ApplyLeaveTimesheetModal = React.memo(
             size={isMobile ? 'sm' : 'md'}
             leftSection={<IconCalendarOff size={16} />}
           />
-
           <Textarea
-            label="Leave Reason"
-            description="Please provide a reason for your leave"
-            placeholder="Enter leave reason"
+            label='Leave Reason'
+            description='Please provide a reason for your leave'
+            placeholder='Enter leave reason'
             value={leaveReason}
             onChange={handleReasonChange}
             required
@@ -366,29 +427,27 @@ export const ApplyLeaveTimesheetModal = React.memo(
             maxRows={6}
             size={isMobile ? 'sm' : 'md'}
           />
-
           <Divider />
-
-          <Group justify="flex-end" gap="xs">
-            <Button
-              variant="default"
+          <Group justify='flex-end' gap='xs'>
+            <CommonButton
+              variant='default'
               onClick={closeLeaveModal}
               disabled={isLoading}
               leftSection={<IconX size={16} />}
-              size={isMobile ? 'sm' : 'md'}
+              size={isMobile ? 'xs' : 'sm'}
             >
               Cancel
-            </Button>
-            <Button
-              color="green"
+            </CommonButton>
+            <CommonButton
+              color='green'
               onClick={handleLeaveSubmit}
               loading={isLoading}
               disabled={!leaveDate || !leaveReason.trim()}
               leftSection={<IconCheck size={16} />}
-              size={isMobile ? 'sm' : 'md'}
+              size={isMobile ? 'xs' : 'sm'}
             >
               Submit Leave
-            </Button>
+            </CommonButton>
           </Group>
         </Stack>
       </StandardModal>
@@ -409,10 +468,10 @@ const ChangeRow = React.memo(({ change, isMobile = false }: ChangeRowProps) => {
 
   return (
     <Table.Tr>
-      <Table.Td className="p-2 border">
+      <Table.Td className='p-2 border'>
         <Badge
-          variant="light"
-          color="blue"
+          variant='light'
+          color='blue'
           fullWidth
           size={isMobile ? 'sm' : 'md'}
         >
@@ -421,25 +480,32 @@ const ChangeRow = React.memo(({ change, isMobile = false }: ChangeRowProps) => {
       </Table.Td>
       {!isMobile && (
         <>
-          <Table.Td className="p-2 border">
-            <Text fw={500} size="sm" lineClamp={2}>
+          <Table.Td className='p-2 border'>
+            <Text fw={500} size='sm' lineClamp={2}>
               {change.project_name}
             </Text>
           </Table.Td>
-          <Table.Td className="p-2 border">
-            <Text size="sm" lineClamp={2}>
+          <Table.Td className='p-2 border'>
+            <Text size='sm' lineClamp={2}>
               {change.task_name}
             </Text>
           </Table.Td>
         </>
       )}
-      <Table.Td className="p-2 border text-center">
-        <Badge variant="filled" color="blue" size="lg">
+      <Table.Td className='p-2 border text-center'>
+        <Badge variant='filled' color='blue' size='lg'>
           {change.hours}h
         </Badge>
       </Table.Td>
-      <Table.Td className="p-2 border">
-        <Text size="sm" lineClamp={isMobile ? 1 : 2}>
+      <Table.Td className='p-2 border'>
+        <Text
+          size='sm'
+          lineClamp={isMobile ? 1 : 2}
+          style={{
+            whiteSpace: 'normal',
+            wordBreak: 'break-word'
+          }}
+        >
           {change.comments}
         </Text>
       </Table.Td>
@@ -452,12 +518,24 @@ export const ConfirmTimesheetSubmitModal = React.memo(
     openedSubmitModal,
     closeSubmitModal,
     changesMade,
-    setChangesMade
+    setChangesMade,
+    userId,
+    fetchTimesheetData,
+    startDate,
+    endDate
   }: {
     openedSubmitModal: boolean;
     closeSubmitModal: () => void;
     changesMade: EmployeeTimesheet[];
     setChangesMade: React.Dispatch<React.SetStateAction<EmployeeTimesheet[]>>;
+    userId: string;
+    fetchTimesheetData: (
+      start: DateValue,
+      end: DateValue,
+      userId: string
+    ) => Promise<void>;
+    startDate: DateValue;
+    endDate: DateValue;
   }) => {
     const isMobile = useMediaQuery('(max-width: 768px)');
     const { showSuccessToast } = useCustomToast();
@@ -472,22 +550,41 @@ export const ConfirmTimesheetSubmitModal = React.memo(
       try {
         setIsSubmitting(true);
         const submitData = prepareSubmitData(changesMade);
-        await submitTimeSheet(submitData);
-        showSuccessToast('Timesheet submitted successfully');
+        const response: any = await submitTimeSheet(submitData, userId);
+
+        if (response?.success === false) {
+          toast.error(response.message || 'Failed to submit timesheet');
+        } else {
+          showSuccessToast('Timesheet submitted successfully');
+        }
         setChangesMade([]);
         closeSubmitModal();
-      } catch {
-        toast.error('Failed to submit timesheet');
+        if (startDate && endDate) {
+          await fetchTimesheetData(startDate, endDate, userId);
+        }
+      } catch (error: any) {
+        toast.error(
+          error?.response?.data?.message || 'Failed to submit timesheet'
+        );
       } finally {
         setIsSubmitting(false);
       }
-    }, [changesMade, showSuccessToast, setChangesMade, closeSubmitModal]);
+    }, [
+      changesMade,
+      showSuccessToast,
+      setChangesMade,
+      closeSubmitModal,
+      userId,
+      fetchTimesheetData,
+      startDate,
+      endDate
+    ]);
 
     const modalTitle = useMemo(
       () => (
-        <Group gap="xs">
+        <Group gap='xs'>
           <IconCheck size={20} />
-          <Text fw={600} size="lg">
+          <Text fw={600} size='lg'>
             Confirm Timesheet Submission
           </Text>
         </Group>
@@ -500,32 +597,32 @@ export const ConfirmTimesheetSubmitModal = React.memo(
         opened={openedSubmitModal}
         onClose={closeSubmitModal}
         title={modalTitle}
-        size="xl"
+        size='xl'
       >
-        <Stack gap="md" p={isMobile ? 'sm' : 'md'}>
+        <Stack gap='md' p={isMobile ? 'sm' : 'md'}>
           {/* Summary Card */}
-          <Card withBorder p="md" radius="md">
-            <Stack gap="xs">
-              <Group justify="space-between">
-                <Text size="sm" c="dimmed">
+          <Card withBorder p='md' radius='md'>
+            <Stack gap='xs'>
+              <Group justify='space-between'>
+                <Text size='sm' c='dimmed'>
                   Total Entries:
                 </Text>
-                <Badge size="lg" variant="light" color="blue">
+                <Badge size='lg' variant='light' color='blue'>
                   {changesCount} {changesCount === 1 ? 'entry' : 'entries'}
                 </Badge>
               </Group>
-              <Group justify="space-between">
-                <Text size="sm" c="dimmed">
+              <Group justify='space-between'>
+                <Text size='sm' c='dimmed'>
                   Total Hours:
                 </Text>
-                <Badge size="lg" variant="filled" color="green">
+                <Badge size='lg' variant='filled' color='green'>
                   {totalHours}h
                 </Badge>
               </Group>
             </Stack>
           </Card>
 
-          <Text size="sm" c="dimmed">
+          <Text size='sm' c='dimmed'>
             Please review your time entries before submission. Once submitted,
             they will be sent for approval.
           </Text>
@@ -549,46 +646,51 @@ export const ConfirmTimesheetSubmitModal = React.memo(
               >
                 <Table.Tr>
                   <Table.Th
-                    className="p-2 border"
+                    className='p-2 border'
+                    ta='center'
                     style={{ minWidth: '100px' }}
                   >
-                    <Text size="sm" fw={500}>
+                    <Text size='sm' fw={500}>
                       Date
                     </Text>
                   </Table.Th>
                   {!isMobile && (
                     <>
                       <Table.Th
-                        className="p-2 border"
-                        style={{ minWidth: '150px' }}
+                        className='p-2 border'
+                        ta='center'
+                        style={{ minWidth: '140px' }}
                       >
-                        <Text size="sm" fw={500}>
+                        <Text size='sm' fw={500}>
                           Project
                         </Text>
                       </Table.Th>
                       <Table.Th
-                        className="p-2 border"
+                        className='p-2 border'
+                        ta='center'
                         style={{ minWidth: '150px' }}
                       >
-                        <Text size="sm" fw={500}>
+                        <Text size='sm' fw={500}>
                           Task
                         </Text>
                       </Table.Th>
                     </>
                   )}
                   <Table.Th
-                    className="p-2 border text-center"
+                    className='p-2 border'
+                    ta='center'
                     style={{ width: isMobile ? '80px' : '100px' }}
                   >
-                    <Text size="sm" fw={500}>
+                    <Text size='sm' fw={500}>
                       Hours
                     </Text>
                   </Table.Th>
                   <Table.Th
-                    className="p-2 border"
+                    className='p-2 border'
+                    ta='center'
                     style={{ minWidth: '180px' }}
                   >
-                    <Text size="sm" fw={500}>
+                    <Text size='sm' fw={500}>
                       Comments
                     </Text>
                   </Table.Th>
@@ -609,25 +711,25 @@ export const ConfirmTimesheetSubmitModal = React.memo(
           <Divider />
 
           {/* Action Buttons */}
-          <Group justify="flex-end" gap="xs">
-            <Button
-              variant="default"
+          <Group justify='flex-end' gap='xs'>
+            <CommonButton
+              variant='default'
               onClick={closeSubmitModal}
               disabled={isSubmitting}
               leftSection={<IconX size={16} />}
-              size={isMobile ? 'sm' : 'md'}
+              size={isMobile ? 'xs' : 'sm'}
             >
               Cancel
-            </Button>
-            <Button
-              color="green"
+            </CommonButton>
+            <CommonButton
+              color='green'
               onClick={handleSubmit}
               loading={isSubmitting}
               leftSection={<IconCheck size={16} />}
-              size={isMobile ? 'sm' : 'md'}
+              size={isMobile ? 'xs' : 'sm'}
             >
               Confirm & Submit
-            </Button>
+            </CommonButton>
           </Group>
         </Stack>
       </StandardModal>

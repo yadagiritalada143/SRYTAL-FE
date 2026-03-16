@@ -4,11 +4,11 @@ import {
   forgetPassword,
   sendContactUsMail,
   submitTimeSheet,
-  downloadSalarySlip
+  downloadSalarySlip,
+  uploadProfileImage
 } from '@services/common-services';
 import { LoginForm } from '@forms/login';
 import { ContactForm } from '@forms/contact';
-import { commonQueryKeys } from '../queries/useCommonQueries';
 
 export const useLogin = () => {
   return useMutation({
@@ -31,7 +31,7 @@ export const useSendContactUsMail = () => {
 export const useSubmitTimeSheet = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ data, employeeId }: { data: any; employeeId?: string }) =>
+    mutationFn: ({ data, employeeId }: { data: any; employeeId: string }) =>
       submitTimeSheet(data, employeeId),
     onSuccess: () => {
       // Invalidate all timesheet data
@@ -48,5 +48,16 @@ export const useDownloadSalarySlip = () => {
       month: string;
       year: string;
     }) => downloadSalarySlip(data)
+  });
+};
+
+export const useUploadProfileImage = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ file, userId }: { file: File; userId: string }) =>
+      uploadProfileImage(file, userId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['profileImage'] });
+    }
   });
 };

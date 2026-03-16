@@ -28,7 +28,7 @@ export interface PackagesFormProps {
 
 export interface EmployeeInfoItem {
   label: string;
-  value: string | undefined;
+  value: string;
 }
 
 export interface PackageWithTasks extends PackagesList {

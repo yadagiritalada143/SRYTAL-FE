@@ -5,9 +5,9 @@ import {
   getAllPoolCandidatesByEmployee,
   getPoolCandidateByRecruiter,
   getUserDetails,
-  getProfileImage,
   getAllCoursesByUser
 } from '@services/user-services';
+import { getProfileImage } from '@services/common-services';
 
 // Query Keys
 export const userQueryKeys = {

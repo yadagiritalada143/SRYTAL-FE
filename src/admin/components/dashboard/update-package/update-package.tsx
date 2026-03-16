@@ -2,32 +2,22 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   TextInput,
-  Button,
   Textarea,
-  Loader,
   MultiSelect,
   Container,
   Card,
   Stack,
   Group,
   Text,
-  Flex,
-  Tooltip,
-  Center
+  Flex
 } from '@mantine/core';
-import PremiumLoader from '@components/common/loaders/PremiumLoader';
 import DataView from '@components/common/loaders/DataView';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { DateInput } from '@mantine/dates';
 import { useDisclosure, useMediaQuery } from '@mantine/hooks';
 import { toast } from 'react-toastify';
-import {
-  IconArrowLeft,
-  IconDeviceFloppy,
-  IconTrash,
-  IconPackage
-} from '@tabler/icons-react';
+import { IconDeviceFloppy, IconTrash, IconPackage } from '@tabler/icons-react';
 import { useRecoilValue } from 'recoil';
 
 import { userDetailsAtom } from '@atoms/user';
@@ -46,14 +36,11 @@ import AddTasksPackage from './add-tasks';
 import PackageTasksTable from './tasks';
 import { BackButton } from '@common/style-components/buttons';
 import { useAppTheme } from '@hooks/use-app-theme';
+import { CommonButton } from '@components/common/button/CommonButton';
 
 const UpdatePackage = () => {
   const [opened, { open, close }] = useDisclosure(false);
-  const {
-    themeConfig: currentThemeConfig,
-    organizationConfig,
-    isDarkTheme
-  } = useAppTheme();
+  const { themeConfig: currentThemeConfig, organizationConfig } = useAppTheme();
   const navigate = useNavigate();
   const params = useParams();
   const packageId = params.packageId as string;
@@ -122,8 +109,8 @@ const UpdatePackage = () => {
       try {
         const response = await getAllEmployeeDetailsByAdmin();
         const filterApprovers = response.map(
-          (approver: { _id: string; firstName: string; lastName: string }) => ({
-            value: approver._id,
+          (approver: { id: string; firstName: string; lastName: string }) => ({
+            value: approver.id,
             label: `${approver.firstName} ${approver.lastName}`
           })
         );
@@ -165,9 +152,8 @@ const UpdatePackage = () => {
       setIsLoading(false);
     }
   };
-
   return (
-    <Container size='xl' py='md' my='xl' px={isSmallMobile ? 'xs' : 'md'}>
+    <Container size='lg' py='md' my='xl' px={isSmallMobile ? 'xs' : 'md'}>
       <Stack gap='md'>
         {/* Header Card */}
         <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md' withBorder>
@@ -272,25 +258,23 @@ const UpdatePackage = () => {
                   </Group>
 
                   <Group justify='space-between' mt='lg'>
-                    <Button
-                      color='red'
+                    <CommonButton
+                      color={currentThemeConfig.dangerColor}
                       variant='outline'
                       leftSection={<IconTrash size={16} />}
                       onClick={open}
                       fullWidth={isMobile}
-                      radius='md'
                     >
                       Delete Package
-                    </Button>
-                    <Button
+                    </CommonButton>
+                    <CommonButton
                       type='submit'
                       disabled={isLoading}
                       leftSection={<IconDeviceFloppy size={16} />}
                       fullWidth={isMobile}
-                      radius='md'
                     >
                       {isLoading ? 'Updating...' : 'Update Package'}
-                    </Button>
+                    </CommonButton>
                   </Group>
                 </Stack>
               </form>

@@ -23,13 +23,13 @@ const PoolCompaniesCommentsTable = ({
 }) => {
   if (!comments || comments.length === 0) {
     return (
-      <Card shadow="sm" p="xl" radius="md" withBorder>
-        <Stack align="center" gap="md">
+      <Card shadow='sm' p='xl' radius='md' withBorder>
+        <Stack align='center' gap='md'>
           <IconMessageCircle size={48} opacity={0.5} />
-          <Text size="lg" c="dimmed">
+          <Text size='lg' c='dimmed'>
             No comments yet
           </Text>
-          <Text size="sm" c="dimmed" ta="center">
+          <Text size='sm' c='dimmed' ta='center'>
             Add your first comment above to start tracking updates
           </Text>
         </Stack>
@@ -38,13 +38,13 @@ const PoolCompaniesCommentsTable = ({
   }
 
   return (
-    <Card shadow="sm" p={0} radius="md" withBorder>
-      <Card.Section p="md" withBorder>
-        <Group justify="space-between">
-          <Text size="lg" fw={600}>
+    <Card shadow='sm' p={0} radius='md' withBorder>
+      <Card.Section p='md' withBorder>
+        <Group justify='space-between' p='sm'>
+          <Text size='lg' fw={600}>
             Comments History
           </Text>
-          <Badge variant="light" size="lg">
+          <Badge variant='light' size='lg'>
             {comments.length} {comments.length === 1 ? 'comment' : 'comments'}
           </Badge>
         </Group>
@@ -52,26 +52,26 @@ const PoolCompaniesCommentsTable = ({
 
       {isMobile ? (
         // Mobile Card View
-        <ScrollArea p="md">
-          <Stack gap="sm">
+        <ScrollArea p='md'>
+          <Stack gap='sm'>
             {comments.map((comment: any, index: number) => (
-              <Card key={index} withBorder p="md" radius="md">
-                <Stack gap="xs">
-                  <Group justify="space-between">
-                    <Badge variant="filled" color="blue">
+              <Card key={index} withBorder p='md' radius='md'>
+                <Stack gap='xs'>
+                  <Group justify='space-between'>
+                    <Badge variant='filled' color='blue'>
                       #{index + 1}
                     </Badge>
-                    <Text size="xs" c="dimmed">
+                    <Text size='xs' c='dimmed'>
                       {moment(new Date(comment.updateAt)).format(
                         'MMM DD, YYYY h:mm A'
                       )}
                     </Text>
                   </Group>
-                  <Text size="sm" fw={500}>
+                  <Text size='sm' fw={500}>
                     {comment?.userId?.firstName || ''}{' '}
                     {comment?.userId?.lastName || ''}
                   </Text>
-                  <Text size="sm">{comment.comment}</Text>
+                  <Text size='sm'>{comment.comment}</Text>
                 </Stack>
               </Card>
             ))}
@@ -89,25 +89,25 @@ const PoolCompaniesCommentsTable = ({
             >
               <Table.Tr>
                 <Table.Th
-                  className="p-3 border text-center"
+                  className='p-3 border text-center'
                   style={{ width: '80px' }}
                 >
-                  <Text size="sm" fw={500}>
+                  <Text size='sm' fw={500}>
                     S.No
                   </Text>
                 </Table.Th>
-                <Table.Th className="p-3 border">
-                  <Text size="sm" fw={500}>
+                <Table.Th className='p-3 border'>
+                  <Text size='sm' fw={500}>
                     Comment
                   </Text>
                 </Table.Th>
-                <Table.Th className="p-3 border" style={{ width: '200px' }}>
-                  <Text size="sm" fw={500}>
+                <Table.Th className='p-3 border' style={{ width: '200px' }}>
+                  <Text size='sm' fw={500}>
                     Created By
                   </Text>
                 </Table.Th>
-                <Table.Th className="p-3 border" style={{ width: '200px' }}>
-                  <Text size="sm" fw={500}>
+                <Table.Th className='p-3 border' style={{ width: '200px' }}>
+                  <Text size='sm' fw={500}>
                     Created At
                   </Text>
                 </Table.Th>
@@ -115,21 +115,21 @@ const PoolCompaniesCommentsTable = ({
             </Table.Thead>
             <Table.Tbody>
               {comments.map((comment: any, index: number) => (
-                <Table.Tr key={index} className="transition-colors">
-                  <Table.Td className="p-3 text-center">
-                    <Text size="sm">{index + 1}</Text>
+                <Table.Tr key={index} className='transition-colors'>
+                  <Table.Td className='p-3 text-center'>
+                    <Text size='sm'>{index + 1}</Text>
                   </Table.Td>
-                  <Table.Td className="p-3">
-                    <Text size="sm">{comment.comment}</Text>
+                  <Table.Td className='p-3'>
+                    <Text size='sm'>{comment.comment}</Text>
                   </Table.Td>
-                  <Table.Td className="p-3">
-                    <Text size="sm" fw={500}>
+                  <Table.Td className='p-3'>
+                    <Text size='sm' fw={500}>
                       {comment?.userId?.firstName || ''}{' '}
                       {comment?.userId?.lastName || ''}
                     </Text>
                   </Table.Td>
-                  <Table.Td className="p-3">
-                    <Text size="sm">
+                  <Table.Td className='p-3'>
+                    <Text size='sm'>
                       {moment(new Date(comment.updateAt)).format(
                         'MMMM Do YYYY, h:mm A'
                       )}
