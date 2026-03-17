@@ -8,6 +8,8 @@ import { useAddCandidateComment } from '@hooks/mutations/useUserMutations';
 import { useCustomToast } from '@utils/common/toast';
 import { useMediaQuery } from '@mantine/hooks';
 import { CommonButton } from '@components/common/button/CommonButton';
+import { userQueryKeys } from '@hooks/queries/useUserQueries';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface AddCommentProps {
   candidateId: string;
@@ -18,8 +20,7 @@ const AddComment = ({ candidateId }: AddCommentProps) => {
     control,
     formState: { errors, isSubmitting: isFormSubmitting },
     handleSubmit,
-    reset,
-    setValue
+    reset
   } = useForm<AddCommentForm>({
     resolver: zodResolver(commentSchema),
     defaultValues: {
@@ -33,6 +34,7 @@ const AddComment = ({ candidateId }: AddCommentProps) => {
   const { mutateAsync: addComment, isPending: isAddingComment } =
     useAddCandidateComment();
   const isMobile = useMediaQuery('(max-width: 768px)');
+  const queryClient = useQueryClient();
 
   const isSubmitting = isFormSubmitting || isAddingComment;
 
@@ -41,8 +43,10 @@ const AddComment = ({ candidateId }: AddCommentProps) => {
     try {
       await addComment(data);
       showSuccessToast('Comment added successfully');
+      queryClient.invalidateQueries({
+        queryKey: userQueryKeys.candidates
+      });
       reset();
-      setValue('comment', '');
     } catch (error: any) {
       showErrorToast(error?.response?.data?.message || 'Something went wrong');
     }
