@@ -382,7 +382,7 @@ const HeadingComponent: React.FC<{
         fw={700}
         ta={isMobile ? 'center' : 'left'}
       >
-        Manage Candidates ({filteredCount} candidates)
+        Manage Candidates ({filteredCount} Candidates)
       </Text>
       <CommonButton
         leftSection={<IconPlus size={16} />}

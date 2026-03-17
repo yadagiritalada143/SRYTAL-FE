@@ -466,7 +466,7 @@ const HeadingComponent: React.FC<{
         fw={700}
         ta={isMobile ? 'center' : 'left'}
       >
-        Manage Pool Companies ({filteredCompanies} companies)
+        Manage Pool Companies ({filteredCompanies} Companies)
       </Text>
       <CommonButton
         leftSection={<IconPlus size={16} />}
