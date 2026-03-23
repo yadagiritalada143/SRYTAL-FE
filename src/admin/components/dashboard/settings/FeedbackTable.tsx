@@ -1,7 +1,5 @@
 import {
   Card,
-  Button,
-  Loader,
   Tooltip,
   Center,
   Pagination,
@@ -19,7 +17,6 @@ import {
   Divider,
   Container
 } from '@mantine/core';
-import PremiumLoader from '@components/common/loaders/PremiumLoader';
 import DataView from '@components/common/loaders/DataView';
 
 import {
@@ -29,10 +26,11 @@ import {
   IconTrash,
   IconAlertTriangle,
   IconDeviceFloppy,
-  IconCategory
+  IconCategory,
+  IconMessage2
 } from '@tabler/icons-react';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useMediaQuery, useDisclosure } from '@mantine/hooks';
 
 import { debounce } from '@utils/common/debounce';
@@ -45,6 +43,7 @@ import {
   useUpdateFeedbackAttributeByAdmin,
   useDeleteFeedbackAttributeByAdmin
 } from '@hooks/mutations/useAdminMutations';
+import { CommonButton } from '@components/common/button/CommonButton';
 
 const ITEMS_PER_PAGE_OPTIONS = ['5', '10', '20', '50'];
 const DEFAULT_ITEMS_PER_PAGE = 10;
@@ -233,14 +232,13 @@ export default function FeedbackTable() {
                 Manage Feedback Attributes ({filtered.length})
               </Text>
 
-              <Button
+              <CommonButton
                 leftSection={<IconPlus size={16} />}
                 onClick={openAdd}
                 fullWidth={isMobile}
-                radius='md'
               >
                 Add Feedback Attribute
-              </Button>
+              </CommonButton>
             </Flex>
           </Card>
 
@@ -301,14 +299,14 @@ export default function FeedbackTable() {
                             : 'Start by adding your first feedback attribute'}
                         </Text>
                         {!searchQuery && (
-                          <Button
+                          <CommonButton
                             variant='light'
                             leftSection={<IconPlus size={16} />}
                             onClick={openAdd}
                             fullWidth={isSmallMobile}
                           >
                             Add Feedback Attribute
-                          </Button>
+                          </CommonButton>
                         )}
                       </Stack>
                     </Card>
@@ -351,19 +349,25 @@ export default function FeedbackTable() {
                     }}
                   >
                     <Table.Tr>
-                      <Table.Th className='p-3' style={{ width: '100px' }}>
+                      <Table.Th
+                        className='p-3 border'
+                        style={{ width: '100px' }}
+                      >
                         <Group justify='center'>
                           <Text size='sm' fw={500}>
                             S.No
                           </Text>
                         </Group>
                       </Table.Th>
-                      <Table.Th className='p-3'>
+                      <Table.Th className='p-3 border'>
                         <Text size='sm' fw={500}>
                           Feedback Attributes
                         </Text>
                       </Table.Th>
-                      <Table.Th className='p-3' style={{ width: '120px' }}>
+                      <Table.Th
+                        className='p-3 border'
+                        style={{ width: '120px' }}
+                      >
                         <Group justify='center'>
                           <Text size='sm' fw={500}>
                             Actions
@@ -387,15 +391,14 @@ export default function FeedbackTable() {
                                   : 'Start by adding your first feedback attribute'}
                               </Text>
                               {!searchQuery && (
-                                <Button
+                                <CommonButton
                                   leftSection={<IconPlus size={16} />}
                                   onClick={openAdd}
                                   fullWidth={isMobile}
-                                  radius='md'
                                   color={currentThemeConfig.button.color}
                                 >
                                   Add Feedback Attribute
-                                </Button>
+                                </CommonButton>
                               )}
                             </Stack>
                           </Center>
@@ -451,7 +454,7 @@ export default function FeedbackTable() {
           onClose={closeAdd}
           title={
             <Group gap='xs'>
-              <IconCategory
+              <IconMessage2
                 size={20}
                 stroke={1.8}
                 color={currentThemeConfig.button.color}
@@ -480,16 +483,15 @@ export default function FeedbackTable() {
               required
             />
             <Group justify='flex-end'>
-              <Button variant='default' onClick={closeAdd} radius='md'>
+              <CommonButton variant='default' onClick={closeAdd}>
                 Cancel
-              </Button>
-              <Button
+              </CommonButton>
+              <CommonButton
                 onClick={handleAdd}
                 disabled={isMutating || !newName.trim()}
-                radius='md'
               >
                 {isAdding ? 'Adding...' : 'Add'}
-              </Button>
+              </CommonButton>
             </Group>
           </Stack>
         </Modal>
@@ -533,39 +535,32 @@ export default function FeedbackTable() {
             <Group justify='space-between'>
               {isMobile ? (
                 <Tooltip label='Delete'>
-                  <Button
-                    onClick={openDelete}
-                    p='xs'
-                    radius='md'
-                    variant='outline'
-                  >
+                  <CommonButton onClick={openDelete} p='xs' variant='outline'>
                     <IconTrash size={16} />
-                  </Button>
+                  </CommonButton>
                 </Tooltip>
               ) : (
-                <Button
+                <CommonButton
                   color='red'
                   variant='outline'
                   onClick={openDelete}
-                  radius='md'
                   leftSection={<IconTrash size={16} />}
                 >
                   Delete
-                </Button>
+                </CommonButton>
               )}
 
               <Group>
-                <Button variant='default' onClick={closeEdit} radius='md'>
+                <CommonButton variant='default' onClick={closeEdit}>
                   Cancel
-                </Button>
-                <Button
+                </CommonButton>
+                <CommonButton
                   onClick={confirmEdit}
                   leftSection={<IconDeviceFloppy size={16} />}
                   disabled={isMutating}
-                  radius='md'
                 >
                   {isUpdating ? 'Saving...' : 'Save'}
-                </Button>
+                </CommonButton>
               </Group>
             </Group>
           </Stack>
@@ -587,23 +582,22 @@ export default function FeedbackTable() {
           size='md'
         >
           <Stack gap='md'>
-            <Text size='md' mt='sm'>
+            <Text size='sm' mt='sm'>
               Are you sure you want to delete this feedback attribute? This
               action cannot be undone.
             </Text>
             <Group justify='flex-end' mt='md'>
-              <Button variant='default' onClick={closeDelete} radius='md'>
+              <CommonButton variant='default' onClick={closeDelete}>
                 Cancel
-              </Button>
-              <Button
+              </CommonButton>
+              <CommonButton
                 color='red'
                 onClick={confirmDelete}
                 disabled={isMutating}
                 leftSection={<IconTrash size={16} />}
-                radius='md'
               >
                 {isDeleting ? 'Deleting...' : 'Delete'}
-              </Button>
+              </CommonButton>
             </Group>
           </Stack>
         </Modal>

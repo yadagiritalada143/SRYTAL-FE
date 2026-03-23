@@ -1,11 +1,9 @@
 import {
-  Button,
   Card,
   Container,
   Divider,
   Group,
   Image,
-  Loader,
   Stack,
   Text,
   Title,
@@ -44,16 +42,13 @@ import { useMediaQuery } from '@mantine/hooks';
 import { useNavigate } from 'react-router-dom';
 import { organizationEmployeeUrls } from '@utils/common/constants';
 import { useAppTheme } from '@hooks/use-app-theme';
+import { CommonButton } from '@components/common/button/CommonButton';
 
 const COURSES_PER_PAGE = 6;
 
 const WriterDashboard = () => {
   const [courses, setCourses] = useState<Course[]>([]);
-  const {
-    themeConfig: currentThemeConfig,
-    organizationConfig,
-    isDarkTheme
-  } = useAppTheme();
+  const { themeConfig: currentThemeConfig, organizationConfig } = useAppTheme();
   const [loading, setLoading] = useState(true);
   const [showAllCourses, setShowAllCourses] = useState(false);
   const [activePage, setActivePage] = useState(1);
@@ -273,15 +268,14 @@ const WriterDashboard = () => {
               </ActionIcon>
               <Title order={2}>All Courses ({filteredCourses.length})</Title>
             </Group>
-            <Button
+            <CommonButton
               leftSection={<IconPlus size={16} />}
               color='green'
-              radius='md'
               visibleFrom='sm'
               onClick={handleAddCourse}
             >
               Create New Course
-            </Button>
+            </CommonButton>
           </Group>
 
           <Card shadow='sm' p='md' radius='md' withBorder>
@@ -354,15 +348,15 @@ const WriterDashboard = () => {
               undone.
             </Text>
             <Group justify='flex-end'>
-              <Button
+              <CommonButton
                 variant='default'
                 onClick={() => setDeleteModalOpen(false)}
               >
                 Cancel
-              </Button>
-              <Button color='red' onClick={confirmDelete}>
+              </CommonButton>
+              <CommonButton color='red' onClick={confirmDelete}>
                 Delete
-              </Button>
+              </CommonButton>
             </Group>
           </Stack>
         </Modal>
@@ -534,14 +528,13 @@ const WriterDashboard = () => {
             <Stack gap='md'>
               <Group justify='space-between'>
                 <Title order={3}>Content Pipeline</Title>
-                <Button
+                <CommonButton
                   leftSection={<IconPlus size={16} />}
                   color='green'
-                  radius='md'
                   onClick={handleAddCourse}
                 >
                   Create New Course
-                </Button>
+                </CommonButton>
               </Group>
 
               <Card
@@ -566,15 +559,14 @@ const WriterDashboard = () => {
                   )}
                 </SimpleGrid>
               </Card>
-              <Button
+              <CommonButton
                 m={20}
                 leftSection={<IconPlus size={16} />}
                 color='green'
-                radius='md'
                 onClick={() => setShowAllCourses(true)}
               >
                 Show More
-              </Button>
+              </CommonButton>
             </Stack>
           </Stack>
 
@@ -735,14 +727,13 @@ const WriterDashboard = () => {
             <Stack gap='lg' w='60%'>
               <Group justify='space-between'>
                 <Title order={3}>Content Pipeline</Title>
-                <Button
+                <CommonButton
                   leftSection={<IconPlus size={16} />}
                   color='green'
-                  radius='md'
                   onClick={handleAddCourse}
                 >
                   Create New Course
-                </Button>
+                </CommonButton>
               </Group>
 
               <Card shadow='sm' p='lg' radius='md' withBorder>
@@ -763,15 +754,14 @@ const WriterDashboard = () => {
                     )}
                   </SimpleGrid>
                 </ScrollArea>
-                <Button
+                <CommonButton
                   m={20}
                   leftSection={<IconPlus size={16} />}
                   color='green'
-                  radius='md'
                   onClick={() => setShowAllCourses(true)}
                 >
                   Show More
-                </Button>
+                </CommonButton>
               </Card>
             </Stack>
           </Group>
@@ -790,12 +780,15 @@ const WriterDashboard = () => {
             undone.
           </Text>
           <Group justify='flex-end'>
-            <Button variant='default' onClick={() => setDeleteModalOpen(false)}>
+            <CommonButton
+              variant='default'
+              onClick={() => setDeleteModalOpen(false)}
+            >
               Cancel
-            </Button>
-            <Button color='red' onClick={confirmDelete}>
+            </CommonButton>
+            <CommonButton color='red' onClick={confirmDelete}>
               Delete
-            </Button>
+            </CommonButton>
           </Group>
         </Stack>
       </Modal>

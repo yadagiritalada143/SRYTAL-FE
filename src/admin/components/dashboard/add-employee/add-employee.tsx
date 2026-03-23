@@ -2,7 +2,6 @@ import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   TextInput,
-  Button,
   Select,
   Container,
   Card,
@@ -28,15 +27,11 @@ import {
 } from '@tabler/icons-react';
 import { useNavigate } from 'react-router';
 import { organizationAdminUrls } from '@utils/common/constants';
-import { useRecoilValue, useSetRecoilState } from 'recoil';
-import {
-  organizationEmployeeAtom,
-  organizationThemeAtom
-} from '@atoms/organization-atom';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 
 import { ThemeBackground } from '@UI/Theme-background/background';
 import { useAppTheme } from '@hooks/use-app-theme';
+import { CommonButton } from '@components/common/button/CommonButton';
 
 // Constants
 const USER_ROLES = [
@@ -284,31 +279,28 @@ const AddEmployee = () => {
 
                 {/* Action Buttons */}
                 <Group justify='flex-end' gap='md' mt='xl'>
-                  <Button
+                  <CommonButton
                     variant='subtle'
                     leftSection={<IconArrowLeft size={16} />}
                     onClick={handleCancel}
-                    radius='md'
                   >
                     Cancel
-                  </Button>
+                  </CommonButton>
 
                   {isDirty && (
-                    <Button
+                    <CommonButton
                       variant='light'
                       color='orange'
                       onClick={handleReset}
-                      radius='md'
                     >
                       Reset Form
-                    </Button>
+                    </CommonButton>
                   )}
 
-                  <Button
+                  <CommonButton
                     type='submit'
                     loading={isSubmitting}
                     disabled={!isValid || isSubmitting}
-                    radius='md'
                     leftSection={
                       !isSubmitting && <IconCircleDashedCheck size={16} />
                     }
@@ -322,7 +314,7 @@ const AddEmployee = () => {
                     }}
                   >
                     {isSubmitting ? 'Creating Employee...' : 'Create Employee'}
-                  </Button>
+                  </CommonButton>
                 </Group>
               </Stack>
             </form>

@@ -704,3 +704,67 @@ export const deleteFeedbackAttributeByAdmin = async (id: string) => {
     throw error;
   }
 };
+
+export const getAllDepartmentsByAdmin = async () => {
+  const token = localStorage.getItem('token');
+  try {
+    if (!token) {
+      throw 'Not authorized to access';
+    }
+
+    const response = await apiClient('/admin/getalldepartmentsbyadmin', {
+      headers: { auth_token: token }
+    });
+
+    return response.data.data.departments;
+  } catch (error) {
+    throw error;
+  }
+};
+export const addDepartmentByAdmin = async (data: {
+  departmentName: string;
+}) => {
+  const token = localStorage.getItem('token');
+  try {
+    const response = await apiClient.post('/admin/adddepartmentbyadmin', data, {
+      headers: { auth_token: token }
+    });
+    return response.data.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const updateDepartmentByAdmin = async (
+  _id: string,
+  departmentName: string
+) => {
+  const token = localStorage.getItem('token');
+  try {
+    const response = await apiClient.put(
+      '/admin/updatedepartmentbyadmin',
+      { _id, departmentName },
+      {
+        headers: { auth_token: token }
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const deleteDepartmentByAdmin = async (id: string) => {
+  const token = localStorage.getItem('token');
+  try {
+    const response = await apiClient.delete(
+      `/admin/deletedepartmentbyadmin/${id}`,
+      {
+        headers: { auth_token: token }
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};

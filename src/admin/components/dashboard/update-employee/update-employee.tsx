@@ -1,7 +1,6 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   TextInput,
-  Button,
   Select,
   MultiSelect,
   Textarea,
@@ -17,7 +16,6 @@ import {
   Checkbox,
   Avatar
 } from '@mantine/core';
-import PremiumLoader from '@components/common/loaders/PremiumLoader';
 import DataView from '@components/common/loaders/DataView';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -31,24 +29,22 @@ import {
   getAllBloodGroupByAdmin,
   getEmployeeDetailsByAdmin,
   getAllEmploymentTypes,
-  getAllEmployeeRoleByAdmin
+  getAllEmployeeRoleByAdmin,
+  getAllDepartmentsByAdmin
 } from '@services/admin-services';
 import { toast } from 'react-toastify';
 import { useEffect, useState, useMemo } from 'react';
 import { organizationAdminUrls } from '@utils/common/constants';
 import { useDisclosure } from '@mantine/hooks';
-import { useRecoilValue, useSetRecoilState, useRecoilState } from 'recoil';
-import {
-  organizationEmployeeAtom,
-  organizationThemeAtom
-} from '@atoms/organization-atom';
+import { useSetRecoilState, useRecoilState } from 'recoil';
 import { useCustomToast } from '@utils/common/toast';
 import { DatePickerInput } from '@mantine/dates';
 import {
   employeeDetailsAtom,
   bloodGroupOptionsAtom,
   employmentTypesAtom,
-  employeeRolesAtom
+  employeeRolesAtom,
+  departmentsAtom
 } from '@atoms/employee-atom';
 import {
   IconUser,
@@ -72,6 +68,7 @@ import {
 
 import { BackButton } from '@common/style-components/buttons';
 import { useAppTheme } from '@hooks/use-app-theme';
+import { CommonButton } from '@components/common/button/CommonButton';
 
 const normalizeDate = (date?: string) => {
   if (!date) return undefined;
@@ -89,11 +86,7 @@ const normalizeDate = (date?: string) => {
 
 const UpdateEmployee = () => {
   const navigate = useNavigate();
-  const {
-    themeConfig: currentThemeConfig,
-    organizationConfig,
-    isDarkTheme
-  } = useAppTheme();
+  const { themeConfig: currentThemeConfig, organizationConfig } = useAppTheme();
   const params = useParams();
   const employeeId = params.employeeId as string;
 
@@ -119,6 +112,8 @@ const UpdateEmployee = () => {
     useRecoilState(employeeRolesAtom);
   const [employmentTypeOptions, setEmploymentTypes] =
     useRecoilState(employmentTypesAtom);
+  const [departmentOptions, setDepartmentOptions] =
+    useRecoilState(departmentsAtom);
   const setEmployeeDetails = useSetRecoilState(employeeDetailsAtom);
 
   // Get current theme configuration
@@ -126,7 +121,7 @@ const UpdateEmployee = () => {
   const {
     register,
     handleSubmit,
-    formState: { errors, isDirty, isValid },
+    formState: { errors, isDirty },
     control,
     reset,
     watch
@@ -140,13 +135,13 @@ const UpdateEmployee = () => {
   useEffect(() => {
     const loadOptions = async () => {
       try {
-        const [employmentTypes, employeeRoles, bloodGroups] = await Promise.all(
-          [
+        const [employmentTypes, employeeRoles, bloodGroups, departments] =
+          await Promise.all([
             getAllEmploymentTypes(),
             getAllEmployeeRoleByAdmin(),
-            getAllBloodGroupByAdmin()
-          ]
-        );
+            getAllBloodGroupByAdmin(),
+            getAllDepartmentsByAdmin()
+          ]);
 
         setEmploymentTypes(
           employmentTypes.map((res: any) => ({
@@ -168,6 +163,13 @@ const UpdateEmployee = () => {
             label: res.type
           }))
         );
+
+        setDepartmentOptions(
+          departments.map((res: any) => ({
+            value: res._id,
+            label: res.departmentName
+          }))
+        );
       } catch (error: any) {
         toast.error(error?.response?.data?.message || 'Failed to load options');
       }
@@ -187,6 +189,7 @@ const UpdateEmployee = () => {
           bloodGroup: emp.bloodGroup?.id,
           employmentType: emp.employmentType?.id,
           employeeRole: emp.employeeRole.map((role: any) => role.id),
+          department: emp.department?.id,
           dateOfJoining: normalizeDate(emp.dateOfJoining),
           dateOfBirth: normalizeDate(emp.dateOfBirth),
           presentAddress: emp.presentAddress ?? '',
@@ -349,16 +352,15 @@ const UpdateEmployee = () => {
 
                     <Divider my='sm' />
 
-                    <Button
+                    <CommonButton
                       variant='light'
                       color='blue'
                       fullWidth
                       leftSection={<IconKey size={16} />}
                       onClick={handlePasswordReset}
-                      radius='md'
                     >
                       Reset Password
-                    </Button>
+                    </CommonButton>
                   </Stack>
                 </Card>
 
@@ -374,15 +376,14 @@ const UpdateEmployee = () => {
                     Permanently delete this employee and all associated records.
                   </Text>
 
-                  <Button
+                  <CommonButton
                     color='red'
                     variant='light'
-                    radius='md'
                     leftSection={<IconTrash size={16} />}
                     onClick={open}
                   >
                     Delete Employee
-                  </Button>
+                  </CommonButton>
                 </Card>
               </Stack>
             </Grid.Col>
@@ -615,11 +616,7 @@ const UpdateEmployee = () => {
                               data={bloodGroupOptions || []}
                               {...field}
                               value={field.value ?? null}
-                              onChange={value =>
-                                field.onChange(
-                                  value === null ? undefined : value
-                                )
-                              }
+                              onChange={value => field.onChange(value ?? null)}
                               error={errors.bloodGroup?.message}
                               searchable
                               clearable
@@ -785,6 +782,31 @@ const UpdateEmployee = () => {
                           )}
                         />
                       </Grid.Col>
+
+                      <Grid.Col span={{ base: 12, md: 6 }}>
+                        <Controller
+                          name='department'
+                          control={control}
+                          render={({ field }) => (
+                            <Select
+                              label='Department'
+                              placeholder='Select department'
+                              leftSection={
+                                <IconBuildingBank
+                                  size={16}
+                                  color={currentThemeConfig.iconColor}
+                                />
+                              }
+                              data={departmentOptions || []}
+                              value={field.value ?? null}
+                              onChange={value => field.onChange(value ?? null)}
+                              error={errors.department?.message}
+                              searchable
+                              clearable
+                            />
+                          )}
+                        />
+                      </Grid.Col>
                     </Grid>
                   </Card>
 
@@ -912,15 +934,14 @@ const UpdateEmployee = () => {
                     }}
                   >
                     <Group justify='space-between'>
-                      <Button variant='subtle' onClick={handleBack} radius='md'>
+                      <CommonButton variant='subtle' onClick={handleBack}>
                         Cancel
-                      </Button>
+                      </CommonButton>
 
-                      <Button
+                      <CommonButton
                         type='submit'
                         loading={isSubmitting}
                         disabled={isSubmitting}
-                        radius='md'
                         leftSection={
                           !isSubmitting && <IconDeviceFloppy size={16} />
                         }
@@ -930,7 +951,7 @@ const UpdateEmployee = () => {
                         }}
                       >
                         {isSubmitting ? 'Updating...' : 'Update Employee'}
-                      </Button>
+                      </CommonButton>
                     </Group>
                   </Card>
                 </Stack>
@@ -978,12 +999,11 @@ const UpdateEmployee = () => {
           />
 
           <Group justify='flex-end' gap='sm'>
-            <Button variant='subtle' onClick={close} radius='md'>
+            <CommonButton variant='subtle' onClick={close}>
               Cancel
-            </Button>
-            <Button
+            </CommonButton>
+            <CommonButton
               color='red'
-              radius='md'
               disabled={!agreeTerms || !confirmDelete}
               onClick={() => {
                 handleDeleteEmployee();
@@ -992,7 +1012,7 @@ const UpdateEmployee = () => {
               leftSection={<IconTrash size={16} />}
             >
               Delete Employee
-            </Button>
+            </CommonButton>
           </Group>
         </Stack>
       </Modal>

@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
 import {
-  Button,
   Group,
   Modal,
   Table,
@@ -30,8 +29,8 @@ import { OrganizationConfig } from '@interfaces/organization';
 import { deleteTaskByAdmin, updateTaskByAdmin } from '@services/admin-services';
 import { DeleteTaskModel } from './delete-task';
 import { useCustomToast } from '@utils/common/toast';
-import { useRecoilValue } from 'recoil';
 import { useAppTheme } from '@hooks/use-app-theme';
+import { CommonButton } from '@components/common/button/CommonButton';
 
 // Mobile Task Card Component
 const MobileTaskCard: React.FC<{
@@ -244,6 +243,7 @@ const PackageTasksTable = ({
                   <Table.Tr>
                     <Table.Th
                       className='p-3 border text-center'
+                      ta='center'
                       style={{ width: '80px' }}
                     >
                       <Text size='sm' fw={500}>
@@ -255,18 +255,27 @@ const PackageTasksTable = ({
                         Task
                       </Text>
                     </Table.Th>
-                    <Table.Th className='p-3 border' style={{ width: '200px' }}>
+                    <Table.Th
+                      className='p-3 border'
+                      ta='center'
+                      style={{ width: '200px' }}
+                    >
                       <Text size='sm' fw={500}>
                         Created By
                       </Text>
                     </Table.Th>
-                    <Table.Th className='p-3 border' style={{ width: '220px' }}>
+                    <Table.Th
+                      className='p-3 border'
+                      ta='center'
+                      style={{ width: '220px' }}
+                    >
                       <Text size='sm' fw={500}>
                         Created At
                       </Text>
                     </Table.Th>
                     <Table.Th
                       className='p-3 border text-center'
+                      ta='center'
                       style={{ width: '120px' }}
                     >
                       <Text size='sm' fw={500}>
@@ -286,20 +295,20 @@ const PackageTasksTable = ({
                           {task.title}
                         </Text>
                       </Table.Td>
-                      <Table.Td className='p-3'>
+                      <Table.Td className='p-3 text-center'>
                         <Text size='sm'>
                           {task?.createdBy?.firstName || ''}{' '}
                           {task?.createdBy?.lastName || ''}
                         </Text>
                       </Table.Td>
-                      <Table.Td className='p-3'>
+                      <Table.Td className='p-3 text-center'>
                         <Text size='xs'>
                           {moment(task.createdAt).format(
                             'MMM DD, YYYY - h:mm A'
                           )}
                         </Text>
                       </Table.Td>
-                      <Table.Td className='p-3'>
+                      <Table.Td className='p-3 text-center'>
                         <Group gap='xs' justify='center'>
                           <Tooltip label='Edit Task'>
                             <ActionIcon
@@ -359,16 +368,15 @@ const PackageTasksTable = ({
             placeholder='Enter task title'
           />
           <Group justify='flex-end' mt='md'>
-            <Button variant='default' onClick={closeEditModal} radius='md'>
+            <CommonButton variant='default' onClick={closeEditModal}>
               Cancel
-            </Button>
-            <Button
-              radius='md'
+            </CommonButton>
+            <CommonButton
               onClick={handleUpdateTask}
               leftSection={<IconDeviceFloppy size={16} />}
             >
               Save Changes
-            </Button>
+            </CommonButton>
           </Group>
         </Stack>
       </Modal>

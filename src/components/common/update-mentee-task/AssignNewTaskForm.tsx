@@ -1,5 +1,6 @@
-import { Grid, Select, Textarea, Button } from '@mantine/core';
+import { Grid, Select, Textarea } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
+import { CommonButton } from '../button/CommonButton';
 
 interface Props {
   newTask: {
@@ -24,18 +25,18 @@ const AssignNewTaskForm = ({
 }: Props) => {
   return (
     <div>
-      <h3 className="text-lg font-bold underline mb-2">Assign New Task</h3>
+      <h3 className='text-lg font-bold underline mb-2'>Assign New Task</h3>
       <Select
-        label="Task"
-        placeholder="Select Option"
+        label='Task'
+        placeholder='Select Option'
         data={['Unit Testing', 'React Time Sheet', 'API Integration']}
         value={newTask.title}
         onChange={val => setNewTask({ ...newTask, title: val || '' })}
       />
 
       <Textarea
-        label="Description"
-        placeholder="Enter task description"
+        label='Description'
+        placeholder='Enter task description'
         value={newTask.description}
         onChange={e =>
           setNewTask({ ...newTask, description: e.currentTarget.value })
@@ -45,14 +46,14 @@ const AssignNewTaskForm = ({
       <Grid>
         <Grid.Col span={{ base: 12, sm: 6 }}>
           <DateInput
-            label="Start Date"
+            label='Start Date'
             value={newTask.startDate}
             onChange={date => setNewTask({ ...newTask, startDate: date })}
           />
         </Grid.Col>
         <Grid.Col span={{ base: 12, sm: 6 }}>
           <DateInput
-            label="End Date"
+            label='End Date'
             value={newTask.endDate}
             onChange={date => setNewTask({ ...newTask, endDate: date })}
           />
@@ -62,24 +63,23 @@ const AssignNewTaskForm = ({
       <Grid>
         <Grid.Col span={{ base: 12, sm: 6 }}>
           <Select
-            label="Priority"
-            placeholder="Select Option"
+            label='Priority'
+            placeholder='Select Option'
             data={['High', 'Medium', 'Low']}
             value={newTask.priority}
             onChange={val => setNewTask({ ...newTask, priority: val || '' })}
           />
         </Grid.Col>
-        <Grid.Col span={{ base: 12, sm: 6 }} className="flex items-end">
-          <Button
+        <Grid.Col span={{ base: 12, sm: 6 }} className='flex items-end'>
+          <CommonButton
             fullWidth
-            radius="md"
-            variant="filled"
+            variant='filled'
             style={{ backgroundColor: buttonColor, color: buttonTextColor }}
             onClick={onAssign}
             disabled={!newTask.title || !newTask.priority}
           >
             Assign
-          </Button>
+          </CommonButton>
         </Grid.Col>
       </Grid>
     </div>

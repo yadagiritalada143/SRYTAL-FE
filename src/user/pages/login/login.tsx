@@ -1,4 +1,4 @@
-import { Button, PasswordInput, TextInput, Modal } from '@mantine/core';
+import { PasswordInput, TextInput, Modal } from '@mantine/core';
 import PremiumLoader from '@components/common/loaders/PremiumLoader';
 import { useForm } from 'react-hook-form';
 import { LoginForm, loginSchema } from '@forms/login';
@@ -9,7 +9,7 @@ import { login } from '@services/common-services';
 import axios from 'axios';
 import { useCustomToast } from '@utils/common/toast';
 
-import { useRecoilValue, useSetRecoilState } from 'recoil';
+import { useSetRecoilState } from 'recoil';
 import { organizationEmployeeUrls } from '@utils/common/constants';
 import { userDetailsAtom } from '@atoms/user';
 import ForgotPassword from '@components/common/forgetPassword/forgetPassword';
@@ -21,6 +21,7 @@ import { ThemeForm } from '@components/UI/Form/form';
 
 import { ROLES } from '@constants';
 import { useAppTheme } from '@hooks/use-app-theme';
+import { CommonButton } from '@components/common/button/CommonButton';
 
 const EmployeeLogin = () => {
   const { showSuccessToast, showErrorToast } = useCustomToast();
@@ -192,7 +193,7 @@ const EmployeeLogin = () => {
           </div>
 
           {/* Login button */}
-          <Button
+          <CommonButton
             type='submit'
             data-testid='loginButton'
             className='w-full rounded-full font-semibold transition-all duration-200'
@@ -222,7 +223,7 @@ const EmployeeLogin = () => {
             }
           >
             {isSubmitting ? 'Logging in...' : 'Log in'}
-          </Button>
+          </CommonButton>
         </ThemeForm>
       </div>
 

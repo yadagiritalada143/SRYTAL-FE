@@ -1,12 +1,11 @@
-import { Button, PasswordInput, TextInput, Modal } from '@mantine/core';
+import { PasswordInput, TextInput, Modal } from '@mantine/core';
 import PremiumLoader from '@components/common/loaders/PremiumLoader';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema, LoginForm } from '@forms/login';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 
-import { useRecoilValue } from 'recoil';
 import ForgotPassword from '@components/common/forgetPassword/forgetPassword';
 
 import { useSubmitAdminLogin } from './methods';
@@ -17,13 +16,11 @@ import { IconLockPassword, IconMail } from '@tabler/icons-react';
 
 import { ROLES } from '@constants';
 import { useAppTheme } from '@hooks/use-app-theme';
+import { CommonButton } from '@components/common/button/CommonButton';
+
 const AdminLogin = () => {
   const navigate = useNavigate();
-  const {
-    themeConfig: currentThemeConfig,
-    organizationConfig,
-    isDarkTheme
-  } = useAppTheme();
+  const { themeConfig: currentThemeConfig, organizationConfig } = useAppTheme();
   const { showErrorToast } = useCustomToast();
   const { organization = '' } = useParams<{ organization: string }>();
 
@@ -146,19 +143,18 @@ const AdminLogin = () => {
             </button>
           </div>
           <div className='w-full md:w-auto flex justify-center order-1 md:order-2'>
-            <Button
+            <CommonButton
               type='submit'
               data-testid='loginButton'
               className='w-1/2 md:w-auto'
               style={{ minWidth: '200px' }}
               disabled={isSubmitting}
-              radius='md'
               leftSection={
                 isSubmitting && <PremiumLoader size='xs' minHeight='20px' />
               }
             >
               {isSubmitting ? 'Logging in...' : 'Login'}
-            </Button>
+            </CommonButton>
           </div>
         </div>
       </ThemeForm>

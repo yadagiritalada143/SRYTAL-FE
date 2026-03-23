@@ -74,6 +74,9 @@ const SettingsLayout = lazy(
 const FeedbackTable = lazy(
   () => import('@admin/components/dashboard/settings/FeedbackTable')
 );
+const DepartmentTable = lazy(
+  () => import('@admin/components/dashboard/settings/DepartmentTable')
+);
 const DateTableComponent = lazy(
   () => import('@components/common/timesheet/timesheet')
 );
@@ -85,7 +88,9 @@ const EmployeeTimesheetAdminView = lazy(() =>
     '@admin/components/dashboard/employee-timesheet/employee-timesheet'
   ).then(m => ({ default: m.EmployeeTimesheetAdminView }))
 );
-
+const Notifications = lazy(
+  () => import('@admin/components/dashboard/notifications/Notifications')
+);
 // User domain components reused in Admin
 const Companies = lazy(
   () => import('@user/components/dashboard/companies/companies')
@@ -549,11 +554,13 @@ const AdminRoutes = () => {
               path='update-pool-company/:companyId'
               element={<UpdateCompany />}
             />
+            <Route path='notification' element={<Notifications />} />
             <Route path='settings' element={<SettingsLayout />}>
               <Route index element={<Navigate to='blood-groups' replace />} />
               <Route path='blood-groups' element={<BloodGroupTable />} />
               <Route path='employment-types' element={<EmploymentTypes />} />
               <Route path='employment-roles' element={<EmploymentRoles />} />
+              <Route path='departments' element={<DepartmentTable />} />
               <Route path='feedback' element={<FeedbackTable />} />
             </Route>
           </Route>

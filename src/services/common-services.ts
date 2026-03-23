@@ -73,7 +73,7 @@ export const getOrganizationConfig = async (organizationName: string) => {
 export const getTimesheetData = async (
   startDate: DateValue,
   endDate: DateValue,
-  employeeId?: string
+  employeeId: string
 ) => {
   try {
     const { data } = await apiClient.post('/fetchEmployeePackageDetailsById', {
@@ -90,12 +90,13 @@ export const getTimesheetData = async (
   }
 };
 
-export const submitTimeSheet = async (data: any, employeeId?: string) => {
+export const submitTimeSheet = async (data: any, employeeId: string) => {
   try {
-    await apiClient.put('updateEmployeeTimesheet', {
+    const response = await apiClient.put('updateEmployeeTimesheet', {
       packages: data,
       ...(employeeId && { employeeId: employeeId })
     });
+    return response.data;
   } catch (error) {
     throw error;
   }
@@ -127,10 +128,11 @@ export const downloadSalarySlip = async ({
   }
 };
 
-export const uploadProfileImage = async (image: File) => {
+export const uploadProfileImage = async (image: File, employeeId: string) => {
   try {
     const formData = new FormData();
     formData.append('profileImage', image);
+    formData.append('userId', employeeId);
 
     const response = await apiClient.post('/uploadProfileImage', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }

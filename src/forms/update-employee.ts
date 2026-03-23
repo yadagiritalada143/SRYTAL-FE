@@ -32,7 +32,7 @@ export const employeeSchema = z.object({
     .string()
     .length(12, { message: 'Aadhaar must be exactly 12 digits' })
     .regex(/^\d+$/, { message: 'Aadhaar must contain only digits' }),
-  bloodGroup: z.string().optional(),
+  bloodGroup: z.string().optional().nullable(),
   dateOfBirth: z.string().optional(),
   presentAddress: z.string().optional(),
   permanentAddress: z.string().optional(),
@@ -40,6 +40,7 @@ export const employeeSchema = z.object({
   employeeRole: z
     .array(z.string())
     .min(1, 'At least one employee role is required'),
+  department: z.string().optional().nullable(),
   uanNumber: z
     .string()
     .trim()

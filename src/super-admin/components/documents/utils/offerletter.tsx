@@ -1,10 +1,11 @@
-import { Button, Select, Textarea, TextInput } from '@mantine/core';
+import { Select, Textarea, TextInput } from '@mantine/core';
 import PremiumLoader from '@components/common/loaders/PremiumLoader';
 import { Controller, useForm } from 'react-hook-form';
 import { OfferLetterForm, offerLetterForm } from '@forms/offerletter';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { GenerateOfferletterBySuperAdmin } from '@services/super-admin-services';
 import { toast } from 'react-toastify';
+import { CommonButton } from '@components/common/button/CommonButton';
 
 const OfferLetterModal = () => {
   const {
@@ -134,7 +135,7 @@ const OfferLetterModal = () => {
 
         <div className='flex justify-between '>
           <div></div>
-          <Button
+          <CommonButton
             className='mt-7 rounded-md'
             type='submit'
             data-testid='submitButton'
@@ -144,7 +145,7 @@ const OfferLetterModal = () => {
             disabled={isSubmitting}
           >
             {isSubmitting ? 'Generating...' : 'Generate OfferLetter'}
-          </Button>
+          </CommonButton>
         </div>
       </form>
     </div>

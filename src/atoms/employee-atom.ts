@@ -26,3 +26,8 @@ export const employeePackagesAtom = atom<PackagesList | null>({
   key: 'employeePackagesAtom',
   default: null
 });
+
+export const departmentsAtom = atom({
+  key: 'departmentsAtom',
+  default: []
+});

@@ -5,12 +5,10 @@ import { useDisclosure, useMediaQuery } from '@mantine/hooks';
 import { toast } from 'react-toastify';
 import {
   MultiSelect,
-  Button,
   Group,
   Checkbox,
   Card,
   Text,
-  Loader,
   Stack,
   ScrollArea,
   SimpleGrid,
@@ -21,7 +19,6 @@ import {
   Divider,
   Box
 } from '@mantine/core';
-import PremiumLoader from '@components/common/loaders/PremiumLoader';
 import DataView from '@components/common/loaders/DataView';
 import {
   IconPackage,
@@ -37,7 +34,7 @@ import {
   IconPackages,
   IconSubtask
 } from '@tabler/icons-react';
-import { useRecoilState, useRecoilValue } from 'recoil';
+import { useRecoilState } from 'recoil';
 import { employeeDetailsAtom } from '@atoms/employee-atom';
 
 import {
@@ -66,6 +63,7 @@ import {
   getEmployeeInfoItems
 } from './helper-functions/add-package';
 import { useAppTheme } from '@hooks/use-app-theme';
+import { CommonButton } from '@components/common/button/CommonButton';
 
 const PackagesFormComponent = ({ employeeId }: PackagesFormProps) => {
   const [employmentPackagesOptions, setEmploymentPackagesOptions] =
@@ -559,20 +557,19 @@ const PackagesFormComponent = ({ employeeId }: PackagesFormProps) => {
                 />
 
                 <Group justify='flex-end' mt='md'>
-                  <Button
+                  <CommonButton
                     onClick={proceedToTaskSelection}
                     disabled={selectedPackages.length === 0}
-                    size={isMobile ? 'sm' : 'md'}
+                    size={isMobile ? 'xs' : 'sm'}
                     fullWidth={isSmallMobile}
                     rightSection={<IconArrowRight size={isMobile ? 14 : 16} />}
                     style={{
                       backgroundColor: currentThemeConfig.button.color,
                       color: currentThemeConfig.button.textColor
                     }}
-                    radius='md'
                   >
                     Next: Select Tasks
-                  </Button>
+                  </CommonButton>
                 </Group>
               </Stack>
             </Card>
@@ -761,7 +758,7 @@ const PackagesFormComponent = ({ employeeId }: PackagesFormProps) => {
                     gap: isSmallMobile ? '0.5rem' : undefined
                   }}
                 >
-                  <Button
+                  <CommonButton
                     variant='subtle'
                     leftSection={<IconX size={isMobile ? 14 : 16} />}
                     onClick={close}
@@ -769,9 +766,9 @@ const PackagesFormComponent = ({ employeeId }: PackagesFormProps) => {
                     fullWidth={isSmallMobile}
                   >
                     Cancel
-                  </Button>
+                  </CommonButton>
 
-                  <Button
+                  <CommonButton
                     onClick={onSubmit}
                     loading={isSubmitting}
                     disabled={
@@ -790,10 +787,9 @@ const PackagesFormComponent = ({ employeeId }: PackagesFormProps) => {
                       backgroundColor: currentThemeConfig.button.color,
                       color: currentThemeConfig.button.textColor
                     }}
-                    radius='md'
                   >
                     {isSubmitting ? 'Saving Changes...' : 'Save Changes'}
-                  </Button>
+                  </CommonButton>
                 </Group>
               </Stack>
             </StandardModal>

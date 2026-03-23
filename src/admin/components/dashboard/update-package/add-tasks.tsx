@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Button, Textarea, Card, Stack, Group, Text } from '@mantine/core';
+import { Textarea, Card, Stack, Group, Text } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import { IconPlus, IconChecklist } from '@tabler/icons-react';
 import { toast } from 'react-toastify';
 import { OrganizationConfig } from '@interfaces/organization';
 import { addTasksByAdmin } from '@services/admin-services';
 import { useCustomToast } from '@utils/common/toast';
+import { CommonButton } from '@components/common/button/CommonButton';
 
 const AddTasksPackage = ({
   packageId,
@@ -48,18 +49,18 @@ const AddTasksPackage = ({
   };
 
   return (
-    <Card shadow="sm" p={isMobile ? 'md' : 'lg'} radius="md" withBorder>
-      <Stack gap="md">
-        <Group gap="xs">
+    <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md' withBorder>
+      <Stack gap='md'>
+        <Group gap='xs'>
           <IconChecklist size={20} />
-          <Text size="lg" fw={600}>
+          <Text size='lg' fw={600}>
             Add New Task
           </Text>
         </Group>
 
         <Textarea
-          label="Task Description"
-          placeholder="Enter task details..."
+          label='Task Description'
+          placeholder='Enter task details...'
           value={newTasks}
           onChange={e => {
             setNewTasks(e.target.value);
@@ -67,20 +68,19 @@ const AddTasksPackage = ({
           }}
           error={error}
           minRows={4}
-          size="md"
+          size='md'
           required={required}
         />
 
-        <Group justify="flex-end">
-          <Button
+        <Group justify='flex-end'>
+          <CommonButton
             onClick={handleAddTasks}
             disabled={isLoading || (required && !newTasks.trim())}
             leftSection={<IconPlus size={16} />}
             fullWidth={isSmallMobile}
-            radius="md"
           >
             {isLoading ? 'Adding...' : 'Add Task'}
-          </Button>
+          </CommonButton>
         </Group>
       </Stack>
     </Card>

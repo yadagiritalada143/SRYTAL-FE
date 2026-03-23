@@ -35,7 +35,7 @@ export const useGetOrganizationConfig = (orgName: string, enabled = true) => {
 export const useGetTimesheetData = (
   startDate: DateValue,
   endDate: DateValue,
-  employeeId?: string,
+  employeeId: string,
   enabled = true
 ) => {
   return useQuery({
