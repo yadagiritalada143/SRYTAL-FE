@@ -75,7 +75,7 @@ const SettingsLayout = () => {
               value='departments'
               leftSection={<IconBuildingBank size={16} stroke={1.8} />}
             >
-              Department
+              Departments
             </Tabs.Tab>
 
             <Tabs.Tab

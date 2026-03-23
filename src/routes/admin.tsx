@@ -88,7 +88,9 @@ const EmployeeTimesheetAdminView = lazy(() =>
     '@admin/components/dashboard/employee-timesheet/employee-timesheet'
   ).then(m => ({ default: m.EmployeeTimesheetAdminView }))
 );
-
+const Notifications = lazy(
+  () => import('@admin/components/dashboard/notifications/Notifications')
+);
 // User domain components reused in Admin
 const Companies = lazy(
   () => import('@user/components/dashboard/companies/companies')
@@ -552,6 +554,7 @@ const AdminRoutes = () => {
               path='update-pool-company/:companyId'
               element={<UpdateCompany />}
             />
+            <Route path='notification' element={<Notifications />} />
             <Route path='settings' element={<SettingsLayout />}>
               <Route index element={<Navigate to='blood-groups' replace />} />
               <Route path='blood-groups' element={<BloodGroupTable />} />

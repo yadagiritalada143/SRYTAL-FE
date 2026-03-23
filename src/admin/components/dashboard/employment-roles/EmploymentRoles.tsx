@@ -133,7 +133,7 @@ const HeadingComponent: React.FC<{
         fw={700}
         ta={isMobile ? 'center' : 'left'}
       >
-        Manage Employment Roles ({filteredCount} roles)
+        Manage Employment Roles ({filteredCount} Roles)
       </Text>
       <CommonButton
         leftSection={<IconPlus size={16} />}
