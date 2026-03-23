@@ -616,11 +616,7 @@ const UpdateEmployee = () => {
                               data={bloodGroupOptions || []}
                               {...field}
                               value={field.value ?? null}
-                              onChange={value =>
-                                field.onChange(
-                                  value === null ? undefined : value
-                                )
-                              }
+                              onChange={value => field.onChange(value ?? null)}
                               error={errors.bloodGroup?.message}
                               searchable
                               clearable
@@ -803,9 +799,7 @@ const UpdateEmployee = () => {
                               }
                               data={departmentOptions || []}
                               value={field.value ?? null}
-                              onChange={value =>
-                                field.onChange(value ?? undefined)
-                              }
+                              onChange={value => field.onChange(value ?? null)}
                               error={errors.department?.message}
                               searchable
                               clearable
