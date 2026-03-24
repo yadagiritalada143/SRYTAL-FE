@@ -243,6 +243,7 @@ const PackageTasksTable = ({
                   <Table.Tr>
                     <Table.Th
                       className='p-3 border text-center'
+                      ta='center'
                       style={{ width: '80px' }}
                     >
                       <Text size='sm' fw={500}>
@@ -254,18 +255,27 @@ const PackageTasksTable = ({
                         Task
                       </Text>
                     </Table.Th>
-                    <Table.Th className='p-3 border' style={{ width: '200px' }}>
+                    <Table.Th
+                      className='p-3 border'
+                      ta='center'
+                      style={{ width: '200px' }}
+                    >
                       <Text size='sm' fw={500}>
                         Created By
                       </Text>
                     </Table.Th>
-                    <Table.Th className='p-3 border' style={{ width: '220px' }}>
+                    <Table.Th
+                      className='p-3 border'
+                      ta='center'
+                      style={{ width: '220px' }}
+                    >
                       <Text size='sm' fw={500}>
                         Created At
                       </Text>
                     </Table.Th>
                     <Table.Th
                       className='p-3 border text-center'
+                      ta='center'
                       style={{ width: '120px' }}
                     >
                       <Text size='sm' fw={500}>
@@ -285,20 +295,20 @@ const PackageTasksTable = ({
                           {task.title}
                         </Text>
                       </Table.Td>
-                      <Table.Td className='p-3'>
+                      <Table.Td className='p-3 text-center'>
                         <Text size='sm'>
                           {task?.createdBy?.firstName || ''}{' '}
                           {task?.createdBy?.lastName || ''}
                         </Text>
                       </Table.Td>
-                      <Table.Td className='p-3'>
+                      <Table.Td className='p-3 text-center'>
                         <Text size='xs'>
                           {moment(task.createdAt).format(
                             'MMM DD, YYYY - h:mm A'
                           )}
                         </Text>
                       </Table.Td>
-                      <Table.Td className='p-3'>
+                      <Table.Td className='p-3 text-center'>
                         <Group gap='xs' justify='center'>
                           <Tooltip label='Edit Task'>
                             <ActionIcon

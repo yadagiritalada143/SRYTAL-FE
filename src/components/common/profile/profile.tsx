@@ -478,12 +478,12 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                     <Stack gap='xs'>
                       <Group gap='xs'>
                         <IconMapPin
-                          size={18}
+                          size={16}
                           color={currentThemeConfig.iconColor}
                         />
                         <Text
-                          size='sm'
-                          fw={600}
+                          size='xs'
+                          fw={500}
                           c={currentThemeConfig.mutedTextColor}
                         >
                           Present Address
@@ -507,12 +507,12 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                     <Stack gap='xs'>
                       <Group gap='xs'>
                         <IconMapPin
-                          size={18}
+                          size={16}
                           color={currentThemeConfig.successColor}
                         />
                         <Text
-                          size='sm'
-                          fw={600}
+                          size='xs'
+                          fw={500}
                           c={currentThemeConfig.mutedTextColor}
                         >
                           Permanent Address
