@@ -11,7 +11,8 @@ import {
   Stack,
   Text,
   Divider,
-  Badge
+  Badge,
+  FileInput
 } from '@mantine/core';
 import PremiumLoader from '@components/common/loaders/PremiumLoader';
 import { Controller, useForm } from 'react-hook-form';
@@ -33,7 +34,8 @@ import {
   IconMail,
   IconBriefcase,
   IconMessage,
-  IconClock
+  IconClock,
+  IconUpload
 } from '@tabler/icons-react';
 import { CommonButton } from '@components/common/button/CommonButton';
 
@@ -432,6 +434,39 @@ const AddPoolCandidate = () => {
                     </Grid.Col>
                   </Grid>
                 </Stack>
+              </div>
+
+              <Divider />
+
+              <div>
+                <Text size='lg' fw={600} mb='md'>
+                  Resume
+                </Text>
+
+                <Grid gutter='md'>
+                  <Grid.Col span={12}>
+                    <Controller
+                      name='resume'
+                      control={control}
+                      render={({ field }) => (
+                        <FileInput
+                          {...field}
+                          value={field.value}
+                          onChange={file => field.onChange(file)}
+                          variant='filled'
+                          label='Upload Resume'
+                          placeholder='Choose file'
+                          description='PDF, DOC, DOCX (Max 5MB)'
+                          accept='.pdf,.doc,.docx'
+                          clearable
+                          leftSection={<IconUpload size={16} />}
+                          error={errors.resume?.message?.toString()}
+                          size={isMobile ? 'sm' : 'md'}
+                        />
+                      )}
+                    />
+                  </Grid.Col>
+                </Grid>
               </div>
 
               <Divider />

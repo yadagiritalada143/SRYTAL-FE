@@ -23,6 +23,8 @@ export interface CandidateInterface {
   totalYearsOfExperience: number;
   relaventYearsOfExperience: number;
   evaluatedSkills: string;
+  resumeUrl?: string;
+  resumeFileName?: string;
   comments: PoolCandidatesComments[];
   createdBy: {
     _id: string;
