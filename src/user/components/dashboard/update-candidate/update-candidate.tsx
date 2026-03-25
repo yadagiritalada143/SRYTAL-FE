@@ -12,7 +12,8 @@ import {
   Badge,
   Divider,
   Flex,
-  Container
+  Container,
+  FileInput
 } from '@mantine/core';
 import PremiumLoader from '@components/common/loaders/PremiumLoader';
 import DataView from '@components/common/loaders/DataView';
@@ -39,7 +40,8 @@ import {
   IconPlus,
   IconX,
   IconTrash,
-  IconDeviceFloppy
+  IconDeviceFloppy,
+  IconUpload
 } from '@tabler/icons-react';
 import { CommonButton } from '@components/common/button/CommonButton';
 
@@ -286,6 +288,39 @@ const UpdatePoolCandidateForm = () => {
                       </Group>
                     )}
                   </Stack>
+
+                  <Divider />
+
+                  <div>
+                    <Text size='lg' fw={600} mb='md'>
+                      Resume
+                    </Text>
+
+                    <Grid gutter='md'>
+                      <Grid.Col span={12}>
+                        <Controller
+                          name='resume'
+                          control={control}
+                          render={({ field }) => (
+                            <FileInput
+                              {...field}
+                              value={field.value}
+                              onChange={file => field.onChange(file)}
+                              variant='filled'
+                              label='Upload Resume'
+                              placeholder='Choose file'
+                              description='PDF, DOC, DOCX (Max 5MB)'
+                              accept='.pdf,.doc,.docx'
+                              clearable
+                              leftSection={<IconUpload size={16} />}
+                              error={errors.resume?.message?.toString()}
+                              size={isMobile ? 'sm' : 'md'}
+                            />
+                          )}
+                        />
+                      </Grid.Col>
+                    </Grid>
+                  </div>
 
                   <Divider />
 
