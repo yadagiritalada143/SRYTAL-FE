@@ -1,0 +1,21 @@
+import { v as l, j as n, Q as i, D as p } from './index-Cn_-nzwF.js';
+const c = ({ children: a, forceAction: e = !1, onClose: s, ...t }) => {
+  const { themeConfig: o } = l(),
+    r = () => {
+      if (e) {
+        p.warning('Please complete this action before closing');
+        return;
+      }
+      s == null || s();
+    };
+  return n.jsx(i, {
+    ...t,
+    onClose: r,
+    closeOnClickOutside: !e,
+    closeOnEscape: !e,
+    withCloseButton: !e,
+    overlayProps: { color: o.backgroundColor, opacity: 0.7, blur: 3 },
+    children: a
+  });
+};
+export { c as S };

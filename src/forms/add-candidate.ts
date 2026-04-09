@@ -7,7 +7,7 @@ export const commentSchema = z.object({
   callStartsAt: z
     .string()
     .datetime('Invalid date-time format for callStartsAt'),
-  callEndsAt: z.string().datetime('Invalid date-time format for callEndsAt'),
+  callEndsAt: z.string().datetime('Invalid date-time format for callEndsAt')
 });
 
 // Schema for the candidate
@@ -24,20 +24,20 @@ export const candidateSchema = z
         .string()
         .min(10, 'Phone number must be at least 10 digits')
         .max(10, 'Phone number must be 10 digits')
-        .regex(/^\d+$/, 'Phone number must contain only numbers'),
+        .regex(/^\d+$/, 'Phone number must contain only numbers')
     }),
     totalYearsOfExperience: z.number().min(0, 'Experience must be positive'),
     relaventYearsOfExperience: z
       .number()
       .min(0, 'Relevant experience must be positive'),
     evaluatedSkills: z.string(),
-    comments: z.array(commentSchema).min(1),
+    comments: z.array(commentSchema).min(1)
   })
   .refine(
     data => data.relaventYearsOfExperience <= data.totalYearsOfExperience,
     {
       message: 'Relevant experience cannot be more than total experience',
-      path: ['relevantYearsOfExperience'],
+      path: ['relevantYearsOfExperience']
     }
   );
 
@@ -54,19 +54,19 @@ export const updateCandidateSchema = z
         .string()
         .min(10, 'Phone number must be at least 10 digits')
         .max(10, 'Phone number must be 10 digits')
-        .regex(/^\d+$/, 'Phone number must contain only numbers'),
+        .regex(/^\d+$/, 'Phone number must contain only numbers')
     }),
     totalYearsOfExperience: z.number().min(0, 'Experience must be positive'),
     relaventYearsOfExperience: z
       .number()
       .min(0, 'Relevant experience must be positive'),
-    evaluatedSkills: z.string(),
+    evaluatedSkills: z.string()
   })
   .refine(
     data => data.relaventYearsOfExperience <= data.totalYearsOfExperience,
     {
       message: 'Relevant experience cannot be more than total experience',
-      path: ['relevantYearsOfExperience'],
+      path: ['relevantYearsOfExperience']
     }
   );
 // Infer the type from the schema

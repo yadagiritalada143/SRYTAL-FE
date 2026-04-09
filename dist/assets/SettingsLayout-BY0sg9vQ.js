@@ -1,0 +1,92 @@
+import {
+  a6 as m,
+  v as c,
+  C as p,
+  s as f,
+  j as e,
+  B as u,
+  O as d
+} from './index-Cn_-nzwF.js';
+import { C as x } from './Container-3LzVKj3b.js';
+import { T as t } from './Tabs-asIDgMUj.js';
+import { I as b } from './IconDroplet-BIln8pIB.js';
+import { I as h } from './IconBriefcase-C5ZKuHUX.js';
+import { I as j } from './IconUserCheck-CwRNgvtA.js';
+import { I as g } from './IconBuildingBank-DjT6Mwz6.js';
+import { I as v } from './IconMessage2-Dua8uwgF.js';
+import './get-auto-contrast-value-Da6zqqWm.js';
+import './create-scoped-keydown-handler-O-eo68DQ.js';
+import './use-uncontrolled-C8lBt68W.js';
+import './createReactComponent-wv-YgGrS.js';
+const M = () => {
+  const a = m(),
+    { themeConfig: o, isDarkTheme: r } = c(),
+    i = p(),
+    s = f('(max-width: 768px)'),
+    n = a.pathname.split('/').pop();
+  return e.jsx(u, {
+    pt: { base: 'xl', sm: 'md' },
+    children: e.jsxs(x, {
+      size: 'md',
+      mt: { base: 'xl', sm: 'lg' },
+      mb: 'lg',
+      children: [
+        e.jsx(t, {
+          value: n,
+          onChange: l => i(l || 'blood-groups'),
+          variant: 'default',
+          color: o.button.color,
+          classNames: { tab: 'settings-tab' },
+          styles: {
+            list: {
+              flexWrap: s ? 'wrap' : 'nowrap',
+              justifyContent: s ? 'center' : 'flex-start',
+              gap: s ? 8 : 0
+            },
+            tab: {
+              fontWeight: 500,
+              transition: 'color 0.2s ease',
+              ...(r && {
+                color: o.color,
+                '&[data-active]': { color: '#ffffff' },
+                '&[data-active] svg': { color: '#ffffff' }
+              })
+            }
+          },
+          children: e.jsxs(t.List, {
+            mb: 'md',
+            children: [
+              e.jsx(t.Tab, {
+                value: 'blood-groups',
+                leftSection: e.jsx(b, { size: 16, stroke: 1.8 }),
+                children: 'Blood Groups'
+              }),
+              e.jsx(t.Tab, {
+                value: 'employment-types',
+                leftSection: e.jsx(h, { size: 16, stroke: 1.8 }),
+                children: 'Employment Types'
+              }),
+              e.jsx(t.Tab, {
+                value: 'employment-roles',
+                leftSection: e.jsx(j, { size: 16, stroke: 1.8 }),
+                children: 'Employment Roles'
+              }),
+              e.jsx(t.Tab, {
+                value: 'departments',
+                leftSection: e.jsx(g, { size: 16, stroke: 1.8 }),
+                children: 'Departments'
+              }),
+              e.jsx(t.Tab, {
+                value: 'feedback',
+                leftSection: e.jsx(v, { size: 16, stroke: 1.8 }),
+                children: 'Feedback Attributes'
+              })
+            ]
+          })
+        }),
+        e.jsx(d, {})
+      ]
+    })
+  });
+};
+export { M as default };

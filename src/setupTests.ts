@@ -1,6 +1,6 @@
-import "@testing-library/jest-dom";
+import '@testing-library/jest-dom';
 
-Object.defineProperty(window, "matchMedia", {
+Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: jest.fn().mockImplementation((query: string) => ({
     matches: false,
@@ -9,6 +9,6 @@ Object.defineProperty(window, "matchMedia", {
     removeListener: jest.fn(), // For older browsers
     addEventListener: jest.fn(), // Modern browsers
     removeEventListener: jest.fn(), // Modern browsers
-    dispatchEvent: jest.fn(), // Modern browsers
-  })),
+    dispatchEvent: jest.fn() // Modern browsers
+  }))
 });

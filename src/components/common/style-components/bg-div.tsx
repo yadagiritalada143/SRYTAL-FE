@@ -1,10 +1,8 @@
 import { useMantineTheme } from '@mantine/core';
 import { useRecoilValue } from 'recoil';
 
-
 import { HTMLAttributes, useMemo } from 'react';
 import { useAppTheme } from '@hooks/use-app-theme';
-
 
 export const BgDiv = ({
   children,
@@ -15,9 +13,11 @@ export const BgDiv = ({
   className?: string;
 } & HTMLAttributes<HTMLDivElement>) => {
   const theme = useMantineTheme();
-  const { themeConfig: currentThemeConfig, organizationConfig, isDarkTheme } = useAppTheme();
-  
-  
+  const {
+    themeConfig: currentThemeConfig,
+    organizationConfig,
+    isDarkTheme
+  } = useAppTheme();
 
   return (
     <div
@@ -25,7 +25,7 @@ export const BgDiv = ({
       style={{
         color: currentThemeConfig.color,
         backgroundImage: `linear-gradient(to right, ${theme.colors.primary[6]}, ${theme.colors.primary[5]})`,
-        fontFamily: theme.fontFamily,
+        fontFamily: theme.fontFamily
       }}
       {...props}
     >

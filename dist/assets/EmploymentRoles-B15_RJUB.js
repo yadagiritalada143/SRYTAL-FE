@@ -1,0 +1,714 @@
+import {
+  v as Ce,
+  e as m,
+  s as W,
+  j as e,
+  S as h,
+  G as d,
+  T as r,
+  W as H,
+  V as we,
+  Q as P
+} from './index-Cn_-nzwF.js';
+import { D as be, I as ze } from './DataView-D_fx5Wkp.js';
+import { d as Se } from './debounce-fynzmAtJ.js';
+import { u as Te } from './toast-Cmrx_Mrb.js';
+import { c as Ee } from './useAdminQueries-CeOlvTzF.js';
+import { j as Ae, k as Re, l as ve } from './useAdminMutations-ClNNh0wK.js';
+import { C as a } from './CommonButton-D8AVyhIy.js';
+import { u as M } from './use-disclosure-Dul82tkt.js';
+import { C as ke } from './Container-3LzVKj3b.js';
+import { C as f } from './Card-BOCM3d4L.js';
+import { F as X } from './Flex-BbX87tE5.js';
+import { T as B } from './TextInput-DUPEWkCs.js';
+import { I as De } from './IconSearch-D9mxNvB2.js';
+import { S as Ie } from './Select-KZOOD-9X.js';
+import { B as Y } from './Badge-pr8cFvg5.js';
+import { I as Z } from './IconBriefcase-C5ZKuHUX.js';
+import { I as L } from './IconPlus-zkiZIHJ7.js';
+import { T as l } from './Table-Bwpju6TN.js';
+import { P as Ne } from './Pagination-BaGk3Wb1.js';
+import { I as J } from './IconDeviceFloppy-TiVnADbg.js';
+import { I as Pe } from './IconUserCheck-CwRNgvtA.js';
+import { T as ee } from './Tooltip-BnLcCD-S.js';
+import { I as F } from './IconTrash-BQZ6jsv8.js';
+import { I as O } from './IconEdit-BA67kK5H.js';
+import { A as se } from './ActionIcon-BBM-Tm4F.js';
+import { D as Me } from './Divider-C8nnAxUa.js';
+import './createReactComponent-wv-YgGrS.js';
+import './IconCircleDashedCheck-DJMlYteh.js';
+import './IconX-BFEQcM8f.js';
+import './useQuery-4fhBkLAX.js';
+import './admin-services-CTc0QqQI.js';
+import './common-services-DPGUVDMw.js';
+import './api-client-CcbR4Lbf.js';
+import './useMutation-bizDVTFN.js';
+import './InputBase-CO8vJiWZ.js';
+import './Input-kzRYOXAd.js';
+import './use-input-props-CLa6mLr2.js';
+import './OptionsDropdown-B_GLZDf8.js';
+import './CheckIcon-CpIg4BN2.js';
+import './Popover-C5NzMGSx.js';
+import './get-floating-position-TyKNLeXJ.js';
+import './use-uncontrolled-C8lBt68W.js';
+import './create-event-handler-C3eq9ghx.js';
+import './get-auto-contrast-value-Da6zqqWm.js';
+import './get-style-object-DUJZA7T_.js';
+const Be = ['5', '10', '20', '50'],
+  K = 10,
+  E = i => /^([A-Za-z()\-\s_]|[0-9])+$/.test(i) && !/\d{2,}/.test(i),
+  Fe = ({ role: i, onEdit: p, color: t, isMobile: j = !1 }) =>
+    e.jsx(d, {
+      gap: 'xs',
+      justify: 'center',
+      children: e.jsx(ee, {
+        label: 'Edit Role',
+        children: e.jsx(se, {
+          variant: 'subtle',
+          color: t,
+          onClick: () => p(i),
+          size: j ? 'md' : 'sm',
+          children: e.jsx(O, { size: j ? 18 : 16 })
+        })
+      })
+    }),
+  Le = ({
+    role: i,
+    index: p,
+    activePage: t,
+    itemsPerPage: j,
+    color: c,
+    onEdit: z
+  }) =>
+    e.jsx(f, {
+      shadow: 'sm',
+      p: 'md',
+      mb: 'sm',
+      withBorder: !0,
+      children: e.jsxs(h, {
+        gap: 'sm',
+        children: [
+          e.jsxs(d, {
+            justify: 'space-between',
+            align: 'center',
+            children: [
+              e.jsxs(Y, {
+                variant: 'filled',
+                color: c,
+                children: ['#', p + 1 + (t - 1) * j]
+              }),
+              e.jsx(se, {
+                variant: 'subtle',
+                color: c,
+                onClick: () => z(i),
+                size: 'md',
+                children: e.jsx(O, { size: 18 })
+              })
+            ]
+          }),
+          e.jsx(Me, {}),
+          e.jsxs(h, {
+            gap: 2,
+            children: [
+              e.jsx(r, {
+                size: 'xs',
+                fw: 600,
+                c: 'dimmed',
+                children: 'Employment Role'
+              }),
+              e.jsx(r, { size: 'lg', fw: 600, children: i.designation })
+            ]
+          })
+        ]
+      })
+    }),
+  Oe = ({ filteredCount: i, onAdd: p, isMobile: t = !1 }) =>
+    e.jsx(f, {
+      shadow: 'sm',
+      p: t ? 'md' : 'lg',
+      radius: 'md',
+      children: e.jsxs(X, {
+        direction: t ? 'column' : 'row',
+        justify: 'space-between',
+        align: 'center',
+        gap: 'md',
+        children: [
+          e.jsxs(r, {
+            size: t ? 'lg' : 'xl',
+            fw: 700,
+            ta: t ? 'center' : 'left',
+            children: ['Manage Employment Roles (', i, ' Roles)']
+          }),
+          e.jsx(a, {
+            leftSection: e.jsx(L, { size: 16 }),
+            onClick: p,
+            variant: 'filled',
+            fullWidth: t,
+            size: t ? 'md' : 'sm',
+            children: 'Add Role'
+          })
+        ]
+      })
+    }),
+  Is = () => {
+    const { showErrorToast: i, showSuccessToast: p } = Te(),
+      { themeConfig: t, isDarkTheme: j } = Ce(),
+      { data: c = [], isLoading: z, isFetching: _e } = Ee(),
+      { mutateAsync: te, isPending: _ } = Ae(),
+      { mutateAsync: oe, isPending: $ } = Re(),
+      { mutateAsync: ie, isPending: G } = ve(),
+      A = _ || $ || G,
+      [y, R] = m.useState(1),
+      [x, re] = m.useState(K),
+      [n, v] = m.useState(null),
+      [C, U] = m.useState(''),
+      [w, ne] = m.useState(''),
+      u = W('(max-width: 768px)'),
+      le = W('(max-width: 500px)'),
+      [de, { open: ae, close: S }] = M(!1),
+      [ce, { open: Q, close: k }] = M(!1),
+      [me, { open: D, close: I }] = M(!1),
+      [N, pe] = m.useState(''),
+      he = m.useMemo(
+        () =>
+          Se(s => {
+            (pe(s.toLowerCase()), R(1));
+          }, 300),
+        []
+      ),
+      g = m.useMemo(
+        () => (N ? c.filter(s => s.designation.toLowerCase().includes(N)) : c),
+        [c, N]
+      ),
+      xe = s => {
+        const o = s.target.value;
+        (ne(o), he(o));
+      },
+      q = s => {
+        (v(s), ae());
+      },
+      ue = s => {
+        (v(o => ({ ...o, id: s })), Q());
+      },
+      je = async () => {
+        if (n) {
+          if (!E(n.designation)) {
+            i(
+              'Only letters, numbers, spaces, underscores, hyphens, and parentheses are allowed. No two or more consecutive digits.'
+            );
+            return;
+          }
+          if (
+            c.some(
+              s =>
+                s.designation.toLowerCase() === n.designation.toLowerCase() &&
+                s.id !== n.id
+            )
+          ) {
+            i('This role already exists');
+            return;
+          }
+          try {
+            n &&
+              (await oe({ id: n.id, designation: n.designation }),
+              p('Updated successfully'),
+              S());
+          } catch {
+            i('Failed to update');
+          }
+        }
+      },
+      ge = async () => {
+        try {
+          n && (await ie(n.id), p('Deleted successfully'), k(), S());
+        } catch {
+          i('Failed to delete');
+        }
+      },
+      fe = async () => {
+        if (!E(C)) {
+          i(
+            'Only letters, numbers, spaces, underscores, hyphens, and parentheses are allowed. No two or more consecutive digits.'
+          );
+          return;
+        }
+        if (c.some(s => s.designation.toLowerCase() === C.toLowerCase())) {
+          i('This role already exists');
+          return;
+        }
+        try {
+          (await te({ designation: C }), p('Added successfully'), I(), U(''));
+        } catch {
+          i('Failed to add');
+        }
+      },
+      { paginatedData: b, totalPages: V } = m.useMemo(() => {
+        const s = (y - 1) * x,
+          o = s + x,
+          T = g.slice(s, o),
+          ye = Math.ceil(g.length / x);
+        return { paginatedData: T, totalPages: ye };
+      }, [g, y, x]);
+    return (
+      m.useEffect(() => {
+        R(1);
+      }, [x]),
+      e.jsx(ke, {
+        size: 'lg',
+        children: e.jsxs(f, {
+          radius: 'lg',
+          p: 'lg',
+          withBorder: !0,
+          shadow: j ? 'xs' : 'sm',
+          style: {
+            backgroundColor: t.backgroundColor,
+            border: `1px solid ${t.borderColor}`
+          },
+          children: [
+            e.jsxs(h, {
+              gap: 'lg',
+              children: [
+                e.jsx(Oe, { filteredCount: g.length, onAdd: D, isMobile: u }),
+                e.jsx(f, {
+                  shadow: 'sm',
+                  p: u ? 'sm' : 'md',
+                  radius: 'md',
+                  children: e.jsxs(X, {
+                    direction: u ? 'column' : 'row',
+                    justify: 'space-between',
+                    align: u ? 'stretch' : 'center',
+                    gap: 'md',
+                    children: [
+                      e.jsx(B, {
+                        placeholder: 'Search by employment role...',
+                        leftSection: e.jsx(De, { size: 16 }),
+                        value: w,
+                        onChange: xe,
+                        radius: 'md',
+                        style: { flex: 1 }
+                      }),
+                      e.jsxs(d, {
+                        wrap: 'nowrap',
+                        gap: 'md',
+                        children: [
+                          e.jsxs(d, {
+                            gap: 'xs',
+                            children: [
+                              e.jsx(r, {
+                                size: 'sm',
+                                children: 'Items per page:'
+                              }),
+                              e.jsx(Ie, {
+                                data: Be,
+                                value: x.toString(),
+                                onChange: s => re(Number(s) || K),
+                                w: 80,
+                                size: 'sm'
+                              })
+                            ]
+                          }),
+                          g.length !== c.length &&
+                            e.jsxs(Y, {
+                              variant: 'light',
+                              color: 'blue',
+                              children: [
+                                g.length,
+                                ' of ',
+                                c.length,
+                                ' ',
+                                'roles'
+                              ]
+                            })
+                        ]
+                      })
+                    ]
+                  })
+                }),
+                e.jsx(f, {
+                  shadow: 'sm',
+                  p: 0,
+                  radius: 'md',
+                  children: e.jsx(be, {
+                    isLoading: z,
+                    label: 'employment roles',
+                    isEmpty: b.length === 0 && !z,
+                    children: u
+                      ? e.jsx(H, {
+                          p: 'md',
+                          children: e.jsx(h, {
+                            gap: 'sm',
+                            children:
+                              b.length > 0
+                                ? b.map((s, o) =>
+                                    e.jsx(
+                                      Le,
+                                      {
+                                        color: t.button.color,
+                                        role: s,
+                                        index: o,
+                                        activePage: y,
+                                        itemsPerPage: x,
+                                        onEdit: q
+                                      },
+                                      s.id
+                                    )
+                                  )
+                                : e.jsx(f, {
+                                    p: 'xl',
+                                    withBorder: !0,
+                                    children: e.jsxs(h, {
+                                      align: 'center',
+                                      gap: 'md',
+                                      children: [
+                                        e.jsx(Z, { size: 48, opacity: 0.5 }),
+                                        e.jsx(r, {
+                                          size: 'lg',
+                                          ta: 'center',
+                                          children: 'No employment roles found'
+                                        }),
+                                        e.jsx(r, {
+                                          size: 'sm',
+                                          ta: 'center',
+                                          children: w
+                                            ? 'Try adjusting your search'
+                                            : 'Start by adding your first employment role'
+                                        }),
+                                        !w &&
+                                          e.jsx(a, {
+                                            variant: 'light',
+                                            leftSection: e.jsx(L, { size: 16 }),
+                                            onClick: D,
+                                            fullWidth: le,
+                                            children: 'Add Role'
+                                          })
+                                      ]
+                                    })
+                                  })
+                          })
+                        })
+                      : e.jsx(H, {
+                          children: e.jsxs(l, {
+                            stickyHeader: !0,
+                            styles: {
+                              table: { border: `1px solid ${t.borderColor}` },
+                              th: {
+                                borderBottom: `1px solid ${t.borderColor}`
+                              },
+                              td: {
+                                borderBottom: `1px solid ${t.borderColor}`,
+                                borderRight: `1px solid ${t.borderColor}`
+                              }
+                            },
+                            children: [
+                              e.jsx(l.Thead, {
+                                style: {
+                                  backgroundColor: t.backgroundColor,
+                                  color: t.color
+                                },
+                                children: e.jsxs(l.Tr, {
+                                  children: [
+                                    e.jsx(l.Th, {
+                                      className: 'p-3 border',
+                                      style: { width: '100px' },
+                                      children: e.jsx(d, {
+                                        justify: 'center',
+                                        children: e.jsx(r, {
+                                          size: 'sm',
+                                          fw: 500,
+                                          children: 'S.No'
+                                        })
+                                      })
+                                    }),
+                                    e.jsx(l.Th, {
+                                      className: 'p-3 border',
+                                      children: e.jsx(r, {
+                                        size: 'sm',
+                                        fw: 500,
+                                        children: 'Employment Role'
+                                      })
+                                    }),
+                                    e.jsx(l.Th, {
+                                      className: 'p-3 border',
+                                      style: { width: '120px' },
+                                      children: e.jsx(d, {
+                                        justify: 'center',
+                                        children: e.jsx(r, {
+                                          size: 'sm',
+                                          fw: 500,
+                                          children: 'Actions'
+                                        })
+                                      })
+                                    })
+                                  ]
+                                })
+                              }),
+                              e.jsx(l.Tbody, {
+                                children:
+                                  b.length > 0
+                                    ? b.map((s, o) =>
+                                        e.jsxs(
+                                          l.Tr,
+                                          {
+                                            className: 'transition-colors',
+                                            children: [
+                                              e.jsx(l.Td, {
+                                                className: 'text-center',
+                                                children: e.jsx(r, {
+                                                  size: 'sm',
+                                                  children: o + 1 + (y - 1) * x
+                                                })
+                                              }),
+                                              e.jsx(l.Td, {
+                                                className: 'p-3',
+                                                children: e.jsx(r, {
+                                                  size: 'sm',
+                                                  children: s.designation
+                                                })
+                                              }),
+                                              e.jsx(l.Td, {
+                                                className: 'p-3',
+                                                children: e.jsx(Fe, {
+                                                  role: s,
+                                                  onEdit: q,
+                                                  color: t.button.color
+                                                })
+                                              })
+                                            ]
+                                          },
+                                          s.id
+                                        )
+                                      )
+                                    : e.jsx(l.Tr, {
+                                        children: e.jsx(l.Td, {
+                                          colSpan: 3,
+                                          className: 'text-center p-8',
+                                          children: e.jsxs(h, {
+                                            align: 'center',
+                                            gap: 'md',
+                                            children: [
+                                              e.jsx(Z, {
+                                                size: 48,
+                                                opacity: 0.5
+                                              }),
+                                              e.jsx(r, {
+                                                size: 'lg',
+                                                children:
+                                                  'No employment roles found'
+                                              }),
+                                              e.jsx(r, {
+                                                size: 'sm',
+                                                children: w
+                                                  ? 'Try adjusting your search'
+                                                  : 'Start by adding your first employment role'
+                                              }),
+                                              !w &&
+                                                e.jsx(a, {
+                                                  variant: 'light',
+                                                  leftSection: e.jsx(L, {
+                                                    size: 16
+                                                  }),
+                                                  onClick: D,
+                                                  children: 'Add Role'
+                                                })
+                                            ]
+                                          })
+                                        })
+                                      })
+                              })
+                            ]
+                          })
+                        })
+                  })
+                }),
+                V > 1 &&
+                  e.jsx(we, {
+                    children: e.jsx(Ne, {
+                      value: y,
+                      onChange: R,
+                      total: V,
+                      color: t.button.color,
+                      size: u ? 'sm' : 'md',
+                      radius: 'md',
+                      withEdges: !0
+                    })
+                  })
+              ]
+            }),
+            e.jsx(P, {
+              opened: me,
+              onClose: I,
+              title: e.jsxs(d, {
+                gap: 'xs',
+                children: [
+                  e.jsx(Pe, { size: 20, stroke: 1.8, color: t.button.color }),
+                  e.jsx(r, {
+                    fw: 600,
+                    size: 'lg',
+                    children: 'Add New Employment Role'
+                  })
+                ]
+              }),
+              centered: !0,
+              size: 'md',
+              styles: { header: { paddingBottom: 4, paddingTop: 5 } },
+              children: e.jsxs(h, {
+                gap: 'md',
+                children: [
+                  e.jsx(B, {
+                    mt: 'md',
+                    label: 'Role Name',
+                    value: C,
+                    onChange: s => {
+                      const o = s.target.value;
+                      (o === '' || E(o)) && U(o);
+                    },
+                    placeholder: 'Enter role name',
+                    required: !0,
+                    size: 'md'
+                  }),
+                  e.jsxs(d, {
+                    justify: 'flex-end',
+                    mt: 'xs',
+                    children: [
+                      e.jsx(a, {
+                        variant: 'default',
+                        onClick: I,
+                        children: 'Cancel'
+                      }),
+                      e.jsx(a, {
+                        onClick: fe,
+                        disabled: A || !C.trim(),
+                        leftSection: e.jsx(J, { size: 16 }),
+                        children: _ ? 'Adding...' : 'Add Role'
+                      })
+                    ]
+                  })
+                ]
+              })
+            }),
+            e.jsx(P, {
+              opened: de,
+              onClose: S,
+              title: e.jsxs(d, {
+                gap: 'xs',
+                children: [
+                  e.jsx(O, { size: 20, color: t.button.color }),
+                  e.jsx(r, {
+                    fw: 600,
+                    size: 'lg',
+                    children: 'Edit Employment Role'
+                  })
+                ]
+              }),
+              centered: !0,
+              size: 'md',
+              styles: { header: { paddingBottom: 4, paddingTop: 5 } },
+              children: e.jsxs(h, {
+                gap: 'md',
+                children: [
+                  e.jsx(B, {
+                    mt: 'md',
+                    label: 'Role Name',
+                    value: (n == null ? void 0 : n.designation) || '',
+                    onChange: s => {
+                      const o = s.target.value;
+                      (o === '' || E(o)) &&
+                        v(T => (T ? { ...T, designation: o } : null));
+                    },
+                    required: !0,
+                    size: 'md'
+                  }),
+                  e.jsxs(d, {
+                    justify: 'space-between',
+                    mt: 'xs',
+                    children: [
+                      u
+                        ? e.jsx(ee, {
+                            label: 'Delete Role',
+                            children: e.jsx(a, {
+                              onClick: Q,
+                              p: 'xs',
+                              variant: 'outline',
+                              children: e.jsx(F, { size: 16 })
+                            })
+                          })
+                        : e.jsx(a, {
+                            color: 'red',
+                            variant: 'outline',
+                            leftSection: e.jsx(F, { size: 16 }),
+                            onClick: () => n && ue(n.id),
+                            children: 'Delete'
+                          }),
+                      e.jsxs(d, {
+                        children: [
+                          e.jsx(a, {
+                            variant: 'default',
+                            onClick: S,
+                            children: 'Cancel'
+                          }),
+                          e.jsx(a, {
+                            onClick: je,
+                            disabled: A,
+                            leftSection: e.jsx(J, { size: 16 }),
+                            children: $ ? 'Saving...' : 'Save'
+                          })
+                        ]
+                      })
+                    ]
+                  })
+                ]
+              })
+            }),
+            e.jsx(P, {
+              opened: ce,
+              onClose: k,
+              title: e.jsxs(d, {
+                gap: 'xs',
+                children: [
+                  e.jsx(ze, { size: 24, color: 'red' }),
+                  e.jsx(r, {
+                    fw: 600,
+                    size: 'lg',
+                    c: 'red',
+                    children: 'Delete Employment Role'
+                  })
+                ]
+              }),
+              centered: !0,
+              size: 'md',
+              children: e.jsxs(h, {
+                gap: 'md',
+                children: [
+                  e.jsx(r, {
+                    size: 'sm',
+                    mt: 'md',
+                    children:
+                      'Are you sure you want to delete this employment role? This action cannot be undone.'
+                  }),
+                  e.jsxs(d, {
+                    justify: 'flex-end',
+                    mt: 'md',
+                    children: [
+                      e.jsx(a, {
+                        variant: 'default',
+                        onClick: k,
+                        children: 'Cancel'
+                      }),
+                      e.jsx(a, {
+                        color: 'red',
+                        onClick: ge,
+                        disabled: A,
+                        leftSection: e.jsx(F, { size: 16 }),
+                        children: G ? 'Deleting...' : 'Delete'
+                      })
+                    ]
+                  })
+                ]
+              })
+            })
+          ]
+        })
+      })
+    );
+  };
+export { Is as default };

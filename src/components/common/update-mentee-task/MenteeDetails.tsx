@@ -19,21 +19,21 @@ const MenteeDetails = ({ mentee, tasksCount }: Props) => {
 
   return (
     <Box
-      mb="xl"
-      p="md"
+      mb='xl'
+      p='md'
       style={{
         background: theme.colors.gray[0],
         borderRadius: theme.radius.md,
         color: theme.colors.dark[4]
       }}
     >
-      <Stack gap="sm">
+      <Stack gap='sm'>
         {details.map((item, idx) => (
-          <Group key={idx} gap="md" grow align="start">
-            <Text fw={600} c="dimmed" className="sm:w-1/3 w-1/2">
+          <Group key={idx} gap='md' grow align='start'>
+            <Text fw={600} c='dimmed' className='sm:w-1/3 w-1/2'>
               {item.label}
             </Text>
-            <Text className="break-all w-2/3" c="dark">
+            <Text className='break-all w-2/3' c='dark'>
               : {item.value}
             </Text>
           </Group>

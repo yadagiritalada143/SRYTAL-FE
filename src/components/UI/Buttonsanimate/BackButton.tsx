@@ -15,8 +15,8 @@ const BackButton: React.FC<ButtonProps> = ({
 }) => {
   return (
     <button
-      className="bg-white text-center w-20 rounded-lg h-8 relative text-black text-sm font-semibold group"
-      type="button"
+      className='bg-white text-center w-20 rounded-lg h-8 relative text-black text-sm font-semibold group'
+      type='button'
       onClick={onClick}
     >
       <div
@@ -26,23 +26,23 @@ const BackButton: React.FC<ButtonProps> = ({
           icon
         ) : (
           <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 1024 1024"
-            height="14px"
-            width="14px"
+            xmlns='http://www.w3.org/2000/svg'
+            viewBox='0 0 1024 1024'
+            height='14px'
+            width='14px'
           >
             <path
-              d="M224 480h640a32 32 0 1 1 0 64H224a32 32 0 0 1 0-64z"
-              fill="#000000"
+              d='M224 480h640a32 32 0 1 1 0 64H224a32 32 0 0 1 0-64z'
+              fill='#000000'
             />
             <path
-              d="m237.248 512 265.408 265.344a32 32 0 0 1-45.312 45.312l-288-288a32 32 0 0 1 0-45.312l288-288a32 32 0 1 1 45.312 45.312L237.248 512z"
-              fill="#000000"
+              d='m237.248 512 265.408 265.344a32 32 0 0 1-45.312 45.312l-288-288a32 32 0 0 1 0-45.312l288-288a32 32 0 1 1 45.312 45.312L237.248 512z'
+              fill='#000000'
             />
           </svg>
         )}
       </div>
-      <p className="translate-x-1">{label}</p>
+      <p className='translate-x-1'>{label}</p>
     </button>
   );
 };

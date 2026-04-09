@@ -11,9 +11,9 @@ const SuperadminDashboard = () => {
   const toggleDrawer = () => setDrawerOpen(!isDrawerOpen);
 
   return (
-    <div className="flex min-h-screen relative">
-      <div className="lg:hidden fixed top-4  z-50">
-        <button onClick={toggleDrawer} className="p-2 rounded-md">
+    <div className='flex min-h-screen relative'>
+      <div className='lg:hidden fixed top-4  z-50'>
+        <button onClick={toggleDrawer} className='p-2 rounded-md'>
           {!isDrawerOpen && <IconMenu2 size={24} />}
         </button>
       </div>
@@ -33,16 +33,16 @@ const SuperadminDashboard = () => {
 
       {isDrawerOpen && (
         <div
-          className="fixed inset-0 bg-gray-900 bg-opacity-50 z-30 lg:hidden"
+          className='fixed inset-0 bg-gray-900 bg-opacity-50 z-30 lg:hidden'
           onClick={toggleDrawer}
         ></div>
       )}
 
-      <div className="flex-grow p-6 transition-all duration-300 z-20 overflow-hidden">
-        <div className="my-2">
+      <div className='flex-grow p-6 transition-all duration-300 z-20 overflow-hidden'>
+        <div className='my-2'>
           <SuperAdminHeader />
         </div>
-        <div className="h-full overflow-auto">
+        <div className='h-full overflow-auto'>
           <Outlet />
         </div>
       </div>

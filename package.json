@@ -7,21 +7,12 @@
     "dev": "vite --host",
     "build": "tsc -b && vite build && node postbuild.cjs",
     "build:prod": "tsc -b && vite build --mode production && node postbuild.cjs",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings=0",
+    "format": "prettier --write .",
     "preview": "vite preview",
-    "test": "jest"
-  },
-  "lint-staged": {
-    "*!(*.test).{ts,tsx}": [
-      "tsc-files --noEmit"
-    ],
-    "*!(*.test).{js,jsx,ts,tsx}": [
-      "eslint --max-warnings=0",
-      "prettier --write"
-    ],
-    "*.{json,css,md}": [
-      "prettier --write"
-    ]
+    "test": "jest --coverage=false",
+    "coverage": "jest --coverage",
+    "prepare": "husky"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
@@ -79,7 +70,6 @@
     "husky": "^9.1.7",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
-    "lint-staged": "^15.5.2",
     "postcss": "^8.5.5",
     "prettier": "^3.5.3",
     "tailwindcss": "^3.4.17",

@@ -1,0 +1,633 @@
+import {
+  v as ke,
+  e as c,
+  s as Q,
+  j as e,
+  S as m,
+  T as s,
+  G as o,
+  W,
+  V as U,
+  Q as F
+} from './index-Cn_-nzwF.js';
+import { D as Ce, I as Ae } from './DataView-D_fx5Wkp.js';
+import { d as we } from './debounce-fynzmAtJ.js';
+import { u as Te } from './toast-Cmrx_Mrb.js';
+import { e as Se } from './useAdminQueries-CeOlvTzF.js';
+import { p as ze, q as Fe, r as ve } from './useAdminMutations-ClNNh0wK.js';
+import { C as n } from './CommonButton-D8AVyhIy.js';
+import { u as v } from './use-disclosure-Dul82tkt.js';
+import { C as Ee } from './Container-3LzVKj3b.js';
+import { C as f } from './Card-BOCM3d4L.js';
+import { F as V } from './Flex-BbX87tE5.js';
+import { I as E } from './IconPlus-zkiZIHJ7.js';
+import { T as I } from './TextInput-DUPEWkCs.js';
+import { I as Ie } from './IconSearch-D9mxNvB2.js';
+import { S as Pe } from './Select-KZOOD-9X.js';
+import { B as H } from './Badge-pr8cFvg5.js';
+import { I as J } from './IconCategory-DE2Gnoct.js';
+import { T as a } from './Table-Bwpju6TN.js';
+import { T as K } from './Tooltip-BnLcCD-S.js';
+import { A as X } from './ActionIcon-BBM-Tm4F.js';
+import { I as P } from './IconEdit-BA67kK5H.js';
+import { P as De } from './Pagination-BaGk3Wb1.js';
+import { I as Me } from './IconMessage2-Dua8uwgF.js';
+import { I as D } from './IconTrash-BQZ6jsv8.js';
+import { I as Ne } from './IconDeviceFloppy-TiVnADbg.js';
+import { D as Be } from './Divider-C8nnAxUa.js';
+import './createReactComponent-wv-YgGrS.js';
+import './IconCircleDashedCheck-DJMlYteh.js';
+import './IconX-BFEQcM8f.js';
+import './useQuery-4fhBkLAX.js';
+import './admin-services-CTc0QqQI.js';
+import './common-services-DPGUVDMw.js';
+import './api-client-CcbR4Lbf.js';
+import './useMutation-bizDVTFN.js';
+import './InputBase-CO8vJiWZ.js';
+import './Input-kzRYOXAd.js';
+import './use-input-props-CLa6mLr2.js';
+import './OptionsDropdown-B_GLZDf8.js';
+import './CheckIcon-CpIg4BN2.js';
+import './Popover-C5NzMGSx.js';
+import './get-floating-position-TyKNLeXJ.js';
+import './use-uncontrolled-C8lBt68W.js';
+import './get-style-object-DUJZA7T_.js';
+import './create-event-handler-C3eq9ghx.js';
+import './get-auto-contrast-value-Da6zqqWm.js';
+const qe = ['5', '10', '20', '50'],
+  Y = 10;
+function vt() {
+  const { showErrorToast: x, showSuccessToast: k } = Te(),
+    { themeConfig: r, isDarkTheme: Z } = ke(),
+    { data: p = [], isLoading: ee } = Se(),
+    { mutateAsync: te, isPending: M } = ze(),
+    { mutateAsync: se, isPending: N } = Fe(),
+    { mutateAsync: re, isPending: B } = ve(),
+    C = M || N || B,
+    [j, A] = c.useState(1),
+    [u, ie] = c.useState(Y),
+    [d, q] = c.useState(null),
+    [g, _] = c.useState(''),
+    [b, oe] = c.useState(''),
+    [ae, { open: w, close: T }] = v(!1),
+    [ne, { open: de, close: y }] = v(!1),
+    [le, { open: G, close: S }] = v(!1),
+    l = Q('(max-width: 768px)'),
+    ce = Q('(max-width: 500px)'),
+    [z, me] = c.useState(''),
+    ue = c.useMemo(
+      () =>
+        we(t => {
+          (me(t.toLowerCase()), A(1));
+        }, 300),
+      []
+    ),
+    h = c.useMemo(
+      () => (z ? p.filter(t => t.name.toLowerCase().includes(z)) : p),
+      [p, z]
+    ),
+    he = t => {
+      const i = t.target.value;
+      (oe(i), ue(i));
+    },
+    xe = async () => {
+      if (!g.trim()) return x('Feedback attribute is required');
+      try {
+        (await te({ name: g.trim() }),
+          k('Feedback attribute added successfully !!'),
+          _(''),
+          T());
+      } catch {
+        x('Failed to add');
+      }
+    },
+    O = t => {
+      (q(t), de());
+    },
+    pe = async () => {
+      if (!(d != null && d.name.trim())) return x('Required');
+      try {
+        (await se({ id: d.id, name: d.name.trim() }),
+          k('Feedback attribute updated successfully !!'),
+          y());
+      } catch {
+        x('Failed to update');
+      }
+    },
+    je = async () => {
+      if (d)
+        try {
+          (await re(d.id),
+            k('Feedback attribute deleted successfully !!'),
+            S(),
+            y());
+        } catch {
+          x('Failed to delete');
+        }
+    },
+    { paginatedData: R, totalPages: $ } = c.useMemo(() => {
+      const t = (j - 1) * u,
+        i = t + u;
+      return {
+        paginatedData: h.slice(t, i),
+        totalPages: Math.ceil(h.length / u)
+      };
+    }, [h, j, u]);
+  c.useEffect(() => A(1), [u]);
+  const be = ({
+    type: t,
+    index: i,
+    activePage: fe,
+    color: L,
+    itemsPerPage: ge,
+    onEdit: ye
+  }) =>
+    e.jsx(f, {
+      shadow: 'sm',
+      p: 'md',
+      mb: 'sm',
+      children: e.jsxs(m, {
+        gap: 'sm',
+        children: [
+          e.jsxs(o, {
+            justify: 'space-between',
+            align: 'center',
+            children: [
+              e.jsxs(H, {
+                variant: 'filled',
+                color: L,
+                children: ['#', i + 1 + (fe - 1) * ge]
+              }),
+              e.jsx(X, {
+                variant: 'subtle',
+                color: L,
+                onClick: () => ye(t),
+                size: 'md',
+                children: e.jsx(P, { size: 18 })
+              })
+            ]
+          }),
+          e.jsx(Be, {}),
+          e.jsxs(m, {
+            gap: 2,
+            children: [
+              e.jsx(s, {
+                size: 'xs',
+                fw: 600,
+                c: 'dimmed',
+                children: 'Employment Type'
+              }),
+              e.jsx(s, { size: 'lg', fw: 600, children: t.name })
+            ]
+          })
+        ]
+      })
+    });
+  return e.jsx(Ee, {
+    size: 'lg',
+    children: e.jsxs(f, {
+      radius: 'lg',
+      p: 'lg',
+      withBorder: !0,
+      shadow: Z ? 'xs' : 'sm',
+      style: {
+        backgroundColor: r.backgroundColor,
+        border: `1px solid ${r.borderColor}`
+      },
+      children: [
+        e.jsxs(m, {
+          gap: 'lg',
+          children: [
+            e.jsx(f, {
+              shadow: 'sm',
+              p: l ? 'md' : 'lg',
+              radius: 'md',
+              children: e.jsxs(V, {
+                direction: l ? 'column' : 'row',
+                justify: 'space-between',
+                align: 'center',
+                gap: 'md',
+                children: [
+                  e.jsxs(s, {
+                    size: l ? 'lg' : 'xl',
+                    fw: 700,
+                    children: ['Manage Feedback Attributes (', h.length, ')']
+                  }),
+                  e.jsx(n, {
+                    leftSection: e.jsx(E, { size: 16 }),
+                    onClick: w,
+                    fullWidth: l,
+                    children: 'Add Feedback Attribute'
+                  })
+                ]
+              })
+            }),
+            e.jsx(f, {
+              shadow: 'sm',
+              p: 'md',
+              radius: 'md',
+              children: e.jsxs(V, {
+                direction: l ? 'column' : 'row',
+                justify: 'space-between',
+                align: l ? 'stretch' : 'center',
+                gap: 'md',
+                children: [
+                  e.jsx(I, {
+                    placeholder: 'Search feedback attribute...',
+                    leftSection: e.jsx(Ie, { size: 16 }),
+                    value: b,
+                    onChange: he,
+                    radius: 'md',
+                    style: { flex: 1 }
+                  }),
+                  e.jsxs(o, {
+                    wrap: 'nowrap',
+                    gap: 'md',
+                    children: [
+                      e.jsxs(o, {
+                        gap: 'xs',
+                        children: [
+                          e.jsx(s, { size: 'sm', children: 'Items per page:' }),
+                          e.jsx(Pe, {
+                            data: qe,
+                            value: u.toString(),
+                            onChange: t => ie(Number(t) || Y),
+                            w: 80,
+                            size: 'sm'
+                          })
+                        ]
+                      }),
+                      h.length !== p.length &&
+                        e.jsxs(H, {
+                          variant: 'light',
+                          color: 'blue',
+                          children: [h.length, ' of ', p.length]
+                        })
+                    ]
+                  })
+                ]
+              })
+            }),
+            e.jsx(Ce, {
+              isLoading: ee,
+              label: 'feedback attributes',
+              children: l
+                ? e.jsx(W, {
+                    p: 'md',
+                    children: e.jsx(m, {
+                      gap: 'sm',
+                      children:
+                        h.length === 0
+                          ? e.jsx(f, {
+                              p: 'xl',
+                              withBorder: !0,
+                              children: e.jsxs(m, {
+                                align: 'center',
+                                gap: 'md',
+                                children: [
+                                  e.jsx(J, { size: 48, opacity: 0.5 }),
+                                  e.jsx(s, {
+                                    size: 'lg',
+                                    ta: 'center',
+                                    children: 'No feedback attributes found'
+                                  }),
+                                  e.jsx(s, {
+                                    size: 'sm',
+                                    ta: 'center',
+                                    children: b
+                                      ? 'Try adjusting your search'
+                                      : 'Start by adding your first feedback attribute'
+                                  }),
+                                  !b &&
+                                    e.jsx(n, {
+                                      variant: 'light',
+                                      leftSection: e.jsx(E, { size: 16 }),
+                                      onClick: w,
+                                      fullWidth: ce,
+                                      children: 'Add Feedback Attribute'
+                                    })
+                                ]
+                              })
+                            })
+                          : R.map((t, i) =>
+                              e.jsx(
+                                be,
+                                {
+                                  color: r.button.color,
+                                  type: t,
+                                  index: i,
+                                  activePage: j,
+                                  itemsPerPage: u,
+                                  onEdit: O
+                                },
+                                t.id
+                              )
+                            )
+                    })
+                  })
+                : e.jsx(W, {
+                    children: e.jsxs(a, {
+                      stickyHeader: !0,
+                      styles: {
+                        table: { border: `1px solid ${r.borderColor}` },
+                        th: { borderBottom: `1px solid ${r.borderColor}` },
+                        td: {
+                          borderBottom: `1px solid ${r.borderColor}`,
+                          borderRight: `1px solid ${r.borderColor}`
+                        }
+                      },
+                      children: [
+                        e.jsx(a.Thead, {
+                          style: {
+                            backgroundColor: r.backgroundColor,
+                            color: r.color
+                          },
+                          children: e.jsxs(a.Tr, {
+                            children: [
+                              e.jsx(a.Th, {
+                                className: 'p-3 border',
+                                style: { width: '100px' },
+                                children: e.jsx(o, {
+                                  justify: 'center',
+                                  children: e.jsx(s, {
+                                    size: 'sm',
+                                    fw: 500,
+                                    children: 'S.No'
+                                  })
+                                })
+                              }),
+                              e.jsx(a.Th, {
+                                className: 'p-3 border',
+                                children: e.jsx(s, {
+                                  size: 'sm',
+                                  fw: 500,
+                                  children: 'Feedback Attributes'
+                                })
+                              }),
+                              e.jsx(a.Th, {
+                                className: 'p-3 border',
+                                style: { width: '120px' },
+                                children: e.jsx(o, {
+                                  justify: 'center',
+                                  children: e.jsx(s, {
+                                    size: 'sm',
+                                    fw: 500,
+                                    children: 'Actions'
+                                  })
+                                })
+                              })
+                            ]
+                          })
+                        }),
+                        e.jsx(a.Tbody, {
+                          children:
+                            h.length === 0
+                              ? e.jsx(a.Tr, {
+                                  children: e.jsx(a.Td, {
+                                    colSpan: 3,
+                                    children: e.jsx(U, {
+                                      py: 'xl',
+                                      children: e.jsxs(m, {
+                                        align: 'center',
+                                        gap: 'xs',
+                                        children: [
+                                          e.jsx(J, { size: 40, opacity: 0.5 }),
+                                          e.jsx(s, {
+                                            children:
+                                              'No feedback attributes found'
+                                          }),
+                                          e.jsx(s, {
+                                            size: 'sm',
+                                            children: b
+                                              ? 'Try adjusting your search'
+                                              : 'Start by adding your first feedback attribute'
+                                          }),
+                                          !b &&
+                                            e.jsx(n, {
+                                              leftSection: e.jsx(E, {
+                                                size: 16
+                                              }),
+                                              onClick: w,
+                                              fullWidth: l,
+                                              color: r.button.color,
+                                              children: 'Add Feedback Attribute'
+                                            })
+                                        ]
+                                      })
+                                    })
+                                  })
+                                })
+                              : R.map((t, i) =>
+                                  e.jsxs(
+                                    a.Tr,
+                                    {
+                                      children: [
+                                        e.jsx(a.Td, {
+                                          className: 'text-center',
+                                          children: i + 1 + (j - 1) * u
+                                        }),
+                                        e.jsx(a.Td, { children: t.name }),
+                                        e.jsx(a.Td, {
+                                          className: 'text-center',
+                                          children: e.jsx(o, {
+                                            justify: 'center',
+                                            children: e.jsx(K, {
+                                              label: 'Edit',
+                                              children: e.jsx(X, {
+                                                color: r.button.color,
+                                                variant: 'subtle',
+                                                onClick: () => O(t),
+                                                children: e.jsx(P, { size: 16 })
+                                              })
+                                            })
+                                          })
+                                        })
+                                      ]
+                                    },
+                                    t.id
+                                  )
+                                )
+                        })
+                      ]
+                    })
+                  })
+            }),
+            $ > 1 &&
+              e.jsx(U, {
+                children: e.jsx(De, {
+                  value: j,
+                  onChange: A,
+                  total: $,
+                  color: r.button.color,
+                  size: l ? 'sm' : 'md',
+                  radius: 'md',
+                  withEdges: !0
+                })
+              })
+          ]
+        }),
+        e.jsx(F, {
+          opened: ae,
+          onClose: T,
+          title: e.jsxs(o, {
+            gap: 'xs',
+            children: [
+              e.jsx(Me, { size: 20, stroke: 1.8, color: r.button.color }),
+              e.jsx(s, {
+                fw: 600,
+                size: 'lg',
+                children: 'Add New Feedback Attribute'
+              })
+            ]
+          }),
+          centered: !0,
+          size: 'md',
+          styles: { header: { paddingBottom: 4, paddingTop: 5 } },
+          children: e.jsxs(m, {
+            children: [
+              e.jsx(I, {
+                mt: 'md',
+                label: 'Feedback Attribute',
+                value: g,
+                onChange: t => _(t.target.value),
+                placeholder: 'Enter the feedback attribute',
+                required: !0
+              }),
+              e.jsxs(o, {
+                justify: 'flex-end',
+                children: [
+                  e.jsx(n, {
+                    variant: 'default',
+                    onClick: T,
+                    children: 'Cancel'
+                  }),
+                  e.jsx(n, {
+                    onClick: xe,
+                    disabled: C || !g.trim(),
+                    children: M ? 'Adding...' : 'Add'
+                  })
+                ]
+              })
+            ]
+          })
+        }),
+        e.jsx(F, {
+          opened: ne,
+          onClose: y,
+          title: e.jsxs(o, {
+            gap: 'xs',
+            children: [
+              e.jsx(P, { size: 20, color: r.button.color }),
+              e.jsx(s, {
+                fw: 600,
+                size: 'lg',
+                children: 'Edit Feedback Attribute'
+              })
+            ]
+          }),
+          centered: !0,
+          size: 'md',
+          styles: { header: { paddingBottom: 4, paddingTop: 5 } },
+          children: e.jsxs(m, {
+            children: [
+              e.jsx(I, {
+                mt: 'md',
+                label: 'Feedback Attribute',
+                placeholder: 'Enter the feedback attribute',
+                value: (d == null ? void 0 : d.name) || '',
+                onChange: t => q(i => i && { ...i, name: t.target.value }),
+                required: !0,
+                size: 'md'
+              }),
+              e.jsxs(o, {
+                justify: 'space-between',
+                children: [
+                  l
+                    ? e.jsx(K, {
+                        label: 'Delete',
+                        children: e.jsx(n, {
+                          onClick: G,
+                          p: 'xs',
+                          variant: 'outline',
+                          children: e.jsx(D, { size: 16 })
+                        })
+                      })
+                    : e.jsx(n, {
+                        color: 'red',
+                        variant: 'outline',
+                        onClick: G,
+                        leftSection: e.jsx(D, { size: 16 }),
+                        children: 'Delete'
+                      }),
+                  e.jsxs(o, {
+                    children: [
+                      e.jsx(n, {
+                        variant: 'default',
+                        onClick: y,
+                        children: 'Cancel'
+                      }),
+                      e.jsx(n, {
+                        onClick: pe,
+                        leftSection: e.jsx(Ne, { size: 16 }),
+                        disabled: C,
+                        children: N ? 'Saving...' : 'Save'
+                      })
+                    ]
+                  })
+                ]
+              })
+            ]
+          })
+        }),
+        e.jsx(F, {
+          opened: le,
+          onClose: S,
+          title: e.jsxs(o, {
+            gap: 'xs',
+            children: [
+              e.jsx(Ae, { size: 24, color: 'red' }),
+              e.jsx(s, {
+                fw: 600,
+                size: 'lg',
+                c: 'red',
+                children: 'Delete Feedback Attribute'
+              })
+            ]
+          }),
+          centered: !0,
+          size: 'md',
+          children: e.jsxs(m, {
+            gap: 'md',
+            children: [
+              e.jsx(s, {
+                size: 'sm',
+                mt: 'sm',
+                children:
+                  'Are you sure you want to delete this feedback attribute? This action cannot be undone.'
+              }),
+              e.jsxs(o, {
+                justify: 'flex-end',
+                mt: 'md',
+                children: [
+                  e.jsx(n, {
+                    variant: 'default',
+                    onClick: S,
+                    children: 'Cancel'
+                  }),
+                  e.jsx(n, {
+                    color: 'red',
+                    onClick: je,
+                    disabled: C,
+                    leftSection: e.jsx(D, { size: 16 }),
+                    children: B ? 'Deleting...' : 'Delete'
+                  })
+                ]
+              })
+            ]
+          })
+        })
+      ]
+    })
+  });
+}
+export { vt as default };

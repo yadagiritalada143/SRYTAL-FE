@@ -2,10 +2,8 @@ import { Stepper, Stack } from '@mantine/core';
 import { StepConfig } from '@interfaces/reports';
 import { useRecoilValue } from 'recoil';
 
-
 import { useMemo } from 'react';
 import { useAppTheme } from '@hooks/use-app-theme';
-
 
 interface Props {
   steps: StepConfig[];
@@ -14,10 +12,11 @@ interface Props {
 }
 
 const DynamicStepper = ({ steps, active, children }: Props) => {
-  const { themeConfig: currentThemeConfig, organizationConfig, isDarkTheme } = useAppTheme();
-  
-  
-
+  const {
+    themeConfig: currentThemeConfig,
+    organizationConfig,
+    isDarkTheme
+  } = useAppTheme();
 
   return (
     <Stepper
@@ -61,12 +60,12 @@ const DynamicStepper = ({ steps, active, children }: Props) => {
           description={step.description}
           disabled={step.enabled === false}
         >
-          <Stack mt="xl">{children[index]}</Stack>
+          <Stack mt='xl'>{children[index]}</Stack>
         </Stepper.Step>
       ))}
 
       <Stepper.Completed>
-        <Stack align="center" py="xl">
+        <Stack align='center' py='xl'>
           {children[steps.length]}
         </Stack>
       </Stepper.Completed>

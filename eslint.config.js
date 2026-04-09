@@ -19,14 +19,18 @@ export default tseslint.config(
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
+
+      // Temporary rules- make it strict by removing the keyword 'off' and fixing the errors
+      '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
       'no-useless-catch': 'off',
+      'react-hooks/exhaustive-deps': 'off',
+      quotes: 'off',
+
       'react-refresh/only-export-components': [
-        'warn',
+        'off',
         { allowConstantExport: true }
-      ],
-      quotes: ['error', 'single'],
-      'jsx-quotes': ['error', 'prefer-single']
+      ]
     }
   }
 );

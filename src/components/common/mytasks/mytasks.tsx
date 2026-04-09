@@ -1,7 +1,6 @@
 import { useMantineTheme, Card, Text, Badge } from '@mantine/core';
 import { useRecoilValue } from 'recoil';
 
-
 import { useNavigate } from 'react-router-dom';
 import { useMemo } from 'react';
 
@@ -38,10 +37,12 @@ const tasks: Task[] = [
 
 const MyTasks = () => {
   const navigate = useNavigate();
-  const { themeConfig: currentThemeConfig, organizationConfig, isDarkTheme } = useAppTheme();
+  const {
+    themeConfig: currentThemeConfig,
+    organizationConfig,
+    isDarkTheme
+  } = useAppTheme();
   const theme = useMantineTheme();
-  
-  
 
   return (
     <div
@@ -49,21 +50,21 @@ const MyTasks = () => {
         color: currentThemeConfig.button.textColor,
         fontFamily: theme.fontFamily
       }}
-      className="h-auto px-4 sm:px-8 py-6"
+      className='h-auto px-4 sm:px-8 py-6'
     >
-      <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold underline text-center px-2 py-4">
+      <h1 className='text-xl sm:text-2xl md:text-3xl font-extrabold underline text-center px-2 py-4'>
         My Tasks
       </h1>
 
       {/* Grid layout */}
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className='grid gap-6 sm:grid-cols-2 lg:grid-cols-3'>
         {tasks.map(task => (
           <Card
             key={task.id}
-            shadow="md"
-            radius="lg"
+            shadow='md'
+            radius='lg'
             withBorder
-            className="cursor-pointer transition-transform duration-200 hover:shadow-xl hover:-translate-y-1"
+            className='cursor-pointer transition-transform duration-200 hover:shadow-xl hover:-translate-y-1'
             onClick={() =>
               navigate(`/srytal/employee/dashboard/mytasks/${task.id}`)
             }
@@ -72,21 +73,21 @@ const MyTasks = () => {
             <img
               src={task.image}
               alt={task.name}
-              className="rounded-lg mb-4 w-full h-40 object-cover"
+              className='rounded-lg mb-4 w-full h-40 object-cover'
             />
 
             {/* Title */}
-            <Text fw={600} size="lg" mb="xs">
+            <Text fw={600} size='lg' mb='xs'>
               {task.name}
             </Text>
 
             {/* Description */}
-            <Text size="sm" color="dimmed" mb="sm" lineClamp={2}>
+            <Text size='sm' color='dimmed' mb='sm' lineClamp={2}>
               {task.description}
             </Text>
 
             {/* Progress */}
-            <div className="mb-2">
+            <div className='mb-2'>
               <ProgressBar
                 progress={isNaN(task.progress) ? 0 : task.progress}
               />
@@ -95,8 +96,8 @@ const MyTasks = () => {
             {/* Status */}
             <Badge
               color={task.status === 'Completed' ? 'green' : 'blue'}
-              variant="light"
-              className="mt-2"
+              variant='light'
+              className='mt-2'
             >
               {task.status}
             </Badge>

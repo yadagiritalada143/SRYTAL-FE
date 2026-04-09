@@ -1,7 +1,7 @@
-import { atom } from "recoil";
+import { atom } from 'recoil';
 import { EmployeeType } from '@interfaces/employeetype';
 
-export const employeeTypeAtom=atom<EmployeeType []>({
-     key:"employeeTypeAtom",
-     default:[],
-})
+export const employeeTypeAtom = atom<EmployeeType[]>({
+  key: 'employeeTypeAtom',
+  default: []
+});

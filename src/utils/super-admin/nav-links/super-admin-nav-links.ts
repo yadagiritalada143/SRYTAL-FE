@@ -1,19 +1,19 @@
-import { IconFile3d, IconUser, IconUsers } from "@tabler/icons-react";
+import { IconFile3d, IconUser, IconUsers } from '@tabler/icons-react';
 
 export const SuperAdminNavLinks = [
   {
-    url: "dashboard/register-admin",
+    url: 'dashboard/register-admin',
     icon: IconUser,
-    name: "Register Admin",
+    name: 'Register Admin'
   },
   {
-    url: "dashboard/employees",
+    url: 'dashboard/employees',
     icon: IconUsers,
-    name: "Manage Employees",
+    name: 'Manage Employees'
   },
   {
-    url: "dashboard/documents",
+    url: 'dashboard/documents',
     icon: IconFile3d,
-    name: "Documents",
-  },
+    name: 'Documents'
+  }
 ];

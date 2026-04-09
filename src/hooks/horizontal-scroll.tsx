@@ -61,7 +61,7 @@ const useHorizontalScroll = () => {
     handleMouseUp: handleEnd,
     handleTouchStart,
     handleTouchMove,
-    handleTouchEnd: handleEnd,
+    handleTouchEnd: handleEnd
   };
 };
 

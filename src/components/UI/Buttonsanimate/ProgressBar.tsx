@@ -29,9 +29,9 @@ const ProgressBar: React.FC<LoaderProps> = ({ progress }) => {
 
   return (
     <StyledWrapper progress={animatedProgress}>
-      <div className="progress-container">
-        <div className="progress-bar" />
-        <div className="progress-text">{animatedProgress}%</div>
+      <div className='progress-container'>
+        <div className='progress-bar' />
+        <div className='progress-text'>{animatedProgress}%</div>
       </div>
     </StyledWrapper>
   );

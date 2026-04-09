@@ -44,9 +44,9 @@ export const TaskPopover = ({
     <Popover
       opened={opened}
       width={isMobile ? 260 : 300}
-      position="bottom"
+      position='bottom'
       withArrow
-      shadow="md"
+      shadow='md'
       offset={8}
     >
       <Popover.Target>
@@ -75,23 +75,23 @@ export const TaskPopover = ({
             padding: '12px'
           }}
         >
-          <Stack gap="xs">
+          <Stack gap='xs'>
             <Box>
-              <Text size="xs" c="dimmed" fw={600} mb={4}>
+              <Text size='xs' c='dimmed' fw={600} mb={4}>
                 Details:
               </Text>
-              <Text size="sm">{full}</Text>
+              <Text size='sm'>{full}</Text>
             </Box>
 
             {status && (
               <Box>
-                <Text size="xs" c="dimmed" fw={600} mb={4}>
+                <Text size='xs' c='dimmed' fw={600} mb={4}>
                   Status:
                 </Text>
                 <Badge
                   color={getStatusColor(status)}
-                  variant="light"
-                  size="md"
+                  variant='light'
+                  size='md'
                   fullWidth
                 >
                   {getStatusLabel(status)}

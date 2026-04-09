@@ -1,18 +1,17 @@
 import { useMantineTheme } from '@mantine/core';
 import { useRecoilValue } from 'recoil';
 
-
 import { Outlet } from 'react-router-dom';
 import { useMemo } from 'react';
 import { useAppTheme } from '@hooks/use-app-theme';
 
-
 const Reports = () => {
   const theme = useMantineTheme();
-  const { themeConfig: currentThemeConfig, organizationConfig, isDarkTheme } = useAppTheme();
-  
-  
-
+  const {
+    themeConfig: currentThemeConfig,
+    organizationConfig,
+    isDarkTheme
+  } = useAppTheme();
 
   return (
     <div
@@ -20,7 +19,7 @@ const Reports = () => {
         color: currentThemeConfig.button.textColor,
         fontFamily: theme.fontFamily
       }}
-      className="h-auto"
+      className='h-auto'
     >
       <Outlet />
     </div>

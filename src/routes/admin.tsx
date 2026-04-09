@@ -84,9 +84,9 @@ const PackagePageWrapper = lazy(
   () => import('@admin/components/dashboard/update-employee/package-wrapper')
 );
 const EmployeeTimesheetAdminView = lazy(() =>
-  import(
-    '@admin/components/dashboard/employee-timesheet/employee-timesheet'
-  ).then(m => ({ default: m.EmployeeTimesheetAdminView }))
+  import('@admin/components/dashboard/employee-timesheet/employee-timesheet').then(
+    m => ({ default: m.EmployeeTimesheetAdminView })
+  )
 );
 const Notifications = lazy(
   () => import('@admin/components/dashboard/notifications/Notifications')

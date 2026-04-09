@@ -1,1 +1,0 @@
-import{H as e}from"./index-CbDCQxzd.js";const t=e({key:"employeeDetailsAtom",default:null}),l=e({key:"bloodGroupOptionsAtom",default:[]}),m=e({key:"employmentTypesAtom",default:[]}),s=e({key:"employeeRolesAtom",default:[]});e({key:"employeePackagesAtom",default:null});const a=e({key:"departmentsAtom",default:[]});export{m as a,l as b,t as c,a as d,s as e};

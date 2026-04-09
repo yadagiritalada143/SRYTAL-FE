@@ -1,0 +1,31 @@
+import { u as e } from './useQuery-4fhBkLAX.js';
+import {
+  e as a,
+  n as t,
+  b as y,
+  g as m,
+  a as n,
+  P as o,
+  c as r
+} from './admin-services-CTc0QqQI.js';
+const l = {
+    allEmployees: ['adminAllEmployees'],
+    employee: s => ['adminEmployee', s],
+    allPackages: ['adminAllPackages'],
+    package: s => ['adminPackage', s],
+    employeePackages: s => ['adminEmployeePackages', s],
+    bloodGroups: ['adminBloodGroups'],
+    employmentTypes: ['adminEmploymentTypes'],
+    employeeRoles: ['adminEmployeeRoles'],
+    approvers: ['adminApprovers'],
+    feedbackAttributes: ['adminFeedbackAttributes'],
+    departments: ['adminDepartments']
+  },
+  d = () => e({ queryKey: l.allEmployees, queryFn: a }),
+  i = () => e({ queryKey: l.allPackages, queryFn: t }),
+  A = () => e({ queryKey: l.bloodGroups, queryFn: y }),
+  c = () => e({ queryKey: l.employmentTypes, queryFn: m }),
+  g = () => e({ queryKey: l.employeeRoles, queryFn: n }),
+  b = () => e({ queryKey: l.feedbackAttributes, queryFn: o }),
+  k = () => e({ queryKey: l.departments, queryFn: r });
+export { A as a, c as b, g as c, i as d, b as e, k as f, l as g, d as u };

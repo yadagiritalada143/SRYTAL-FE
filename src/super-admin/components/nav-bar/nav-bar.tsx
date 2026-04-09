@@ -1,11 +1,11 @@
-import { Icon, IconX } from "@tabler/icons-react";
-import { NavLink } from "react-router-dom";
-import { memo } from "react";
+import { Icon, IconX } from '@tabler/icons-react';
+import { NavLink } from 'react-router-dom';
+import { memo } from 'react';
 
 const SuperAdminNavbar = ({
   navLinks,
   isDrawerOpen,
-  toggleDrawer,
+  toggleDrawer
 }: {
   navLinks: {
     url: string;
@@ -16,17 +16,17 @@ const SuperAdminNavbar = ({
   toggleDrawer: () => void;
 }) => {
   return (
-    <nav className="h-full flex flex-col shadow-lg">
-      <div className="p-6 flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
-        <div className="lg:hidden  z-50">
-          <button onClick={toggleDrawer} className="p-2 rounded-md">
+    <nav className='h-full flex flex-col shadow-lg'>
+      <div className='p-6 flex justify-between items-center'>
+        <h1 className='text-2xl font-bold'>Dashboard</h1>
+        <div className='lg:hidden  z-50'>
+          <button onClick={toggleDrawer} className='p-2 rounded-md'>
             {isDrawerOpen && <IconX size={24} />}
           </button>
         </div>
       </div>
-      <div className="flex flex-col mt-6  px-2">
-        {navLinks.map((link) => {
+      <div className='flex flex-col mt-6  px-2'>
+        {navLinks.map(link => {
           const Icon = link.icon;
           return (
             <NavLink
@@ -35,11 +35,11 @@ const SuperAdminNavbar = ({
               end
               className={({ isActive }) =>
                 `flex items-center p-4 py-6 shadow-md hover:shadow-xl ${
-                  isActive ? "font-bold" : ""
+                  isActive ? 'font-bold' : ''
                 } hover:bg-opacity-75 transition-all`
               }
             >
-              <Icon size={24} className="mr-2" />
+              <Icon size={24} className='mr-2' />
               <span>{link.name}</span>
             </NavLink>
           );

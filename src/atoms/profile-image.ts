@@ -1,6 +1,6 @@
-import { atom } from "recoil";
+import { atom } from 'recoil';
 
 export const profileImageAtom = atom<string>({
-  key: "profileImage",
-  default: "",
+  key: 'profileImage',
+  default: ''
 });

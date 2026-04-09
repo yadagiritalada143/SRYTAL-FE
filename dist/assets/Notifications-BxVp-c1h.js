@@ -1,0 +1,142 @@
+import {
+  v as d,
+  e as o,
+  j as e,
+  G as r,
+  a5 as n,
+  S as m,
+  T as i
+} from './index-Cn_-nzwF.js';
+import { C as g } from './Container-3LzVKj3b.js';
+import { I as p } from './IconAlertCircle-BuevHmWi.js';
+import { T as u } from './Title-T3OvY56h.js';
+import { B as h } from './Badge-pr8cFvg5.js';
+import './createReactComponent-wv-YgGrS.js';
+const C = () => {
+  const { themeConfig: t } = d(),
+    [a, l] = o.useState([]);
+  o.useEffect(() => {
+    l([
+      {
+        id: '1',
+        title: 'New Employee Added',
+        message: 'A new employee has been successfully registered',
+        time: '5 mins ago',
+        type: 'success'
+      },
+      {
+        id: '2',
+        title: 'Package Assigned',
+        message: 'A package has been assigned to an employee',
+        time: '15 mins ago',
+        type: 'info'
+      },
+      {
+        id: '3',
+        title: 'Pending Approval',
+        message: 'Multiple employee requests are awaiting approval',
+        time: '30 mins ago',
+        type: 'warning'
+      },
+      {
+        id: '4',
+        title: 'Package Updated',
+        message: 'An existing package has been modified',
+        time: '1 hour ago',
+        type: 'info'
+      },
+      {
+        id: '5',
+        title: 'Employee Deactivated',
+        message: 'An employee account has been deactivated',
+        time: '2 hours ago',
+        type: 'warning'
+      }
+    ]);
+  }, []);
+  const c = s => {
+    switch (s) {
+      case 'success':
+        return t.successColor;
+      case 'warning':
+        return t.dangerColor;
+      default:
+        return t.button.color;
+    }
+  };
+  return e.jsxs(g, {
+    size: 'lg',
+    mt: 'xl',
+    pb: 'lg',
+    children: [
+      e.jsxs(r, {
+        mb: 'lg',
+        children: [
+          e.jsx(p, { size: '1.5rem' }),
+          e.jsx(u, {
+            order: 2,
+            style: { color: t.color },
+            children: 'Notifications'
+          })
+        ]
+      }),
+      e.jsx(n, {
+        withBorder: !0,
+        p: 'lg',
+        radius: 'md',
+        style: { backgroundColor: t.backgroundColor },
+        children: e.jsx(m, {
+          gap: 'sm',
+          style: { maxHeight: 400, overflowY: 'auto' },
+          children:
+            a.length === 0
+              ? e.jsx(i, {
+                  size: 'sm',
+                  c: 'dimmed',
+                  ta: 'center',
+                  children: 'No notifications available'
+                })
+              : a.map(s =>
+                  e.jsx(
+                    n,
+                    {
+                      withBorder: !0,
+                      p: 'sm',
+                      radius: 'sm',
+                      style: { border: t.mutedColor },
+                      children: e.jsxs(r, {
+                        justify: 'space-between',
+                        align: 'flex-start',
+                        children: [
+                          e.jsxs('div', {
+                            children: [
+                              e.jsx(i, {
+                                size: 'sm',
+                                fw: 500,
+                                children: s.title
+                              }),
+                              e.jsx(i, {
+                                size: 'xs',
+                                c: 'dimmed',
+                                children: s.message
+                              })
+                            ]
+                          }),
+                          e.jsx(h, {
+                            size: 'xs',
+                            color: c(s.type),
+                            variant: 'light',
+                            children: s.time
+                          })
+                        ]
+                      })
+                    },
+                    s.id
+                  )
+                )
+        })
+      })
+    ]
+  });
+};
+export { C as default };

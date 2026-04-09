@@ -24,7 +24,7 @@ const AssignedTasks = ({ tasks, setTasks }: Props) => {
 
   if (tasks.length === 0)
     return (
-      <Text c="dimmed" mb="lg">
+      <Text c='dimmed' mb='lg'>
         No tasks assigned yet.
       </Text>
     );
@@ -32,14 +32,14 @@ const AssignedTasks = ({ tasks, setTasks }: Props) => {
   if (isMobile) {
     return (
       <div>
-        <h3 className="text-lg font-bold underline mb-2">
+        <h3 className='text-lg font-bold underline mb-2'>
           {' '}
           Already Assigned Tasks
         </h3>
-        <Stack gap="sm" mb="lg">
+        <Stack gap='sm' mb='lg'>
           {tasks.map(task => (
-            <Paper key={task.taskId} withBorder shadow="xs" p="sm" radius="md">
-              <Group justify="space-between" mb="sm">
+            <Paper key={task.taskId} withBorder shadow='xs' p='sm' radius='md'>
+              <Group justify='space-between' mb='sm'>
                 <Text fw={600}>
                   {task.title.length > 25
                     ? task.title.substring(0, 20) + '...'
@@ -64,19 +64,19 @@ const AssignedTasks = ({ tasks, setTasks }: Props) => {
                 onChange={val =>
                   val && handleStatusChange(task.taskId, val as Task['status'])
                 }
-                size="xs"
-                radius="md"
-                mb="sm"
+                size='xs'
+                radius='md'
+                mb='sm'
               />
 
-              <Group justify="space-between" align="center" mb="sm">
-                <Text size="sm" c="dimmed">
+              <Group justify='space-between' align='center' mb='sm'>
+                <Text size='sm' c='dimmed'>
                   Due: {task.dueDate}
                 </Text>
 
                 <CancelStyledButton
-                  size="xs"
-                  label="Remove"
+                  size='xs'
+                  label='Remove'
                   onClick={() => handleRemove(task.taskId)}
                 />
               </Group>
@@ -91,17 +91,17 @@ const AssignedTasks = ({ tasks, setTasks }: Props) => {
     <div>
       {' '}
       {/* Assigned tasks */}
-      <h3 className="text-lg font-bold underline mb-2">
+      <h3 className='text-lg font-bold underline mb-2'>
         Already Assigned Tasks
       </h3>
-      <Paper shadow="sm" radius="md" withBorder p="sm" mb="lg">
-        <div className="w-full overflow-x-auto">
+      <Paper shadow='sm' radius='md' withBorder p='sm' mb='lg'>
+        <div className='w-full overflow-x-auto'>
           <Table
             striped
             highlightOnHover
             withColumnBorders
-            mb="lg"
-            className="text-sm sm:text-base"
+            mb='lg'
+            className='text-sm sm:text-base'
           >
             <Table.Thead>
               <Table.Tr>
@@ -119,7 +119,7 @@ const AssignedTasks = ({ tasks, setTasks }: Props) => {
                     <Tooltip
                       label={task.description || 'No description'}
                       withArrow
-                      position="top"
+                      position='top'
                     >
                       <Text style={{ cursor: 'pointer' }}>
                         {task.title.length > 25
@@ -136,8 +136,8 @@ const AssignedTasks = ({ tasks, setTasks }: Props) => {
                         val &&
                         handleStatusChange(task.taskId, val as Task['status'])
                       }
-                      size="xs"
-                      radius="md"
+                      size='xs'
+                      radius='md'
                     />
                   </Table.Td>
                   <Table.Td style={{ textAlign: 'center' }} w={110}>
@@ -158,8 +158,8 @@ const AssignedTasks = ({ tasks, setTasks }: Props) => {
                   </Table.Td>
                   <Table.Td style={{ textAlign: 'center' }}>
                     <CancelStyledButton
-                      size="xs"
-                      label="Remove"
+                      size='xs'
+                      label='Remove'
                       onClick={() => handleRemove(task.taskId)}
                     />
                   </Table.Td>

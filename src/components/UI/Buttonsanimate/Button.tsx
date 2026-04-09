@@ -13,52 +13,52 @@ const ButtonAnimate: React.FC<ButtonAnimateProps> = ({
 }) => {
   return (
     <StyledWrapper>
-      <button className="button" onClick={onClick}>
-        <div className="bg" />
+      <button className='button' onClick={onClick}>
+        <div className='bg' />
 
         {/* Purple splash effect */}
         <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 342 208"
+          xmlns='http://www.w3.org/2000/svg'
+          fill='none'
+          viewBox='0 0 342 208'
           height={208}
           width={342}
-          className="splash"
+          className='splash'
         >
           {/* keep your paths exactly as before */}
           <path
-            strokeLinecap="round"
+            strokeLinecap='round'
             strokeWidth={3}
-            d="M54.1054 99.7837C54.1054 99.7837 40.0984 90.7874 26.6893 97.6362C13.2802 104.485 1.5 97.6362 1.5 97.6362"
+            d='M54.1054 99.7837C54.1054 99.7837 40.0984 90.7874 26.6893 97.6362C13.2802 104.485 1.5 97.6362 1.5 97.6362'
           />
           <path
-            strokeLinecap="round"
+            strokeLinecap='round'
             strokeWidth={3}
-            d="M285.273 99.7841C285.273 99.7841 299.28 90.7879 312.689 97.6367C326.098 104.486 340.105 95.4893 340.105 95.4893"
+            d='M285.273 99.7841C285.273 99.7841 299.28 90.7879 312.689 97.6367C326.098 104.486 340.105 95.4893 340.105 95.4893'
           />
         </svg>
 
-        <div className="wrap">
+        <div className='wrap'>
           <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 221 42"
+            xmlns='http://www.w3.org/2000/svg'
+            fill='none'
+            viewBox='0 0 221 42'
             height={42}
             width={221}
-            className="path"
+            className='path'
           >
             <path
-              strokeLinecap="round"
+              strokeLinecap='round'
               strokeWidth={3}
-              d="M182.674 2H203C211.837 2 219 9.16344 219 18V24C219 32.8366 211.837 40 203 40H18C9.16345 40 2 32.8366 2 24V18C2 9.16344 9.16344 2 18 2H47.8855"
+              d='M182.674 2H203C211.837 2 219 9.16344 219 18V24C219 32.8366 211.837 40 203 40H18C9.16345 40 2 32.8366 2 24V18C2 9.16344 9.16344 2 18 2H47.8855'
             />
           </svg>
 
-          <div className="outline" />
+          <div className='outline' />
 
-          <div className="content">
+          <div className='content'>
             {/* Primary text */}
-            <span className="char state-1">
+            <span className='char state-1'>
               {primaryText.split('').map((char, i) => (
                 <span
                   key={i}
@@ -70,7 +70,7 @@ const ButtonAnimate: React.FC<ButtonAnimateProps> = ({
               ))}
             </span>
 
-            <div className="icon">
+            <div className='icon'>
               <div />
             </div>
 

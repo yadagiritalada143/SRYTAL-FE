@@ -17,10 +17,10 @@ const DocumentsMenuForSuperadmin = lazy(
 const SuperAdminRoutes = () => {
   return (
     <Routes>
-      <Route path="/dashboard" element={<SuperadminDashboard />}>
-        <Route path="register-admin" element={<RegisterAdminBySuperAdmin />} />
-        <Route path="employees" element={<EmployeesForSuperadmin />} />
-        <Route path="documents" element={<DocumentsMenuForSuperadmin />} />
+      <Route path='/dashboard' element={<SuperadminDashboard />}>
+        <Route path='register-admin' element={<RegisterAdminBySuperAdmin />} />
+        <Route path='employees' element={<EmployeesForSuperadmin />} />
+        <Route path='documents' element={<DocumentsMenuForSuperadmin />} />
       </Route>
     </Routes>
   );

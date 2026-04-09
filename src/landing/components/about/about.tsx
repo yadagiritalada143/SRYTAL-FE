@@ -1,22 +1,22 @@
-import { useRef } from "react";
+import { useRef } from 'react';
 
 const About = () => {
   const flipRef = useRef<HTMLDivElement>(null);
 
   const handleHover = () => {
     if (flipRef.current) {
-      flipRef.current.classList.toggle("is-flipped");
+      flipRef.current.classList.toggle('is-flipped');
     }
   };
 
   return (
-    <section id="about" className="py-12">
-      <div className="px-4 md:px-12 flex flex-wrap items-stretch">
-        <div className="w-full md:w-2/3 md:pr-8 mb-8 md:mb-0 flex flex-col justify-center">
-          <h1 className="text-2xl md:text-3xl font-bold mb-4">
+    <section id='about' className='py-12'>
+      <div className='px-4 md:px-12 flex flex-wrap items-stretch'>
+        <div className='w-full md:w-2/3 md:pr-8 mb-8 md:mb-0 flex flex-col justify-center'>
+          <h1 className='text-2xl md:text-3xl font-bold mb-4'>
             <u>About Us</u>
           </h1>
-          <div className="text-base md:text-lg leading-relaxed">
+          <div className='text-base md:text-lg leading-relaxed'>
             We are a forward-thinking software company committed to transforming
             businesses through innovative technology solutions. Our team of
             experienced developers, designers, and strategists works closely
@@ -39,36 +39,36 @@ const About = () => {
 
         <div
           ref={flipRef}
-          className="w-full md:w-1/3 flex-initial rounded-3xl overflow-hidden transform transition-transform duration-1000 relative"
+          className='w-full md:w-1/3 flex-initial rounded-3xl overflow-hidden transform transition-transform duration-1000 relative'
           onMouseEnter={handleHover}
           onMouseLeave={handleHover}
-          style={{ minHeight: "16rem" }}
+          style={{ minHeight: '16rem' }}
         >
-          <div className="flip-inner w-full h-full relative">
+          <div className='flip-inner w-full h-full relative'>
             <div
-              className="flip-front absolute w-full h-full backface-hidden"
+              className='flip-front absolute w-full h-full backface-hidden'
               style={{
-                transform: "rotateY(0deg)",
-                backfaceVisibility: "hidden",
+                transform: 'rotateY(0deg)',
+                backfaceVisibility: 'hidden'
               }}
             >
               <img
-                className="w-full h-full object-cover rounded-3xl"
-                src="/public/img-2.jpg"
-                alt="Front"
+                className='w-full h-full object-cover rounded-3xl'
+                src='/public/img-2.jpg'
+                alt='Front'
               />
             </div>
             <div
-              className="flip-back absolute w-full h-full backface-hidden"
+              className='flip-back absolute w-full h-full backface-hidden'
               style={{
-                transform: "rotateY(180deg)",
-                backfaceVisibility: "hidden",
+                transform: 'rotateY(180deg)',
+                backfaceVisibility: 'hidden'
               }}
             >
               <img
-                className="w-full h-full object-cover rounded-3xl"
-                src="/public/img-4.jpg"
-                alt="Back"
+                className='w-full h-full object-cover rounded-3xl'
+                src='/public/img-4.jpg'
+                alt='Back'
               />
             </div>
           </div>

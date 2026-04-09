@@ -3,8 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useRecoilValue } from 'recoil';
 import { useState, useEffect, useMemo } from 'react';
 
-
-
 import { organizationEmployeeUrls } from '@utils/common/constants';
 import BackButton from '@UI/Buttonsanimate/BackButton';
 import { Mentee, Task } from '@interfaces/mentee';
@@ -50,10 +48,13 @@ const initialTaskState = {
 
 const UpdateMenteeTasks = () => {
   const { empId } = useParams<{ empId: string }>();
-  const { themeConfig: currentThemeConfig, organizationConfig, isDarkTheme } = useAppTheme();
+  const {
+    themeConfig: currentThemeConfig,
+    organizationConfig,
+    isDarkTheme
+  } = useAppTheme();
   const theme = useMantineTheme();
-  
-  
+
   const navigate = useNavigate();
   const [mentee, setMentee] = useState<Mentee | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -87,8 +88,8 @@ const UpdateMenteeTasks = () => {
   if (!mentee) {
     return (
       <Center>
-        <Paper shadow="sm" radius="md" p="lg" withBorder w="50%">
-          <Title order={4} ta="center">
+        <Paper shadow='sm' radius='md' p='lg' withBorder w='50%'>
+          <Title order={4} ta='center'>
             Mentee not found
           </Title>
         </Paper>
@@ -97,26 +98,26 @@ const UpdateMenteeTasks = () => {
   }
 
   return (
-    <div className="flex items-center justify-center w-full px-2">
+    <div className='flex items-center justify-center w-full px-2'>
       <Paper
-        shadow="md"
-        radius="lg"
-        p="xl"
+        shadow='md'
+        radius='lg'
+        p='xl'
         withBorder
-        className="w-full sm:w-4/5 md:w-3/4 lg:w-1/2"
+        className='w-full sm:w-4/5 md:w-3/4 lg:w-1/2'
         style={{
           backgroundColor: currentThemeConfig.backgroundColor,
           color: theme.colors.primary[2],
           fontFamily: theme.fontFamily
         }}
       >
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6 w-full">
-          <Title order={2} className="underline text-center sm:text-left">
+        <div className='flex flex-col sm:flex-row items-center justify-between gap-4 mb-6 w-full'>
+          <Title order={2} className='underline text-center sm:text-left'>
             Update Mentee Tasks
           </Title>
-          <div className="flex justify-center sm:justify-end w-full sm:w-auto">
+          <div className='flex justify-center sm:justify-end w-full sm:w-auto'>
             <BackButton
-              label="Back"
+              label='Back'
               onClick={() =>
                 navigate(
                   `${organizationEmployeeUrls(organizationConfig.organization_name)}/dashboard/mentees`

@@ -1,4 +1,4 @@
-export interface EmployeeType{
-    id: string;
-    employmentType: string;
+export interface EmployeeType {
+  id: string;
+  employmentType: string;
 }

@@ -12,8 +12,12 @@ import { useAppTheme } from '@hooks/use-app-theme';
 
 const AdminDashboard = () => {
   const [isDrawerOpen, setDrawerOpen] = useState(false);
-  const { themeConfig: currentThemeConfig, organizationConfig, isDarkTheme } = useAppTheme();
-  
+  const {
+    themeConfig: currentThemeConfig,
+    organizationConfig,
+    isDarkTheme
+  } = useAppTheme();
+
   const [opened, { open, close }] = useDisclosure(false);
   const toggleDrawer = () => setDrawerOpen(!isDrawerOpen);
   const user = useRecoilValue(userDetailsAtom);
@@ -27,7 +31,7 @@ const AdminDashboard = () => {
     }
   }, [user, open]);
   return (
-    <ThemeBackground className="flex min-h-screen ">
+    <ThemeBackground className='flex min-h-screen '>
       <AdminNavbar
         navLinks={adminNavLinks}
         organizationConfig={organizationConfig}

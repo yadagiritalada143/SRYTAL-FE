@@ -1,4 +1,4 @@
 export interface BloodGroup {
-    id:string;
-    type:string;
+  id: string;
+  type: string;
 }
