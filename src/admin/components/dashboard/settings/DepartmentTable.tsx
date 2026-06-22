@@ -220,7 +220,7 @@ export default function DepartmentTable() {
               gap='md'
             >
               <Text size={isMobile ? 'lg' : 'xl'} fw={700}>
-                Manage Departments ({filtered.length})
+                Manage Departments ({filtered.length} Departments)
               </Text>
 
               <Button

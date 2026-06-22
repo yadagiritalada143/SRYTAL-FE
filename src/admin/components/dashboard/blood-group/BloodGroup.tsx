@@ -129,7 +129,7 @@ const HeadingComponent: React.FC<{
         fw={700}
         ta={isMobile ? 'center' : 'left'}
       >
-        Manage Blood Groups ({filteredCount} groups)
+        Manage Blood Groups ({filteredCount} Groups)
       </Text>
       <CommonButton
         leftSection={<IconPlus size={16} />}

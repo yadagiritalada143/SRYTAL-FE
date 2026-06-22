@@ -6,7 +6,8 @@ import {
   Badge,
   ScrollArea,
   Divider,
-  Group
+  Group,
+  Center
 } from '@mantine/core';
 import React from 'react';
 import { PoolCandidatesComments } from '@interfaces/candidate';
@@ -186,6 +187,7 @@ const CommentsTable = ({ comments }: CommentsTableProps) => {
                   <Table.Tr>
                     <Table.Th
                       className='p-3 border text-center'
+                      ta='center'
                       style={{ minWidth: '60px' }}
                     >
                       <Text size='sm' fw={500}>
@@ -204,6 +206,7 @@ const CommentsTable = ({ comments }: CommentsTableProps) => {
                       <>
                         <Table.Th
                           className='p-3 border text-center'
+                          ta='center'
                           style={{ minWidth: '150px' }}
                         >
                           <Text size='sm' fw={500}>
@@ -212,6 +215,7 @@ const CommentsTable = ({ comments }: CommentsTableProps) => {
                         </Table.Th>
                         <Table.Th
                           className='p-3 border text-center'
+                          ta='center'
                           style={{ minWidth: '180px' }}
                         >
                           <Text size='sm' fw={500}>
@@ -222,6 +226,7 @@ const CommentsTable = ({ comments }: CommentsTableProps) => {
                     )}
                     <Table.Th
                       className='p-3 border text-center'
+                      ta='center'
                       style={{ minWidth: '120px' }}
                     >
                       <Text size='sm' fw={500}>
@@ -243,13 +248,13 @@ const CommentsTable = ({ comments }: CommentsTableProps) => {
                       </Table.Td>
                       {!isTablet && (
                         <>
-                          <Table.Td className='p-3'>
+                          <Table.Td className='p-3 text-center'>
                             <Text size='sm'>
                               {comment?.userId?.firstName || ''}{' '}
                               {comment?.userId?.lastName || 'N/A'}
                             </Text>
                           </Table.Td>
-                          <Table.Td className='p-3'>
+                          <Table.Td className='p-3 text-center'>
                             <Text size='sm'>
                               {moment(new Date(comment.updateAt)).format(
                                 'MMM DD, YYYY'

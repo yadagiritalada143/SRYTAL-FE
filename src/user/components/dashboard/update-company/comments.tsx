@@ -90,6 +90,7 @@ const PoolCompaniesCommentsTable = ({
               <Table.Tr>
                 <Table.Th
                   className='p-3 border text-center'
+                  ta='center'
                   style={{ width: '80px' }}
                 >
                   <Text size='sm' fw={500}>
@@ -101,12 +102,20 @@ const PoolCompaniesCommentsTable = ({
                     Comment
                   </Text>
                 </Table.Th>
-                <Table.Th className='p-3 border' style={{ width: '200px' }}>
+                <Table.Th
+                  className='p-3 border'
+                  ta='center'
+                  style={{ width: '200px' }}
+                >
                   <Text size='sm' fw={500}>
                     Created By
                   </Text>
                 </Table.Th>
-                <Table.Th className='p-3 border' style={{ width: '200px' }}>
+                <Table.Th
+                  className='p-3 border'
+                  ta='center'
+                  style={{ width: '200px' }}
+                >
                   <Text size='sm' fw={500}>
                     Created At
                   </Text>
@@ -122,13 +131,13 @@ const PoolCompaniesCommentsTable = ({
                   <Table.Td className='p-3'>
                     <Text size='sm'>{comment.comment}</Text>
                   </Table.Td>
-                  <Table.Td className='p-3'>
+                  <Table.Td className='p-3 text-center'>
                     <Text size='sm' fw={500}>
                       {comment?.userId?.firstName || ''}{' '}
                       {comment?.userId?.lastName || ''}
                     </Text>
                   </Table.Td>
-                  <Table.Td className='p-3'>
+                  <Table.Td className='p-3 text-center'>
                     <Text size='sm'>
                       {moment(new Date(comment.updateAt)).format(
                         'MMMM Do YYYY, h:mm A'

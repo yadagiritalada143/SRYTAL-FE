@@ -290,7 +290,7 @@ const HeadingComponent = ({
         fw={700}
         ta={isMobile ? 'center' : 'left'}
       >
-        Manage Packages ({filteredCount} packages)
+        Manage Packages ({filteredCount} Packages)
       </Text>
       <CommonButton
         leftSection={<IconPlus size={16} />}

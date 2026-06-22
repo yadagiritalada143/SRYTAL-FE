@@ -416,7 +416,7 @@ const HeadingComponent: React.FC<{
         fw={700}
         ta={isMobile ? 'center' : 'left'}
       >
-        Employee Management ({filteredEmployees} employees)
+        Employee Management ({filteredEmployees} Employees)
       </Text>
       <CommonButton
         leftSection={<IconPlus size={16} />}

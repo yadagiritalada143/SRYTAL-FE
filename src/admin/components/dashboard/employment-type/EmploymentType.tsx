@@ -127,7 +127,7 @@ const HeadingComponent: React.FC<{
         fw={700}
         ta={isMobile ? 'center' : 'left'}
       >
-        Manage Employment Types ({filteredCount} types)
+        Manage Employment Types ({filteredCount} Types)
       </Text>
       <CommonButton
         leftSection={<IconPlus size={16} />}
