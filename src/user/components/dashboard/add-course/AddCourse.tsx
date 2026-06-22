@@ -36,6 +36,7 @@ import { useCustomToast } from '@utils/common/toast';
 import { useAppTheme } from '@hooks/use-app-theme';
 import { useAddCourse } from '@hooks/mutations/useUserMutations';
 import { CommonButton } from '@components/common/button/CommonButton';
+import { getErrorMessage } from '@utils/common/get-error-message';
 
 const AddCourse = () => {
   const [courseName, setCourseName] = useState('');
@@ -90,8 +91,8 @@ const AddCourse = () => {
       });
       showSuccessToast('Course added successfully!');
       navigate(-1);
-    } catch (error: any) {
-      showErrorToast(error?.response?.data?.message || 'Failed to add course');
+    } catch (error) {
+      showErrorToast(getErrorMessage(error, 'Failed to add course'));
     }
   };
 

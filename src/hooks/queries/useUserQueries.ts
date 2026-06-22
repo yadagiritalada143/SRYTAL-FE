@@ -5,7 +5,8 @@ import {
   getAllPoolCandidatesByEmployee,
   getPoolCandidateByRecruiter,
   getUserDetails,
-  getAllCoursesByUser
+  getAllCoursesByUser,
+  getCourseByIdContentWriter
 } from '@services/user-services';
 import { getProfileImage } from '@services/common-services';
 
@@ -17,7 +18,8 @@ export const userQueryKeys = {
   candidate: (id: string) => ['poolCandidate', id] as const,
   userDetails: ['userDetails'] as const,
   profileImage: ['profileImage'] as const,
-  courses: ['userCourses'] as const
+  courses: ['userCourses'] as const,
+  course: (id: string) => ['userCourse', id] as const
 };
 
 export const useGetCompanyDetails = () => {
@@ -68,5 +70,13 @@ export const useGetAllCoursesByUser = () => {
   return useQuery({
     queryKey: userQueryKeys.courses,
     queryFn: getAllCoursesByUser
+  });
+};
+
+export const useGetCourseById = (id: string, enabled = true) => {
+  return useQuery({
+    queryKey: userQueryKeys.course(id),
+    queryFn: () => getCourseByIdContentWriter(id),
+    enabled: !!id && enabled
   });
 };

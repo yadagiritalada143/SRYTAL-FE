@@ -8,6 +8,8 @@ import {
 
 export { logoutUser } from '@utils/api-client';
 import { apiClient } from '@utils/api-client';
+import { BASE_URL } from '@constants';
+import { AddModulePayload, AddTaskPayload } from '@interfaces/contentwriter';
 
 export const getCompanyDetails = async () => {
   try {
@@ -156,12 +158,22 @@ export const getUserDetails = async () => {
 };
 
 export const getAllCoursesByUser = async () => {
-  const token = localStorage.getItem('token');
+  // The apiClient interceptor already attaches the auth_token header.
   try {
-    const response = await apiClient.get('/contentwriter/getAllCourses', {
-      headers: { auth_token: token }
-    });
+    const response = await apiClient.get('/contentwriter/getAllCourses');
     return response.data.courses;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getCourseByIdContentWriter = async (id: string) => {
+  try {
+    const response = await apiClient.get(
+      `/contentwriter/getCourseById/${id}`
+    );
+    // Backend responds with { success, coursedata }.
+    return response.data.coursedata;
   } catch (error) {
     throw error;
   }
@@ -181,11 +193,67 @@ export const addCourseContentWriter = async (
     }
     const response = await apiClient.post(
       '/contentwriter/addCourse',
-      { formData },
+      formData,
       { headers: { 'Content-Type': 'multipart/form-data' } }
     );
-    return response;
+    return response.data;
   } catch (error) {
     throw error;
   }
+};
+
+export const addCourseModuleContentWriter = async (
+  data: AddModulePayload
+) => {
+  try {
+    const formData = new FormData();
+    formData.append('courseId', data.courseId);
+    formData.append('moduleName', data.moduleName);
+    formData.append('moduleDescription', data.moduleDescription);
+    if (data.thumbnail) {
+      formData.append('coursemodulethumbnail', data.thumbnail);
+    }
+    const response = await apiClient.post(
+      '/contentwriter/addCourseModule',
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const addCourseTaskContentWriter = async (data: AddTaskPayload) => {
+  try {
+    const formData = new FormData();
+    formData.append('moduleId', data.moduleId);
+    formData.append('taskName', data.taskName);
+    formData.append('taskDescription', data.taskDescription);
+    // A task carries either an uploaded file or an external link.
+    if (data.file) {
+      formData.append('taskFile', data.file);
+    } else if (data.link) {
+      formData.append('link', data.link);
+    }
+    const response = await apiClient.post(
+      '/contentwriter/addCourseTask',
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+/**
+ * Builds the URL that serves a task's content. The backend redirects to the
+ * external link (type LINK) or streams the file inline (type FILE). The token
+ * is passed as a query param so the URL can be opened directly in a new tab.
+ */
+export const getCourseTaskContentUrl = (taskId: string) => {
+  const token = localStorage.getItem('token');
+  const base = (BASE_URL || '').replace(/\/+$/, '');
+  return `${base}/contentwriter/getCourseTaskContent/${taskId}?auth_token=${token}`;
 };

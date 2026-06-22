@@ -27,17 +27,27 @@ export default defineConfig({
   plugins: [react()],
   publicDir: 'public',
   optimizeDeps: {
+    // Pre-bundle heavy/commonly-used deps so the dev server doesn't transform
+    // them on the fly (a common cause of slow first loads and HMR jank).
     include: [
       'react',
       'react-dom',
       'react-router-dom',
       '@mantine/core',
       '@mantine/hooks',
+      '@mantine/dates',
+      '@mantine/modals',
+      '@mantine/tiptap',
       '@tabler/icons-react',
+      '@tanstack/react-query',
+      '@tiptap/react',
+      '@tiptap/starter-kit',
       'axios',
       'zod',
       'recoil',
-      'react-hook-form'
+      'react-hook-form',
+      'moment',
+      'moment-timezone'
     ]
   },
   server: {

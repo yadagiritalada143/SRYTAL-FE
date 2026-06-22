@@ -7,32 +7,26 @@ import {
   Stack,
   Text,
   Title,
-  Badge,
   SimpleGrid,
   ScrollArea,
   Center,
   ThemeIcon,
   ActionIcon,
-  Menu,
   Pagination,
   Modal,
   TextInput
 } from '@mantine/core';
-import PremiumLoader from '@components/common/loaders/PremiumLoader';
+import SkeletonLoader from '@components/common/loaders/SkeletonLoader';
 import {
   IconBook,
   IconLayersSubtract,
   IconListCheck,
   IconPlus,
-  IconDots,
-  IconEdit,
-  IconTrash,
-  IconArchive,
   IconSearch,
   IconX,
   IconArrowLeft
 } from '@tabler/icons-react';
-import React, { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useMediaQuery } from '@mantine/hooks';
 import { useNavigate } from 'react-router-dom';
 import { organizationEmployeeUrls } from '@utils/common/constants';
@@ -40,11 +34,12 @@ import { useAppTheme } from '@hooks/use-app-theme';
 import { useGetAllCoursesByUser } from '@hooks/queries/useUserQueries';
 import { Course } from '@interfaces/contentwriter';
 import { CommonButton } from '@components/common/button/CommonButton';
+import CourseCard from './CourseCard';
 
 const COURSES_PER_PAGE = 6;
 
 const WriterDashboard = () => {
-  const { themeConfig: currentThemeConfig, organizationConfig } = useAppTheme();
+  const { organizationConfig } = useAppTheme();
   const [showAllCourses, setShowAllCourses] = useState(false);
   const [activePage, setActivePage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
@@ -87,7 +82,7 @@ const WriterDashboard = () => {
       .map((c: Course) => ({
         id: c._id,
         title: c.courseName,
-        thumbnail: c.thumbnail || '/public/course-thumbnail.png',
+        thumbnail: c.thumbnail || '/course-thumbnail.png',
         type: 'Course'
       }));
   }, [courses]);
@@ -98,7 +93,7 @@ const WriterDashboard = () => {
       banner: {
         headline: 'Craft Your Written Journey',
         tag: "The Creator's Playground",
-        thumbnailBanner: '/public/contentwriter.jpg'
+        thumbnailBanner: '/contentwriter.jpg'
       }
     }),
     []
@@ -147,99 +142,15 @@ const WriterDashboard = () => {
     );
   }, [navigate, organizationConfig.organization_name]);
 
-  const CourseCard = ({ course }: { course: Course }) => (
-    <Card
-      shadow='xs'
-      radius='md'
-      p='md'
-      withBorder
-      onClick={() =>
-        navigate(
-          `${organizationEmployeeUrls(organizationConfig.organization_name)}/dashboard/course/${course._id}`
-        )
-      }
-      style={{ position: 'relative', cursor: 'pointer' }}
-    >
-      <Menu position='bottom-end' shadow='md' width={160}>
-        <Menu.Target>
-          <ActionIcon
-            variant='subtle'
-            onClick={e => e.stopPropagation()}
-            style={{
-              position: 'absolute',
-              top: 8,
-              right: 8,
-              zIndex: 1,
-              color: currentThemeConfig.color
-            }}
-          >
-            <IconDots size={18} />
-          </ActionIcon>
-        </Menu.Target>
-        <Menu.Dropdown>
-          <Menu.Item
-            leftSection={<IconEdit size={16} />}
-            onClick={e => {
-              e.stopPropagation();
-              handleEdit(course._id);
-            }}
-            color={currentThemeConfig.button.color}
-          >
-            Edit
-          </Menu.Item>
-          <Menu.Item
-            leftSection={<IconArchive size={16} />}
-            onClick={e => {
-              e.stopPropagation();
-              handleArchive(course._id);
-            }}
-            color={currentThemeConfig.button.color}
-          >
-            Archive
-          </Menu.Item>
-          <Menu.Divider
-            style={{ borderColor: currentThemeConfig.borderColor }}
-          />
-          <Menu.Item
-            color='red'
-            leftSection={<IconTrash size={16} />}
-            onClick={e => {
-              e.stopPropagation();
-              handleDelete(course._id);
-            }}
-          >
-            Delete
-          </Menu.Item>
-        </Menu.Dropdown>
-      </Menu>
-
-      <Image
-        src={course.thumbnail || '/public/course-thumbnail.png'}
-        height={140}
-        radius='md'
-        mb='sm'
-      />
-      <Stack gap={4}>
-        <Text fw={600} size='md' lineClamp={1}>
-          {course.courseName}
-        </Text>
-        <Text size='sm' c='dimmed' lineClamp={2}>
-          {course.courseDescription
-            ? `${course.courseDescription.replace(/<[^>]*>/g, '').slice(0, 64)}...`
-            : 'No description available'}
-        </Text>
-        <Badge color='blue' mt='xs' radius='sm' variant='light'>
-          {course.status || 'N/A'}
-        </Badge>
-      </Stack>
-    </Card>
-  );
-
   if (isLoading) {
     return (
-      <Center h={400}>
-        <PremiumLoader label='Loading content...' />
-      </Center>
+      <Container size='xl' py='xl'>
+        <Stack mb='xl' gap={4}>
+          <Title order={1}>{overview.title}</Title>
+          <Text c='dimmed'>Loading your content...</Text>
+        </Stack>
+        <SkeletonLoader type='cards' rows={4} />
+      </Container>
     );
   }
 
@@ -298,7 +209,13 @@ const WriterDashboard = () => {
           <SimpleGrid cols={{ base: 1, xs: 2, sm: 2, md: 3 }} spacing='lg'>
             {paginatedCourses.length > 0 ? (
               paginatedCourses.map((course: Course) => (
-                <CourseCard key={course._id} course={course} />
+                <CourseCard
+                  key={course._id}
+                  course={course}
+                  onEdit={handleEdit}
+                  onArchive={handleArchive}
+                  onDelete={handleDelete}
+                />
               ))
             ) : (
               <Center style={{ gridColumn: '1 / -1' }} py='xl'>
@@ -481,7 +398,13 @@ const WriterDashboard = () => {
             <ScrollArea h={600} offsetScrollbars>
               <SimpleGrid cols={isMobile ? 1 : 2} spacing='lg'>
                 {courses.slice(0, 4).map((course: Course) => (
-                  <CourseCard key={course._id} course={course} />
+                  <CourseCard
+                    key={course._id}
+                    course={course}
+                    onEdit={handleEdit}
+                    onArchive={handleArchive}
+                    onDelete={handleDelete}
+                  />
                 ))}
               </SimpleGrid>
             </ScrollArea>

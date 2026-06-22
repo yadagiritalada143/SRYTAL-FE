@@ -12,6 +12,7 @@ import { useCustomToast } from '@utils/common/toast';
 import { ThemeBackground } from '../Theme-background/background';
 import { LogoutButton } from '../Buttons/buttons';
 import { useAppTheme } from '@hooks/use-app-theme';
+import OrgLogo from './OrgLogo';
 
 function NavbarMenu({ navLinks, isDrawerOpen, setIsDrawerOpen }: NavbarProps) {
   const user = useRecoilValue(userDetailsAtom);
@@ -74,15 +75,13 @@ function NavbarMenu({ navLinks, isDrawerOpen, setIsDrawerOpen }: NavbarProps) {
           }}
         >
           <div className={classes.fabContent}>
-            <img
-              src={organizationConfig.organization_theme.logo}
-              alt='Organization Logo'
+            <OrgLogo
+              logo={organizationConfig.organization_theme.logo}
+              name={organizationConfig.organization_name}
+              width={130}
+              height={55}
               className={classes.fabLogo}
-              style={{
-                width: 130,
-                height: 55,
-                borderRadius: 16
-              }}
+              style={{ borderRadius: 16 }}
             />
           </div>
         </UnstyledButton>
@@ -102,15 +101,13 @@ function NavbarMenu({ navLinks, isDrawerOpen, setIsDrawerOpen }: NavbarProps) {
         >
           <LogoutButton handleLogout={handleLogout} />
 
-          <img
-            src={organizationConfig.organization_theme.logo}
-            alt='Organization Logo'
+          <OrgLogo
+            logo={organizationConfig.organization_theme.logo}
+            name={organizationConfig.organization_name}
+            width={130}
+            height={35}
             className={classes.logoExpanded}
-            style={{
-              width: 130,
-              height: 35,
-              borderRadius: 8
-            }}
+            style={{ borderRadius: 8 }}
           />
           <div onClick={toggleDrawer} className={classes.fabX}>
             <IconX color={currentThemeConfig.color} />

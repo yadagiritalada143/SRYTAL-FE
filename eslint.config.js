@@ -25,7 +25,9 @@ export default tseslint.config(
         'warn',
         { allowConstantExport: true }
       ],
-      quotes: ['error', 'single'],
+      // avoidEscape lets strings that contain a single quote use double quotes,
+      // matching Prettier's behaviour (singleQuote: true) so the two agree.
+      quotes: ['error', 'single', { avoidEscape: true }],
       'jsx-quotes': ['error', 'prefer-single']
     }
   }

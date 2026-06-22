@@ -7,7 +7,9 @@ import {
   addPoolCandidateCommentByRecruiter,
   addPoolCandidateByRecruiter,
   updatePoolCandidateByRecruiter,
-  addCourseContentWriter
+  addCourseContentWriter,
+  addCourseModuleContentWriter,
+  addCourseTaskContentWriter
 } from '@services/user-services';
 import { userQueryKeys } from '../queries/useUserQueries';
 import { AddCompanyForm } from '@forms/add-company';
@@ -17,6 +19,7 @@ import {
   AddCommentForm,
   UpdateCandidateSchema
 } from '@forms/add-candidate';
+import { AddModulePayload, AddTaskPayload } from '@interfaces/contentwriter';
 
 export const useAddCompany = () => {
   const queryClient = useQueryClient();
@@ -114,6 +117,33 @@ export const useAddCourse = () => {
     }) => addCourseContentWriter(name, description, image),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: userQueryKeys.courses });
+    }
+  });
+};
+
+export const useAddCourseModule = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: AddModulePayload) => addCourseModuleContentWriter(data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: userQueryKeys.course(variables.courseId)
+      });
+      queryClient.invalidateQueries({ queryKey: userQueryKeys.courses });
+    }
+  });
+};
+
+export const useAddCourseTask = (courseId?: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: AddTaskPayload) => addCourseTaskContentWriter(data),
+    onSuccess: () => {
+      if (courseId) {
+        queryClient.invalidateQueries({
+          queryKey: userQueryKeys.course(courseId)
+        });
+      }
     }
   });
 };

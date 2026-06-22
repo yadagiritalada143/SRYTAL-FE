@@ -1,9 +1,10 @@
 import React, { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import { MantineProvider, Center, Loader } from '@mantine/core';
+import { MantineProvider } from '@mantine/core';
 import { ModalsProvider } from '@mantine/modals';
 import { useAppTheme } from '@hooks/use-app-theme';
 import PremiumLoader from '@components/common/loaders/PremiumLoader';
+import ErrorBoundary from '@components/common/error-boundary/ErrorBoundary';
 
 const Landing = lazy(() => import('@landing/pages/landing'));
 const AdminRoutes = lazy(() => import('./routes/admin'));
@@ -20,23 +21,30 @@ const App: React.FC = () => {
       forceColorScheme={isDarkTheme ? 'dark' : 'light'}
     >
       <ModalsProvider>
-        <Router>
-          <Suspense
-            fallback={<PremiumLoader label='SRYTAL' minHeight='100vh' />}
+        <ErrorBoundary>
+          <Router
+            future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
           >
-            <Routes>
-              <Route path='/' element={<Landing />} />
+            <Suspense
+              fallback={<PremiumLoader label='SRYTAL' minHeight='100vh' />}
+            >
+              <Routes>
+                <Route path='/' element={<Landing />} />
 
-              <Route path='/:organization/admin/*' element={<AdminRoutes />} />
-              <Route
-                path='/:organization/employee/*'
-                element={<EmployeeRoutes />}
-              />
-              <Route path='/superadmin/*' element={<SuperAdminRoutes />} />
-              <Route path='/*' element={<CommonForgetPassword />} />
-            </Routes>
-          </Suspense>
-        </Router>
+                <Route
+                  path='/:organization/admin/*'
+                  element={<AdminRoutes />}
+                />
+                <Route
+                  path='/:organization/employee/*'
+                  element={<EmployeeRoutes />}
+                />
+                <Route path='/superadmin/*' element={<SuperAdminRoutes />} />
+                <Route path='/*' element={<CommonForgetPassword />} />
+              </Routes>
+            </Suspense>
+          </Router>
+        </ErrorBoundary>
       </ModalsProvider>
     </MantineProvider>
   );

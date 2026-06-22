@@ -1,0 +1,1 @@
+import{$ as s,x as o,j as e}from"./index--OtVQQkR.js";const l=()=>{const t=s(),{themeConfig:n}=o();return e.jsx("div",{style:{color:n.button.textColor,fontFamily:t.fontFamily},className:"h-auto",children:e.jsx("div",{children:e.jsx("h1",{className:"text-xl sm:text-2xl md:text-3xl font-extrabold underline text-center px-2 py-4",children:"Announcements"})})})};export{l as default};
