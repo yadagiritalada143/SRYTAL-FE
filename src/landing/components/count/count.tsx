@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
-import { IconEye } from '@tabler/icons-react';
+import { useState, useEffect, useRef } from "react";
+import { Card, Text, Badge } from "@mantine/core";
+import { IconEye } from "@tabler/icons-react";
 import { getVisitorCount } from '@services/common-services';
 
 const VisitorCount = () => {
@@ -8,11 +9,10 @@ const VisitorCount = () => {
   const countRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    getVisitorCount().then(visitorCount => setCount(visitorCount));
+    getVisitorCount().then((visitorCount) => setCount(visitorCount));
   }, []);
 
   useEffect(() => {
-    const node = countRef.current;
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -20,21 +20,25 @@ const VisitorCount = () => {
           observer.unobserve(entry.target);
         }
       },
-      { threshold: 0.6 }
+      { threshold: 0.9 }
     );
 
-    if (node) observer.observe(node);
+    if (countRef.current) {
+      observer.observe(countRef.current);
+    }
+
     return () => {
-      if (node) observer.unobserve(node);
+      if (countRef.current) {
+        observer.unobserve(countRef.current);
+      }
     };
   }, [count]);
 
   const animateCount = () => {
     let start = 0;
     const end = count;
-    const duration = 800;
-    const steps = duration / 50;
-    const increment = Math.max(1, Math.ceil(end / steps));
+    const duration = 500;
+    const increment = Math.ceil(end / (duration / 100));
 
     const timer = setInterval(() => {
       start += increment;
@@ -43,25 +47,32 @@ const VisitorCount = () => {
         clearInterval(timer);
       }
       setDisplayedCount(start);
-    }, 50);
+    }, 100);
   };
 
   return (
-    <section className='py-12'>
-      <div ref={countRef} className='container mx-auto px-4 md:px-8'>
-        <div className='glass-card mx-auto flex max-w-md flex-col items-center rounded-2xl px-8 py-10 text-center'>
-          <span className='inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-fuchsia-500 text-white'>
-            <IconEye size={24} />
-          </span>
-          <div className='mt-5 text-5xl font-extrabold text-gradient'>
-            {displayedCount.toLocaleString()}
-          </div>
-          <p className='mt-2 text-sm text-slate-400'>
-            People have visited this site
-          </p>
+    <div ref={countRef}>
+      <Card
+        p="lg"
+        radius="md"
+        className="bg-transparent text-center w-full md:w-2/3 lg:w-1/2 mx-auto my-6 transform hover:scale-105 transition-transform"
+      >
+        <div className="flex space-x-10 justify-center items-center">
+          <Badge color="blue" variant="light">
+            Visitors
+          </Badge>
+          <IconEye size={24} className="text-blue-500" />
         </div>
-      </div>
-    </section>
+
+        <div className="mt-4 text-5xl font-bold text-indigo-700">
+          {displayedCount}
+        </div>
+
+        <Text color="dimmed" size="sm" className="mt-2">
+          People have visited this site.
+        </Text>
+      </Card>
+    </div>
   );
 };
 

@@ -4,79 +4,74 @@ import {
   IconDatabase,
   IconChartBar,
   IconDeviceLaptop,
-  IconShieldCheck
-} from '@tabler/icons-react';
-import SectionHeading from '@landing/components/common/SectionHeading';
-import Reveal from '@landing/components/common/Reveal';
+  IconShieldCheck,
+} from "@tabler/icons-react";
+import { Text, Group } from "@mantine/core";
 
 const services = [
   {
-    title: 'Custom Software Development',
+    title: "Custom Software Development",
     description:
-      'Tailor-made software that aligns with your business needs, ensuring seamless operations and a competitive edge.',
-    icon: IconCode
+      "Tailor-made software solutions that align with your business needs, ensuring seamless operations and a competitive edge.",
+    icon: <IconCode size="4rem" />,
   },
   {
-    title: 'Cloud Integration',
+    title: "Cloud Integration",
     description:
-      'Transform your IT infrastructure with cloud integration services built for scalability, flexibility, and security.',
-    icon: IconCloud
+      "Transform your IT infrastructure with our cloud integration services, ensuring scalability, flexibility, and security.",
+    icon: <IconCloud size="4rem" />,
   },
   {
-    title: 'Database Management',
+    title: "Database Management",
     description:
-      'Efficient and secure database solutions that streamline your data operations and enhance accessibility.',
-    icon: IconDatabase
+      "Efficient and secure database management solutions to streamline your data operations and enhance accessibility.",
+    icon: <IconDatabase size="4rem" />,
   },
   {
-    title: 'Business Analytics',
+    title: "Business Analytics",
     description:
-      'Leverage advanced analytics to make data-driven decisions that boost productivity and profitability.',
-    icon: IconChartBar
+      "Leverage advanced analytics to make data-driven decisions that boost productivity and profitability.",
+    icon: <IconChartBar size="4rem" />,
   },
   {
-    title: 'IT Consultation',
+    title: "IT Consultation",
     description:
-      'Expert consultation to help you navigate the digital landscape and implement cutting-edge technology.',
-    icon: IconDeviceLaptop
+      "Expert IT consultation services to help you navigate the digital landscape and implement cutting-edge technology.",
+    icon: <IconDeviceLaptop size="4rem" />,
   },
   {
-    title: 'Security Solutions',
+    title: "Security Solutions",
     description:
-      'Comprehensive cyber security strategies to protect your digital assets and ensure business continuity.',
-    icon: IconShieldCheck
-  }
+      "Comprehensive cyber security strategies to protect your digital assets and ensure business continuity.",
+    icon: <IconShieldCheck size="4rem" />,
+  },
 ];
 
 const Services = () => {
   return (
-    <section id='services' className='py-24'>
-      <div className='container mx-auto px-4 md:px-8'>
-        <SectionHeading
-          eyebrow='What we do'
-          title='Our Services'
-          subtitle='End-to-end technology services that empower your business at every stage of growth.'
-        />
-
-        <div className='mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3'>
-          {services.map((service, index) => {
-            const Icon = service.icon;
-            return (
-              <Reveal key={service.title} delay={(index % 3) * 100}>
-                <div className='glass-card group h-full rounded-2xl p-7 transition-all duration-300 hover:-translate-y-1 hover:border-fuchsia-500/40 hover:bg-white/[0.07]'>
-                  <div className='mb-5 inline-flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500/20 to-fuchsia-500/20 text-fuchsia-300 ring-1 ring-white/10 transition-colors duration-300 group-hover:from-indigo-500 group-hover:to-fuchsia-500 group-hover:text-white'>
-                    <Icon size={28} />
-                  </div>
-                  <h3 className='text-lg font-semibold text-white'>
-                    {service.title}
-                  </h3>
-                  <p className='mt-3 text-sm leading-relaxed text-slate-400'>
-                    {service.description}
-                  </p>
-                </div>
-              </Reveal>
-            );
-          })}
+    <section id="services" className="py-16">
+      <div className="container mx-auto px-8">
+        <div className="text-center mb-12">
+          <h2 className="text-2xl md:text-3xl text-center font-bold">
+            Our Services
+          </h2>
+          <p className="text-xl mt-4">
+            Empowering Business with Innovative Solutions
+          </p>
+        </div>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {services.map((service, index) => (
+            <div
+              key={index}
+              className="flex flex-col items-center justify-between h-full max-h-72 shadow-sm rounded-lg p-6 hover:shadow-purple-500 hover:shadow-lg transition-shadow duration-300"
+            >
+              <Group className="mb-4">{service.icon}</Group>
+              <Text className="text-xl font-semibold text-center mb-4">
+                {service.title}
+              </Text>
+              <Text className="text-sm text-center">{service.description}</Text>
+            </div>
+          ))}
         </div>
       </div>
     </section>

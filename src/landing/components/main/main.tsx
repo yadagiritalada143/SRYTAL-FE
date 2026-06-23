@@ -1,79 +1,32 @@
-import { IconArrowRight, IconSparkles } from '@tabler/icons-react';
-import { HashLink as Link } from 'react-router-hash-link';
-
-const stats = [
-  { value: '50+', label: 'Projects delivered' },
-  { value: '6+', label: 'Years of expertise' },
-  { value: '24/7', label: 'Dedicated support' }
-];
-
+import { HashLink as Link } from "react-router-hash-link";
 const Main = () => {
   return (
-    <section className='relative flex min-h-[calc(100vh-4rem)] items-center overflow-hidden'>
-      {/* Hero background image with gradient overlay for legibility */}
-      <div
-        className='absolute inset-0 -z-10 bg-cover bg-center bg-no-repeat opacity-30'
-        style={{ backgroundImage: 'url(/wal2.jpg)' }}
-      />
-      <div className='absolute inset-0 -z-10 bg-gradient-to-b from-[#070b16]/40 via-[#070b16]/70 to-[#070b16]' />
+    <main className="relative h-[130dvh] flex flex-col justify-center items-center px-4">
+      <h1 className="text-2xl sm:text-4xl md:max-w-6xl md:text-5xl lg:text-6xl font-extrabold tracking-wide mb-4 md:mb-6 text-center animate-slideInTop">
+        Empowering Business with Innovative Technology Solutions
+      </h1>
 
-      <div className='container mx-auto px-4 py-20 text-center md:px-8'>
-        {/* Eyebrow badge */}
-        <div className='animate-slideInTop mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-sm text-slate-300 backdrop-blur'>
-          <IconSparkles size={16} className='text-fuchsia-400' />
-          Innovative software, built for growth
-        </div>
+      <p className="text-base md:text-lg text-white text-center max-w-full md:max-w-3xl px-4 md:px-0 leading-relaxed animate-slideInBottom">
+        At Srytal Systems, we are dedicated to driving digital transformation by
+        providing cutting-edge software solutions tailored to meet the unique
+        needs of businesses across industries. Our expertise spans custom
+        software development, web and mobile app creation, cloud solutions, and
+        IT consulting. With a focus on innovation, quality, and client
+        satisfaction, we leverage the latest technologies to deliver scalable
+        and efficient solutions that empower our clients to thrive in the
+        digital age. Whether you're a startup or an established enterprise,
+        Srytal Systems is your trusted partner in achieving technological
+        excellence.
+      </p>
 
-        {/* Headline */}
-        <h1 className='animate-slideInTop mx-auto max-w-4xl text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl lg:text-6xl'>
-          Empowering business with{' '}
-          <span className='text-gradient'>innovative technology</span> solutions
-        </h1>
-
-        {/* Subcopy — concise */}
-        <p className='animate-slideInBottom mx-auto mt-6 max-w-2xl text-base leading-relaxed text-slate-300 md:text-lg'>
-          We build custom software, web and mobile apps, and cloud solutions
-          that help startups and enterprises scale with confidence. Your trusted
-          partner in digital transformation.
-        </p>
-
-        {/* CTAs */}
-        <div className='animate-slideInBottom mt-9 flex flex-col items-center justify-center gap-4 sm:flex-row'>
-          <Link
-            to='#contact'
-            smooth
-            className='group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-7 py-3.5 text-base font-semibold text-white shadow-lg shadow-indigo-500/30 transition-all duration-200 hover:shadow-indigo-500/50 hover:brightness-110'
-          >
-            Get started
-            <IconArrowRight
-              size={18}
-              className='transition-transform duration-200 group-hover:translate-x-1'
-            />
-          </Link>
-          <Link
-            to='#services'
-            smooth
-            className='inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-7 py-3.5 text-base font-semibold text-white backdrop-blur transition-colors duration-200 hover:bg-white/10'
-          >
-            Explore services
-          </Link>
-        </div>
-
-        {/* Trust stats */}
-        <div className='mx-auto mt-16 grid max-w-2xl grid-cols-3 gap-6 border-t border-white/10 pt-8'>
-          {stats.map(stat => (
-            <div key={stat.label}>
-              <div className='text-2xl font-bold text-white md:text-3xl'>
-                {stat.value}
-              </div>
-              <div className='mt-1 text-xs text-slate-400 md:text-sm'>
-                {stat.label}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
+      <Link
+        smooth={true}
+        className="p-2 mt-4 bg-transparent text-white hover:shadow-lg hover:shadow-purple-400 shadow-sm shadow-purple-400 rounded-md animate-slideInLeft"
+        to="#about"
+      >
+        Get Started
+      </Link>
+    </main>
   );
 };
 
