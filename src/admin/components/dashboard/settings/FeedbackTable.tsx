@@ -44,17 +44,53 @@ import {
   useDeleteFeedbackAttributeByAdmin
 } from '@hooks/mutations/useAdminMutations';
 import { CommonButton } from '@components/common/button/CommonButton';
+import PageHeader from '@components/common/page-header/PageHeader';
 
 const ITEMS_PER_PAGE_OPTIONS = ['5', '10', '20', '50'];
 const DEFAULT_ITEMS_PER_PAGE = 10;
 
+// Mobile card view for a single feedback attribute.
+const MobileFeedbackCard: React.FC<{
+  type: Feedback;
+  index: number;
+  activePage: number;
+  color: string;
+  itemsPerPage: number;
+  onEdit: (type: Feedback) => void;
+}> = ({ type, index, activePage, color, itemsPerPage, onEdit }) => (
+  <Card shadow='sm' p='md' mb='sm' withBorder>
+    <Stack gap='sm'>
+      <Group justify='space-between' align='center'>
+        <Badge variant='filled' color={color}>
+          #{index + 1 + (activePage - 1) * itemsPerPage}
+        </Badge>
+        <ActionIcon
+          variant='subtle'
+          color={color}
+          onClick={() => onEdit(type)}
+          size='md'
+        >
+          <IconEdit size={18} />
+        </ActionIcon>
+      </Group>
+
+      <Divider />
+
+      <Stack gap={2}>
+        <Text size='xs' fw={600} c='dimmed'>
+          Feedback Attribute
+        </Text>
+        <Text size='lg' fw={600}>
+          {type.name}
+        </Text>
+      </Stack>
+    </Stack>
+  </Card>
+);
+
 export default function FeedbackTable() {
   const { showErrorToast, showSuccessToast } = useCustomToast();
-  const {
-    themeConfig: currentThemeConfig,
-    organizationConfig,
-    isDarkTheme
-  } = useAppTheme();
+  const { themeConfig: currentThemeConfig, isDarkTheme } = useAppTheme();
 
   const { data: feedbacks = [], isLoading } =
     useGetAllFeedbackAttributesByAdmin();
@@ -167,46 +203,6 @@ export default function FeedbackTable() {
 
   useEffect(() => setActivePage(1), [itemsPerPage]);
 
-  const MobileTypeCard: React.FC<{
-    type: Feedback;
-    index: number;
-    activePage: number;
-    color: string;
-    itemsPerPage: number;
-    onEdit: (type: any) => void;
-  }> = ({ type, index, activePage, color, itemsPerPage, onEdit }) => {
-    return (
-      <Card shadow='sm' p='md' mb='sm'>
-        <Stack gap='sm'>
-          <Group justify='space-between' align='center'>
-            <Badge variant='filled' color={color}>
-              #{index + 1 + (activePage - 1) * itemsPerPage}
-            </Badge>
-            <ActionIcon
-              variant='subtle'
-              color={color}
-              onClick={() => onEdit(type)}
-              size='md'
-            >
-              <IconEdit size={18} />
-            </ActionIcon>
-          </Group>
-
-          <Divider />
-
-          <Stack gap={2}>
-            <Text size='xs' fw={600} c='dimmed'>
-              Employment Type
-            </Text>
-            <Text size='lg' fw={600}>
-              {type.name}
-            </Text>
-          </Stack>
-        </Stack>
-      </Card>
-    );
-  };
-
   return (
     <Container size='lg'>
       <Card
@@ -221,26 +217,22 @@ export default function FeedbackTable() {
       >
         <Stack gap='lg'>
           {/* HEADER */}
-          <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md'>
-            <Flex
-              direction={isMobile ? 'column' : 'row'}
-              justify='space-between'
-              align='center'
-              gap='md'
-            >
-              <Text size={isMobile ? 'lg' : 'xl'} fw={700}>
-                Manage Feedback Attributes ({filtered.length})
-              </Text>
-
+          <PageHeader
+            title='Feedback Attributes'
+            subtitle='Define the attributes employees can be evaluated on during feedback.'
+            icon={<IconMessage2 size={24} />}
+            count={filtered.length}
+            actions={
               <CommonButton
                 leftSection={<IconPlus size={16} />}
                 onClick={openAdd}
                 fullWidth={isMobile}
+                size={isMobile ? 'md' : 'sm'}
               >
                 Add Feedback Attribute
               </CommonButton>
-            </Flex>
-          </Card>
+            }
+          />
 
           <Card shadow='sm' p='md' radius='md'>
             <Flex
@@ -273,7 +265,7 @@ export default function FeedbackTable() {
                 </Group>
 
                 {filtered.length !== feedbacks.length && (
-                  <Badge variant='light' color='blue'>
+                  <Badge variant='light' color={currentThemeConfig.dangerColor}>
                     {filtered.length} of {feedbacks.length}
                   </Badge>
                 )}
@@ -311,8 +303,8 @@ export default function FeedbackTable() {
                       </Stack>
                     </Card>
                   ) : (
-                    paginatedData.map((type: any, index: number) => (
-                      <MobileTypeCard
+                    paginatedData.map((type: Feedback, index: number) => (
+                      <MobileFeedbackCard
                         color={currentThemeConfig.button.color}
                         key={type.id}
                         type={type}
@@ -534,14 +526,14 @@ export default function FeedbackTable() {
 
             <Group justify='space-between'>
               {isMobile ? (
-                <Tooltip label='Delete'>
+                <Tooltip label='Delete Feedback Attribute'>
                   <CommonButton onClick={openDelete} p='xs' variant='outline'>
                     <IconTrash size={16} />
                   </CommonButton>
                 </Tooltip>
               ) : (
                 <CommonButton
-                  color='red'
+                  color={currentThemeConfig.dangerColor}
                   variant='outline'
                   onClick={openDelete}
                   leftSection={<IconTrash size={16} />}
@@ -572,8 +564,11 @@ export default function FeedbackTable() {
           onClose={closeDelete}
           title={
             <Group gap='xs'>
-              <IconAlertTriangle size={24} color='red' />
-              <Text fw={600} size='lg' c='red'>
+              <IconAlertTriangle
+                size={24}
+                color={currentThemeConfig.dangerColor}
+              />
+              <Text fw={600} size='lg' c={currentThemeConfig.dangerColor}>
                 Delete Feedback Attribute
               </Text>
             </Group>
@@ -591,7 +586,7 @@ export default function FeedbackTable() {
                 Cancel
               </CommonButton>
               <CommonButton
-                color='red'
+                color={currentThemeConfig.dangerColor}
                 onClick={confirmDelete}
                 disabled={isMutating}
                 leftSection={<IconTrash size={16} />}

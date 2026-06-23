@@ -52,7 +52,6 @@ const ProfileImage = () => {
   };
 
   const isLoading = isFetching || isUploading;
-  console.log('render', selectedFile);
 
   return (
     <div className='flex flex-col items-center' style={{ width: '155px' }}>

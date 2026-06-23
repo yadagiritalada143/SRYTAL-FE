@@ -1,6 +1,7 @@
 import {
   IconBuildings,
   IconDroplet,
+  IconLayoutDashboard,
   IconNetwork,
   IconNotebook,
   IconNotification,
@@ -18,6 +19,12 @@ export const adminNavLinks = [
   {
     role: 'admin',
     url: 'admin/dashboard',
+    icon: IconLayoutDashboard,
+    name: 'Dashboard'
+  },
+  {
+    role: 'admin',
+    url: 'admin/dashboard/employees',
     icon: IconUsers,
     name: 'Employees'
   },

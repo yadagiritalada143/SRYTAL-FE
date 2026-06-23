@@ -6,12 +6,11 @@ import {
   Navigate,
   Outlet
 } from 'react-router-dom';
-import { useEffect, useState, useMemo, lazy, Suspense } from 'react';
+import { useEffect, useState, useMemo, lazy } from 'react';
 import { toast } from 'react-toastify';
-import { MantineProvider, LoadingOverlay } from '@mantine/core';
+import { MantineProvider } from '@mantine/core';
 import '@mantine/core/styles.css';
 import { getOrganizationConfig } from '@services/common-services';
-import Loader from '@components/common/loader/loader';
 import { useSetRecoilState } from 'recoil';
 import { organizationThemeAtom } from '@atoms/organization-atom';
 import { themeAtom } from '@atoms/theme';
@@ -22,6 +21,7 @@ import UserProvider from '@hooks/user-context';
 import { ThemeToggleButton } from '@components/UI/Theme-toggle-button/button';
 import { useAppTheme } from '@hooks/use-app-theme';
 import { OrganizationConfig } from '@interfaces/organization';
+import NavAccessGuard from '@components/common/nav-guard/NavAccessGuard';
 
 // Lazy loaded components
 const AdminDashboard = lazy(() => import('@admin/pages/dashboard/dashboard'));
@@ -37,6 +37,12 @@ const UpdateEmployee = lazy(
 );
 const AdminProfile = lazy(
   () => import('@admin/components/dashboard/profile/AdminProfile')
+);
+const AdminDashboardOverview = lazy(
+  () => import('@admin/components/dashboard/admin-dashboard/AdminDashboard')
+);
+const NavAccess = lazy(
+  () => import('@admin/components/dashboard/settings/NavAccess')
 );
 const BloodGroupTable = lazy(
   () => import('@admin/components/dashboard/blood-group/BloodGroup')
@@ -113,12 +119,8 @@ const UpdatePoolCandidateForm = lazy(
 
 const AdminRoutes = () => {
   const { organization } = useParams<{ organization: string }>();
-  const {
-    themeConfig: currentThemeConfig,
-    organizationConfig,
-    isDarkTheme
-  } = useAppTheme();
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const { themeConfig: currentThemeConfig, isDarkTheme } = useAppTheme();
+  const [, setIsLoading] = useState<boolean>(false);
 
   const setOrganizationConfig = useSetRecoilState(organizationThemeAtom);
 
@@ -140,7 +142,6 @@ const AdminRoutes = () => {
 
   const mantineTheme = useMemo(() => {
     return {
-      colorScheme: currentThemeConfig.colorScheme,
       primaryColor: currentThemeConfig.primaryColor,
       fontFamily: currentThemeConfig.fontFamily,
       colors: {
@@ -495,7 +496,10 @@ const AdminRoutes = () => {
   }, [currentThemeConfig]);
 
   return (
-    <MantineProvider theme={mantineTheme}>
+    <MantineProvider
+      theme={mantineTheme}
+      forceColorScheme={isDarkTheme ? 'dark' : 'light'}
+    >
       <div
         className='d-flex justify-end p-4 absolute right-0 transition-colors duration-300 ease-in-out'
         style={{
@@ -515,8 +519,10 @@ const AdminRoutes = () => {
           }
         >
           <Route path='/dashboard' element={<AdminDashboard />}>
+           <Route element={<NavAccessGuard />}>
+            <Route index element={<AdminDashboardOverview />} />
             <Route path='addemployee' element={<AddEmployee />} />
-            <Route path='' element={<Employees />} />
+            <Route path='employees' element={<Employees />} />
             <Route path='profile' element={<AdminProfile />} />
             <Route path='pool-companies' element={<Companies />} />
             <Route path='add-pool-companies' element={<AddCompany />} />
@@ -562,7 +568,9 @@ const AdminRoutes = () => {
               <Route path='employment-roles' element={<EmploymentRoles />} />
               <Route path='departments' element={<DepartmentTable />} />
               <Route path='feedback' element={<FeedbackTable />} />
+              <Route path='menu-access' element={<NavAccess />} />
             </Route>
+           </Route>
           </Route>
         </Route>
       </Routes>

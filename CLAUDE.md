@@ -113,9 +113,78 @@ not long relative paths.
   valid AWS credentials in the backend `.env`. With invalid keys those endpoints
   return clean errors (no longer crash — the S3 utils now `return reject(...)`).
 
+## Post-login routing (employee surface)
+
+After login (`src/user/pages/login/login.tsx`, both the session-check `useEffect`
+and the submit handler) employees are redirected by `userRole`:
+
+- `Employee` / `Recruiter` / `ContentWriter` → `…/employee/dashboard` (the shared
+  employee dashboard — this is the **index** route of the `/dashboard` layout, so
+  the URL is `…/employee/dashboard`, **not** `…/dashboard/dashboard`)
+- anything else → `…/employee/dashboard/profile`
+
+`organizationEmployeeUrls(org)` returns `/${org}/employee`; the dashboard layout
+lives at `path='/dashboard'`, and `<Dashboard/>` is its `index` child. Don't
+re-add a `path='dashboard'` child — it would resurrect the old
+`/dashboard/dashboard` URL. Nav links live in `utils/user/user-nav-links.ts`
+(keyed by role); the navbar marks a link active by **exact** path match, so the
+bare `employee/dashboard` link only highlights on the dashboard itself.
+
+The **admin** surface mirrors this: the admin dashboard overview is the **index**
+route of the `/dashboard` layout (`…/admin/dashboard`), and the employee list
+moved to `…/admin/dashboard/employees`. Admin login already lands on
+`…/admin/dashboard`. After employee add/update/delete, components redirect to
+`…/dashboard/employees` (not the bare layout).
+
+## Navigation (dynamic, admin-controlled)
+
+The employee **and** admin navbars are a **persistent left sidebar**
+(`components/UI/navbar/Sidebar.tsx`) driven by data, not the static
+`user-nav-links.ts` / `admin-nav-links.ts` arrays (those now only seed the DB).
+The sidebar collapses to a hand-rolled drawer under 768px — **do not animate the
+panel with CSS `transform` transitions/keyframes**; this app's renderer pins
+transform animations to their start value, so the drawer is mounted only while
+open and fades in (opacity) instead.
+
+- Each user's menu comes from `GET /getMyNavMenu` (`useGetMyNavMenu`), resolved
+  per role + per-user overrides; icons are DB **name strings** mapped to
+  components via `components/UI/navbar/iconMap.ts` (register new icons there).
+- **Enforcement**: `components/common/nav-guard/NavAccessGuard.tsx` wraps the
+  dashboard routes in both `routes/user.tsx` and `routes/admin.tsx`. It blocks a
+  path only when it matches a **known menu URL** (longest-match) the user lacks;
+  unmanaged action/detail pages stay reachable. The surface root
+  (`…/dashboard`) matches exactly so it never prefix-blocks nested pages.
+- **Admin management**: Settings → **Menu Access**
+  (`admin/components/dashboard/settings/NavAccess.tsx`) grants catalog items per
+  role and adds/revokes them per user.
+- Backend: catalog `nav-items`, grants `nav-role-access`, overrides
+  `nav-user-access` (models + `services/navigation/navResolver.ts`). Seed with
+  `node scripts/seed-nav-catalog.js` (idempotent; catalog is global, grants are
+  org-scoped; `isSystem` items like Profile/Settings can't be revoked →
+  lockout-safe; a role with no grant falls back to the full surface catalog).
+
 ## Feature modules
 
 - **Content Writer** (employee): create courses → modules → tasks, where a task's
   content is a **file** (any type, stored in S3) or a **link** (YouTube/blog/etc),
   viewed via a backend proxy in a new tab. See
   `src/user/components/dashboard/CLAUDE.md` for the full module + API contract.
+- **Employee Dashboard** (shared, `components/common/dashboard/dashboard.tsx`):
+  at-a-glance view backed by real data from `GET /getEmployeeDashboard`
+  (BE `services/common/getEmployeeDashboardService.ts`) — profile summary +
+  tenure, hours this month/week, active projects (from employee-packages →
+  timesheet), timesheet status breakdown, and recent entries. Hook
+  `useGetEmployeeDashboard` in `hooks/queries/useUserQueries.ts`. Data richness
+  depends on the employee having assigned packages with timesheet entries; with
+  none, the page shows graceful empty states.
+- **Admin Dashboard** (`admin/components/dashboard/admin-dashboard/AdminDashboard.tsx`):
+  org-scoped overview from `GET /admin/getDashboardStatsByAdmin`
+  (BE `services/admin/getDashboardStatsByAdminService.ts`) — headcount with
+  role/department/employment-type breakdowns, recent hires, birthdays & work
+  anniversaries this month, pending password resets, and timesheet oversight
+  (pending approvals, hours logged this month, active projects) aggregated across
+  the org's employees. Hook `useGetDashboardStatsByAdmin` in
+  `hooks/queries/useAdminQueries.ts`. Only `UserModel` carries an `organization`
+  field, so timesheet/package data is reached transitively via the org's
+  employees; metadata models (department/role/type/package) are **not**
+  org-scoped.

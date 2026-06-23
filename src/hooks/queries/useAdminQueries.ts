@@ -10,7 +10,8 @@ import {
   getAllEmployeeRoleByAdmin,
   getAllApproversByAdmin,
   getallfeedbackattributesbyadmin,
-  getAllDepartmentsByAdmin
+  getAllDepartmentsByAdmin,
+  getDashboardStatsByAdmin
 } from '@services/admin-services';
 
 export const adminQueryKeys = {
@@ -25,7 +26,15 @@ export const adminQueryKeys = {
   employeeRoles: ['adminEmployeeRoles'] as const,
   approvers: ['adminApprovers'] as const,
   feedbackAttributes: ['adminFeedbackAttributes'] as const,
-  departments: ['adminDepartments'] as const
+  departments: ['adminDepartments'] as const,
+  dashboardStats: ['adminDashboardStats'] as const
+};
+
+export const useGetDashboardStatsByAdmin = () => {
+  return useQuery({
+    queryKey: adminQueryKeys.dashboardStats,
+    queryFn: getDashboardStatsByAdmin
+  });
 };
 
 export const useGetAllEmployeesByAdmin = () => {

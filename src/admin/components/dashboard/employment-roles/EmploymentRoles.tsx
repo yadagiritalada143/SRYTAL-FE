@@ -40,6 +40,7 @@ import {
   useDeleteEmployeeRoleByAdmin
 } from '@hooks/mutations/useAdminMutations';
 import { CommonButton } from '@components/common/button/CommonButton';
+import PageHeader from '@components/common/page-header/PageHeader';
 
 const ITEMS_PER_PAGE_OPTIONS = ['5', '10', '20', '50'];
 const DEFAULT_ITEMS_PER_PAGE = 10;
@@ -116,51 +117,13 @@ const MobileRoleCard: React.FC<{
 };
 
 // Header Component
-const HeadingComponent: React.FC<{
-  filteredCount: number;
-  onAdd: () => void;
-  isMobile?: boolean;
-}> = ({ filteredCount, onAdd, isMobile = false }) => (
-  <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md'>
-    <Flex
-      direction={isMobile ? 'column' : 'row'}
-      justify='space-between'
-      align='center'
-      gap='md'
-    >
-      <Text
-        size={isMobile ? 'lg' : 'xl'}
-        fw={700}
-        ta={isMobile ? 'center' : 'left'}
-      >
-        Manage Employment Roles ({filteredCount} Roles)
-      </Text>
-      <CommonButton
-        leftSection={<IconPlus size={16} />}
-        onClick={onAdd}
-        variant='filled'
-        fullWidth={isMobile}
-        size={isMobile ? 'md' : 'sm'}
-      >
-        Add Role
-      </CommonButton>
-    </Flex>
-  </Card>
-);
 
 const EmploymentRoles = () => {
   const { showErrorToast, showSuccessToast } = useCustomToast();
-  const {
-    themeConfig: currentThemeConfig,
-    organizationConfig,
-    isDarkTheme
-  } = useAppTheme();
+  const { themeConfig: currentThemeConfig, isDarkTheme } = useAppTheme();
 
-  const {
-    data: employmentRoles = [],
-    isLoading,
-    isFetching
-  } = useGetAllEmployeeRolesByAdmin();
+  const { data: employmentRoles = [], isLoading } =
+    useGetAllEmployeeRolesByAdmin();
   const { mutateAsync: addEmployeeRole, isPending: isAdding } =
     useAddEmployeeRoleByAdmin();
   const { mutateAsync: updateEmployeeRole, isPending: isUpdating } =
@@ -329,10 +292,22 @@ const EmploymentRoles = () => {
       >
         <Stack gap='lg'>
           {/* Header */}
-          <HeadingComponent
-            filteredCount={filteredEmploymentRole.length}
-            onAdd={openAddModal}
-            isMobile={isMobile}
+          <PageHeader
+            title='Employment Roles'
+            subtitle='Manage the designations employees can be assigned within the organization.'
+            icon={<IconUserCheck size={24} />}
+            count={filteredEmploymentRole.length}
+            actions={
+              <CommonButton
+                leftSection={<IconPlus size={16} />}
+                onClick={openAddModal}
+                variant='filled'
+                fullWidth={isMobile}
+                size={isMobile ? 'md' : 'sm'}
+              >
+                Add Role
+              </CommonButton>
+            }
           />
 
           <Card shadow='sm' p={isMobile ? 'sm' : 'md'} radius='md'>

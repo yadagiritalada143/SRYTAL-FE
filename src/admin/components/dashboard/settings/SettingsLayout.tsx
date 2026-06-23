@@ -5,7 +5,8 @@ import {
   IconDroplet,
   IconMessage2,
   IconUserCheck,
-  IconBuildingBank
+  IconBuildingBank,
+  IconLock
 } from '@tabler/icons-react';
 import { useMediaQuery } from '@mantine/hooks';
 import { useAppTheme } from '@hooks/use-app-theme';
@@ -20,7 +21,7 @@ const SettingsLayout = () => {
 
   return (
     <Box pt={{ base: 'xl', sm: 'md' }}>
-      <Container size='md' mt={{ base: 'xl', sm: 'lg' }} mb='lg'>
+      <Container size='lg' mt={{ base: 'xl', sm: 'lg' }} mb='lg'>
         <Tabs
           value={currentTab}
           onChange={value => navigate(value || 'blood-groups')}
@@ -83,6 +84,13 @@ const SettingsLayout = () => {
               leftSection={<IconMessage2 size={16} stroke={1.8} />}
             >
               Feedback Attributes
+            </Tabs.Tab>
+
+            <Tabs.Tab
+              value='menu-access'
+              leftSection={<IconLock size={16} stroke={1.8} />}
+            >
+              Menu Access
             </Tabs.Tab>
           </Tabs.List>
         </Tabs>

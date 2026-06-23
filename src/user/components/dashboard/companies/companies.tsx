@@ -23,7 +23,8 @@ import {
   IconSortAscending,
   IconSortDescending,
   IconFilter,
-  IconEdit
+  IconEdit,
+  IconBuildingSkyscraper
 } from '@tabler/icons-react';
 import React, {
   useCallback,
@@ -42,6 +43,7 @@ import useHorizontalScroll from '@hooks/horizontal-scroll';
 import { debounce } from '@utils/common/debounce';
 import { commonUrls } from '@utils/common/constants';
 import { CommonButton } from '@components/common/button/CommonButton';
+import PageHeader from '@components/common/page-header/PageHeader';
 
 // Constants
 const ITEMS_PER_PAGE_OPTIONS = ['5', '10', '20', '50'];
@@ -59,11 +61,6 @@ interface SortConfig {
 // Custom hook for company filtering and sorting
 const useCompanyFilters = (companies: CompaniesInterface[]) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const {
-    themeConfig: currentThemeConfig,
-    organizationConfig,
-    isDarkTheme
-  } = useAppTheme();
   const [sortConfig, setSortConfig] = useState<SortConfig>({
     field: 'companyName',
     order: 'asc'
@@ -449,38 +446,6 @@ const TableHeader: React.FC<{
   );
 };
 
-const HeadingComponent: React.FC<{
-  filteredCompanies: number;
-  handleAddCompany: () => void;
-  isMobile?: boolean;
-}> = ({ filteredCompanies = 0, handleAddCompany, isMobile = false }) => (
-  <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md' withBorder mt='xl'>
-    <Flex
-      direction={isMobile ? 'column' : 'row'}
-      justify='space-between'
-      align='center'
-      gap='md'
-    >
-      <Text
-        size={isMobile ? 'lg' : 'xl'}
-        fw={700}
-        ta={isMobile ? 'center' : 'left'}
-      >
-        Manage Pool Companies ({filteredCompanies} Companies)
-      </Text>
-      <CommonButton
-        leftSection={<IconPlus size={16} />}
-        onClick={handleAddCompany}
-        variant='filled'
-        fullWidth={isMobile}
-        size={isMobile ? 'md' : 'sm'}
-      >
-        Add Company
-      </CommonButton>
-    </Flex>
-  </Card>
-);
-
 const Companies = () => {
   const { themeConfig: currentThemeConfig, organizationConfig } = useAppTheme();
   const { data: companies = [], isLoading, error } = useGetCompanyDetails();
@@ -629,10 +594,22 @@ const Companies = () => {
     <Container size='xl' py='md' my='xl' px={isSmallMobile ? 'xs' : 'md'}>
       <Stack gap='md'>
         {/* Header */}
-        <HeadingComponent
-          filteredCompanies={filteredCompanies.length}
-          handleAddCompany={handleAddCompany}
-          isMobile={isMobile}
+        <PageHeader
+          title='Pool Companies'
+          subtitle='Manage the companies in your recruitment pool.'
+          icon={<IconBuildingSkyscraper size={24} />}
+          count={filteredCompanies.length}
+          actions={
+            <CommonButton
+              leftSection={<IconPlus size={16} />}
+              onClick={handleAddCompany}
+              variant='filled'
+              fullWidth={isMobile}
+              size={isMobile ? 'md' : 'sm'}
+            >
+              Add Company
+            </CommonButton>
+          }
         />
 
         {/* Filters */}

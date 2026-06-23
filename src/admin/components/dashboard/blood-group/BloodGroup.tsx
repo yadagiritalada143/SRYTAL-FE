@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Group,
   Text,
@@ -39,6 +39,7 @@ import {
   useDeleteBloodGroupByAdmin as useDeleteBloodGroup
 } from '@hooks/mutations/useAdminMutations';
 import { CommonButton } from '@components/common/button/CommonButton';
+import PageHeader from '@components/common/page-header/PageHeader';
 
 const ITEMS_PER_PAGE_OPTIONS = ['5', '10', '20', '50'];
 const DEFAULT_ITEMS_PER_PAGE = 10;
@@ -111,45 +112,8 @@ const MobileBloodGroupCard: React.FC<{
   );
 };
 
-// Header Component
-const HeadingComponent: React.FC<{
-  filteredCount: number;
-  onAdd: () => void;
-  isMobile?: boolean;
-}> = ({ filteredCount, onAdd, isMobile = false }) => (
-  <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md' withBorder>
-    <Flex
-      direction={isMobile ? 'column' : 'row'}
-      justify='space-between'
-      align='center'
-      gap='md'
-    >
-      <Text
-        size={isMobile ? 'lg' : 'xl'}
-        fw={700}
-        ta={isMobile ? 'center' : 'left'}
-      >
-        Manage Blood Groups ({filteredCount} Groups)
-      </Text>
-      <CommonButton
-        leftSection={<IconPlus size={16} />}
-        onClick={onAdd}
-        variant='filled'
-        fullWidth={isMobile}
-        size={isMobile ? 'md' : 'sm'}
-      >
-        Add Blood Group
-      </CommonButton>
-    </Flex>
-  </Card>
-);
-
 const BloodGroup = () => {
-  const {
-    data: bloodGroups = [],
-    isLoading,
-    isFetching
-  } = useGetAllBloodGroupsByAdmin();
+  const { data: bloodGroups = [], isLoading } = useGetAllBloodGroupsByAdmin();
   const { mutateAsync: addBloodGroup, isPending: isAdding } =
     useAddBloodGroup();
   const { mutateAsync: updateBloodGroup, isPending: isUpdating } =
@@ -159,11 +123,7 @@ const BloodGroup = () => {
 
   const isMutating = isAdding || isUpdating || isDeleting;
 
-  const {
-    themeConfig: currentThemeConfig,
-    organizationConfig,
-    isDarkTheme
-  } = useAppTheme();
+  const { themeConfig: currentThemeConfig, isDarkTheme } = useAppTheme();
   const { showSuccessToast, showErrorToast } = useCustomToast();
 
   const [activePage, setActivePage] = useState(1);
@@ -312,10 +272,22 @@ const BloodGroup = () => {
       >
         <Stack gap='lg'>
           {/* Header */}
-          <HeadingComponent
-            filteredCount={filteredBloodGroups.length}
-            onAdd={openAddModal}
-            isMobile={isMobile}
+          <PageHeader
+            title='Blood Groups'
+            subtitle='Manage the blood group options available across the organization.'
+            icon={<IconDroplet size={24} />}
+            count={filteredBloodGroups.length}
+            actions={
+              <CommonButton
+                leftSection={<IconPlus size={16} />}
+                onClick={openAddModal}
+                variant='filled'
+                fullWidth={isMobile}
+                size={isMobile ? 'md' : 'sm'}
+              >
+                Add Blood Group
+              </CommonButton>
+            }
           />
 
           {/* Filters */}

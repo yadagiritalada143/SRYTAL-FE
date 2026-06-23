@@ -5,14 +5,14 @@ import {
   useNavigate,
   useParams
 } from 'react-router-dom';
-import { useEffect, useMemo, useState, lazy, Suspense } from 'react';
+import { useEffect, useMemo, useState, lazy } from 'react';
 import { toast } from 'react-toastify';
-import { MantineProvider, LoadingOverlay } from '@mantine/core';
+import { MantineProvider } from '@mantine/core';
 import '@mantine/core/styles.css';
 import { getOrganizationConfig } from '@services/common-services';
-import Loader from '@components/common/loader/loader';
+import NavAccessGuard from '@components/common/nav-guard/NavAccessGuard';
 import { ModalsProvider } from '@mantine/modals';
-import { useRecoilValue, useSetRecoilState } from 'recoil';
+import { useSetRecoilState } from 'recoil';
 import { organizationThemeAtom } from '@atoms/organization-atom';
 import { themeAtom } from '@atoms/theme';
 
@@ -77,12 +77,8 @@ const SalarySlipReport = lazy(
 
 const EmployeeRoutes = () => {
   const { organization } = useParams<{ organization: string }>();
-  const {
-    themeConfig: currentThemeConfig,
-    organizationConfig,
-    isDarkTheme
-  } = useAppTheme();
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const { themeConfig: currentThemeConfig, isDarkTheme } = useAppTheme();
+  const [, setIsLoading] = useState<boolean>(false);
 
   const setOrganizationConfig = useSetRecoilState(organizationThemeAtom);
 
@@ -104,7 +100,6 @@ const EmployeeRoutes = () => {
 
   const mantineTheme = useMemo(() => {
     return {
-      colorScheme: currentThemeConfig.colorScheme,
       primaryColor: currentThemeConfig.primaryColor,
       fontFamily: currentThemeConfig.fontFamily,
       colors: {
@@ -460,7 +455,10 @@ const EmployeeRoutes = () => {
   }, [currentThemeConfig]);
 
   return (
-    <MantineProvider theme={mantineTheme}>
+    <MantineProvider
+      theme={mantineTheme}
+      forceColorScheme={isDarkTheme ? 'dark' : 'light'}
+    >
       <div
         className='d-flex justify-end p-4 absolute right-0 transition-colors duration-300 ease-in-out'
         style={{
@@ -481,6 +479,7 @@ const EmployeeRoutes = () => {
         >
           <Route path='/dashboard' element={<EmployeeDashboard />}>
             <Route element={<EmployeeProtectedRoutes />}>
+             <Route element={<NavAccessGuard />}>
               <Route path='profile' element={<EmployeeProfile />} />
               <Route element={<RecruiterProtectedRoutes />}>
                 <Route path='pool-candidates' element={<PoolCandidateList />} />
@@ -508,7 +507,7 @@ const EmployeeRoutes = () => {
                 }
               />
               <Route
-                path='dashboard'
+                index
                 element={
                   <div>
                     <Dashboard />
@@ -563,6 +562,7 @@ const EmployeeRoutes = () => {
                 path='reports/salary-slip'
                 element={<SalarySlipReport />}
               />
+             </Route>
             </Route>
           </Route>
         </Route>
