@@ -166,7 +166,12 @@ const CourseDetails = () => {
 
           {/* Description */}
           {course?.courseDescription && (
-            <Card shadow='sm' p={{ base: 'md', sm: 'lg' }} radius='md' withBorder>
+            <Card
+              shadow='sm'
+              p={{ base: 'md', sm: 'lg' }}
+              radius='md'
+              withBorder
+            >
               <Text fw={600} mb='sm'>
                 About this course
               </Text>
@@ -233,7 +238,11 @@ const CourseDetails = () => {
                           </Text>
                         )}
                       </Stack>
-                      <Badge variant='light' radius='sm' style={{ flexShrink: 0 }}>
+                      <Badge
+                        variant='gradient'
+                        radius='sm'
+                        style={{ flexShrink: 0 }}
+                      >
                         {module.tasks?.length || 0} items
                       </Badge>
                     </Group>
@@ -296,12 +305,7 @@ interface TaskRowProps {
 const TaskRow = ({ task, onView, borderColor }: TaskRowProps) => {
   const isLink = task.type === 'LINK';
   return (
-    <Paper
-      p='sm'
-      radius='md'
-      withBorder
-      style={{ borderColor }}
-    >
+    <Paper p='sm' radius='md' withBorder style={{ borderColor }}>
       <Group justify='space-between' wrap='nowrap'>
         <Group gap='sm' wrap='nowrap' style={{ minWidth: 0 }}>
           <ThemeIcon

@@ -71,11 +71,7 @@ const PackagesFormComponent = ({ employeeId }: PackagesFormProps) => {
   const [employeeDetails, setEmployeeDetails] =
     useRecoilState(employeeDetailsAtom);
   const [isLoading, setIsLoading] = useState(true);
-  const {
-    themeConfig: currentThemeConfig,
-    organizationConfig,
-    isDarkTheme
-  } = useAppTheme();
+  const { themeConfig: currentThemeConfig } = useAppTheme();
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const [opened, { open, close }] = useDisclosure(false);

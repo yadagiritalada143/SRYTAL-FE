@@ -6,12 +6,11 @@ import {
   Navigate,
   Outlet
 } from 'react-router-dom';
-import { useEffect, useState, useMemo, lazy, Suspense } from 'react';
+import { useEffect, useState, useMemo, lazy } from 'react';
 import { toast } from 'react-toastify';
-import { MantineProvider, LoadingOverlay } from '@mantine/core';
+import { MantineProvider } from '@mantine/core';
 import '@mantine/core/styles.css';
 import { getOrganizationConfig } from '@services/common-services';
-import Loader from '@components/common/loader/loader';
 import { useSetRecoilState } from 'recoil';
 import { organizationThemeAtom } from '@atoms/organization-atom';
 import { themeAtom } from '@atoms/theme';
@@ -120,12 +119,8 @@ const UpdatePoolCandidateForm = lazy(
 
 const AdminRoutes = () => {
   const { organization } = useParams<{ organization: string }>();
-  const {
-    themeConfig: currentThemeConfig,
-    organizationConfig,
-    isDarkTheme
-  } = useAppTheme();
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const { themeConfig: currentThemeConfig, isDarkTheme } = useAppTheme();
+  const [, setIsLoading] = useState<boolean>(false);
 
   const setOrganizationConfig = useSetRecoilState(organizationThemeAtom);
 
@@ -147,7 +142,6 @@ const AdminRoutes = () => {
 
   const mantineTheme = useMemo(() => {
     return {
-      colorScheme: currentThemeConfig.colorScheme,
       primaryColor: currentThemeConfig.primaryColor,
       fontFamily: currentThemeConfig.fontFamily,
       colors: {
@@ -502,7 +496,10 @@ const AdminRoutes = () => {
   }, [currentThemeConfig]);
 
   return (
-    <MantineProvider theme={mantineTheme}>
+    <MantineProvider
+      theme={mantineTheme}
+      forceColorScheme={isDarkTheme ? 'dark' : 'light'}
+    >
       <div
         className='d-flex justify-end p-4 absolute right-0 transition-colors duration-300 ease-in-out'
         style={{

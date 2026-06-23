@@ -36,6 +36,7 @@ import {
   IconClock
 } from '@tabler/icons-react';
 import { CommonButton } from '@components/common/button/CommonButton';
+import PageHeader from '@components/common/page-header/PageHeader';
 
 const AddPoolCandidate = () => {
   const navigate = useNavigate();
@@ -114,28 +115,22 @@ const AddPoolCandidate = () => {
       }}
     >
       <Stack gap='md'>
-        {/* Header Card */}
-        <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md' withBorder>
-          <Group justify='space-between' wrap='wrap'>
-            <Group gap='sm'>
-              <IconUser size={isMobile ? 24 : 28} />
-              <Text
-                size={isMobile ? 'lg' : 'xl'}
-                fw={700}
-                ta={isMobile ? 'center' : 'left'}
-              >
-                Add New Candidate
-              </Text>
-            </Group>
+        {/* Header */}
+        <PageHeader
+          title='Add New Candidate'
+          subtitle='Add a new candidate to your recruitment pool.'
+          icon={<IconUser size={24} />}
+          actions={
             <CommonButton
               onClick={handleGoBack}
               variant='light'
               size={isMobile ? 'xs' : 'sm'}
+              leftSection={<IconArrowLeft size={18} />}
             >
-              <IconArrowLeft size={18} />
+              Back
             </CommonButton>
-          </Group>
-        </Card>
+          }
+        />
 
         {/* Form Card */}
         <Card shadow='sm' p={isMobile ? 'md' : 'xl'} radius='md' withBorder>

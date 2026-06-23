@@ -8,65 +8,46 @@ import WhyChooseUs from '@landing/components/choose/choose';
 import ContactComponent from '@landing/components/contact/contact';
 import Technologies from '@landing/components/technologies/technologies';
 import VisitorCount from '@landing/components/count/count';
-import { useMediaQuery } from '@mantine/hooks';
 import { Suspense } from 'react';
 import { LazySection } from '@hooks/lazy-loading';
 
 const Landing = () => {
-  const isSmallScreen = useMediaQuery('(max-width: 768px)');
   return (
-    <div className='relative  w-full h-screen bg-gray-900 text-white overflow-x-hidden'>
-      <div className='fixed top-10 left-10 w-32 h-32 bg-purple-500 rounded-full opacity-50 animate-move1'></div>
-      <div className='fixed top-20 right-10 w-40 h-40 bg-pink-500 rounded-full opacity-50 animate-move2'></div>
-      <div className='fixed bottom-10 left-20 w-48 h-48 bg-blue-500 rounded-full opacity-50 animate-move3'></div>
-
-      <div
-        className='flex flex-col justify-between'
-        style={{
-          backgroundImage: 'url(/wal2.jpg)',
-          backgroundSize: 'cover',
-          backgroundRepeat: 'no-repeat',
-          backgroundPosition: 'center center',
-          backgroundAttachment: 'fixed',
-          height: isSmallScreen ? '140dvh' : '120dvh'
-        }}
-      >
-        <Header />
-        <Main />
+    <div className='relative w-full min-h-screen overflow-x-hidden bg-[#070b16] text-slate-100 antialiased'>
+      {/* Ambient background glows — soft, fixed, non-distracting */}
+      <div className='pointer-events-none fixed inset-0 -z-10'>
+        <div className='glow-blob h-[32rem] w-[32rem] -left-32 -top-32 bg-indigo-600' />
+        <div className='glow-blob h-[28rem] w-[28rem] right-[-8rem] top-1/3 bg-fuchsia-600' />
+        <div className='glow-blob h-[30rem] w-[30rem] bottom-0 left-1/4 bg-blue-700' />
       </div>
 
-      <div className=' py-6 w-full '>
+      {/* Sticky header */}
+      <Header />
+
+      {/* Hero */}
+      <Main />
+
+      <main className='relative'>
         <About />
-      </div>
-      <div className='py-6 w-full '>
         <Technologies />
-      </div>
-      <div className=' py-6 w-full mx-auto'>
         <Services />
-      </div>
-
-      <div className=' py-6 w-full mx-auto'>
-        <PromoBanner />
-      </div>
-
-      <div className=' py-6 w-full max-w-5xl mx-auto'>
         <WhyChooseUs />
-      </div>
-      <Suspense fallback={<div className='text-center'>Loading About...</div>}>
-        <LazySection>
-          <div className=' py-6 w-full mx-auto'>
+        <PromoBanner />
+
+        <Suspense
+          fallback={
+            <div className='py-12 text-center text-slate-400'>Loading…</div>
+          }
+        >
+          <LazySection>
             <VisitorCount />
-          </div>
-        </LazySection>
-      </Suspense>
+          </LazySection>
+        </Suspense>
 
-      <div className=' py-6 w-full mx-auto'>
         <ContactComponent />
-      </div>
+      </main>
 
-      <div className=' py-6 w-full max-w-5xl mx-auto'>
-        <Footer />
-      </div>
+      <Footer />
     </div>
   );
 };

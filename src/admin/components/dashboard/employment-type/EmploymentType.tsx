@@ -40,6 +40,7 @@ import {
   useDeleteEmploymentTypeByAdmin
 } from '@hooks/mutations/useAdminMutations';
 import { CommonButton } from '@components/common/button/CommonButton';
+import PageHeader from '@components/common/page-header/PageHeader';
 
 const ITEMS_PER_PAGE_OPTIONS = ['5', '10', '20', '50'];
 const DEFAULT_ITEMS_PER_PAGE = 10;
@@ -110,50 +111,10 @@ const MobileTypeCard: React.FC<{
 };
 
 // Header Component
-const HeadingComponent: React.FC<{
-  filteredCount: number;
-  onAdd: () => void;
-  isMobile?: boolean;
-}> = ({ filteredCount, onAdd, isMobile = false }) => (
-  <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md'>
-    <Flex
-      direction={isMobile ? 'column' : 'row'}
-      justify='space-between'
-      align='center'
-      gap='md'
-    >
-      <Text
-        size={isMobile ? 'lg' : 'xl'}
-        fw={700}
-        ta={isMobile ? 'center' : 'left'}
-      >
-        Manage Employment Types ({filteredCount} Types)
-      </Text>
-      <CommonButton
-        leftSection={<IconPlus size={16} />}
-        onClick={onAdd}
-        variant='filled'
-        fullWidth={isMobile}
-        size={isMobile ? 'md' : 'sm'}
-      >
-        Add Type
-      </CommonButton>
-    </Flex>
-  </Card>
-);
-
 const EmploymentType = () => {
   const { showErrorToast, showSuccessToast } = useCustomToast();
-  const {
-    themeConfig: currentThemeConfig,
-    organizationConfig,
-    isDarkTheme
-  } = useAppTheme();
-  const {
-    data: employmentTypes = [],
-    isLoading,
-    isFetching
-  } = useGetAllEmploymentTypes();
+  const { themeConfig: currentThemeConfig, isDarkTheme } = useAppTheme();
+  const { data: employmentTypes = [], isLoading } = useGetAllEmploymentTypes();
   const { mutateAsync: addEmploymentType, isPending: isAdding } =
     useAddEmploymentTypeByAdmin();
   const { mutateAsync: updateEmploymentType, isPending: isUpdating } =
@@ -316,10 +277,22 @@ const EmploymentType = () => {
       >
         <Stack gap='lg'>
           {/* Header */}
-          <HeadingComponent
-            filteredCount={filteredEmploymentType.length}
-            onAdd={openAddModal}
-            isMobile={isMobile}
+          <PageHeader
+            title='Employment Types'
+            subtitle='Define the employment types (e.g. Full-time, Contract) used across the organization.'
+            icon={<IconBriefcase size={24} />}
+            count={filteredEmploymentType.length}
+            actions={
+              <CommonButton
+                leftSection={<IconPlus size={16} />}
+                onClick={openAddModal}
+                variant='filled'
+                fullWidth={isMobile}
+                size={isMobile ? 'md' : 'sm'}
+              >
+                Add Type
+              </CommonButton>
+            }
           />
 
           {/* Filters */}

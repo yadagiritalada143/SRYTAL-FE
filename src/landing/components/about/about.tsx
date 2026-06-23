@@ -1,78 +1,66 @@
-import { useRef } from 'react';
+import { IconCheck } from '@tabler/icons-react';
+import Reveal from '@landing/components/common/Reveal';
+
+const highlights = [
+  'Custom software tailored to your business',
+  'Scalable, secure cloud architecture',
+  'Client-centric, long-term partnerships',
+  'Latest technologies and best practices'
+];
 
 const About = () => {
-  const flipRef = useRef<HTMLDivElement>(null);
-
-  const handleHover = () => {
-    if (flipRef.current) {
-      flipRef.current.classList.toggle('is-flipped');
-    }
-  };
-
   return (
-    <section id='about' className='py-12'>
-      <div className='px-4 md:px-12 flex flex-wrap items-stretch'>
-        <div className='w-full md:w-2/3 md:pr-8 mb-8 md:mb-0 flex flex-col justify-center'>
-          <h1 className='text-2xl md:text-3xl font-bold mb-4'>
-            <u>About Us</u>
-          </h1>
-          <div className='text-base md:text-lg leading-relaxed'>
-            We are a forward-thinking software company committed to transforming
-            businesses through innovative technology solutions. Our team of
+    <section id='about' className='py-24'>
+      <div className='container mx-auto grid items-center gap-12 px-4 md:px-8 lg:grid-cols-2'>
+        {/* Text */}
+        <Reveal>
+          <span className='inline-block rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-fuchsia-300'>
+            About us
+          </span>
+          <h2 className='mt-4 text-3xl font-bold tracking-tight text-white md:text-4xl'>
+            A forward-thinking software partner
+          </h2>
+          <p className='mt-5 text-base leading-relaxed text-slate-300'>
+            We transform businesses through innovative technology. Our team of
             experienced developers, designers, and strategists works closely
-            with clients to understand their unique challenges and deliver
-            customized software that drives growth and efficiency. With a
-            passion for excellence, we specialize in creating cutting-edge
-            applications, responsive websites, and robust cloud solutions that
-            empower businesses to stay ahead in a competitive market. Our
-            approach is centered around client collaboration, quality, and
-            continuous improvement. We leverage the latest technologies and best
-            practices to ensure that our solutions are not only powerful but
-            also scalable and secure. By focusing on long-term partnerships, we
-            aim to provide ongoing support and enhancements that keep our
-            clients at the forefront of their industries. Whether it's
-            developing a custom software solution or optimizing existing
-            systems, we are dedicated to helping businesses achieve their goals
-            through technology.
-          </div>
-        </div>
+            with clients to deliver customized software that drives growth and
+            efficiency — cutting-edge applications, responsive websites, and
+            robust cloud solutions that keep you ahead in a competitive market.
+          </p>
 
-        <div
-          ref={flipRef}
-          className='w-full md:w-1/3 flex-initial rounded-3xl overflow-hidden transform transition-transform duration-1000 relative'
-          onMouseEnter={handleHover}
-          onMouseLeave={handleHover}
-          style={{ minHeight: '16rem' }}
-        >
-          <div className='flip-inner w-full h-full relative'>
-            <div
-              className='flip-front absolute w-full h-full backface-hidden'
-              style={{
-                transform: 'rotateY(0deg)',
-                backfaceVisibility: 'hidden'
-              }}
-            >
-              <img
-                className='w-full h-full object-cover rounded-3xl'
-                src='/img-2.jpg'
-                alt='Front'
-              />
-            </div>
-            <div
-              className='flip-back absolute w-full h-full backface-hidden'
-              style={{
-                transform: 'rotateY(180deg)',
-                backfaceVisibility: 'hidden'
-              }}
-            >
-              <img
-                className='w-full h-full object-cover rounded-3xl'
-                src='/img-4.jpg'
-                alt='Back'
-              />
+          <ul className='mt-8 grid gap-3 sm:grid-cols-2'>
+            {highlights.map(item => (
+              <li key={item} className='flex items-start gap-3'>
+                <span className='mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-indigo-500 to-fuchsia-500'>
+                  <IconCheck size={13} stroke={3} className='text-white' />
+                </span>
+                <span className='text-sm text-slate-300'>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </Reveal>
+
+        {/* Images */}
+        <Reveal delay={150} className='relative'>
+          <div className='relative grid grid-cols-2 gap-4'>
+            <img
+              src='/img-2.jpg'
+              alt='Our team at work'
+              className='col-span-2 h-56 w-full rounded-2xl border border-white/10 object-cover shadow-2xl'
+            />
+            <img
+              src='/img-4.jpg'
+              alt='Collaboration'
+              className='h-40 w-full rounded-2xl border border-white/10 object-cover shadow-2xl'
+            />
+            <div className='flex h-40 w-full flex-col justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-fuchsia-500 p-6 shadow-2xl'>
+              <span className='text-3xl font-extrabold text-white'>100%</span>
+              <span className='mt-1 text-sm font-medium text-white/90'>
+                Commitment to client success
+              </span>
             </div>
           </div>
-        </div>
+        </Reveal>
       </div>
     </section>
   );

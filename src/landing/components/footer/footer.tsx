@@ -1,116 +1,107 @@
-import { IconBrandLinkedin, IconBrandFacebook } from '@tabler/icons-react';
-import TechIcon from '@common/tech-icons/tech-icons';
+import {
+  IconBrandLinkedin,
+  IconBrandFacebook,
+  IconBrandX
+} from '@tabler/icons-react';
 import { HashLink as Link } from 'react-router-hash-link';
 
-const SocialIcons = [
+const socials = [
   {
-    name: 'Follow us on LinkedIn',
+    label: 'LinkedIn',
     icon: IconBrandLinkedin,
-    link: 'https://www.linkedin.com/company/srytal-systems-india-pvt-ltd '
+    link: 'https://www.linkedin.com/company/srytal-systems-india-pvt-ltd'
   },
-  { name: 'Follow us on Facebook', icon: IconBrandFacebook, link: '' }
-  // {
-  //   name: "Watch us on YouTube",
-  //   icon: IconBrandYoutube,
-  // },
+  { label: 'X', icon: IconBrandX, link: '#' },
+  { label: 'Facebook', icon: IconBrandFacebook, link: '#' }
+];
+
+const linkGroups = [
+  {
+    title: 'Company',
+    links: [
+      { label: 'Home', to: '#header' },
+      { label: 'About Us', to: '#about' },
+      { label: 'Careers', to: '#' },
+      { label: 'Press', to: '#' }
+    ]
+  },
+  {
+    title: 'Product',
+    links: [
+      { label: 'Services', to: '#services' },
+      { label: 'Technologies', to: '#technologies' },
+      { label: 'Why Us', to: '#' },
+      { label: 'Demo', to: '#' }
+    ]
+  },
+  {
+    title: 'Resources',
+    links: [
+      { label: 'Privacy Policy', to: '#' },
+      { label: 'Terms of Service', to: '#' },
+      { label: 'Help Center', to: '#' },
+      { label: 'Contact Us', to: '#contact' }
+    ]
+  }
 ];
 
 const Footer = () => {
   return (
-    <div className=" text-white py-10 px-4 border-t-2 border-gray-400">
-      <div className=" px-4">
-        <div className="flex flex-col md:flex-row justify-between">
-          <div className="mb-6 md:mb-0">
-            <h1 className="text-3xl py-4 sm:text-4xl cursor-pointer font-bold  text-white hover:text-transparent bg-gradient-to-r from-purple-500 to-blue-500 bg-clip-text  transition-transform duration-300 ease-in-out hover:scale-110  ">
-              SRYTAL Systems India Pvt Ltd
-            </h1>
-            <p className="text-sm mb-4">Empowering Business with Technology</p>
-            <div className="flex gap-6 mb-4">
-              {SocialIcons.map((icon, index) => {
-                const IconComponent = icon.icon;
-                return (
-                  <a href={icon.link} key={index} target="_blank">
-                    <TechIcon
-                      icon={IconComponent}
-                      name={icon.name}
-                      color="text-white"
-                      hoverColor="text-purple-400"
-                      size={16}
-                    />
-                  </a>
-                );
-              })}
+    <footer className='border-t border-white/10 bg-[#070b16]'>
+      <div className='container mx-auto px-4 py-14 md:px-8'>
+        <div className='grid gap-10 md:grid-cols-2 lg:grid-cols-5'>
+          {/* Brand */}
+          <div className='lg:col-span-2'>
+            <h3 className='text-2xl font-bold text-gradient'>SRYTAL Systems</h3>
+            <p className='mt-3 max-w-sm text-sm leading-relaxed text-slate-400'>
+              Empowering business with technology. India Pvt Ltd — your trusted
+              partner in digital transformation.
+            </p>
+            <div className='mt-6 flex gap-3'>
+              {socials.map(({ icon: Icon, link, label }) => (
+                <a
+                  key={label}
+                  href={link}
+                  target='_blank'
+                  rel='noreferrer'
+                  aria-label={label}
+                  className='flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-slate-400 transition-colors duration-200 hover:border-fuchsia-500/40 hover:text-white'
+                >
+                  <Icon size={20} />
+                </a>
+              ))}
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-8">
-            <div className="mb-6 md:mb-0">
-              <h2 className=" text-xl font-bold mb-2">Company</h2>
-              <ul className=" text-gray-400">
-                <li className="text-gray-300 nav-item transform transition-transform duration-300 ease-out hover:scale-125 hover:-translate-y-2 hover:rotate-x-16 hover:rotate-y-8 hover:text-purple-400">
-                  <Link to="#header" smooth={true}>
-                    Home
-                  </Link>
-                </li>
-                <li className="text-gray-300 nav-item transform transition-transform duration-300 ease-out hover:scale-125 hover:-translate-y-2 hover:rotate-x-16 hover:rotate-y-8 hover:text-purple-400">
-                  <Link to="#about" smooth={true}>
-                    About Us
-                  </Link>
-                </li>
-                <li className="text-gray-300 nav-item transform transition-transform duration-300 ease-out hover:scale-125 hover:-translate-y-2 hover:rotate-x-16 hover:rotate-y-8 hover:text-purple-400">
-                  <a href="#">Careers</a>
-                </li>
-                <li className="text-gray-300 nav-item transform transition-transform duration-300 ease-out hover:scale-125 hover:-translate-y-2 hover:rotate-x-16 hover:rotate-y-8 hover:text-purple-400">
-                  <a href="#">Press</a>
-                </li>
+          {/* Link groups */}
+          {linkGroups.map(group => (
+            <div key={group.title}>
+              <h4 className='text-sm font-semibold uppercase tracking-wider text-white'>
+                {group.title}
+              </h4>
+              <ul className='mt-4 space-y-3'>
+                {group.links.map(link => (
+                  <li key={link.label}>
+                    <Link
+                      to={link.to}
+                      smooth
+                      className='text-sm text-slate-400 transition-colors duration-200 hover:text-fuchsia-300'
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
               </ul>
             </div>
+          ))}
+        </div>
 
-            <div className="mb-6 md:mb-0">
-              <h2 className="text-xl font-bold mb-2">Product</h2>
-              <ul className="space-y-1  text-gray-400">
-                <li className="text-gray-300 nav-item transform transition-transform duration-300 ease-out hover:scale-125 hover:-translate-y-2 hover:rotate-x-16 hover:rotate-y-8 hover:text-purple-400">
-                  <a href="#">Features</a>
-                </li>
-                <li className="text-gray-300 nav-item transform transition-transform duration-300 ease-out hover:scale-125 hover:-translate-y-2 hover:rotate-x-16 hover:rotate-y-8 hover:text-purple-400">
-                  <a href="#">Integrations</a>
-                </li>
-                <li className="text-gray-300 nav-item transform transition-transform duration-300 ease-out hover:scale-125 hover:-translate-y-2 hover:rotate-x-16 hover:rotate-y-8 hover:text-purple-400">
-                  <a href="#">Pricing</a>
-                </li>
-                <li className="text-gray-300 nav-item transform transition-transform duration-300 ease-out hover:scale-125 hover:-translate-y-2 hover:rotate-x-16 hover:rotate-y-8 hover:text-purple-400">
-                  <a href="#">Demo</a>
-                </li>
-              </ul>
-            </div>
-
-            <div className=" mb-6 md:mb-0">
-              <h2 className="text-xl font-bold mb-2">Resources</h2>
-              <ul className="space-y-1  text-gray-400">
-                <li className="text-gray-300 nav-item transform transition-transform duration-300 ease-out hover:scale-125 hover:-translate-y-2 hover:rotate-x-16 hover:rotate-y-8 hover:text-purple-400">
-                  <a href="#">Privacy Policy</a>
-                </li>
-                <li className="text-gray-300 nav-item transform transition-transform duration-300 ease-out hover:scale-125 hover:-translate-y-2 hover:rotate-x-16 hover:rotate-y-8 hover:text-purple-400">
-                  <a href="#">Terms of Service</a>
-                </li>
-                <li className="text-gray-300 nav-item transform transition-transform duration-300 ease-out hover:scale-125 hover:-translate-y-2 hover:rotate-x-16 hover:rotate-y-8 hover:text-purple-400">
-                  <a href="#">Help Center</a>
-                </li>
-                <li className="text-gray-300 nav-item transform transition-transform duration-300 ease-out hover:scale-125 hover:-translate-y-2 hover:rotate-x-16 hover:rotate-y-8 hover:text-purple-400">
-                  <Link to="#contact" smooth={true}>
-                    Contact Us
-                  </Link>
-                </li>
-              </ul>
-            </div>
-          </div>
+        <div className='mt-12 border-t border-white/10 pt-6 text-center text-xs text-slate-500'>
+          &copy; 2024 - {new Date().getFullYear()} SRYTAL Systems India Pvt Ltd.
+          All Rights Reserved.
         </div>
       </div>
-      <p className="text-xs text-gray-400">
-        &copy; SRYTAL Systems India Pvt Ltd 2024 - {new Date().getFullYear()} |
-        All Rights Reserved
-      </p>
-    </div>
+    </footer>
   );
 };
 

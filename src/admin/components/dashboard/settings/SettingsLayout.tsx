@@ -21,7 +21,7 @@ const SettingsLayout = () => {
 
   return (
     <Box pt={{ base: 'xl', sm: 'md' }}>
-      <Container size='md' mt={{ base: 'xl', sm: 'lg' }} mb='lg'>
+      <Container size='lg' mt={{ base: 'xl', sm: 'lg' }} mb='lg'>
         <Tabs
           value={currentTab}
           onChange={value => navigate(value || 'blood-groups')}

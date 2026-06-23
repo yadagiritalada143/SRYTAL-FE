@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
 import {
-  Button,
   Group,
   Text,
   Pagination,
@@ -41,9 +40,50 @@ import {
   useUpdateDepartmentByAdmin,
   useDeleteDepartmentByAdmin
 } from '@hooks/mutations/useAdminMutations';
+import { CommonButton } from '@components/common/button/CommonButton';
+import PageHeader from '@components/common/page-header/PageHeader';
 
 const ITEMS_PER_PAGE_OPTIONS = ['5', '10', '20', '50'];
 const DEFAULT_ITEMS_PER_PAGE = 10;
+
+// Mobile card view for a single department.
+const MobileDepartmentCard: React.FC<{
+  type: Department;
+  index: number;
+  activePage: number;
+  color: string;
+  itemsPerPage: number;
+  onEdit: (type: Department) => void;
+}> = ({ type, index, activePage, color, itemsPerPage, onEdit }) => (
+  <Card shadow='sm' p='md' mb='sm' withBorder>
+    <Stack gap='sm'>
+      <Group justify='space-between' align='center'>
+        <Badge variant='filled' color={color}>
+          #{index + 1 + (activePage - 1) * itemsPerPage}
+        </Badge>
+        <ActionIcon
+          variant='subtle'
+          color={color}
+          onClick={() => onEdit(type)}
+          size='md'
+        >
+          <IconEdit size={18} />
+        </ActionIcon>
+      </Group>
+
+      <Divider />
+
+      <Stack gap={2}>
+        <Text size='xs' fw={600} c='dimmed'>
+          Department
+        </Text>
+        <Text size='lg' fw={600}>
+          {type.departmentName}
+        </Text>
+      </Stack>
+    </Stack>
+  </Card>
+);
 
 export default function DepartmentTable() {
   const { showErrorToast, showSuccessToast } = useCustomToast();
@@ -104,7 +144,7 @@ export default function DepartmentTable() {
       return showErrorToast('Department is required');
     try {
       await addDepartment({ departmentName: newDepartmentName.trim() } as any);
-      showSuccessToast('Department added successfully !!');
+      showSuccessToast('Department added successfully');
       setNewDepartmentName('');
       closeAdd();
     } catch {
@@ -125,7 +165,7 @@ export default function DepartmentTable() {
         id: selected._id,
         departmentName: selected.departmentName.trim()
       });
-      showSuccessToast('Department updated successfully !!');
+      showSuccessToast('Department updated successfully');
       closeEdit();
     } catch {
       showErrorToast('Failed to update');
@@ -137,7 +177,7 @@ export default function DepartmentTable() {
 
     try {
       await deleteDepartment(selected._id);
-      showSuccessToast('Department deleted successfully !! ');
+      showSuccessToast('Department deleted successfully');
       closeDelete();
       closeEdit();
     } catch {
@@ -158,46 +198,6 @@ export default function DepartmentTable() {
 
   useEffect(() => setActivePage(1), [itemsPerPage]);
 
-  const MobileTypeCard: React.FC<{
-    type: Department;
-    index: number;
-    activePage: number;
-    color: string;
-    itemsPerPage: number;
-    onEdit: (type: any) => void;
-  }> = ({ type, index, activePage, color, itemsPerPage, onEdit }) => {
-    return (
-      <Card shadow='sm' p='md' mb='sm'>
-        <Stack gap='sm'>
-          <Group justify='space-between' align='center'>
-            <Badge variant='filled' color={color}>
-              #{index + 1 + (activePage - 1) * itemsPerPage}
-            </Badge>
-            <ActionIcon
-              variant='subtle'
-              color={color}
-              onClick={() => onEdit(type)}
-              size='md'
-            >
-              <IconEdit size={18} />
-            </ActionIcon>
-          </Group>
-
-          <Divider />
-
-          <Stack gap={2}>
-            <Text size='xs' fw={600} c='dimmed'>
-              Department
-            </Text>
-            <Text size='lg' fw={600}>
-              {type.departmentName}
-            </Text>
-          </Stack>
-        </Stack>
-      </Card>
-    );
-  };
-
   return (
     <Container size='lg'>
       <Card
@@ -211,30 +211,27 @@ export default function DepartmentTable() {
         }}
       >
         <Stack gap='lg'>
-          {/*Header*/}
-          <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md'>
-            <Flex
-              direction={isMobile ? 'column' : 'row'}
-              justify='space-between'
-              align='center'
-              gap='md'
-            >
-              <Text size={isMobile ? 'lg' : 'xl'} fw={700}>
-                Manage Departments ({filtered.length} Departments)
-              </Text>
-
-              <Button
+          {/* Header */}
+          <PageHeader
+            title='Departments'
+            subtitle='Organize employees into departments across the organization.'
+            icon={<IconBuildingBank size={24} />}
+            count={filtered.length}
+            actions={
+              <CommonButton
                 leftSection={<IconPlus size={16} />}
                 onClick={openAdd}
+                variant='filled'
                 fullWidth={isMobile}
-                radius='md'
+                size={isMobile ? 'md' : 'sm'}
               >
                 Add Department
-              </Button>
-            </Flex>
-          </Card>
+              </CommonButton>
+            }
+          />
 
-          <Card shadow='sm' p='md' radius='md'>
+          {/* Filters */}
+          <Card shadow='sm' p={isMobile ? 'sm' : 'md'} radius='md'>
             <Flex
               direction={isMobile ? 'column' : 'row'}
               justify='space-between'
@@ -242,7 +239,7 @@ export default function DepartmentTable() {
               gap='md'
             >
               <TextInput
-                placeholder='Search department....'
+                placeholder='Search departments...'
                 leftSection={<IconSearch size={16} />}
                 value={searchQuery}
                 onChange={handleSearch}
@@ -265,7 +262,7 @@ export default function DepartmentTable() {
                 </Group>
 
                 {filtered.length !== departments.length && (
-                  <Badge variant='light' color='blue'>
+                  <Badge variant='light' color={currentThemeConfig.dangerColor}>
                     {filtered.length} of {departments.length}
                   </Badge>
                 )}
@@ -273,140 +270,117 @@ export default function DepartmentTable() {
             </Flex>
           </Card>
 
-          {/*TABLE*/}
-          <DataView isLoading={isLoading} label='Departments'>
-            {isMobile ? (
-              <ScrollArea p='md'>
-                <Stack gap='sm'>
-                  {filtered.length === 0 ? (
-                    <Card p='xl' withBorder>
-                      <Stack align='center' gap='md'>
-                        <IconCategory size={48} opacity={0.5} />
-                        <Text size='lg' ta='center'>
-                          No Departments found
-                        </Text>
-                        <Text size='sm' ta='center'>
-                          {searchQuery
-                            ? 'Try adjusting your search'
-                            : 'Start by adding your first departments'}
-                        </Text>
-                        {!searchQuery && (
-                          <Button
-                            variant='light'
-                            leftSection={<IconPlus size={16} />}
-                            onClick={openAdd}
-                            fullWidth={isSmallMobile}
-                          >
-                            Add Department
-                          </Button>
-                        )}
-                      </Stack>
-                    </Card>
-                  ) : (
-                    paginatedData.map((type: Department, index: number) => (
-                      <MobileTypeCard
-                        color={currentThemeConfig.button.color}
-                        key={type._id}
-                        type={type}
-                        index={index}
-                        activePage={activePage}
-                        itemsPerPage={itemsPerPage}
-                        onEdit={handleEdit}
-                      />
-                    ))
-                  )}
-                </Stack>
-              </ScrollArea>
-            ) : (
-              <ScrollArea>
-                <Table
-                  stickyHeader
-                  styles={{
-                    table: {
-                      border: `1px solid ${currentThemeConfig.borderColor}`
-                    },
-                    th: {
-                      borderBottom: `1px solid ${currentThemeConfig.borderColor}`
-                    },
-                    td: {
-                      borderBottom: `1px solid ${currentThemeConfig.borderColor}`,
-                      borderRight: `1px solid ${currentThemeConfig.borderColor}`
-                    }
-                  }}
-                >
-                  <Table.Thead
-                    style={{
-                      backgroundColor: currentThemeConfig.backgroundColor,
-                      color: currentThemeConfig.color
+          {/* Table or Cards */}
+          <Card shadow='sm' p={0} radius='md'>
+            <DataView
+              isLoading={isLoading}
+              label='departments'
+              isEmpty={paginatedData.length === 0 && !isLoading}
+            >
+              {isMobile ? (
+                <ScrollArea p='md'>
+                  <Stack gap='sm'>
+                    {filtered.length === 0 ? (
+                      <Card p='xl' withBorder>
+                        <Stack align='center' gap='md'>
+                          <IconCategory size={48} opacity={0.5} />
+                          <Text size='lg' ta='center'>
+                            No departments found
+                          </Text>
+                          <Text size='sm' ta='center'>
+                            {searchQuery
+                              ? 'Try adjusting your search'
+                              : 'Start by adding your first department'}
+                          </Text>
+                          {!searchQuery && (
+                            <CommonButton
+                              variant='light'
+                              leftSection={<IconPlus size={16} />}
+                              onClick={openAdd}
+                              fullWidth={isSmallMobile}
+                            >
+                              Add Department
+                            </CommonButton>
+                          )}
+                        </Stack>
+                      </Card>
+                    ) : (
+                      paginatedData.map((type: Department, index: number) => (
+                        <MobileDepartmentCard
+                          color={currentThemeConfig.button.color}
+                          key={type._id}
+                          type={type}
+                          index={index}
+                          activePage={activePage}
+                          itemsPerPage={itemsPerPage}
+                          onEdit={handleEdit}
+                        />
+                      ))
+                    )}
+                  </Stack>
+                </ScrollArea>
+              ) : (
+                <ScrollArea>
+                  <Table
+                    stickyHeader
+                    styles={{
+                      table: {
+                        border: `1px solid ${currentThemeConfig.borderColor}`
+                      },
+                      th: {
+                        borderBottom: `1px solid ${currentThemeConfig.borderColor}`
+                      },
+                      td: {
+                        borderBottom: `1px solid ${currentThemeConfig.borderColor}`,
+                        borderRight: `1px solid ${currentThemeConfig.borderColor}`
+                      }
                     }}
                   >
-                    <Table.Tr>
-                      <Table.Th
-                        className='p-3 border'
-                        style={{ width: '100px' }}
-                      >
-                        <Group justify='center'>
-                          <Text size='sm' fw={500}>
-                            S.No
-                          </Text>
-                        </Group>
-                      </Table.Th>
-                      <Table.Th className='p-3 border'>
-                        <Text size='sm' fw={500}>
-                          Departments
-                        </Text>
-                      </Table.Th>
-                      <Table.Th
-                        className='p-3 border'
-                        style={{ width: '100px' }}
-                      >
-                        <Group justify='center'>
-                          <Text size='sm' fw={500}>
-                            Actions
-                          </Text>
-                        </Group>
-                      </Table.Th>
-                    </Table.Tr>
-                  </Table.Thead>
-
-                  <Table.Tbody>
-                    {filtered.length === 0 ? (
+                    <Table.Thead
+                      style={{
+                        backgroundColor: currentThemeConfig.backgroundColor,
+                        color: currentThemeConfig.color
+                      }}
+                    >
                       <Table.Tr>
-                        <Table.Td colSpan={3}>
-                          <Center py='xl'>
-                            <Stack align='center' gap='xs'>
-                              <IconCategory size={40} opacity={0.5} />
-                              <Text> No Departments found </Text>
-                              <Text size='sm'>
-                                {searchQuery
-                                  ? 'Try adjusting your search'
-                                  : 'Start by adding your first department'}
-                              </Text>
-                              {!searchQuery && (
-                                <Button
-                                  leftSection={<IconPlus size={16} />}
-                                  onClick={openAdd}
-                                  fullWidth={isMobile}
-                                  radius='md'
-                                  color={currentThemeConfig.button.color}
-                                >
-                                  Add Department
-                                </Button>
-                              )}
-                            </Stack>
-                          </Center>
-                        </Table.Td>
+                        <Table.Th
+                          className='p-3 border'
+                          style={{ width: '100px' }}
+                        >
+                          <Group justify='center'>
+                            <Text size='sm' fw={500}>
+                              S.No
+                            </Text>
+                          </Group>
+                        </Table.Th>
+                        <Table.Th className='p-3 border'>
+                          <Text size='sm' fw={500}>
+                            Departments
+                          </Text>
+                        </Table.Th>
+                        <Table.Th
+                          className='p-3 border'
+                          style={{ width: '100px' }}
+                        >
+                          <Group justify='center'>
+                            <Text size='sm' fw={500}>
+                              Actions
+                            </Text>
+                          </Group>
+                        </Table.Th>
                       </Table.Tr>
-                    ) : (
-                      paginatedData.map((item: any, index: number) => (
-                        <Table.Tr key={item._id}>
+                    </Table.Thead>
+
+                    <Table.Tbody>
+                      {paginatedData.map((item: Department, index: number) => (
+                        <Table.Tr key={item._id} className='transition-colors'>
                           <Table.Td className='text-center'>
                             {index + 1 + (activePage - 1) * itemsPerPage}
                           </Table.Td>
                           <Table.Td>{item.departmentName}</Table.Td>
                           <Table.Td className='text-center'>
                             <Group justify='center'>
-                              <Tooltip label='Edit'>
+                              <Tooltip label='Edit Department'>
                                 <ActionIcon
                                   color={currentThemeConfig.button.color}
                                   variant='subtle'
@@ -418,13 +392,13 @@ export default function DepartmentTable() {
                             </Group>
                           </Table.Td>
                         </Table.Tr>
-                      ))
-                    )}
-                  </Table.Tbody>
-                </Table>
-              </ScrollArea>
-            )}
-          </DataView>
+                      ))}
+                    </Table.Tbody>
+                  </Table>
+                </ScrollArea>
+              )}
+            </DataView>
+          </Card>
 
           {totalPages > 1 && (
             <Center>
@@ -459,12 +433,7 @@ export default function DepartmentTable() {
           }
           centered
           size='md'
-          styles={{
-            header: {
-              paddingBottom: 4,
-              paddingTop: 5
-            }
-          }}
+          styles={{ header: { paddingBottom: 4, paddingTop: 5 } }}
         >
           <Stack>
             <TextInput
@@ -476,16 +445,16 @@ export default function DepartmentTable() {
               required
             />
             <Group justify='flex-end'>
-              <Button variant='default' onClick={closeAdd} radius='md'>
+              <CommonButton variant='default' onClick={closeAdd}>
                 Cancel
-              </Button>
-              <Button
+              </CommonButton>
+              <CommonButton
                 onClick={handleAdd}
                 disabled={isMutating || !newDepartmentName.trim()}
-                radius='md'
+                leftSection={<IconDeviceFloppy size={16} />}
               >
                 {isAdding ? 'Adding...' : 'Add'}
-              </Button>
+              </CommonButton>
             </Group>
           </Stack>
         </Modal>
@@ -504,12 +473,7 @@ export default function DepartmentTable() {
           }
           centered
           size='md'
-          styles={{
-            header: {
-              paddingBottom: 4,
-              paddingTop: 5
-            }
-          }}
+          styles={{ header: { paddingBottom: 4, paddingTop: 5 } }}
         >
           <Stack>
             <TextInput
@@ -528,40 +492,33 @@ export default function DepartmentTable() {
 
             <Group justify='space-between'>
               {isMobile ? (
-                <Tooltip label='Delete'>
-                  <Button
-                    onClick={openDelete}
-                    p='xs'
-                    radius='md'
-                    variant='outline'
-                  >
+                <Tooltip label='Delete Department'>
+                  <CommonButton onClick={openDelete} p='xs' variant='outline'>
                     <IconTrash size={16} />
-                  </Button>
+                  </CommonButton>
                 </Tooltip>
               ) : (
-                <Button
-                  color='red'
+                <CommonButton
+                  color={currentThemeConfig.dangerColor}
                   variant='outline'
                   onClick={openDelete}
-                  radius='md'
                   leftSection={<IconTrash size={16} />}
                 >
                   Delete
-                </Button>
+                </CommonButton>
               )}
 
               <Group>
-                <Button variant='default' onClick={closeEdit} radius='md'>
+                <CommonButton variant='default' onClick={closeEdit}>
                   Cancel
-                </Button>
-                <Button
+                </CommonButton>
+                <CommonButton
                   onClick={confirmEdit}
                   leftSection={<IconDeviceFloppy size={16} />}
                   disabled={isMutating}
-                  radius='md'
                 >
-                  {isUpdating ? 'Saving....' : 'Save'}
-                </Button>
+                  {isUpdating ? 'Saving...' : 'Save'}
+                </CommonButton>
               </Group>
             </Group>
           </Stack>
@@ -573,8 +530,11 @@ export default function DepartmentTable() {
           onClose={closeDelete}
           title={
             <Group gap='xs'>
-              <IconAlertTriangle size={24} color='red' />
-              <Text fw={600} size='lg' c='red'>
+              <IconAlertTriangle
+                size={24}
+                color={currentThemeConfig.dangerColor}
+              />
+              <Text fw={600} size='lg' c={currentThemeConfig.dangerColor}>
                 Delete Department
               </Text>
             </Group>
@@ -588,18 +548,17 @@ export default function DepartmentTable() {
               cannot be undone.
             </Text>
             <Group justify='flex-end' mt='md'>
-              <Button variant='default' onClick={closeDelete} radius='md'>
+              <CommonButton variant='default' onClick={closeDelete}>
                 Cancel
-              </Button>
-              <Button
-                color='red'
+              </CommonButton>
+              <CommonButton
+                color={currentThemeConfig.dangerColor}
                 onClick={confirmDelete}
                 disabled={isMutating}
                 leftSection={<IconTrash size={16} />}
-                radius='md'
               >
                 {isDeleting ? 'Deleting...' : 'Delete'}
-              </Button>
+              </CommonButton>
             </Group>
           </Stack>
         </Modal>

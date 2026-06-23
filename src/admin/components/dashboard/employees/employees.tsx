@@ -23,6 +23,7 @@ import {
   IconPackage,
   IconSearch,
   IconUser,
+  IconUsers,
   IconPlus,
   IconSortAscending,
   IconSortDescending,
@@ -43,6 +44,7 @@ import type { EmployeeInterface } from '@interfaces/employee';
 import { useAppTheme } from '@hooks/use-app-theme';
 import { useGetAllEmployeesByAdmin } from '@hooks/queries/useAdminQueries';
 import { CommonButton } from '@components/common/button/CommonButton';
+import PageHeader from '@components/common/page-header/PageHeader';
 
 // Constants
 const ITEMS_PER_PAGE_OPTIONS = ['5', '10', '20', '50'];
@@ -399,38 +401,6 @@ const TableHeader: React.FC<{
   );
 };
 
-const HeadingComponent: React.FC<{
-  filteredEmployees: number;
-  handleAddEmployee: () => void;
-  isMobile?: boolean;
-}> = ({ filteredEmployees = 0, handleAddEmployee, isMobile = false }) => (
-  <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md' withBorder mt='xl'>
-    <Flex
-      direction={isMobile ? 'column' : 'row'}
-      justify='space-between'
-      align='center'
-      gap='md'
-    >
-      <Text
-        size={isMobile ? 'lg' : 'xl'}
-        fw={700}
-        ta={isMobile ? 'center' : 'left'}
-      >
-        Employee Management ({filteredEmployees} Employees)
-      </Text>
-      <CommonButton
-        leftSection={<IconPlus size={16} />}
-        onClick={handleAddEmployee}
-        variant='filled'
-        fullWidth={isMobile}
-        size={isMobile ? 'md' : 'sm'}
-      >
-        Add Employee
-      </CommonButton>
-    </Flex>
-  </Card>
-);
-
 const Employees = () => {
   const {
     data: employees = [],
@@ -441,11 +411,7 @@ const Employees = () => {
   const [itemsPerPage, setItemsPerPage] = useState(DEFAULT_ITEMS_PER_PAGE);
 
   const navigate = useNavigate();
-  const {
-    themeConfig: currentThemeConfig,
-    organizationConfig,
-    isDarkTheme
-  } = useAppTheme();
+  const { themeConfig: currentThemeConfig, organizationConfig } = useAppTheme();
 
   // Responsive breakpoints
   const isMobile = useMediaQuery('(max-width: 768px)');
@@ -603,10 +569,22 @@ const Employees = () => {
     <Container size='xl' py='md' my='xl' px={isSmallMobile ? 'xs' : 'md'}>
       <Stack gap='md'>
         {/* Header */}
-        <HeadingComponent
-          filteredEmployees={filteredEmployees.length}
-          handleAddEmployee={handleAddEmployee}
-          isMobile={isMobile}
+        <PageHeader
+          title='Employee Management'
+          subtitle='View, search and manage all employees in your organization.'
+          icon={<IconUsers size={24} />}
+          count={filteredEmployees.length}
+          actions={
+            <CommonButton
+              leftSection={<IconPlus size={16} />}
+              onClick={handleAddEmployee}
+              variant='filled'
+              fullWidth={isMobile}
+              size={isMobile ? 'md' : 'sm'}
+            >
+              Add Employee
+            </CommonButton>
+          }
         />
 
         {/* Filters */}

@@ -31,8 +31,10 @@ import { useDeletePoolCompanyByAdmin } from '@hooks/mutations/useAdminMutations'
 import {
   IconTrash,
   IconDeviceFloppy,
-  IconAlertTriangle
+  IconAlertTriangle,
+  IconBuilding
 } from '@tabler/icons-react';
+import PageHeader from '@components/common/page-header/PageHeader';
 import { CommonButton } from '@components/common/button/CommonButton';
 
 const UpdateCompany = () => {
@@ -66,7 +68,7 @@ const UpdateCompany = () => {
 
   const {
     register,
-    formState: { errors, isSubmitting: isFormSubmitting },
+    formState: { errors },
     handleSubmit,
     control,
     reset
@@ -113,19 +115,13 @@ const UpdateCompany = () => {
   return (
     <Container size='lg' py='md' my='xl' px={isSmallMobile ? 'xs' : 'md'}>
       <Stack gap='md'>
-        {/* Header Card */}
-        <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md' withBorder>
-          <Group
-            justify='space-between'
-            align='center'
-            wrap={isMobile ? 'wrap' : 'nowrap'}
-          >
-            <Title order={isMobile ? 4 : 3} fw={700}>
-              Update Company Details
-            </Title>
-            <BackButton id={companyId} />
-          </Group>
-        </Card>
+        {/* Header */}
+        <PageHeader
+          title='Update Company Details'
+          subtitle='Update this company’s details and comments.'
+          icon={<IconBuilding size={24} />}
+          actions={<BackButton id={companyId} />}
+        />
 
         <DataView isLoading={isLoading} label='company details'>
           <Stack gap='md'>
