@@ -34,7 +34,7 @@ const UserDashboard = () => {
         setIsDrawerOpen={toggleDrawer}
       />
 
-      <div className={`flex-grow transition-all duration-300 overflow-hidden`}>
+      <div className={`flex-grow transition-all duration-300 overflow-hidden`} style={{ paddingTop: '88px' }}>
         <div>
           <Outlet />
         </div>

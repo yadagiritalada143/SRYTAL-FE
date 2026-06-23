@@ -6,7 +6,8 @@ import {
   getPoolCandidateByRecruiter,
   getUserDetails,
   getAllCoursesByUser,
-  getCourseByIdContentWriter
+  getCourseByIdContentWriter,
+  getEmployeeDashboard
 } from '@services/user-services';
 import { getProfileImage } from '@services/common-services';
 
@@ -19,7 +20,8 @@ export const userQueryKeys = {
   userDetails: ['userDetails'] as const,
   profileImage: ['profileImage'] as const,
   courses: ['userCourses'] as const,
-  course: (id: string) => ['userCourse', id] as const
+  course: (id: string) => ['userCourse', id] as const,
+  employeeDashboard: ['employeeDashboard'] as const
 };
 
 export const useGetCompanyDetails = () => {
@@ -78,5 +80,12 @@ export const useGetCourseById = (id: string, enabled = true) => {
     queryKey: userQueryKeys.course(id),
     queryFn: () => getCourseByIdContentWriter(id),
     enabled: !!id && enabled
+  });
+};
+
+export const useGetEmployeeDashboard = () => {
+  return useQuery({
+    queryKey: userQueryKeys.employeeDashboard,
+    queryFn: getEmployeeDashboard
   });
 };

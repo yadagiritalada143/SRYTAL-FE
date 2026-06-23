@@ -2,19 +2,20 @@ import {
   Card,
   Container,
   Divider,
+  Grid,
   Group,
-  Image,
   Stack,
   Text,
   Title,
   SimpleGrid,
-  ScrollArea,
-  Center,
-  ThemeIcon,
+  TextInput,
   ActionIcon,
   Pagination,
-  Modal,
-  TextInput
+  Center,
+  ThemeIcon,
+  Badge,
+  Avatar,
+  Modal
 } from '@mantine/core';
 import SkeletonLoader from '@components/common/loaders/SkeletonLoader';
 import {
@@ -24,10 +25,9 @@ import {
   IconPlus,
   IconSearch,
   IconX,
-  IconArrowLeft
+  IconClock
 } from '@tabler/icons-react';
-import { useState, useMemo, useCallback } from 'react';
-import { useMediaQuery } from '@mantine/hooks';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { organizationEmployeeUrls } from '@utils/common/constants';
 import { useAppTheme } from '@hooks/use-app-theme';
@@ -39,8 +39,7 @@ import CourseCard from './CourseCard';
 const COURSES_PER_PAGE = 6;
 
 const WriterDashboard = () => {
-  const { organizationConfig } = useAppTheme();
-  const [showAllCourses, setShowAllCourses] = useState(false);
+  const { themeConfig, organizationConfig } = useAppTheme();
   const [activePage, setActivePage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -48,11 +47,8 @@ const WriterDashboard = () => {
 
   const { data: courses = [], isLoading } = useGetAllCoursesByUser();
   const navigate = useNavigate();
-  const isMobile = useMediaQuery('(max-width: 768px)');
 
   const stats = useMemo(() => {
-    if (!courses.length)
-      return { totalCourses: 0, totalModules: 0, totalTasks: 0 };
     const totalCourses = courses.length;
     const totalModules = courses.reduce(
       (sum: number, c: Course) => sum + (c.modules?.length || 0),
@@ -71,54 +67,37 @@ const WriterDashboard = () => {
   }, [courses]);
 
   const recentActivity = useMemo(() => {
-    return courses
-      .filter((c: Course) => c.updatedAt)
-      .sort(
-        (a: Course, b: Course) =>
-          new Date(b.updatedAt || '').getTime() -
-          new Date(a.updatedAt || '').getTime()
-      )
-      .slice(0, 4)
-      .map((c: Course) => ({
-        id: c._id,
-        title: c.courseName,
-        thumbnail: c.thumbnail || '/course-thumbnail.png',
-        type: 'Course'
-      }));
+    return [...courses]
+      .sort((a: Course, b: Course) => {
+        const da = new Date(a.updatedAt || a.createdAt || 0).getTime();
+        const db = new Date(b.updatedAt || b.createdAt || 0).getTime();
+        return db - da;
+      })
+      .slice(0, 6);
   }, [courses]);
-
-  const overview = useMemo(
-    () => ({
-      title: 'Content Writer Dashboard',
-      banner: {
-        headline: 'Craft Your Written Journey',
-        tag: "The Creator's Playground",
-        thumbnailBanner: '/contentwriter.jpg'
-      }
-    }),
-    []
-  );
 
   const filteredCourses = useMemo(() => {
     if (!searchQuery.trim()) return courses;
-    const query = searchQuery.toLowerCase();
+    const q = searchQuery.toLowerCase();
     return courses.filter(
-      (course: Course) =>
-        course.courseName.toLowerCase().includes(query) ||
-        course.courseDescription?.toLowerCase().includes(query)
+      (c: Course) =>
+        c.courseName.toLowerCase().includes(q) ||
+        c.courseDescription?.toLowerCase().includes(q)
     );
   }, [courses, searchQuery]);
 
   const { paginatedCourses, totalPages } = useMemo(() => {
     const start = (activePage - 1) * COURSES_PER_PAGE;
-    const end = start + COURSES_PER_PAGE;
-    const paginated = filteredCourses.slice(start, end);
-    const pages = Math.ceil(filteredCourses.length / COURSES_PER_PAGE);
-    return { paginatedCourses: paginated, totalPages: pages };
+    return {
+      paginatedCourses: filteredCourses.slice(start, start + COURSES_PER_PAGE),
+      totalPages: Math.ceil(filteredCourses.length / COURSES_PER_PAGE)
+    };
   }, [filteredCourses, activePage]);
 
   const handleEdit = (courseId: string) => {
-    console.log('Edit course:', courseId);
+    navigate(
+      `${organizationEmployeeUrls(organizationConfig.organization_name)}/dashboard/course/${courseId}`
+    );
   };
 
   const handleDelete = (courseId: string) => {
@@ -126,308 +105,281 @@ const WriterDashboard = () => {
     setDeleteModalOpen(true);
   };
 
+  const handleArchive = (_courseId: string) => {};
+
   const confirmDelete = () => {
-    console.log('Delete course:', courseToDelete);
     setDeleteModalOpen(false);
     setCourseToDelete(null);
   };
 
-  const handleArchive = (courseId: string) => {
-    console.log('Archive course:', courseId);
-  };
-
-  const handleAddCourse = useCallback(() => {
+  const handleAddCourse = () => {
     navigate(
       `${organizationEmployeeUrls(organizationConfig.organization_name)}/dashboard/add-course`
     );
-  }, [navigate, organizationConfig.organization_name]);
+  };
+
+  const statItems = [
+    {
+      icon: <IconBook size={22} />,
+      label: 'Total Courses',
+      value: stats.totalCourses
+    },
+    {
+      icon: <IconLayersSubtract size={22} />,
+      label: 'Total Modules',
+      value: stats.totalModules
+    },
+    {
+      icon: <IconListCheck size={22} />,
+      label: 'Total Tasks',
+      value: stats.totalTasks
+    }
+  ];
 
   if (isLoading) {
     return (
       <Container size='xl' py='xl'>
-        <Stack mb='xl' gap={4}>
-          <Title order={1}>{overview.title}</Title>
-          <Text c='dimmed'>Loading your content...</Text>
-        </Stack>
+        <Group justify='space-between' mb='xl'>
+          <Stack gap={4}>
+            <Title order={2} fw={700}>
+              Content Writer
+            </Title>
+            <Text size='sm' c='dimmed'>
+              Loading your workspace...
+            </Text>
+          </Stack>
+        </Group>
         <SkeletonLoader type='cards' rows={4} />
-      </Container>
-    );
-  }
-
-  if (showAllCourses) {
-    return (
-      <Container size='xl' py='xl'>
-        <Stack gap='lg'>
-          <Group justify='space-between' align='center' wrap='nowrap'>
-            <Group gap='sm'>
-              <ActionIcon
-                variant='subtle'
-                color='gray'
-                size='lg'
-                onClick={() => {
-                  setShowAllCourses(false);
-                  setActivePage(1);
-                  setSearchQuery('');
-                }}
-              >
-                <IconArrowLeft size={20} />
-              </ActionIcon>
-              <Title order={2}>All Courses ({filteredCourses.length})</Title>
-            </Group>
-            <CommonButton
-              leftSection={<IconPlus size={16} />}
-              visibleFrom='sm'
-              onClick={handleAddCourse}
-            >
-              Create New Course
-            </CommonButton>
-          </Group>
-
-          <Card shadow='sm' p='md' radius='md' withBorder>
-            <TextInput
-              placeholder='Search courses...'
-              leftSection={<IconSearch size={16} />}
-              rightSection={
-                searchQuery && (
-                  <ActionIcon
-                    variant='subtle'
-                    onClick={() => setSearchQuery('')}
-                  >
-                    <IconX size={16} />
-                  </ActionIcon>
-                )
-              }
-              value={searchQuery}
-              onChange={e => {
-                setSearchQuery(e.target.value);
-                setActivePage(1);
-              }}
-              radius='md'
-            />
-          </Card>
-
-          <SimpleGrid cols={{ base: 1, xs: 2, sm: 2, md: 3 }} spacing='lg'>
-            {paginatedCourses.length > 0 ? (
-              paginatedCourses.map((course: Course) => (
-                <CourseCard
-                  key={course._id}
-                  course={course}
-                  onEdit={handleEdit}
-                  onArchive={handleArchive}
-                  onDelete={handleDelete}
-                />
-              ))
-            ) : (
-              <Center style={{ gridColumn: '1 / -1' }} py='xl'>
-                <Text size='sm' c='dimmed'>
-                  {searchQuery
-                    ? 'No courses found matching your search.'
-                    : 'No courses available.'}
-                </Text>
-              </Center>
-            )}
-          </SimpleGrid>
-
-          {totalPages > 1 && (
-            <Center mt='md'>
-              <Pagination
-                value={activePage}
-                onChange={setActivePage}
-                total={totalPages}
-                size={isMobile ? 'sm' : 'md'}
-                radius='md'
-                withEdges
-              />
-            </Center>
-          )}
-        </Stack>
       </Container>
     );
   }
 
   return (
     <Container size='xl' py='xl'>
-      <Stack mb='xl' gap={4}>
-        <Title order={1}>{overview.title}</Title>
-        <Text c='dimmed'>
-          Welcome to your dashboard! Here you can manage and track your content
-          creation journey.
-        </Text>
-      </Stack>
+      {/* Page Header */}
+      <Group justify='space-between' align='flex-start' mb='xl'>
+        <Stack gap={2}>
+          <Title order={2} fw={700}>
+            Content Writer
+          </Title>
+          <Text size='sm' c='dimmed'>
+            Create and manage your courses, modules, and tasks
+          </Text>
+        </Stack>
+        <CommonButton
+          leftSection={<IconPlus size={16} />}
+          onClick={handleAddCourse}
+        >
+          New Course
+        </CommonButton>
+      </Group>
 
-      <SimpleGrid cols={{ base: 1, lg: 2 }} spacing='xl'>
-        {/* Left Side */}
-        <Stack gap='lg'>
-          <Card
-            shadow='sm'
-            p='xl'
-            radius='xl'
-            style={{
-              background: 'linear-gradient(90deg, #6366F1, #8B5CF6, #EC4899)',
-              color: 'white'
-            }}
-          >
-            <Group justify='space-between' align='center' wrap='nowrap'>
-              <Stack gap={6} style={{ flex: 1 }}>
-                <Title order={2} fw={700}>
-                  {overview.banner.headline}
+      {/* Stats */}
+      <SimpleGrid cols={{ base: 1, xs: 3 }} spacing='md' mb='xl'>
+        {statItems.map((item, i) => (
+          <Card key={i} withBorder radius='md' p='lg'>
+            <Group gap='md' wrap='nowrap'>
+              <ThemeIcon
+                size={48}
+                radius='md'
+                variant='light'
+                color={themeConfig.color}
+              >
+                {item.icon}
+              </ThemeIcon>
+              <Stack gap={2}>
+                <Title order={3} lh={1}>
+                  {item.value}
                 </Title>
-                <Text size='sm' opacity={0.85}>
-                  {overview.banner.tag}
+                <Text size='xs' c='dimmed'>
+                  {item.label}
                 </Text>
               </Stack>
-              {!isMobile && (
-                <Image
-                  src={overview.banner.thumbnailBanner}
-                  radius='md'
-                  alt='Banner'
-                  fit='contain'
-                  style={{ width: 150, height: 120 }}
-                />
-              )}
             </Group>
           </Card>
-
-          <SimpleGrid cols={3} spacing='md'>
-            {[
-              {
-                icon: <IconBook size={24} color='#4F46E5' />,
-                label: 'Courses',
-                value: stats.totalCourses,
-                color: 'indigo'
-              },
-              {
-                icon: <IconLayersSubtract size={24} color='#9333EA' />,
-                label: 'Modules',
-                value: stats.totalModules,
-                color: 'purple'
-              },
-              {
-                icon: <IconListCheck size={24} color='#EC4899' />,
-                label: 'Tasks',
-                value: stats.totalTasks,
-                color: 'pink'
-              }
-            ].map((item, index) => (
-              <Card
-                key={index}
-                shadow='sm'
-                p='md'
-                radius='md'
-                withBorder
-                style={{ textAlign: 'center' }}
-              >
-                <Stack align='center' gap={8}>
-                  <ThemeIcon
-                    size={48}
-                    radius='xl'
-                    color={item.color}
-                    variant='light'
-                  >
-                    {item.icon}
-                  </ThemeIcon>
-                  <Text size='xs' c='dimmed'>
-                    {item.label}
-                  </Text>
-                  <Title order={3}>{item.value}</Title>
-                </Stack>
-              </Card>
-            ))}
-          </SimpleGrid>
-
-          <Card shadow='sm' p='lg' radius='md' withBorder>
-            <Title order={5} mb='sm'>
-              Recent Activity
-            </Title>
-            <Divider mb='sm' />
-            <Stack gap='sm'>
-              {recentActivity.length > 0 ? (
-                recentActivity.map((item: any) => (
-                  <Group
-                    key={item.id}
-                    p='xs'
-                    onClick={() =>
-                      navigate(
-                        `${organizationEmployeeUrls(organizationConfig.organization_name)}/dashboard/course/${item.id}`
-                      )
-                    }
-                    style={{
-                      borderRadius: 8,
-                      cursor: 'pointer',
-                      backgroundColor: 'rgba(0,0,0,0.02)'
-                    }}
-                  >
-                    <Image
-                      src={item.thumbnail}
-                      width={40}
-                      height={40}
-                      radius='sm'
-                    />
-                    <Stack gap={0} style={{ flex: 1 }}>
-                      <Text size='sm' fw={500} lineClamp={1}>
-                        {item.title}
-                      </Text>
-                      <Text size='xs' c='dimmed'>
-                        {item.type}
-                      </Text>
-                    </Stack>
-                  </Group>
-                ))
-              ) : (
-                <Text size='sm' c='dimmed'>
-                  No recent updates found.
-                </Text>
-              )}
-            </Stack>
-          </Card>
-        </Stack>
-
-        {/* Right Side */}
-        <Stack gap='lg'>
-          <Group justify='space-between'>
-            <Title order={3}>Content Pipeline</Title>
-            <CommonButton
-              leftSection={<IconPlus size={16} />}
-              onClick={handleAddCourse}
-            >
-              New Course
-            </CommonButton>
-          </Group>
-
-          <Card shadow='sm' p='lg' radius='md' withBorder>
-            <ScrollArea h={600} offsetScrollbars>
-              <SimpleGrid cols={isMobile ? 1 : 2} spacing='lg'>
-                {courses.slice(0, 4).map((course: Course) => (
-                  <CourseCard
-                    key={course._id}
-                    course={course}
-                    onEdit={handleEdit}
-                    onArchive={handleArchive}
-                    onDelete={handleDelete}
-                  />
-                ))}
-              </SimpleGrid>
-            </ScrollArea>
-            <CommonButton
-              mt='md'
-              fullWidth
-              variant='outline'
-              onClick={() => setShowAllCourses(true)}
-            >
-              Show All Courses
-            </CommonButton>
-          </Card>
-        </Stack>
+        ))}
       </SimpleGrid>
 
+      {/* Main content */}
+      <Grid gutter='xl'>
+        {/* Courses section */}
+        <Grid.Col span={{ base: 12, lg: 8 }}>
+          <Stack gap='md'>
+            <Group justify='space-between' align='center' wrap='nowrap'>
+              <Group gap='xs'>
+                <Text fw={600} size='lg'>
+                  My Courses
+                </Text>
+                {courses.length > 0 && (
+                  <Badge
+                    variant='light'
+                    color={themeConfig.color}
+                    radius='sm'
+                    size='sm'
+                  >
+                    {filteredCourses.length}
+                  </Badge>
+                )}
+              </Group>
+              <TextInput
+                placeholder='Search courses...'
+                leftSection={<IconSearch size={14} />}
+                rightSection={
+                  searchQuery ? (
+                    <ActionIcon
+                      variant='subtle'
+                      size='sm'
+                      onClick={() => {
+                        setSearchQuery('');
+                        setActivePage(1);
+                      }}
+                    >
+                      <IconX size={14} />
+                    </ActionIcon>
+                  ) : null
+                }
+                value={searchQuery}
+                onChange={e => {
+                  setSearchQuery(e.target.value);
+                  setActivePage(1);
+                }}
+                size='sm'
+                radius='md'
+                w={{ base: 160, sm: 220 }}
+              />
+            </Group>
+
+            {paginatedCourses.length > 0 ? (
+              <>
+                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing='md'>
+                  {paginatedCourses.map((course: Course) => (
+                    <CourseCard
+                      key={course._id}
+                      course={course}
+                      onEdit={handleEdit}
+                      onArchive={handleArchive}
+                      onDelete={handleDelete}
+                    />
+                  ))}
+                </SimpleGrid>
+                {totalPages > 1 && (
+                  <Center mt='sm'>
+                    <Pagination
+                      value={activePage}
+                      onChange={setActivePage}
+                      total={totalPages}
+                      size='sm'
+                      radius='md'
+                      withEdges
+                    />
+                  </Center>
+                )}
+              </>
+            ) : (
+              <Card withBorder radius='md'>
+                <Center py={48}>
+                  <Stack align='center' gap='sm'>
+                    <ThemeIcon
+                      size={56}
+                      radius='xl'
+                      variant='light'
+                      color={themeConfig.color}
+                    >
+                      <IconBook size={28} />
+                    </ThemeIcon>
+                    <Text fw={500} size='md'>
+                      {searchQuery ? 'No matching courses' : 'No courses yet'}
+                    </Text>
+                    <Text size='sm' c='dimmed' ta='center' maw={280}>
+                      {searchQuery
+                        ? 'Try adjusting your search term'
+                        : 'Create your first course to start building content'}
+                    </Text>
+                    {!searchQuery && (
+                      <CommonButton
+                        mt='xs'
+                        leftSection={<IconPlus size={14} />}
+                        onClick={handleAddCourse}
+                      >
+                        Create Course
+                      </CommonButton>
+                    )}
+                  </Stack>
+                </Center>
+              </Card>
+            )}
+          </Stack>
+        </Grid.Col>
+
+        {/* Recent Activity sidebar */}
+        <Grid.Col span={{ base: 12, lg: 4 }}>
+          <Stack gap='md'>
+            <Text fw={600} size='lg'>
+              Recent Activity
+            </Text>
+            <Card withBorder radius='md' p={0}>
+              {recentActivity.length > 0 ? (
+                <Stack gap={0}>
+                  {recentActivity.map((course: Course, i: number) => (
+                    <div key={course._id}>
+                      <Group
+                        p='md'
+                        gap='sm'
+                        style={{ cursor: 'pointer' }}
+                        onClick={() =>
+                          navigate(
+                            `${organizationEmployeeUrls(organizationConfig.organization_name)}/dashboard/course/${course._id}`
+                          )
+                        }
+                      >
+                        <Avatar
+                          src={course.thumbnail || '/course-thumbnail.png'}
+                          radius='sm'
+                          size='md'
+                        />
+                        <Stack gap={2} style={{ flex: 1, minWidth: 0 }}>
+                          <Text size='sm' fw={500} lineClamp={1}>
+                            {course.courseName}
+                          </Text>
+                          <Group gap={4}>
+                            <IconClock size={11} color='gray' />
+                            <Text size='xs' c='dimmed'>
+                              {course.updatedAt
+                                ? new Date(course.updatedAt).toLocaleDateString(
+                                    undefined,
+                                    { month: 'short', day: 'numeric', year: 'numeric' }
+                                  )
+                                : '—'}
+                            </Text>
+                          </Group>
+                        </Stack>
+                      </Group>
+                      {i < recentActivity.length - 1 && <Divider />}
+                    </div>
+                  ))}
+                </Stack>
+              ) : (
+                <Center p='xl'>
+                  <Text size='sm' c='dimmed'>
+                    No recent activity
+                  </Text>
+                </Center>
+              )}
+            </Card>
+          </Stack>
+        </Grid.Col>
+      </Grid>
+
+      {/* Delete confirmation modal */}
       <Modal
         opened={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
         title='Delete Course'
         centered
+        size='sm'
       >
         <Stack gap='md'>
-          <Text>
+          <Text size='sm'>
             Are you sure you want to delete this course? This action cannot be
             undone.
           </Text>

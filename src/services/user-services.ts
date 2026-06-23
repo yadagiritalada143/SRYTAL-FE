@@ -257,3 +257,10 @@ export const getCourseTaskContentUrl = (taskId: string) => {
   const base = (BASE_URL || '').replace(/\/+$/, '');
   return `${base}/contentwriter/getCourseTaskContent/${taskId}?auth_token=${token}`;
 };
+
+// ── Employee Dashboard ───────────────────────────────────────────────────────
+
+export const getEmployeeDashboard = async () => {
+  const response = await apiClient.get('/getEmployeeDashboard');
+  return response.data;
+};

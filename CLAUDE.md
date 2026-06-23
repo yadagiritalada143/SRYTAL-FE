@@ -113,9 +113,34 @@ not long relative paths.
   valid AWS credentials in the backend `.env`. With invalid keys those endpoints
   return clean errors (no longer crash — the S3 utils now `return reject(...)`).
 
+## Post-login routing (employee surface)
+
+After login (`src/user/pages/login/login.tsx`, both the session-check `useEffect`
+and the submit handler) employees are redirected by `userRole`:
+
+- `Employee` / `Recruiter` / `ContentWriter` → `…/employee/dashboard` (the shared
+  employee dashboard — this is the **index** route of the `/dashboard` layout, so
+  the URL is `…/employee/dashboard`, **not** `…/dashboard/dashboard`)
+- anything else → `…/employee/dashboard/profile`
+
+`organizationEmployeeUrls(org)` returns `/${org}/employee`; the dashboard layout
+lives at `path='/dashboard'`, and `<Dashboard/>` is its `index` child. Don't
+re-add a `path='dashboard'` child — it would resurrect the old
+`/dashboard/dashboard` URL. Nav links live in `utils/user/user-nav-links.ts`
+(keyed by role); the navbar marks a link active by **exact** path match, so the
+bare `employee/dashboard` link only highlights on the dashboard itself.
+
 ## Feature modules
 
 - **Content Writer** (employee): create courses → modules → tasks, where a task's
   content is a **file** (any type, stored in S3) or a **link** (YouTube/blog/etc),
   viewed via a backend proxy in a new tab. See
   `src/user/components/dashboard/CLAUDE.md` for the full module + API contract.
+- **Employee Dashboard** (shared, `components/common/dashboard/dashboard.tsx`):
+  at-a-glance view backed by real data from `GET /getEmployeeDashboard`
+  (BE `services/common/getEmployeeDashboardService.ts`) — profile summary +
+  tenure, hours this month/week, active projects (from employee-packages →
+  timesheet), timesheet status breakdown, and recent entries. Hook
+  `useGetEmployeeDashboard` in `hooks/queries/useUserQueries.ts`. Data richness
+  depends on the employee having assigned packages with timesheet entries; with
+  none, the page shows graceful empty states.

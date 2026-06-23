@@ -508,7 +508,7 @@ const EmployeeRoutes = () => {
                 }
               />
               <Route
-                path='dashboard'
+                index
                 element={
                   <div>
                     <Dashboard />

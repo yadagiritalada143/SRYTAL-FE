@@ -50,7 +50,19 @@ export const NavLinks = [
   },
   {
     role: 'Employee',
-    url: 'employee/dashboard/dashboard',
+    url: 'employee/dashboard',
+    icon: IconLayoutDashboard,
+    name: 'Dashboard'
+  },
+  {
+    role: 'Recruiter',
+    url: 'employee/dashboard',
+    icon: IconLayoutDashboard,
+    name: 'Dashboard'
+  },
+  {
+    role: 'ContentWriter',
+    url: 'employee/dashboard',
     icon: IconLayoutDashboard,
     name: 'Dashboard'
   },
@@ -104,7 +116,7 @@ export const NavLinks = [
         url: 'employee/dashboard/reports/salary-slip'
       }
     ]
-  }
+  },
   // {
   //   role: 'Employee',
   //   url: 'employee/dashboard/announcements',
