@@ -271,6 +271,21 @@ export const getAllEmployeeDetailsByAdmin = async () => {
   }
 };
 
+export const getDashboardStatsByAdmin = async () => {
+  const token = localStorage.getItem('token');
+  try {
+    if (!token) {
+      throw 'Not authorized to access';
+    }
+    const response = await apiClient('/admin/getDashboardStatsByAdmin', {
+      headers: { auth_token: token }
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getAllPackagesByAdmin = async () => {
   const token = localStorage.getItem('token');
   try {
@@ -767,4 +782,55 @@ export const deleteDepartmentByAdmin = async (id: string) => {
   } catch (error) {
     throw error;
   }
+};
+
+// ── Navigation / Menu Access management ──────────────────────────────────────
+
+export const getNavCatalogByAdmin = async (surface?: string) => {
+  const token = localStorage.getItem('token');
+  const response = await apiClient.get('/admin/getNavCatalog', {
+    params: surface ? { surface } : undefined,
+    headers: { auth_token: token }
+  });
+  return response.data.catalog;
+};
+
+export const getNavRoleAccessByAdmin = async (role: string) => {
+  const token = localStorage.getItem('token');
+  const response = await apiClient.get(`/admin/getNavRoleAccess/${role}`, {
+    headers: { auth_token: token }
+  });
+  return response.data;
+};
+
+export const updateNavRoleAccessByAdmin = async (role: string, navKeys: string[]) => {
+  const token = localStorage.getItem('token');
+  const response = await apiClient.put(
+    '/admin/updateNavRoleAccess',
+    { role, navKeys },
+    { headers: { auth_token: token } }
+  );
+  return response.data;
+};
+
+export const getNavUserAccessByAdmin = async (userId: string) => {
+  const token = localStorage.getItem('token');
+  const response = await apiClient.get(`/admin/getNavUserAccess/${userId}`, {
+    headers: { auth_token: token }
+  });
+  return response.data;
+};
+
+export const updateNavUserAccessByAdmin = async (
+  userId: string,
+  addedKeys: string[],
+  removedKeys: string[]
+) => {
+  const token = localStorage.getItem('token');
+  const response = await apiClient.put(
+    '/admin/updateNavUserAccess',
+    { userId, addedKeys, removedKeys },
+    { headers: { auth_token: token } }
+  );
+  return response.data;
 };

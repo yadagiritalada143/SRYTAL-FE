@@ -11,6 +11,7 @@ import { MantineProvider, LoadingOverlay } from '@mantine/core';
 import '@mantine/core/styles.css';
 import { getOrganizationConfig } from '@services/common-services';
 import Loader from '@components/common/loader/loader';
+import NavAccessGuard from '@components/common/nav-guard/NavAccessGuard';
 import { ModalsProvider } from '@mantine/modals';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { organizationThemeAtom } from '@atoms/organization-atom';
@@ -481,6 +482,7 @@ const EmployeeRoutes = () => {
         >
           <Route path='/dashboard' element={<EmployeeDashboard />}>
             <Route element={<EmployeeProtectedRoutes />}>
+             <Route element={<NavAccessGuard />}>
               <Route path='profile' element={<EmployeeProfile />} />
               <Route element={<RecruiterProtectedRoutes />}>
                 <Route path='pool-candidates' element={<PoolCandidateList />} />
@@ -563,6 +565,7 @@ const EmployeeRoutes = () => {
                 path='reports/salary-slip'
                 element={<SalarySlipReport />}
               />
+             </Route>
             </Route>
           </Route>
         </Route>

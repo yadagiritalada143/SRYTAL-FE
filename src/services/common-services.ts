@@ -7,6 +7,11 @@ import { UserDetails } from '@interfaces/user';
 export { logoutUser } from '@utils/api-client';
 import { apiClient, apiClientComm } from '@utils/api-client';
 
+export const getMyNavMenu = async () => {
+  const response = await apiClient.get('/getMyNavMenu');
+  return response.data;
+};
+
 export const login = async (Credentials: LoginForm): Promise<UserDetails> => {
   try {
     const response = await apiClientComm.post('/admin/login', Credentials);

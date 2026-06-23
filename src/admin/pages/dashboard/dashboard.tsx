@@ -1,25 +1,22 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
-import AdminNavbar from '@components/UI/navbar/navbar';
-import { adminNavLinks } from '@utils/admin/nav-links/admin-nav-links';
+import Sidebar from '@components/UI/navbar/Sidebar';
 
 import { useRecoilValue } from 'recoil';
 import { useDisclosure } from '@mantine/hooks';
 import { userDetailsAtom } from '@atoms/user';
+import { sidebarCollapsedAtom } from '@atoms/sidebar';
 import { ChangePasswordPopup } from '@components/UI/Models/updatePassword';
 import { ThemeBackground } from '@components/UI/Theme-background/background';
 import { useAppTheme } from '@hooks/use-app-theme';
+import { useGetMyNavMenu } from '@hooks/queries/useNavQueries';
 
 const AdminDashboard = () => {
-  const [isDrawerOpen, setDrawerOpen] = useState(false);
-  const {
-    themeConfig: currentThemeConfig,
-    organizationConfig,
-    isDarkTheme
-  } = useAppTheme();
+  const { organizationConfig } = useAppTheme();
+  const { data: navData, isLoading: navLoading } = useGetMyNavMenu();
+  const collapsed = useRecoilValue(sidebarCollapsedAtom);
 
   const [opened, { open, close }] = useDisclosure(false);
-  const toggleDrawer = () => setDrawerOpen(!isDrawerOpen);
   const user = useRecoilValue(userDetailsAtom);
   useEffect(() => {
     if (
@@ -30,18 +27,19 @@ const AdminDashboard = () => {
       open();
     }
   }, [user, open]);
+
   return (
-    <ThemeBackground className='flex min-h-screen '>
-      <AdminNavbar
-        navLinks={adminNavLinks}
+    <ThemeBackground className='flex min-h-screen'>
+      <Sidebar
+        menu={navData?.menu ?? []}
         organizationConfig={organizationConfig}
-        isDrawerOpen={isDrawerOpen}
-        setIsDrawerOpen={toggleDrawer}
+        isLoading={navLoading}
       />
 
       <div
-        className={'flex-grow transition-all duration-300 overflow-hidden'}
-        style={{ paddingTop: '88px' }}
+        className={`flex-grow overflow-x-hidden pt-[68px] transition-[padding] duration-200 ${
+          collapsed ? 'md:pl-0 md:pt-[64px]' : 'md:pl-[248px] md:pt-0'
+        }`}
       >
         <div>
           <Outlet />

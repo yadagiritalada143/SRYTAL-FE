@@ -22,6 +22,7 @@ import UserProvider from '@hooks/user-context';
 import { ThemeToggleButton } from '@components/UI/Theme-toggle-button/button';
 import { useAppTheme } from '@hooks/use-app-theme';
 import { OrganizationConfig } from '@interfaces/organization';
+import NavAccessGuard from '@components/common/nav-guard/NavAccessGuard';
 
 // Lazy loaded components
 const AdminDashboard = lazy(() => import('@admin/pages/dashboard/dashboard'));
@@ -37,6 +38,12 @@ const UpdateEmployee = lazy(
 );
 const AdminProfile = lazy(
   () => import('@admin/components/dashboard/profile/AdminProfile')
+);
+const AdminDashboardOverview = lazy(
+  () => import('@admin/components/dashboard/admin-dashboard/AdminDashboard')
+);
+const NavAccess = lazy(
+  () => import('@admin/components/dashboard/settings/NavAccess')
 );
 const BloodGroupTable = lazy(
   () => import('@admin/components/dashboard/blood-group/BloodGroup')
@@ -515,8 +522,10 @@ const AdminRoutes = () => {
           }
         >
           <Route path='/dashboard' element={<AdminDashboard />}>
+           <Route element={<NavAccessGuard />}>
+            <Route index element={<AdminDashboardOverview />} />
             <Route path='addemployee' element={<AddEmployee />} />
-            <Route path='' element={<Employees />} />
+            <Route path='employees' element={<Employees />} />
             <Route path='profile' element={<AdminProfile />} />
             <Route path='pool-companies' element={<Companies />} />
             <Route path='add-pool-companies' element={<AddCompany />} />
@@ -562,7 +571,9 @@ const AdminRoutes = () => {
               <Route path='employment-roles' element={<EmploymentRoles />} />
               <Route path='departments' element={<DepartmentTable />} />
               <Route path='feedback' element={<FeedbackTable />} />
+              <Route path='menu-access' element={<NavAccess />} />
             </Route>
+           </Route>
           </Route>
         </Route>
       </Routes>

@@ -258,7 +258,7 @@ const UpdateEmployee = () => {
 
       showSuccessToast('Employee deleted successfully!');
       navigate(
-        `${organizationAdminUrls(organizationConfig.organization_name)}/dashboard`
+        `${organizationAdminUrls(organizationConfig.organization_name)}/dashboard/employees`
       );
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to delete employee');

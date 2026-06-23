@@ -9,7 +9,6 @@ import {
   Divider,
   Grid,
   Group,
-  Paper,
   Progress,
   SimpleGrid,
   Skeleton,
@@ -112,14 +111,13 @@ const Dashboard = () => {
   return (
     <Container size='xl' py='xl'>
       {/* Header */}
-      <Paper
-        withBorder
-        radius='lg'
-        p='lg'
+      <Box
         mb='xl'
+        p='lg'
         style={{
-          background: `linear-gradient(135deg, ${themeConfig.color}14 0%, ${themeConfig.color}06 100%)`,
-          borderColor: `${themeConfig.color}28`
+          backgroundImage: `linear-gradient(135deg, ${themeConfig.color}14 0%, ${themeConfig.color}06 100%)`,
+          border: `1px solid ${themeConfig.color}28`,
+          borderRadius: 'var(--mantine-radius-lg)'
         }}
       >
         <Group justify='space-between' align='center' wrap='wrap'>
@@ -189,7 +187,7 @@ const Dashboard = () => {
             )}
           </Group>
         </Group>
-      </Paper>
+      </Box>
 
       {/* Stat cards */}
       <SimpleGrid cols={{ base: 2, md: 4 }} spacing='md' mb='xl'>

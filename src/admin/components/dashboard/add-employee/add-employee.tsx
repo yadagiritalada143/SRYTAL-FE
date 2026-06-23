@@ -129,7 +129,7 @@ const AddEmployee = () => {
 
   const handleCancel = () => {
     navigate(
-      `${organizationAdminUrls(organizationConfig.organization_name)}/dashboard`
+      `${organizationAdminUrls(organizationConfig.organization_name)}/dashboard/employees`
     );
   };
 
