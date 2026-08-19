@@ -12,7 +12,8 @@ import {
   Paper,
   Accordion,
   ThemeIcon,
-  Center
+  Center,
+  Tooltip
 } from '@mantine/core';
 import {
   IconArrowLeft,
@@ -22,7 +23,8 @@ import {
   IconListCheck,
   IconLink,
   IconFile,
-  IconExternalLink
+  IconExternalLink,
+  IconEdit
 } from '@tabler/icons-react';
 import { useState } from 'react';
 import { useMediaQuery } from '@mantine/hooks';
@@ -33,9 +35,12 @@ import { getCourseTaskContentUrl } from '@services/user-services';
 import { CommonButton } from '@components/common/button/CommonButton';
 import PremiumLoader from '@components/common/loaders/PremiumLoader';
 import DataView from '@components/common/loaders/DataView';
-import { Module, Task } from '@interfaces/contentwriter';
+import { Course, Module, Task } from '@interfaces/contentwriter';
 import AddModuleModal from './AddModuleModal';
 import AddTaskModal from './AddTaskModal';
+import EditCourseModal from './EditCourseModal';
+import EditModuleModal from './EditModuleModal';
+import EditTaskModal from './EditTaskModal';
 
 const CourseDetails = () => {
   const { id = '' } = useParams();
@@ -43,12 +48,18 @@ const CourseDetails = () => {
   const isMobile = useMediaQuery('(max-width: 768px)');
   const { themeConfig: currentThemeConfig, isDarkTheme } = useAppTheme();
 
-  const { data: course, isLoading } = useGetCourseById(id);
+  const { data: course, isLoading } = useGetCourseById(id) as {
+    data?: Course;
+    isLoading: boolean;
+  };
 
   const [moduleModalOpen, setModuleModalOpen] = useState(false);
   const [taskModalModuleId, setTaskModalModuleId] = useState<string | null>(
     null
   );
+  const [courseEditOpen, setCourseEditOpen] = useState(false);
+  const [moduleToEdit, setModuleToEdit] = useState<Module | null>(null);
+  const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
 
   const modules: Module[] = course?.modules || [];
   const totalTasks = modules.reduce(
@@ -119,14 +130,22 @@ const CourseDetails = () => {
                   </Text>
                 </Stack>
               </Group>
-              <Badge
-                size={isMobile ? 'md' : 'lg'}
-                variant='light'
-                color={course?.status === 'ACTIVE' ? 'green' : 'blue'}
-                mt={{ base: 'xs', sm: 0 }}
-              >
-                {course?.status || 'Draft'}
-              </Badge>
+              <Group gap='sm' mt={{ base: 'xs', sm: 0 }} wrap='nowrap'>
+                <Badge
+                  size={isMobile ? 'md' : 'lg'}
+                  variant='light'
+                  color={course?.status === 'ACTIVE' ? 'green' : 'blue'}
+                >
+                  {course?.status || 'Draft'}
+                </Badge>
+                <CommonButton
+                  leftSection={<IconEdit size={16} />}
+                  onClick={() => setCourseEditOpen(true)}
+                  disabled={!course}
+                >
+                  Edit Course
+                </CommonButton>
+              </Group>
             </Group>
             <Divider />
           </Stack>
@@ -226,27 +245,46 @@ const CourseDetails = () => {
             <Accordion variant='separated' radius='md' multiple>
               {modules.map(module => (
                 <Accordion.Item key={module._id} value={module._id}>
-                  <Accordion.Control>
-                    <Group justify='space-between' wrap='nowrap' pr='sm'>
-                      <Stack gap={2} style={{ minWidth: 0 }}>
-                        <Text fw={600} lineClamp={1}>
-                          {module.moduleName}
-                        </Text>
-                        {module.moduleDescription && (
-                          <Text size='xs' c='dimmed' lineClamp={1}>
-                            {module.moduleDescription}
+                  {/* The edit control sits beside Accordion.Control rather
+                      than inside it, so it is not a button within a button. */}
+                  <Center>
+                    <Accordion.Control style={{ flex: 1, minWidth: 0 }}>
+                      <Group justify='space-between' wrap='nowrap' pr='sm'>
+                        <Stack gap={2} style={{ minWidth: 0 }}>
+                          <Text fw={600} lineClamp={1}>
+                            {module.moduleName}
                           </Text>
-                        )}
-                      </Stack>
-                      <Badge
-                        variant='gradient'
-                        radius='sm'
-                        style={{ flexShrink: 0 }}
+                          {module.moduleDescription && (
+                            <Text size='xs' c='dimmed' lineClamp={1}>
+                              {module.moduleDescription}
+                            </Text>
+                          )}
+                        </Stack>
+                        <Group gap='xs' wrap='nowrap' style={{ flexShrink: 0 }}>
+                          {module.status === 'ARCHIVE' && (
+                            <Badge color='gray' radius='sm' variant='light'>
+                              Archived
+                            </Badge>
+                          )}
+                          <Badge variant='gradient' radius='sm'>
+                            {module.tasks?.length || 0} items
+                          </Badge>
+                        </Group>
+                      </Group>
+                    </Accordion.Control>
+                    <Tooltip label='Edit module' withArrow>
+                      <ActionIcon
+                        variant='subtle'
+                        color='gray'
+                        size='lg'
+                        mr='xs'
+                        aria-label={`Edit ${module.moduleName}`}
+                        onClick={() => setModuleToEdit(module)}
                       >
-                        {module.tasks?.length || 0} items
-                      </Badge>
-                    </Group>
-                  </Accordion.Control>
+                        <IconEdit size={18} />
+                      </ActionIcon>
+                    </Tooltip>
+                  </Center>
                   <Accordion.Panel>
                     <Stack gap='sm'>
                       {module.tasks?.length ? (
@@ -255,6 +293,7 @@ const CourseDetails = () => {
                             key={task._id}
                             task={task}
                             onView={() => handleViewContent(task)}
+                            onEdit={() => setTaskToEdit(task)}
                             borderColor={currentThemeConfig.borderColor}
                           />
                         ))
@@ -292,6 +331,23 @@ const CourseDetails = () => {
         moduleId={taskModalModuleId || ''}
         courseId={id}
       />
+      <EditCourseModal
+        opened={courseEditOpen}
+        onClose={() => setCourseEditOpen(false)}
+        course={course}
+      />
+      <EditModuleModal
+        opened={!!moduleToEdit}
+        onClose={() => setModuleToEdit(null)}
+        module={moduleToEdit || undefined}
+        courseId={id}
+      />
+      <EditTaskModal
+        opened={!!taskToEdit}
+        onClose={() => setTaskToEdit(null)}
+        task={taskToEdit || undefined}
+        courseId={id}
+      />
     </Container>
   );
 };
@@ -299,10 +355,11 @@ const CourseDetails = () => {
 interface TaskRowProps {
   task: Task;
   onView: () => void;
+  onEdit: () => void;
   borderColor: string;
 }
 
-const TaskRow = ({ task, onView, borderColor }: TaskRowProps) => {
+const TaskRow = ({ task, onView, onEdit, borderColor }: TaskRowProps) => {
   const isLink = task.type === 'LINK';
   return (
     <Paper p='sm' radius='md' withBorder style={{ borderColor }}>
@@ -316,9 +373,16 @@ const TaskRow = ({ task, onView, borderColor }: TaskRowProps) => {
             {isLink ? <IconLink size={18} /> : <IconFile size={18} />}
           </ThemeIcon>
           <Stack gap={0} style={{ minWidth: 0 }}>
-            <Text fw={500} size='sm' lineClamp={1}>
-              {task.taskName}
-            </Text>
+            <Group gap='xs' wrap='nowrap'>
+              <Text fw={500} size='sm' lineClamp={1}>
+                {task.taskName}
+              </Text>
+              {task.status === 'ARCHIVE' && (
+                <Badge color='gray' radius='sm' variant='light' size='xs'>
+                  Archived
+                </Badge>
+              )}
+            </Group>
             {task.taskDescription && (
               <Text size='xs' c='dimmed' lineClamp={1}>
                 {task.taskDescription}
@@ -326,15 +390,26 @@ const TaskRow = ({ task, onView, borderColor }: TaskRowProps) => {
             )}
           </Stack>
         </Group>
-        <CommonButton
-          variant='subtle'
-          size='xs'
-          rightSection={<IconExternalLink size={14} />}
-          onClick={onView}
-          style={{ flexShrink: 0 }}
-        >
-          Open
-        </CommonButton>
+        <Group gap={4} wrap='nowrap' style={{ flexShrink: 0 }}>
+          <CommonButton
+            variant='subtle'
+            size='xs'
+            rightSection={<IconExternalLink size={14} />}
+            onClick={onView}
+          >
+            Open
+          </CommonButton>
+          <Tooltip label='Edit content' withArrow>
+            <ActionIcon
+              variant='subtle'
+              color='gray'
+              aria-label={`Edit ${task.taskName}`}
+              onClick={onEdit}
+            >
+              <IconEdit size={16} />
+            </ActionIcon>
+          </Tooltip>
+        </Group>
       </Group>
     </Paper>
   );

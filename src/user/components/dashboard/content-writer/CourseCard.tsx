@@ -1,4 +1,4 @@
-import { Card, Image, Stack, Text, Badge, ActionIcon, Menu, Group } from '@mantine/core';
+import { Card, Stack, Text, Badge, ActionIcon, Menu, Group } from '@mantine/core';
 import {
   IconDots,
   IconEdit,
@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { organizationEmployeeUrls } from '@utils/common/constants';
 import { useAppTheme } from '@hooks/use-app-theme';
 import { Course } from '@interfaces/contentwriter';
+import CourseThumbnail from './CourseThumbnail';
 
 interface CourseCardProps {
   course: Course;
@@ -16,8 +17,6 @@ interface CourseCardProps {
   onArchive?: (id: string) => void;
   onDelete?: (id: string) => void;
 }
-
-const FALLBACK_THUMBNAIL = '/course-thumbnail.png';
 
 const CourseCard = ({ course, onEdit, onArchive, onDelete }: CourseCardProps) => {
   const navigate = useNavigate();
@@ -55,15 +54,7 @@ const CourseCard = ({ course, onEdit, onArchive, onDelete }: CourseCardProps) =>
       }}
     >
       <Group wrap='nowrap' gap='sm' align='flex-start'>
-        <Image
-          src={course.thumbnail || FALLBACK_THUMBNAIL}
-          fallbackSrc={FALLBACK_THUMBNAIL}
-          w={68}
-          h={68}
-          radius='sm'
-          style={{ flexShrink: 0, objectFit: 'cover' }}
-          alt={course.courseName}
-        />
+        <CourseThumbnail name={course.courseName} size={68} radius='sm' />
 
         <Stack gap={3} style={{ flex: 1, minWidth: 0 }}>
           <Text fw={600} size='sm' lineClamp={1}>

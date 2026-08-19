@@ -9,7 +9,10 @@ import {
   updatePoolCandidateByRecruiter,
   addCourseContentWriter,
   addCourseModuleContentWriter,
-  addCourseTaskContentWriter
+  addCourseTaskContentWriter,
+  updateCourseContentWriter,
+  updateCourseModuleContentWriter,
+  updateCourseTaskContentWriter
 } from '@services/user-services';
 import { userQueryKeys } from '../queries/useUserQueries';
 import { AddCompanyForm } from '@forms/add-company';
@@ -19,7 +22,13 @@ import {
   AddCommentForm,
   UpdateCandidateSchema
 } from '@forms/add-candidate';
-import { AddModulePayload, AddTaskPayload } from '@interfaces/contentwriter';
+import {
+  AddModulePayload,
+  AddTaskPayload,
+  UpdateCoursePayload,
+  UpdateModulePayload,
+  UpdateTaskPayload
+} from '@interfaces/contentwriter';
 
 export const useAddCompany = () => {
   const queryClient = useQueryClient();
@@ -144,6 +153,54 @@ export const useAddCourseTask = (courseId?: string) => {
           queryKey: userQueryKeys.course(courseId)
         });
       }
+    }
+  });
+};
+
+export const useUpdateCourse = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: UpdateCoursePayload) => updateCourseContentWriter(data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: userQueryKeys.course(variables.id)
+      });
+      queryClient.invalidateQueries({ queryKey: userQueryKeys.courses });
+    }
+  });
+};
+
+/**
+ * Modules and tasks are only ever read through their parent course, so both
+ * update hooks refresh that course's cache entry.
+ */
+export const useUpdateCourseModule = (courseId?: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: UpdateModulePayload) =>
+      updateCourseModuleContentWriter(data),
+    onSuccess: () => {
+      if (courseId) {
+        queryClient.invalidateQueries({
+          queryKey: userQueryKeys.course(courseId)
+        });
+      }
+      queryClient.invalidateQueries({ queryKey: userQueryKeys.courses });
+    }
+  });
+};
+
+export const useUpdateCourseTask = (courseId?: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: UpdateTaskPayload) => updateCourseTaskContentWriter(data),
+    onSuccess: () => {
+      if (courseId) {
+        queryClient.invalidateQueries({
+          queryKey: userQueryKeys.course(courseId)
+        });
+      }
+      queryClient.invalidateQueries({ queryKey: userQueryKeys.courses });
     }
   });
 };

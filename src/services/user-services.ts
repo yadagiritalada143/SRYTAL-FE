@@ -9,7 +9,13 @@ import {
 export { logoutUser } from '@utils/api-client';
 import { apiClient } from '@utils/api-client';
 import { BASE_URL } from '@constants';
-import { AddModulePayload, AddTaskPayload } from '@interfaces/contentwriter';
+import {
+  AddModulePayload,
+  AddTaskPayload,
+  UpdateCoursePayload,
+  UpdateModulePayload,
+  UpdateTaskPayload
+} from '@interfaces/contentwriter';
 
 export const getCompanyDetails = async () => {
   try {
@@ -240,6 +246,43 @@ export const addCourseTaskContentWriter = async (data: AddTaskPayload) => {
       '/contentwriter/addCourseTask',
       formData,
       { headers: { 'Content-Type': 'multipart/form-data' } }
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const updateCourseContentWriter = async (data: UpdateCoursePayload) => {
+  try {
+    const response = await apiClient.put('/contentwriter/updatecourse', data);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const updateCourseModuleContentWriter = async (
+  data: UpdateModulePayload
+) => {
+  try {
+    const response = await apiClient.put(
+      '/contentwriter/updatecoursemodule',
+      data
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const updateCourseTaskContentWriter = async (
+  data: UpdateTaskPayload
+) => {
+  try {
+    const response = await apiClient.put(
+      '/contentwriter/updatecoursetask',
+      data
     );
     return response.data;
   } catch (error) {
