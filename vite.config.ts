@@ -6,6 +6,10 @@ import path from 'path';
 export default defineConfig({
   resolve: {
     alias: {
+      '@tabler/icons-react': path.resolve(
+        __dirname,
+        './node_modules/@tabler/icons-react/dist/esm/icons/index.mjs'
+      ),
       '@components': path.resolve(__dirname, './src/components'),
       '@pages': path.resolve(__dirname, './src/pages'),
       '@assets': path.resolve(__dirname, './src/assets'),

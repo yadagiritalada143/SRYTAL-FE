@@ -1,5 +1,11 @@
 export type TaskContentType = 'FILE' | 'LINK';
 
+// Mirrors the backend `validStatusValues` whitelist. The update endpoints
+// reject anything else with a 400.
+export type CourseStatus = 'ACTIVE' | 'ARCHIVE';
+
+export const COURSE_STATUSES: CourseStatus[] = ['ACTIVE', 'ARCHIVE'];
+
 export interface Task {
   _id: string;
   moduleId?: string;
@@ -31,6 +37,32 @@ export interface AddModulePayload {
   moduleName: string;
   moduleDescription: string;
   thumbnail?: File | null;
+}
+
+export interface UpdateCoursePayload {
+  id: string;
+  courseName: string;
+  courseDescription: string;
+  // The stored S3 key. The update endpoint takes a string (not a file upload),
+  // so we send the existing value back untouched.
+  thumbnail?: string;
+  status: CourseStatus;
+}
+
+export interface UpdateModulePayload {
+  id: string;
+  moduleName: string;
+  moduleDescription: string;
+  thumbnail?: string;
+  status: CourseStatus;
+}
+
+export interface UpdateTaskPayload {
+  id: string;
+  taskName: string;
+  taskDescription: string;
+  thumbnail?: string;
+  status: CourseStatus;
 }
 
 export interface AddTaskPayload {

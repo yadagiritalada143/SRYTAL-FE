@@ -14,7 +14,6 @@ import {
   Center,
   ThemeIcon,
   Badge,
-  Avatar,
   Modal
 } from '@mantine/core';
 import SkeletonLoader from '@components/common/loaders/SkeletonLoader';
@@ -32,9 +31,14 @@ import { useNavigate } from 'react-router-dom';
 import { organizationEmployeeUrls } from '@utils/common/constants';
 import { useAppTheme } from '@hooks/use-app-theme';
 import { useGetAllCoursesByUser } from '@hooks/queries/useUserQueries';
+import { useUpdateCourse } from '@hooks/mutations/useUserMutations';
+import { useCustomToast } from '@utils/common/toast';
+import { getErrorMessage } from '@utils/common/get-error-message';
 import { Course } from '@interfaces/contentwriter';
 import { CommonButton } from '@components/common/button/CommonButton';
 import CourseCard from './CourseCard';
+import CourseThumbnail from './CourseThumbnail';
+import EditCourseModal from '../edit-course/EditCourseModal';
 
 const COURSES_PER_PAGE = 6;
 
@@ -44,8 +48,11 @@ const WriterDashboard = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [courseToDelete, setCourseToDelete] = useState<string | null>(null);
+  const [courseToEdit, setCourseToEdit] = useState<Course | null>(null);
 
   const { data: courses = [], isLoading } = useGetAllCoursesByUser();
+  const { mutateAsync: updateCourse } = useUpdateCourse();
+  const { showSuccessToast, showErrorToast } = useCustomToast();
   const navigate = useNavigate();
 
   const stats = useMemo(() => {
@@ -66,25 +73,30 @@ const WriterDashboard = () => {
     return { totalCourses, totalModules, totalTasks };
   }, [courses]);
 
-  const recentActivity = useMemo(() => {
-    return [...courses]
-      .sort((a: Course, b: Course) => {
+
+
+  // Most recently updated first, so an edit moves its course to the top.
+  const sortedCourses = useMemo(
+    () =>
+      [...courses].sort((a: Course, b: Course) => {
         const da = new Date(a.updatedAt || a.createdAt || 0).getTime();
         const db = new Date(b.updatedAt || b.createdAt || 0).getTime();
         return db - da;
-      })
-      .slice(0, 6);
-  }, [courses]);
+      }),
+    [courses]
+  );
+
+  const recentActivity = useMemo(() => sortedCourses.slice(0, 6), [sortedCourses]);
 
   const filteredCourses = useMemo(() => {
-    if (!searchQuery.trim()) return courses;
+    if (!searchQuery.trim()) return sortedCourses;
     const q = searchQuery.toLowerCase();
-    return courses.filter(
+    return sortedCourses.filter(
       (c: Course) =>
         c.courseName.toLowerCase().includes(q) ||
         c.courseDescription?.toLowerCase().includes(q)
     );
-  }, [courses, searchQuery]);
+  }, [sortedCourses, searchQuery]);
 
   const { paginatedCourses, totalPages } = useMemo(() => {
     const start = (activePage - 1) * COURSES_PER_PAGE;
@@ -95,9 +107,8 @@ const WriterDashboard = () => {
   }, [filteredCourses, activePage]);
 
   const handleEdit = (courseId: string) => {
-    navigate(
-      `${organizationEmployeeUrls(organizationConfig.organization_name)}/dashboard/course/${courseId}`
-    );
+    const course = courses.find((c: Course) => c._id === courseId);
+    if (course) setCourseToEdit(course);
   };
 
   const handleDelete = (courseId: string) => {
@@ -105,7 +116,23 @@ const WriterDashboard = () => {
     setDeleteModalOpen(true);
   };
 
-  const handleArchive = (_courseId: string) => {};
+  // Archiving is just a status update through the same course update endpoint.
+  const handleArchive = async (courseId: string) => {
+    const course = courses.find((c: Course) => c._id === courseId);
+    if (!course) return;
+    try {
+      await updateCourse({
+        id: course._id,
+        courseName: course.courseName,
+        courseDescription: course.courseDescription,
+        thumbnail: course.thumbnail,
+        status: 'ARCHIVE'
+      });
+      showSuccessToast('Course archived successfully!');
+    } catch (error) {
+      showErrorToast(getErrorMessage(error, 'Failed to archive course'));
+    }
+  };
 
   const confirmDelete = () => {
     setDeleteModalOpen(false);
@@ -332,10 +359,10 @@ const WriterDashboard = () => {
                           )
                         }
                       >
-                        <Avatar
-                          src={course.thumbnail || '/course-thumbnail.png'}
+                        <CourseThumbnail
+                          name={course.courseName}
+                          size={38}
                           radius='sm'
-                          size='md'
                         />
                         <Stack gap={2} style={{ flex: 1, minWidth: 0 }}>
                           <Text size='sm' fw={500} lineClamp={1}>
@@ -396,6 +423,12 @@ const WriterDashboard = () => {
           </Group>
         </Stack>
       </Modal>
+
+      <EditCourseModal
+        opened={!!courseToEdit}
+        onClose={() => setCourseToEdit(null)}
+        course={courseToEdit || undefined}
+      />
     </Container>
   );
 };
