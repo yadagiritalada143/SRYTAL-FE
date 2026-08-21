@@ -16,7 +16,6 @@ import { CommonButton } from '@components/common/button/CommonButton';
 import { useUpdateCourse } from '@hooks/mutations/useUserMutations';
 import { useCustomToast } from '@utils/common/toast';
 import { getErrorMessage } from '@utils/common/get-error-message';
-import { getMediaSignedUrl } from '@services/user-services';
 import {
   Course,
   CourseStatus,
@@ -60,22 +59,12 @@ const EditCourseModal = ({ opened, onClose, course }: EditCourseModalProps) => {
   }
 
   useEffect(() => {
-    if (!opened || !course?.thumbnail) {
+    if (!opened) {
       setExistingThumbUrl(null);
       return;
     }
-    let cancelled = false;
-    getMediaSignedUrl(course.thumbnail)
-      .then(url => {
-        if (!cancelled) setExistingThumbUrl(url);
-      })
-      .catch(() => {
-        if (!cancelled) setExistingThumbUrl(null);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [opened, course?.thumbnail]);
+    setExistingThumbUrl(course?.thumbnailUrl || null);
+  }, [opened, course?.thumbnailUrl]);
 
   const handleClose = () => {
     if (isPending) return;

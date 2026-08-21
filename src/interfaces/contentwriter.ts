@@ -77,6 +77,8 @@ export interface Course {
   courseName: string;
   courseDescription: string;
   thumbnail?: string;
+  /** Ready-to-use signed URL for the thumbnail, provided by the backend. */
+  thumbnailUrl?: string;
   status: string;
   modules?: Module[];
   updatedAt?: string;

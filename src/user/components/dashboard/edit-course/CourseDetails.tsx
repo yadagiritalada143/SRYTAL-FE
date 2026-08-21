@@ -31,7 +31,7 @@ import { useMediaQuery } from '@mantine/hooks';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAppTheme } from '@hooks/use-app-theme';
 import { useGetCourseById } from '@hooks/queries/useUserQueries';
-import { getCourseTaskContentUrl, getMediaSignedUrl } from '@services/user-services';
+import { getCourseTaskContentUrl } from '@services/user-services';
 import { CommonButton } from '@components/common/button/CommonButton';
 import PremiumLoader from '@components/common/loaders/PremiumLoader';
 import DataView from '@components/common/loaders/DataView';
@@ -64,13 +64,8 @@ const CourseDetails = () => {
   const [thumbSrc, setThumbSrc] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    if (!course?.thumbnail) { setThumbSrc(undefined); return; }
-    let cancelled = false;
-    getMediaSignedUrl(course.thumbnail)
-      .then(url => { if (!cancelled) setThumbSrc(url); })
-      .catch(() => { if (!cancelled) setThumbSrc(undefined); });
-    return () => { cancelled = true; };
-  }, [course?.thumbnail]);
+    setThumbSrc(course?.thumbnailUrl || undefined);
+  }, [course?.thumbnailUrl]);
 
   const modules: Module[] = course?.modules || [];
   const totalTasks = modules.reduce(

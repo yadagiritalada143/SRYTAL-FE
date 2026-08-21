@@ -34,7 +34,6 @@ import { useGetAllCoursesByUser } from '@hooks/queries/useUserQueries';
 import { useUpdateCourse } from '@hooks/mutations/useUserMutations';
 import { useCustomToast } from '@utils/common/toast';
 import { getErrorMessage } from '@utils/common/get-error-message';
-import { getMediaSignedUrl } from '@services/user-services';
 import { Course } from '@interfaces/contentwriter';
 import { CommonButton } from '@components/common/button/CommonButton';
 import CourseCard from './CourseCard';
@@ -417,22 +416,8 @@ const RecentActivityItem = ({
   const [thumbSrc, setThumbSrc] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    if (!course.thumbnail) {
-      setThumbSrc(undefined);
-      return;
-    }
-    let cancelled = false;
-    getMediaSignedUrl(course.thumbnail)
-      .then(url => {
-        if (!cancelled) setThumbSrc(url);
-      })
-      .catch(() => {
-        if (!cancelled) setThumbSrc(undefined);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [course.thumbnail]);
+    setThumbSrc(course.thumbnailUrl || undefined);
+  }, [course.thumbnailUrl]);
 
   return (
     <>

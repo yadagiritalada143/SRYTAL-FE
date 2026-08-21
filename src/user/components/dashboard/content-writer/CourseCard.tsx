@@ -9,7 +9,6 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { organizationEmployeeUrls } from '@utils/common/constants';
 import { useAppTheme } from '@hooks/use-app-theme';
-import { getMediaSignedUrl } from '@services/user-services';
 import { Course } from '@interfaces/contentwriter';
 import CourseThumbnail from './CourseThumbnail';
 
@@ -26,13 +25,8 @@ const CourseCard = ({ course, onEdit, onArchive, onDelete }: CourseCardProps) =>
   const [thumbSrc, setThumbSrc] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    if (!course.thumbnail) { setThumbSrc(undefined); return; }
-    let cancelled = false;
-    getMediaSignedUrl(course.thumbnail)
-      .then(url => { if (!cancelled) setThumbSrc(url); })
-      .catch(() => { if (!cancelled) setThumbSrc(undefined); });
-    return () => { cancelled = true; };
-  }, [course.thumbnail]);
+    setThumbSrc(course.thumbnailUrl || undefined);
+  }, [course.thumbnailUrl]);
 
   const goToCourse = () =>
     navigate(
