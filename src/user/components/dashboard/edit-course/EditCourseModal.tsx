@@ -1,10 +1,22 @@
-import { useState } from 'react';
-import { Modal, Stack, TextInput, Select, Group, Loader, Text } from '@mantine/core';
-import { IconCheck } from '@tabler/icons-react';
+import { useState, useEffect } from 'react';
+import {
+  Modal,
+  Stack,
+  TextInput,
+  Select,
+  Group,
+  Loader,
+  Text,
+  FileInput,
+  Image,
+  Paper
+} from '@mantine/core';
+import { IconCheck, IconUpload, IconX } from '@tabler/icons-react';
 import { CommonButton } from '@components/common/button/CommonButton';
 import { useUpdateCourse } from '@hooks/mutations/useUserMutations';
 import { useCustomToast } from '@utils/common/toast';
 import { getErrorMessage } from '@utils/common/get-error-message';
+import { getMediaSignedUrl } from '@services/user-services';
 import {
   Course,
   CourseStatus,
@@ -22,6 +34,9 @@ const EditCourseModal = ({ opened, onClose, course }: EditCourseModalProps) => {
   const [courseName, setCourseName] = useState('');
   const [courseDescription, setCourseDescription] = useState('');
   const [status, setStatus] = useState<CourseStatus>('ACTIVE');
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
+  const [existingThumbUrl, setExistingThumbUrl] = useState<string | null>(null);
 
   const { mutateAsync: updateCourse, isPending } = useUpdateCourse();
   const { showSuccessToast, showErrorToast } = useCustomToast();
@@ -36,14 +51,46 @@ const EditCourseModal = ({ opened, onClose, course }: EditCourseModalProps) => {
     setCourseName(course.courseName || '');
     setCourseDescription(course.courseDescription || '');
     setStatus((course.status as CourseStatus) || 'ACTIVE');
+    setThumbnailFile(null);
+    setThumbnailPreview(null);
+    setExistingThumbUrl(null);
   } else if (!opened && seededFor !== null) {
     // Clear on close so reopening the same course re-reads fresh data.
     setSeededFor(null);
   }
 
+  useEffect(() => {
+    if (!opened || !course?.thumbnail) {
+      setExistingThumbUrl(null);
+      return;
+    }
+    let cancelled = false;
+    getMediaSignedUrl(course.thumbnail)
+      .then(url => {
+        if (!cancelled) setExistingThumbUrl(url);
+      })
+      .catch(() => {
+        if (!cancelled) setExistingThumbUrl(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [opened, course?.thumbnail]);
+
   const handleClose = () => {
     if (isPending) return;
     onClose();
+  };
+
+  const handleThumbnailChange = (file: File | null) => {
+    setThumbnailFile(file);
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => setThumbnailPreview(reader.result as string);
+      reader.readAsDataURL(file);
+    } else {
+      setThumbnailPreview(null);
+    }
   };
 
   const handleSubmit = async () => {
@@ -55,7 +102,7 @@ const EditCourseModal = ({ opened, onClose, course }: EditCourseModalProps) => {
         courseDescription,
         // The endpoint takes the thumbnail as a plain string, so the stored S3
         // key is sent back unchanged.
-        thumbnail: course.thumbnail,
+        thumbnail: thumbnailFile || undefined,
         status
       });
       showSuccessToast('Course updated successfully!');
@@ -64,6 +111,10 @@ const EditCourseModal = ({ opened, onClose, course }: EditCourseModalProps) => {
       showErrorToast(getErrorMessage(error, 'Failed to update course'));
     }
   };
+
+  const hasNewFile = !!thumbnailFile;
+  const showNewPreview = hasNewFile && thumbnailPreview;
+  const showExisting = !hasNewFile && existingThumbUrl;
 
   return (
     <Modal
@@ -81,6 +132,83 @@ const EditCourseModal = ({ opened, onClose, course }: EditCourseModalProps) => {
           value={courseName}
           onChange={e => setCourseName(e.target.value)}
         />
+
+        <Stack gap={4}>
+          <Text size='sm' fw={500}>
+            Course Thumbnail
+          </Text>
+
+          {showNewPreview ? (
+            <Paper radius='md' withBorder p='sm'>
+              <Group gap='sm' align='center' wrap='nowrap'>
+                <Image
+                  src={thumbnailPreview}
+                  height={80}
+                  w={140}
+                  radius='md'
+                  fit='cover'
+                  alt='New thumbnail'
+                />
+                <Stack gap='xs' style={{ flex: 1, minWidth: 0 }}>
+                  <Text size='sm' fw={500} lineClamp={1}>
+                    {thumbnailFile?.name}
+                  </Text>
+                  <Text size='xs' c='dimmed'>
+                    {(thumbnailFile!.size / 1024 / 1024).toFixed(2)} MB
+                  </Text>
+                  <CommonButton
+                    variant='light'
+                    color='red'
+                    size='xs'
+                    leftSection={<IconX size={12} />}
+                    onClick={() => {
+                      setThumbnailFile(null);
+                      setThumbnailPreview(null);
+                    }}
+                    style={{ width: 'fit-content' }}
+                  >
+                    Remove
+                  </CommonButton>
+                </Stack>
+              </Group>
+            </Paper>
+          ) : showExisting ? (
+            <Paper radius='md' withBorder p='sm'>
+              <Group gap='sm' align='center' wrap='nowrap'>
+                <Image
+                  src={existingThumbUrl}
+                  height={80}
+                  w={140}
+                  radius='md'
+                  fit='cover'
+                  alt='Current thumbnail'
+                />
+                <Stack gap='xs' style={{ flex: 1, minWidth: 0 }}>
+                  <Text size='sm' fw={500}>
+                    Current thumbnail
+                  </Text>
+                  <FileInput
+                    placeholder='Replace image'
+                    accept='image/*'
+                    value={null}
+                    onChange={handleThumbnailChange}
+                    leftSection={<IconUpload size={14} />}
+                    size='xs'
+                    styles={{ input: { minHeight: 32, fontSize: 12 } }}
+                  />
+                </Stack>
+              </Group>
+            </Paper>
+          ) : (
+            <FileInput
+              placeholder='Click to upload or drag and drop'
+              accept='image/*'
+              value={thumbnailFile}
+              onChange={handleThumbnailChange}
+              leftSection={<IconUpload size={16} />}
+            />
+          )}
+        </Stack>
 
         <DescriptionEditor
           label='Course Description'

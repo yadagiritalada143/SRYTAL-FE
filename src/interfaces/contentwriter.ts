@@ -43,9 +43,7 @@ export interface UpdateCoursePayload {
   id: string;
   courseName: string;
   courseDescription: string;
-  // The stored S3 key. The update endpoint takes a string (not a file upload),
-  // so we send the existing value back untouched.
-  thumbnail?: string;
+  thumbnail?: File;
   status: CourseStatus;
 }
 

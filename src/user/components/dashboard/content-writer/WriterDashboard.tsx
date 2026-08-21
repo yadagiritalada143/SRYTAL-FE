@@ -26,7 +26,7 @@ import {
   IconX,
   IconClock
 } from '@tabler/icons-react';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { organizationEmployeeUrls } from '@utils/common/constants';
 import { useAppTheme } from '@hooks/use-app-theme';
@@ -34,6 +34,7 @@ import { useGetAllCoursesByUser } from '@hooks/queries/useUserQueries';
 import { useUpdateCourse } from '@hooks/mutations/useUserMutations';
 import { useCustomToast } from '@utils/common/toast';
 import { getErrorMessage } from '@utils/common/get-error-message';
+import { getMediaSignedUrl } from '@services/user-services';
 import { Course } from '@interfaces/contentwriter';
 import { CommonButton } from '@components/common/button/CommonButton';
 import CourseCard from './CourseCard';
@@ -73,8 +74,6 @@ const WriterDashboard = () => {
     return { totalCourses, totalModules, totalTasks };
   }, [courses]);
 
-
-
   // Most recently updated first, so an edit moves its course to the top.
   const sortedCourses = useMemo(
     () =>
@@ -86,7 +85,10 @@ const WriterDashboard = () => {
     [courses]
   );
 
-  const recentActivity = useMemo(() => sortedCourses.slice(0, 6), [sortedCourses]);
+  const recentActivity = useMemo(
+    () => sortedCourses.slice(0, 6),
+    [sortedCourses]
+  );
 
   const filteredCourses = useMemo(() => {
     if (!searchQuery.trim()) return sortedCourses;
@@ -348,41 +350,11 @@ const WriterDashboard = () => {
               {recentActivity.length > 0 ? (
                 <Stack gap={0}>
                   {recentActivity.map((course: Course, i: number) => (
-                    <div key={course._id}>
-                      <Group
-                        p='md'
-                        gap='sm'
-                        style={{ cursor: 'pointer' }}
-                        onClick={() =>
-                          navigate(
-                            `${organizationEmployeeUrls(organizationConfig.organization_name)}/dashboard/course/${course._id}`
-                          )
-                        }
-                      >
-                        <CourseThumbnail
-                          name={course.courseName}
-                          size={38}
-                          radius='sm'
-                        />
-                        <Stack gap={2} style={{ flex: 1, minWidth: 0 }}>
-                          <Text size='sm' fw={500} lineClamp={1}>
-                            {course.courseName}
-                          </Text>
-                          <Group gap={4}>
-                            <IconClock size={11} color='gray' />
-                            <Text size='xs' c='dimmed'>
-                              {course.updatedAt
-                                ? new Date(course.updatedAt).toLocaleDateString(
-                                    undefined,
-                                    { month: 'short', day: 'numeric', year: 'numeric' }
-                                  )
-                                : '—'}
-                            </Text>
-                          </Group>
-                        </Stack>
-                      </Group>
-                      {i < recentActivity.length - 1 && <Divider />}
-                    </div>
+                    <RecentActivityItem
+                      key={course._id}
+                      course={course}
+                      isLast={i === recentActivity.length - 1}
+                    />
                   ))}
                 </Stack>
               ) : (
@@ -430,6 +402,76 @@ const WriterDashboard = () => {
         course={courseToEdit || undefined}
       />
     </Container>
+  );
+};
+
+const RecentActivityItem = ({
+  course,
+  isLast
+}: {
+  course: Course;
+  isLast: boolean;
+}) => {
+  const navigate = useNavigate();
+  const { organizationConfig } = useAppTheme();
+  const [thumbSrc, setThumbSrc] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    if (!course.thumbnail) {
+      setThumbSrc(undefined);
+      return;
+    }
+    let cancelled = false;
+    getMediaSignedUrl(course.thumbnail)
+      .then(url => {
+        if (!cancelled) setThumbSrc(url);
+      })
+      .catch(() => {
+        if (!cancelled) setThumbSrc(undefined);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [course.thumbnail]);
+
+  return (
+    <>
+      <Group
+        p='md'
+        gap='sm'
+        style={{ cursor: 'pointer' }}
+        onClick={() =>
+          navigate(
+            `${organizationEmployeeUrls(organizationConfig.organization_name)}/dashboard/course/${course._id}`
+          )
+        }
+      >
+        <CourseThumbnail
+          name={course.courseName}
+          src={thumbSrc}
+          size={38}
+          radius='sm'
+        />
+        <Stack gap={2} style={{ flex: 1, minWidth: 0 }}>
+          <Text size='sm' fw={500} lineClamp={1}>
+            {course.courseName}
+          </Text>
+          <Group gap={4}>
+            <IconClock size={11} color='gray' />
+            <Text size='xs' c='dimmed'>
+              {course.updatedAt
+                ? new Date(course.updatedAt).toLocaleDateString(undefined, {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                  })
+                : '—'}
+            </Text>
+          </Group>
+        </Stack>
+      </Group>
+      {!isLast && <Divider />}
+    </>
   );
 };
 

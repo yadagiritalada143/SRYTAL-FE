@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Card, Stack, Text, Badge, ActionIcon, Menu, Group } from '@mantine/core';
 import {
   IconDots,
@@ -8,6 +9,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { organizationEmployeeUrls } from '@utils/common/constants';
 import { useAppTheme } from '@hooks/use-app-theme';
+import { getMediaSignedUrl } from '@services/user-services';
 import { Course } from '@interfaces/contentwriter';
 import CourseThumbnail from './CourseThumbnail';
 
@@ -21,6 +23,16 @@ interface CourseCardProps {
 const CourseCard = ({ course, onEdit, onArchive, onDelete }: CourseCardProps) => {
   const navigate = useNavigate();
   const { themeConfig, organizationConfig } = useAppTheme();
+  const [thumbSrc, setThumbSrc] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    if (!course.thumbnail) { setThumbSrc(undefined); return; }
+    let cancelled = false;
+    getMediaSignedUrl(course.thumbnail)
+      .then(url => { if (!cancelled) setThumbSrc(url); })
+      .catch(() => { if (!cancelled) setThumbSrc(undefined); });
+    return () => { cancelled = true; };
+  }, [course.thumbnail]);
 
   const goToCourse = () =>
     navigate(
@@ -54,7 +66,7 @@ const CourseCard = ({ course, onEdit, onArchive, onDelete }: CourseCardProps) =>
       }}
     >
       <Group wrap='nowrap' gap='sm' align='flex-start'>
-        <CourseThumbnail name={course.courseName} size={68} radius='sm' />
+        <CourseThumbnail name={course.courseName} src={thumbSrc} size={68} radius='sm' />
 
         <Stack gap={3} style={{ flex: 1, minWidth: 0 }}>
           <Text fw={600} size='sm' lineClamp={1}>

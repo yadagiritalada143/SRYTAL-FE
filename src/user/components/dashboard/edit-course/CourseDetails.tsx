@@ -26,12 +26,12 @@ import {
   IconExternalLink,
   IconEdit
 } from '@tabler/icons-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useMediaQuery } from '@mantine/hooks';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAppTheme } from '@hooks/use-app-theme';
 import { useGetCourseById } from '@hooks/queries/useUserQueries';
-import { getCourseTaskContentUrl } from '@services/user-services';
+import { getCourseTaskContentUrl, getMediaSignedUrl } from '@services/user-services';
 import { CommonButton } from '@components/common/button/CommonButton';
 import PremiumLoader from '@components/common/loaders/PremiumLoader';
 import DataView from '@components/common/loaders/DataView';
@@ -41,6 +41,7 @@ import AddTaskModal from './AddTaskModal';
 import EditCourseModal from './EditCourseModal';
 import EditModuleModal from './EditModuleModal';
 import EditTaskModal from './EditTaskModal';
+import CourseThumbnail from '../content-writer/CourseThumbnail';
 
 const CourseDetails = () => {
   const { id = '' } = useParams();
@@ -60,6 +61,16 @@ const CourseDetails = () => {
   const [courseEditOpen, setCourseEditOpen] = useState(false);
   const [moduleToEdit, setModuleToEdit] = useState<Module | null>(null);
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
+  const [thumbSrc, setThumbSrc] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    if (!course?.thumbnail) { setThumbSrc(undefined); return; }
+    let cancelled = false;
+    getMediaSignedUrl(course.thumbnail)
+      .then(url => { if (!cancelled) setThumbSrc(url); })
+      .catch(() => { if (!cancelled) setThumbSrc(undefined); });
+    return () => { cancelled = true; };
+  }, [course?.thumbnail]);
 
   const modules: Module[] = course?.modules || [];
   const totalTasks = modules.reduce(
@@ -123,12 +134,20 @@ const CourseDetails = () => {
                 >
                   <IconArrowLeft size={isMobile ? 18 : 20} />
                 </ActionIcon>
-                <Stack gap={4} style={{ flex: 1 }}>
-                  <Title order={isMobile ? 2 : 1}>{course?.courseName}</Title>
-                  <Text size={isMobile ? 'xs' : 'sm'} c='dimmed'>
-                    Manage modules and content for this course
-                  </Text>
-                </Stack>
+                <Group gap='md' style={{ flex: 1, minWidth: 0 }}>
+                  <CourseThumbnail
+                    name={course?.courseName || ''}
+                    src={thumbSrc}
+                    size={isMobile ? 52 : 72}
+                    radius='md'
+                  />
+                  <Stack gap={4} style={{ flex: 1, minWidth: 0 }}>
+                    <Title order={isMobile ? 2 : 1}>{course?.courseName}</Title>
+                    <Text size={isMobile ? 'xs' : 'sm'} c='dimmed'>
+                      Manage modules and content for this course
+                    </Text>
+                  </Stack>
+                </Group>
               </Group>
               <Group gap='sm' mt={{ base: 'xs', sm: 0 }} wrap='nowrap'>
                 <Badge

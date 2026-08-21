@@ -255,7 +255,17 @@ export const addCourseTaskContentWriter = async (data: AddTaskPayload) => {
 
 export const updateCourseContentWriter = async (data: UpdateCoursePayload) => {
   try {
-    const response = await apiClient.put('/contentwriter/updatecourse', data);
+    const formData = new FormData();
+    formData.append('id', data.id);
+    formData.append('courseName', data.courseName);
+    formData.append('courseDescription', data.courseDescription);
+    formData.append('status', data.status);
+    if (data.thumbnail instanceof File) {
+      formData.append('thumbnail', data.thumbnail);
+    }
+    const response = await apiClient.put('/contentwriter/updatecourse', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
     return response.data;
   } catch (error) {
     throw error;
@@ -288,6 +298,13 @@ export const updateCourseTaskContentWriter = async (
   } catch (error) {
     throw error;
   }
+};
+
+export const getMediaSignedUrl = async (s3Key: string): Promise<string> => {
+  const response = await apiClient.get('/contentwriter/getMediaSignedUrl', {
+    params: { key: s3Key }
+  });
+  return response.data.url;
 };
 
 /**
