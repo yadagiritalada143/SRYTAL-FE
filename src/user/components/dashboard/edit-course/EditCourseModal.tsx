@@ -72,6 +72,12 @@ const EditCourseModal = ({ opened, onClose, course }: EditCourseModalProps) => {
   };
 
   const handleThumbnailChange = (file: File | null) => {
+    if (file && !file.type.startsWith('image/')) {
+      showErrorToast(
+        'Invalid file format. Please upload your file as a JPG, PNG, or WEBP image!!'
+      );
+      return;
+    }
     setThumbnailFile(file);
     if (file) {
       const reader = new FileReader();

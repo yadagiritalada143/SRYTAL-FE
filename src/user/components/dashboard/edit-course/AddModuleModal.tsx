@@ -28,6 +28,16 @@ const AddModuleModal = ({ opened, onClose, courseId }: AddModuleModalProps) => {
   const { mutateAsync: addModule, isPending } = useAddCourseModule();
   const { showSuccessToast, showErrorToast } = useCustomToast();
 
+  const handleThumbnailChange = (file: File | null) => {
+    if (file && !file.type.startsWith('image/')) {
+      showErrorToast(
+        'Invalid file format. Please upload your file as a JPG, PNG, or WEBP image!!'
+      );
+      return;
+    }
+    setThumbnail(file);
+  };
+
   const reset = () => {
     setModuleName('');
     setModuleDescription('');
@@ -80,7 +90,7 @@ const AddModuleModal = ({ opened, onClose, courseId }: AddModuleModalProps) => {
           accept='image/*'
           leftSection={<IconUpload size={16} />}
           value={thumbnail}
-          onChange={setThumbnail}
+          onChange={handleThumbnailChange}
           clearable
         />
         <Group justify='flex-end' mt='sm'>
@@ -89,7 +99,11 @@ const AddModuleModal = ({ opened, onClose, courseId }: AddModuleModalProps) => {
           </CommonButton>
           <CommonButton
             leftSection={
-              isPending ? <Loader size='xs' color='white' /> : <IconCheck size={16} />
+              isPending ? (
+                <Loader size='xs' color='white' />
+              ) : (
+                <IconCheck size={16} />
+              )
             }
             disabled={!moduleName.trim() || isPending}
             onClick={handleSubmit}
