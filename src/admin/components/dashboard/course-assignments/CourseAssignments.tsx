@@ -167,10 +167,8 @@ const CourseAssignments = () => {
       <DataView isLoading={isLoadingData} label='data' isEmpty={false}>
         <form onSubmit={handleSubmit(onSubmit)}>
           <Grid gutter='lg' mt='lg'>
-            {/* Left Column — Selections */}
             <Grid.Col span={{ base: 12, lg: 6 }}>
               <Stack gap='lg'>
-                {/* Employee Selection */}
                 <Card withBorder radius='md' p='lg'>
                   <Stack gap='md'>
                     <Group gap='sm'>
@@ -361,7 +359,7 @@ const CourseAssignments = () => {
               </Stack>
             </Grid.Col>
 
-            {/* Right Column — Review Summary */}
+            {/* Review Summary */}
             <Grid.Col span={{ base: 12, lg: 6 }}>
               <Stack gap='lg' mt={{ base: 0, lg: 25 }}>
                 {showReview && selectedEmployee && selectedCourse ? (
