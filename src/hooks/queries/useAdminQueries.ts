@@ -11,7 +11,9 @@ import {
   getAllApproversByAdmin,
   getallfeedbackattributesbyadmin,
   getAllDepartmentsByAdmin,
-  getDashboardStatsByAdmin
+  getDashboardStatsByAdmin,
+  getAllCoursesByAdmin,
+  getCourseByIdAdmin
 } from '@services/admin-services';
 
 export const adminQueryKeys = {
@@ -27,7 +29,9 @@ export const adminQueryKeys = {
   approvers: ['adminApprovers'] as const,
   feedbackAttributes: ['adminFeedbackAttributes'] as const,
   departments: ['adminDepartments'] as const,
-  dashboardStats: ['adminDashboardStats'] as const
+  dashboardStats: ['adminDashboardStats'] as const,
+  courses: ['adminCourses'] as const,
+  course: (id: string) => ['adminCourse', id] as const
 };
 
 export const useGetDashboardStatsByAdmin = () => {
@@ -120,5 +124,20 @@ export const useGetAllDepartmentsByAdmin = () => {
   return useQuery({
     queryKey: adminQueryKeys.departments,
     queryFn: getAllDepartmentsByAdmin
+  });
+};
+
+export const useGetAllCoursesByAdmin = () => {
+  return useQuery({
+    queryKey: adminQueryKeys.courses,
+    queryFn: getAllCoursesByAdmin
+  });
+};
+
+export const useGetCourseByIdAdmin = (id: string, enabled = true) => {
+  return useQuery({
+    queryKey: adminQueryKeys.course(id),
+    queryFn: () => getCourseByIdAdmin(id),
+    enabled: !!id && enabled
   });
 };

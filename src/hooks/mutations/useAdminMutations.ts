@@ -32,7 +32,8 @@ import {
   deleteFeedbackAttributeByAdmin,
   addDepartmentByAdmin,
   updateDepartmentByAdmin,
-  deleteDepartmentByAdmin
+  deleteDepartmentByAdmin,
+  assignCourseToEmployee
 } from '@services/admin-services';
 import { adminQueryKeys } from '../queries/useAdminQueries';
 import { AddEmployeeForm } from '@forms/add-employee';
@@ -243,4 +244,9 @@ export const useUpdateDepartmentByAdmin = createMutationHook(
 export const useDeleteDepartmentByAdmin = createMutationHook(
   deleteDepartmentByAdmin,
   [adminQueryKeys.departments]
+);
+
+export const useAssignCourseToEmployee = createMutationHook(
+  assignCourseToEmployee,
+  [adminQueryKeys.courses]
 );
