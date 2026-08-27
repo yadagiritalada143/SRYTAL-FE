@@ -834,3 +834,39 @@ export const updateNavUserAccessByAdmin = async (
   );
   return response.data;
 };
+
+export const getAllCoursesByAdmin = async () => {
+  try {
+    const response = await apiClient.get('/contentwriter/getAllCourses');
+    return response.data.courses;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getCourseByIdAdmin = async (id: string) => {
+  try {
+    const response = await apiClient.get(
+      `/contentwriter/getCourseById/${id}`
+    );
+    return response.data.coursedata;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const assignCourseToEmployee = async (payload: {
+  employeeId: string;
+  courseId: string;
+  dueDate: string;
+}) => {
+  try {
+    const response = await apiClient.post(
+      '/admin/createcourseassignment',
+      payload
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};

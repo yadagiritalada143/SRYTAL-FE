@@ -85,6 +85,12 @@ export const NavLinks = [
     name: 'Content Writer'
   },
   {
+    role: 'Employee',
+    url: 'employee/dashboard/course-assignments',
+    icon: IconBook,
+    name: 'Courses'
+  },
+  {
     role: 'Recruiter',
     name: 'Reports',
     icon: IconNotebook,

@@ -1,4 +1,5 @@
 import {
+  IconBook,
   IconBuildings,
   IconDroplet,
   IconLayoutDashboard,
@@ -39,6 +40,12 @@ export const adminNavLinks = [
     url: 'admin/dashboard/packages',
     icon: IconPackage,
     name: 'Packages'
+  },
+  {
+    role: 'admin',
+    url: 'admin/dashboard/course-assignments',
+    icon: IconBook,
+    name: 'Courses'
   },
   {
     role: 'admin',

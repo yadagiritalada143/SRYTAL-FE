@@ -56,6 +56,12 @@ const AddCourse = lazy(
 const CourseDetails = lazy(
   () => import('@user/components/dashboard/edit-course/CourseDetails')
 );
+const EmployeeCoursePortal = lazy(
+  () =>
+    import(
+      '@user/components/dashboard/course-portal/EmployeeCoursePortal'
+    )
+);
 
 // Common components
 const Dashboard = lazy(() => import('@components/common/dashboard/dashboard'));
@@ -558,6 +564,10 @@ const EmployeeRoutes = () => {
               <Route path='content-writer' element={<WriterDashboard />} />
               <Route path='add-course' element={<AddCourse />} />
               <Route path='course/:id' element={<CourseDetails />} />
+              <Route
+                path='course-assignments'
+                element={<EmployeeCoursePortal />}
+              />
               <Route
                 path='reports/salary-slip'
                 element={<SalarySlipReport />}
