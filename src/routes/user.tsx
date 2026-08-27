@@ -57,10 +57,10 @@ const CourseDetails = lazy(
   () => import('@user/components/dashboard/edit-course/CourseDetails')
 );
 const EmployeeCoursePortal = lazy(
-  () =>
-    import(
-      '@user/components/dashboard/course-portal/EmployeeCoursePortal'
-    )
+  () => import('@user/components/dashboard/course-portal/EmployeeCoursePortal')
+);
+const CoursePlayer = lazy(
+  () => import('@user/components/dashboard/course-portal/CoursePlayer')
 );
 
 // Common components
@@ -485,94 +485,101 @@ const EmployeeRoutes = () => {
         >
           <Route path='/dashboard' element={<EmployeeDashboard />}>
             <Route element={<EmployeeProtectedRoutes />}>
-             <Route element={<NavAccessGuard />}>
-              <Route path='profile' element={<EmployeeProfile />} />
-              <Route element={<RecruiterProtectedRoutes />}>
-                <Route path='pool-candidates' element={<PoolCandidateList />} />
+              <Route element={<NavAccessGuard />}>
+                <Route path='profile' element={<EmployeeProfile />} />
+                <Route element={<RecruiterProtectedRoutes />}>
+                  <Route
+                    path='pool-candidates'
+                    element={<PoolCandidateList />}
+                  />
+                  <Route
+                    path='add-pool-candidate'
+                    element={<AddPoolCandidate />}
+                  />
+                  <Route
+                    path=':candidateId/edit-pool-candidate'
+                    element={<UpdatePoolCandidateForm />}
+                  />
+                  <Route path='pool-companies' element={<Companies />} />
+                  <Route path='add-pool-companies' element={<AddCompany />} />
+                  <Route
+                    path='update-pool-company/:companyId'
+                    element={<UpdateCompany />}
+                  />
+                </Route>
                 <Route
-                  path='add-pool-candidate'
-                  element={<AddPoolCandidate />}
+                  path='timesheet'
+                  element={
+                    <ModalsProvider>
+                      <Timesheet />
+                    </ModalsProvider>
+                  }
                 />
                 <Route
-                  path=':candidateId/edit-pool-candidate'
-                  element={<UpdatePoolCandidateForm />}
+                  index
+                  element={
+                    <div>
+                      <Dashboard />
+                    </div>
+                  }
                 />
-                <Route path='pool-companies' element={<Companies />} />
-                <Route path='add-pool-companies' element={<AddCompany />} />
                 <Route
-                  path='update-pool-company/:companyId'
-                  element={<UpdateCompany />}
+                  path='payslip'
+                  element={
+                    <div>
+                      <PayslipList />
+                    </div>
+                  }
+                />
+                <Route
+                  path='support'
+                  element={
+                    <div>
+                      <Support />
+                    </div>
+                  }
+                />
+                <Route
+                  path='mytasks'
+                  element={
+                    <div>
+                      <MyTasks />
+                    </div>
+                  }
+                />
+                <Route
+                  path='mytasks/:taskId'
+                  element={<div>{<TaskDetail />}</div>}
+                />
+                <Route
+                  path='announcements'
+                  element={
+                    <div>
+                      <Announcements />
+                    </div>
+                  }
+                />
+                <Route path='mentees' element={<Mentees />} />
+                <Route
+                  path='common/mentees/:empId'
+                  element={<div>{<UpdateMenteeTasks />}</div>}
+                />
+                <Route path='content-writer' element={<WriterDashboard />} />
+                <Route path='add-course' element={<AddCourse />} />
+                <Route path='course/:id' element={<CourseDetails />} />
+                <Route
+                  path='course-assignments'
+                  element={<EmployeeCoursePortal />}
+                />
+                <Route
+                  path='course-assignments/:courseAssignmentId'
+                  element={<CoursePlayer />}
+                />
+                <Route
+                  path='reports/salary-slip'
+                  element={<SalarySlipReport />}
                 />
               </Route>
-              <Route
-                path='timesheet'
-                element={
-                  <ModalsProvider>
-                    <Timesheet />
-                  </ModalsProvider>
-                }
-              />
-              <Route
-                index
-                element={
-                  <div>
-                    <Dashboard />
-                  </div>
-                }
-              />
-              <Route
-                path='payslip'
-                element={
-                  <div>
-                    <PayslipList />
-                  </div>
-                }
-              />
-              <Route
-                path='support'
-                element={
-                  <div>
-                    <Support />
-                  </div>
-                }
-              />
-              <Route
-                path='mytasks'
-                element={
-                  <div>
-                    <MyTasks />
-                  </div>
-                }
-              />
-              <Route
-                path='mytasks/:taskId'
-                element={<div>{<TaskDetail />}</div>}
-              />
-              <Route
-                path='announcements'
-                element={
-                  <div>
-                    <Announcements />
-                  </div>
-                }
-              />
-              <Route path='mentees' element={<Mentees />} />
-              <Route
-                path='common/mentees/:empId'
-                element={<div>{<UpdateMenteeTasks />}</div>}
-              />
-              <Route path='content-writer' element={<WriterDashboard />} />
-              <Route path='add-course' element={<AddCourse />} />
-              <Route path='course/:id' element={<CourseDetails />} />
-              <Route
-                path='course-assignments'
-                element={<EmployeeCoursePortal />}
-              />
-              <Route
-                path='reports/salary-slip'
-                element={<SalarySlipReport />}
-              />
-             </Route>
             </Route>
           </Route>
         </Route>

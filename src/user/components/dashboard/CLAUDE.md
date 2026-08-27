@@ -83,3 +83,81 @@ send custom headers.
   automatically — do **not** add it manually in services.
 - File uploads: build a `FormData` and set `Content-Type: multipart/form-data`;
   match the backend field names exactly.
+
+---
+
+# Employee Course Portal (the learner side)
+
+The other half of the courses feature: what an **employee** sees for the courses
+an admin has assigned to them. The content writer authors the tree; the employee
+works through it and their progress is tracked per task.
+
+```
+CourseAssignment (course <-> employee)  ──<  TaskProgress (one row per completed task)
+```
+
+## Files
+
+| File | Role |
+| --- | --- |
+| `course-portal/EmployeeCoursePortal.tsx` | The learner's course list: summary stats, status tabs, search, course cards. Route `/dashboard/course-assignments`. |
+| `course-portal/AssignedCourseCard.tsx` | One assigned course — thumbnail, status/overdue badge, progress bar, due-date hint, Start/Continue/Review. |
+| `course-portal/CoursePlayer.tsx` | The course experience: content pane + curriculum, progress header, prev/next, complete toggle. Route `/dashboard/course-assignments/:courseAssignmentId`. |
+| `course-portal/CurriculumSidebar.tsx` | Modules accordion with per-module progress and per-task completion ticks. A drawer under 768px. |
+| `course-portal/TaskContentViewer.tsx` | Renders one task's content — every authored type (see below). |
+| `course-portal/task-content.ts` | Pure resolver: task -> how to render it. Unit-tested in `task-content.test.ts`. |
+| `course-portal/course-status.ts` | Shared status colour/label/due-date helpers used by both the list and the player. |
+
+Data layer:
+- Services: `src/services/user-services.ts` (`getMyAssignedCourses`, `getMyAssignedCourseById`, `updateMyTaskProgress`).
+- Query hooks: `useGetMyAssignedCourses`, `useGetMyAssignedCourse` (`hooks/queries/useUserQueries.ts`).
+- Mutation hook: `useUpdateMyTaskProgress` (`hooks/mutations/useUserMutations.ts`) — invalidates both `myCourse(id)` and `myCourses`.
+- Types: `src/interfaces/course-assignment.ts` (`AssignedCourse`, `AssignedCourseDetail`, `AssignedModule`, `AssignedTask`, `CourseProgress`, `CourseAssignmentStatus`). Deliberately **separate** from `contentwriter.ts` — those are the authoring shapes and carry S3 keys the employee never receives.
+
+## Backend contract (SRYTAL-BE, mounted at `/`)
+
+| Endpoint | Notes |
+| --- | --- |
+| `GET /getMyAssignedCourses` | `{ success, courses }`. Summary only (no module/task tree) — status, progress, `totalModules`, `isOverdue`, signed `thumbnailUrl`. |
+| `GET /getMyAssignedCourseById/:courseAssignmentId` | `{ success, course }` with the full `modules[] -> tasks[]` tree and per-task `isCompleted`. **404** if the assignment isn't the caller's. |
+| `PUT /updateMyTaskProgress` | JSON `{ courseAssignmentId, taskId, isCompleted }`. Upserts the progress row and returns the recomputed `{ courseStatus, progress }`. |
+
+Task content still goes through the content-writer proxy:
+`GET /contentwriter/getCourseTaskContent/:id` (see `getCourseTaskContentUrl`).
+
+## Rules that matter here
+
+- **Status is derived, never sent.** The backend recomputes the assignment status
+  from the task-progress rows on every write (`Assigned` -> `In Progress` ->
+  `Completed`, model enum values — *not* the upper-snake ones in BE
+  `types/courseAssignment.ts`, which nothing uses). The client only ever reads it.
+- **Only `ACTIVE` modules and tasks reach the employee.** Archived content is
+  filtered server-side, so progress denominators only count published items.
+- **Ownership is enforced server-side** by looking the assignment up with
+  `{ _id, employeeId }`, and a task is rejected unless its module belongs to the
+  assigned course. Don't re-implement those checks in the UI.
+- **`LINK` tasks expose their URL as `link`; `FILE` tasks do not expose `content`**
+  (it's an S3 key) — they're streamed through the proxy instead.
+
+## How the content viewer decides what to render
+
+`resolveTaskContent(task, fileUrl)` in `task-content.ts` returns a `kind`:
+
+| Task | Rendered as |
+| --- | --- |
+| YouTube (`watch?v=`, `youtu.be`, `/embed/`, `/shorts/`, `/live/`), Vimeo, Google Drive `/file/d/` | `embed` — provider iframe in a 16:9 box |
+| Link ending in a media extension (`.mp4`, `.mp3`, `.png`, …) | native `video`/`audio`/`image` |
+| Any other link (blog, article, docs) | `external` — an "open in a new tab" card |
+| Uploaded file, by `contentMimeType` (falling back to the `contentFileName` extension) | `video` / `audio` / `image` / `pdf` / `text` inline |
+| Office documents, archives, unknown types | `download` — "open in a new tab" card |
+
+Arbitrary sites are **never** put in an iframe: `X-Frame-Options` would blank
+them out silently, so the card is the honest fallback. Office files can't use
+Office Online / Google Docs viewers either — our content URL is authenticated
+and those services can't reach it.
+
+Completion is marked in two ways, both routed through the player (the single
+place that talks to the progress API): the explicit **Complete and continue**
+button, and `onFinished` — fired when a video/audio ends or an external resource
+is opened. `onFinished` never *un*-completes and never re-fires on a task that
+is already complete.

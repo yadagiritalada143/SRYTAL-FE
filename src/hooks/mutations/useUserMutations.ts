@@ -12,7 +12,8 @@ import {
   addCourseTaskContentWriter,
   updateCourseContentWriter,
   updateCourseModuleContentWriter,
-  updateCourseTaskContentWriter
+  updateCourseTaskContentWriter,
+  updateMyTaskProgress
 } from '@services/user-services';
 import { userQueryKeys } from '../queries/useUserQueries';
 import { AddCompanyForm } from '@forms/add-company';
@@ -29,6 +30,7 @@ import {
   UpdateModulePayload,
   UpdateTaskPayload
 } from '@interfaces/contentwriter';
+import { UpdateTaskProgressPayload } from '@interfaces/course-assignment';
 
 export const useAddCompany = () => {
   const queryClient = useQueryClient();
@@ -193,7 +195,8 @@ export const useUpdateCourseModule = (courseId?: string) => {
 export const useUpdateCourseTask = (courseId?: string) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: UpdateTaskPayload) => updateCourseTaskContentWriter(data),
+    mutationFn: (data: UpdateTaskPayload) =>
+      updateCourseTaskContentWriter(data),
     onSuccess: () => {
       if (courseId) {
         queryClient.invalidateQueries({
@@ -201,6 +204,23 @@ export const useUpdateCourseTask = (courseId?: string) => {
         });
       }
       queryClient.invalidateQueries({ queryKey: userQueryKeys.courses });
+    }
+  });
+};
+
+/**
+ * Marking a task complete changes both the open course's tree and the summary
+ * shown in the course list, so both cache entries are refreshed.
+ */
+export const useUpdateMyTaskProgress = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: UpdateTaskProgressPayload) => updateMyTaskProgress(data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: userQueryKeys.myCourse(variables.courseAssignmentId)
+      });
+      queryClient.invalidateQueries({ queryKey: userQueryKeys.myCourses });
     }
   });
 };

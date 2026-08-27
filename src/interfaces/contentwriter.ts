@@ -78,7 +78,11 @@ export interface Course {
   _id: string;
   courseName: string;
   courseDescription: string;
+  // The stored S3 object key. Not loadable directly — sent back untouched by
+  // the update endpoint, which takes a string rather than a file upload.
   thumbnail?: string;
+  // The resolved, signed URL the API returns alongside it. Render with this.
+  thumbnailUrl: string;
   status: string;
   modules?: Module[];
   updatedAt?: string;

@@ -169,6 +169,15 @@ open and fades in (opacity) instead.
   content is a **file** (any type, stored in S3) or a **link** (YouTube/blog/etc),
   viewed via a backend proxy in a new tab. See
   `src/user/components/dashboard/CLAUDE.md` for the full module + API contract.
+- **Employee Course Portal** (the learner side of the above): employees see the
+  courses an admin assigned to them at `…/employee/dashboard/course-assignments`
+  with per-course progress, and open one into a course player
+  (`…/course-assignments/:courseAssignmentId`) with a curriculum sidebar,
+  prev/next, and per-task completion. Backed by `GET /getMyAssignedCourses`,
+  `GET /getMyAssignedCourseById/:courseAssignmentId` and
+  `PUT /updateMyTaskProgress` (BE `services/common/*`, `util/manageCourseProgress.ts`).
+  Assignment status is **derived** server-side from task-progress rows, so the
+  client never sends it. See `src/user/components/dashboard/CLAUDE.md`.
 - **Employee Dashboard** (shared, `components/common/dashboard/dashboard.tsx`):
   at-a-glance view backed by real data from `GET /getEmployeeDashboard`
   (BE `services/common/getEmployeeDashboardService.ts`) — profile summary +

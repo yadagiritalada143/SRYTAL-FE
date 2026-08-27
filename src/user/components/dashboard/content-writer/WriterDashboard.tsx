@@ -47,7 +47,7 @@ const WriterDashboard = () => {
   const [activePage, setActivePage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [courseToDelete, setCourseToDelete] = useState<string | null>(null);
+  const [, setCourseToDelete] = useState<string | null>(null);
   const [courseToEdit, setCourseToEdit] = useState<Course | null>(null);
 
   const { data: courses = [], isLoading } = useGetAllCoursesByUser();
@@ -73,8 +73,6 @@ const WriterDashboard = () => {
     return { totalCourses, totalModules, totalTasks };
   }, [courses]);
 
-
-
   // Most recently updated first, so an edit moves its course to the top.
   const sortedCourses = useMemo(
     () =>
@@ -86,7 +84,10 @@ const WriterDashboard = () => {
     [courses]
   );
 
-  const recentActivity = useMemo(() => sortedCourses.slice(0, 6), [sortedCourses]);
+  const recentActivity = useMemo(
+    () => sortedCourses.slice(0, 6),
+    [sortedCourses]
+  );
 
   const filteredCourses = useMemo(() => {
     if (!searchQuery.trim()) return sortedCourses;
@@ -374,7 +375,11 @@ const WriterDashboard = () => {
                               {course.updatedAt
                                 ? new Date(course.updatedAt).toLocaleDateString(
                                     undefined,
-                                    { month: 'short', day: 'numeric', year: 'numeric' }
+                                    {
+                                      month: 'short',
+                                      day: 'numeric',
+                                      year: 'numeric'
+                                    }
                                   )
                                 : '—'}
                             </Text>

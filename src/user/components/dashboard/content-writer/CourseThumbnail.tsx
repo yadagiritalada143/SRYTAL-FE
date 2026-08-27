@@ -12,7 +12,8 @@ interface CourseThumbnailProps {
   src?: string;
   size: number | string;
   height?: number | string;
-  radius?: string;
+  /** Mantine radius token, or a number/`0` for a square edge. */
+  radius?: string | number;
 }
 
 // Distinct, readable gradients so adjacent courses don't look identical.
@@ -83,7 +84,10 @@ const CourseThumbnail = ({
       style={{
         flexShrink: 0,
         background: gradientFor(name),
-        borderRadius: `var(--mantine-radius-${radius})`,
+        borderRadius:
+          typeof radius === 'number'
+            ? radius
+            : `var(--mantine-radius-${radius})`,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center'

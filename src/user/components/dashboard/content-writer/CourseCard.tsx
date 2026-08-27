@@ -1,4 +1,12 @@
-import { Card, Stack, Text, Badge, ActionIcon, Menu, Group } from '@mantine/core';
+import {
+  Card,
+  Stack,
+  Text,
+  Badge,
+  ActionIcon,
+  Menu,
+  Group
+} from '@mantine/core';
 import {
   IconDots,
   IconEdit,
@@ -18,7 +26,12 @@ interface CourseCardProps {
   onDelete?: (id: string) => void;
 }
 
-const CourseCard = ({ course, onEdit, onArchive, onDelete }: CourseCardProps) => {
+const CourseCard = ({
+  course,
+  onEdit,
+  onArchive,
+  onDelete
+}: CourseCardProps) => {
   const navigate = useNavigate();
   const { themeConfig, organizationConfig } = useAppTheme();
 
@@ -54,7 +67,12 @@ const CourseCard = ({ course, onEdit, onArchive, onDelete }: CourseCardProps) =>
       }}
     >
       <Group wrap='nowrap' gap='sm' align='flex-start'>
-        <CourseThumbnail name={course.courseName} size={68} radius='sm' />
+        <CourseThumbnail
+          name={course.courseName}
+          src={course.thumbnailUrl}
+          size={68}
+          radius='sm'
+        />
 
         <Stack gap={3} style={{ flex: 1, minWidth: 0 }}>
           <Text fw={600} size='sm' lineClamp={1}>
@@ -92,7 +110,10 @@ const CourseCard = ({ course, onEdit, onArchive, onDelete }: CourseCardProps) =>
               {onEdit && (
                 <Menu.Item
                   leftSection={<IconEdit size={14} />}
-                  onClick={e => { stop(e); onEdit(course._id); }}
+                  onClick={e => {
+                    stop(e);
+                    onEdit(course._id);
+                  }}
                 >
                   Edit
                 </Menu.Item>
@@ -100,18 +121,26 @@ const CourseCard = ({ course, onEdit, onArchive, onDelete }: CourseCardProps) =>
               {onArchive && (
                 <Menu.Item
                   leftSection={<IconArchive size={14} />}
-                  onClick={e => { stop(e); onArchive(course._id); }}
+                  onClick={e => {
+                    stop(e);
+                    onArchive(course._id);
+                  }}
                 >
                   Archive
                 </Menu.Item>
               )}
               {onDelete && (
                 <>
-                  <Menu.Divider style={{ borderColor: themeConfig.borderColor }} />
+                  <Menu.Divider
+                    style={{ borderColor: themeConfig.borderColor }}
+                  />
                   <Menu.Item
                     color='red'
                     leftSection={<IconTrash size={14} />}
-                    onClick={e => { stop(e); onDelete(course._id); }}
+                    onClick={e => {
+                      stop(e);
+                      onDelete(course._id);
+                    }}
                   >
                     Delete
                   </Menu.Item>

@@ -7,7 +7,9 @@ import {
   getUserDetails,
   getAllCoursesByUser,
   getCourseByIdContentWriter,
-  getEmployeeDashboard
+  getEmployeeDashboard,
+  getMyAssignedCourses,
+  getMyAssignedCourseById
 } from '@services/user-services';
 import { getProfileImage } from '@services/common-services';
 
@@ -21,7 +23,10 @@ export const userQueryKeys = {
   profileImage: ['profileImage'] as const,
   courses: ['userCourses'] as const,
   course: (id: string) => ['userCourse', id] as const,
-  employeeDashboard: ['employeeDashboard'] as const
+  employeeDashboard: ['employeeDashboard'] as const,
+  myCourses: ['myAssignedCourses'] as const,
+  myCourse: (courseAssignmentId: string) =>
+    ['myAssignedCourse', courseAssignmentId] as const
 };
 
 export const useGetCompanyDetails = () => {
@@ -87,5 +92,23 @@ export const useGetEmployeeDashboard = () => {
   return useQuery({
     queryKey: userQueryKeys.employeeDashboard,
     queryFn: getEmployeeDashboard
+  });
+};
+
+export const useGetMyAssignedCourses = () => {
+  return useQuery({
+    queryKey: userQueryKeys.myCourses,
+    queryFn: getMyAssignedCourses
+  });
+};
+
+export const useGetMyAssignedCourse = (
+  courseAssignmentId: string,
+  enabled = true
+) => {
+  return useQuery({
+    queryKey: userQueryKeys.myCourse(courseAssignmentId),
+    queryFn: () => getMyAssignedCourseById(courseAssignmentId),
+    enabled: !!courseAssignmentId && enabled
   });
 };

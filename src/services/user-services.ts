@@ -16,6 +16,12 @@ import {
   UpdateModulePayload,
   UpdateTaskPayload
 } from '@interfaces/contentwriter';
+import {
+  AssignedCourse,
+  AssignedCourseDetail,
+  UpdateTaskProgressPayload,
+  UpdateTaskProgressResponse
+} from '@interfaces/course-assignment';
 
 export const getCompanyDetails = async () => {
   try {
@@ -175,9 +181,7 @@ export const getAllCoursesByUser = async () => {
 
 export const getCourseByIdContentWriter = async (id: string) => {
   try {
-    const response = await apiClient.get(
-      `/contentwriter/getCourseById/${id}`
-    );
+    const response = await apiClient.get(`/contentwriter/getCourseById/${id}`);
     // Backend responds with { success, coursedata }.
     return response.data.coursedata;
   } catch (error) {
@@ -208,9 +212,7 @@ export const addCourseContentWriter = async (
   }
 };
 
-export const addCourseModuleContentWriter = async (
-  data: AddModulePayload
-) => {
+export const addCourseModuleContentWriter = async (data: AddModulePayload) => {
   try {
     const formData = new FormData();
     formData.append('courseId', data.courseId);
@@ -299,6 +301,36 @@ export const getCourseTaskContentUrl = (taskId: string) => {
   const token = localStorage.getItem('token');
   const base = (BASE_URL || '').replace(/\/+$/, '');
   return `${base}/contentwriter/getCourseTaskContent/${taskId}?auth_token=${token}`;
+};
+
+// ── My Courses (assigned to the logged-in employee) ──────────────────────────
+
+export const getMyAssignedCourses = async (): Promise<AssignedCourse[]> => {
+  const response = await apiClient.get('/getMyAssignedCourses');
+  // Backend responds with { success, courses }.
+  return response.data.courses;
+};
+
+export const getMyAssignedCourseById = async (
+  courseAssignmentId: string
+): Promise<AssignedCourseDetail> => {
+  const response = await apiClient.get(
+    `/getMyAssignedCourseById/${courseAssignmentId}`
+  );
+  // Backend responds with { success, course }.
+  return response.data.course;
+};
+
+/**
+ * Ticks a task off (or back on). The backend re-derives the whole assignment's
+ * status and progress from the task-progress rows and returns them, so the
+ * refreshed numbers come straight back with the response.
+ */
+export const updateMyTaskProgress = async (
+  data: UpdateTaskProgressPayload
+): Promise<UpdateTaskProgressResponse> => {
+  const response = await apiClient.put('/updateMyTaskProgress', data);
+  return response.data;
 };
 
 // ── Employee Dashboard ───────────────────────────────────────────────────────
