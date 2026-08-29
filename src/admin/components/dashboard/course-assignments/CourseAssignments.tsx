@@ -55,9 +55,6 @@ const CourseAssignments = () => {
 
   const assignMutation = useAssignCourseToEmployee();
 
-  // Bumped after a successful assign to fully remount the controlled Selects so
-  // Mantine's internal display state clears (reset() alone can leave the old
-  // selected value visible).
   const [formKey, setFormKey] = useState(0);
 
   const {
