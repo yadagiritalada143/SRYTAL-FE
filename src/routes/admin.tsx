@@ -99,8 +99,15 @@ const Notifications = lazy(
 );
 const CourseAssignments = lazy(
   () =>
+    import('@admin/components/dashboard/course-assignments/CourseAssignments')
+);
+const TrackProgress = lazy(
+  () => import('@admin/components/dashboard/track-progress/TrackProgress')
+);
+const EmployeeCourseProgress = lazy(
+  () =>
     import(
-      '@admin/components/dashboard/course-assignments/CourseAssignments'
+      '@admin/components/dashboard/track-progress/EmployeeCourseProgress'
     )
 );
 // User domain components reused in Admin
@@ -525,59 +532,70 @@ const AdminRoutes = () => {
           }
         >
           <Route path='/dashboard' element={<AdminDashboard />}>
-           <Route element={<NavAccessGuard />}>
-            <Route index element={<AdminDashboardOverview />} />
-            <Route path='addemployee' element={<AddEmployee />} />
-            <Route path='employees' element={<Employees />} />
-            <Route path='profile' element={<AdminProfile />} />
-            <Route path='pool-companies' element={<Companies />} />
-            <Route path='add-pool-companies' element={<AddCompany />} />
-            <Route path='add-pool-candidate' element={<AddPoolCandidate />} />
-            <Route path='packages' element={<Packages />} />
-            <Route path='/dashboard/addPackage' element={<AddPackage />} />
-            <Route path='updates/:packageId' element={<UpdatePackage />} />
-            <Route path='reports' element={<Reports />}>
-              <Route path='generate-offer' element={<GenerateOfferReport />} />
+            <Route element={<NavAccessGuard />}>
+              <Route index element={<AdminDashboardOverview />} />
+              <Route path='addemployee' element={<AddEmployee />} />
+              <Route path='employees' element={<Employees />} />
+              <Route path='profile' element={<AdminProfile />} />
+              <Route path='pool-companies' element={<Companies />} />
+              <Route path='add-pool-companies' element={<AddCompany />} />
+              <Route path='add-pool-candidate' element={<AddPoolCandidate />} />
+              <Route path='packages' element={<Packages />} />
+              <Route path='/dashboard/addPackage' element={<AddPackage />} />
+              <Route path='updates/:packageId' element={<UpdatePackage />} />
+              <Route path='reports' element={<Reports />}>
+                <Route
+                  path='generate-offer'
+                  element={<GenerateOfferReport />}
+                />
+                <Route
+                  path='generate-salary-slip'
+                  element={<GenerateSalarySlipReport />}
+                />
+                <Route
+                  path='all-employee-reports'
+                  element={<EmployeeReports />}
+                />
+              </Route>
+              <Route path='timesheet' element={<DateTableComponent />} />
               <Route
-                path='generate-salary-slip'
-                element={<GenerateSalarySlipReport />}
+                path=':candidateId/edit-pool-candidate'
+                element={<UpdatePoolCandidateForm />}
+              />
+              <Route path='update/:employeeId' element={<UpdateEmployee />} />
+              <Route
+                path='package/:employeeId'
+                element={<PackagePageWrapper />}
               />
               <Route
-                path='all-employee-reports'
-                element={<EmployeeReports />}
+                path='timesheet/:employeeId'
+                element={<EmployeeTimesheetAdminView />}
               />
+              <Route path='pool-candidates' element={<PoolCandidateList />} />
+              <Route
+                path='update-pool-company/:companyId'
+                element={<UpdateCompany />}
+              />
+              <Route path='notification' element={<Notifications />} />
+              <Route
+                path='course-assignments'
+                element={<CourseAssignments />}
+              />
+              <Route path='track-progress' element={<TrackProgress />} />
+              <Route
+                path='track-progress/:employeeId'
+                element={<EmployeeCourseProgress />}
+              />
+              <Route path='settings' element={<SettingsLayout />}>
+                <Route index element={<Navigate to='blood-groups' replace />} />
+                <Route path='blood-groups' element={<BloodGroupTable />} />
+                <Route path='employment-types' element={<EmploymentTypes />} />
+                <Route path='employment-roles' element={<EmploymentRoles />} />
+                <Route path='departments' element={<DepartmentTable />} />
+                <Route path='feedback' element={<FeedbackTable />} />
+                <Route path='menu-access' element={<NavAccess />} />
+              </Route>
             </Route>
-            <Route path='timesheet' element={<DateTableComponent />} />
-            <Route
-              path=':candidateId/edit-pool-candidate'
-              element={<UpdatePoolCandidateForm />}
-            />
-            <Route path='update/:employeeId' element={<UpdateEmployee />} />
-            <Route
-              path='package/:employeeId'
-              element={<PackagePageWrapper />}
-            />
-            <Route
-              path='timesheet/:employeeId'
-              element={<EmployeeTimesheetAdminView />}
-            />
-            <Route path='pool-candidates' element={<PoolCandidateList />} />
-            <Route
-              path='update-pool-company/:companyId'
-              element={<UpdateCompany />}
-            />
-            <Route path='notification' element={<Notifications />} />
-            <Route path='course-assignments' element={<CourseAssignments />} />
-            <Route path='settings' element={<SettingsLayout />}>
-              <Route index element={<Navigate to='blood-groups' replace />} />
-              <Route path='blood-groups' element={<BloodGroupTable />} />
-              <Route path='employment-types' element={<EmploymentTypes />} />
-              <Route path='employment-roles' element={<EmploymentRoles />} />
-              <Route path='departments' element={<DepartmentTable />} />
-              <Route path='feedback' element={<FeedbackTable />} />
-              <Route path='menu-access' element={<NavAccess />} />
-            </Route>
-           </Route>
           </Route>
         </Route>
       </Routes>

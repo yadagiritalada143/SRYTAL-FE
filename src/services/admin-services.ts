@@ -4,6 +4,10 @@ import { AddPackageForm } from '@forms/add-package';
 import { PackageUpdateForm } from '@forms/update-package';
 import moment from 'moment';
 import { apiClient } from '@utils/api-client';
+import {
+  AdminAssignment,
+  AdminAssignmentDetail
+} from '@interfaces/course-assignment';
 
 export const registerEmployee = async (employeeDetails: AddEmployeeForm) => {
   const token = localStorage.getItem('token');
@@ -803,7 +807,10 @@ export const getNavRoleAccessByAdmin = async (role: string) => {
   return response.data;
 };
 
-export const updateNavRoleAccessByAdmin = async (role: string, navKeys: string[]) => {
+export const updateNavRoleAccessByAdmin = async (
+  role: string,
+  navKeys: string[]
+) => {
   const token = localStorage.getItem('token');
   const response = await apiClient.put(
     '/admin/updateNavRoleAccess',
@@ -846,9 +853,7 @@ export const getAllCoursesByAdmin = async () => {
 
 export const getCourseByIdAdmin = async (id: string) => {
   try {
-    const response = await apiClient.get(
-      `/contentwriter/getCourseById/${id}`
-    );
+    const response = await apiClient.get(`/contentwriter/getCourseById/${id}`);
     return response.data.coursedata;
   } catch (error) {
     throw error;
@@ -869,4 +874,31 @@ export const assignCourseToEmployee = async (payload: {
   } catch (error) {
     throw error;
   }
+};
+
+export const getAllCourseAssignments = async (): Promise<AdminAssignment[]> => {
+  const response = await apiClient.get('/admin/getallcourseassignments', {
+    params: { limit: 100000 }
+  });
+  return response.data.data;
+};
+
+export const getCourseAssignmentDetails = async (
+  courseAssignmentId: string
+): Promise<AdminAssignmentDetail> => {
+  const response = await apiClient.get(
+    `/admin/courses/assignments/${courseAssignmentId}/details`
+  );
+  return response.data.data;
+};
+
+export const updateCourseAssignmentDueDate = async (
+  courseAssignmentId: string,
+  dueDate: string
+) => {
+  const response = await apiClient.put(
+    `/admin/courses/assignments/${courseAssignmentId}/due-date`,
+    { dueDate }
+  );
+  return response.data;
 };
