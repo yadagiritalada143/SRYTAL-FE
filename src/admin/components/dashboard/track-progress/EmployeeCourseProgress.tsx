@@ -346,8 +346,14 @@ const EmployeeCourseProgress = () => {
           isEmpty={!detail}
         >
           {detailCourse && (
-            <Stack gap='md'>
-              <Group gap='sm' justify='space-between' align='start' wrap='wrap'>
+            <Stack gap='md' pt='sm'>
+              <Group
+                gap='sm'
+                justify='space-between'
+                align='start'
+                wrap='wrap'
+                mt='xs'
+              >
                 <Stack gap={0}>
                   <Text fw={600}>
                     {detail?.employee?.firstName} {detail?.employee?.lastName}

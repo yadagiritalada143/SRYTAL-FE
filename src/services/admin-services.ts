@@ -897,7 +897,7 @@ export const updateCourseAssignmentDueDate = async (
   dueDate: string
 ) => {
   const response = await apiClient.put(
-    `/admin/courses/assignments/${courseAssignmentId}/due-date`,
+    `/admin/courses/assignments/${courseAssignmentId}/duedate`,
     { dueDate }
   );
   return response.data;
