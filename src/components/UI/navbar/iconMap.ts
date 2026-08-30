@@ -3,8 +3,10 @@
 // referenced by the nav catalog/seed must be registered below, with a fallback.
 import {
   IconBook,
+  IconBook2,
   IconBuildings,
   IconCalendarTime,
+  IconChartLine,
   IconCircle,
   IconLayoutDashboard,
   IconLock,
@@ -23,8 +25,10 @@ import {
 
 export const ICON_MAP: Record<string, Icon> = {
   IconBook,
+  IconBook2,
   IconBuildings,
   IconCalendarTime,
+  IconChartLine,
   IconLayoutDashboard,
   IconLock,
   IconNotebook,

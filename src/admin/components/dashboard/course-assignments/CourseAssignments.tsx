@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
@@ -54,6 +54,8 @@ const CourseAssignments = () => {
     useGetAllCoursesByAdmin();
 
   const assignMutation = useAssignCourseToEmployee();
+
+  const [formKey, setFormKey] = useState(0);
 
   const {
     control,
@@ -134,7 +136,8 @@ const CourseAssignments = () => {
         dueDate: data.dueDate.toISOString()
       });
       showSuccessToast('Course assigned successfully!');
-      reset();
+      reset({ employeeId: '', courseId: '', dueDate: undefined });
+      setFormKey(k => k + 1);
     } catch (error) {
       showErrorToast(
         getErrorMessage(error, 'Failed to assign course. Please try again.')
@@ -195,6 +198,7 @@ const CourseAssignments = () => {
                       control={control}
                       render={({ field }) => (
                         <Select
+                          key={`emp-${formKey}`}
                           placeholder='Search by ID or name...'
                           searchable
                           clearable
@@ -238,6 +242,7 @@ const CourseAssignments = () => {
                       control={control}
                       render={({ field }) => (
                         <Select
+                          key={`course-${formKey}`}
                           placeholder='Search courses...'
                           searchable
                           clearable
@@ -337,6 +342,7 @@ const CourseAssignments = () => {
                       control={control}
                       render={({ field }) => (
                         <DatePickerInput
+                          key={`due-${formKey}`}
                           placeholder='Pick a due date'
                           value={field.value ? new Date(field.value) : null}
                           onChange={date => {

@@ -75,3 +75,59 @@ export interface UpdateTaskProgressResponse {
   progress: CourseProgress;
   task: { taskId: string; isCompleted: boolean; completedAt?: string | null };
 }
+
+export interface AdminAssignmentEmployee {
+  employeeId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  employeeCode: string;
+}
+
+export interface AdminAssignment {
+  courseAssignmentId: string;
+  courseId: string;
+  courseName: string;
+  courseDescription: string;
+  employee: AdminAssignmentEmployee | null;
+  status: CourseAssignmentStatus;
+  assignedAt: string;
+  dueDate: string;
+  completedAt: string | null;
+  isOverdue: boolean;
+  totalModules: number;
+  progress: CourseProgress;
+}
+
+export interface AdminAssignmentDetailTask {
+  _id: string;
+  taskName: string;
+  type: string;
+  isCompleted: boolean;
+  completedAt?: string | null;
+}
+
+export interface AdminAssignmentDetailModule {
+  _id: string;
+  moduleName: string;
+  totalTasks: number;
+  completedTasks: number;
+  tasks: AdminAssignmentDetailTask[];
+}
+
+export interface AdminAssignmentDetail {
+  employee: AdminAssignmentEmployee | null;
+  course: {
+    courseAssignmentId: string;
+    courseId: string;
+    courseName: string;
+    status: CourseAssignmentStatus;
+    assignedAt: string;
+    dueDate: string;
+    completedAt: string | null;
+    isOverdue: boolean;
+    totalModules: number;
+    progress: CourseProgress;
+    modules: AdminAssignmentDetailModule[];
+  };
+}
