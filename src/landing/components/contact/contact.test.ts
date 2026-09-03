@@ -1,6 +1,6 @@
 import {
   getFlagEmoji,
-  DEFAULT_COUNTRIES,
+  fetchCountryCodes,
   CURRENCY_OPTIONS,
   TIMELINE_OPTIONS
 } from '../../../utils/country-codes';
@@ -15,14 +15,6 @@ describe('Country Code & Currency Utilities', () => {
     expect(getFlagEmoji('DE')).toBe('🇩🇪');
   });
 
-  it('contains essential default countries including India and US', () => {
-    const codes = DEFAULT_COUNTRIES.map(c => c.code);
-    expect(codes).toContain('IN');
-    expect(codes).toContain('US');
-    expect(codes).toContain('GB');
-    expect(codes).toContain('AE');
-  });
-
   it('contains expected currency and timeline options', () => {
     const currencies = CURRENCY_OPTIONS.map(c => c.value);
     expect(currencies).toContain('INR');
@@ -30,6 +22,29 @@ describe('Country Code & Currency Utilities', () => {
     expect(currencies).toContain('EUR');
 
     expect(TIMELINE_OPTIONS.length).toBeGreaterThanOrEqual(4);
+  });
+
+  it('fetches countries from API dynamically without hardcoded list', async () => {
+    // Mock global.fetch to simulate API response
+    const mockData = {
+      data: [
+        { name: 'India', code: 'IN', dial_code: '+91' },
+        { name: 'United States', code: 'US', dial_code: '+1' }
+      ]
+    };
+    const originalFetch = global.fetch;
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => mockData
+    }) as any;
+
+    const countries = await fetchCountryCodes();
+    expect(countries.length).toBeGreaterThan(0);
+    expect(countries[0].code).toBe('IN');
+    expect(countries[0].dial_code).toBe('+91');
+    expect(countries[0].flag).toBe('🇮🇳');
+
+    global.fetch = originalFetch;
   });
 });
 

@@ -19,105 +19,6 @@ export const getFlagEmoji = (countryCode: string): string => {
   }
 };
 
-export const DEFAULT_COUNTRIES: CountryItem[] = [
-  { name: 'India', code: 'IN', dial_code: '+91', flag: '🇮🇳', currency: 'INR' },
-  {
-    name: 'United States',
-    code: 'US',
-    dial_code: '+1',
-    flag: '🇺🇸',
-    currency: 'USD'
-  },
-  {
-    name: 'United Kingdom',
-    code: 'GB',
-    dial_code: '+44',
-    flag: '🇬🇧',
-    currency: 'GBP'
-  },
-  { name: 'Canada', code: 'CA', dial_code: '+1', flag: '🇨🇦', currency: 'CAD' },
-  {
-    name: 'Australia',
-    code: 'AU',
-    dial_code: '+61',
-    flag: '🇦🇺',
-    currency: 'AUD'
-  },
-  {
-    name: 'United Arab Emirates',
-    code: 'AE',
-    dial_code: '+971',
-    flag: '🇦🇪',
-    currency: 'AED'
-  },
-  {
-    name: 'Singapore',
-    code: 'SG',
-    dial_code: '+65',
-    flag: '🇸🇬',
-    currency: 'SGD'
-  },
-  {
-    name: 'Germany',
-    code: 'DE',
-    dial_code: '+49',
-    flag: '🇩🇪',
-    currency: 'EUR'
-  },
-  { name: 'France', code: 'FR', dial_code: '+33', flag: '🇫🇷', currency: 'EUR' },
-  { name: 'Japan', code: 'JP', dial_code: '+81', flag: '🇯🇵', currency: 'JPY' },
-  {
-    name: 'Netherlands',
-    code: 'NL',
-    dial_code: '+31',
-    flag: '🇳🇱',
-    currency: 'EUR'
-  },
-  {
-    name: 'Saudi Arabia',
-    code: 'SA',
-    dial_code: '+966',
-    flag: '🇸🇦',
-    currency: 'SAR'
-  },
-  {
-    name: 'South Africa',
-    code: 'ZA',
-    dial_code: '+27',
-    flag: '🇿🇦',
-    currency: 'ZAR'
-  },
-  { name: 'Brazil', code: 'BR', dial_code: '+55', flag: '🇧🇷', currency: 'BRL' },
-  {
-    name: 'Switzerland',
-    code: 'CH',
-    dial_code: '+41',
-    flag: '🇨🇭',
-    currency: 'CHF'
-  },
-  {
-    name: 'Malaysia',
-    code: 'MY',
-    dial_code: '+60',
-    flag: '🇲🇾',
-    currency: 'MYR'
-  },
-  {
-    name: 'New Zealand',
-    code: 'NZ',
-    dial_code: '+64',
-    flag: '🇳🇿',
-    currency: 'NZD'
-  },
-  {
-    name: 'Ireland',
-    code: 'IE',
-    dial_code: '+353',
-    flag: '🇮🇪',
-    currency: 'EUR'
-  }
-];
-
 export const CURRENCY_OPTIONS = [
   { value: 'INR', label: 'INR (₹)' },
   { value: 'USD', label: 'USD ($)' },
@@ -166,29 +67,18 @@ export const fetchCountryCodes = async (): Promise<CountryItem[]> => {
           flag: getFlagEmoji(c.code)
         }));
 
-      const popularCodes = new Set([
-        'IN',
-        'US',
-        'GB',
-        'CA',
-        'AU',
-        'AE',
-        'SG',
-        'DE',
-        'FR'
-      ]);
-      const priority = apiCountries.filter(c => popularCodes.has(c.code));
-      const others = apiCountries
-        .filter(c => !popularCodes.has(c.code))
+      const india = apiCountries.find(c => c.code === 'IN');
+      const rest = apiCountries
+        .filter(c => c.code !== 'IN')
         .sort((a, b) => a.name.localeCompare(b.name));
 
-      cachedCountries = [...priority, ...others];
+      cachedCountries = india ? [india, ...rest] : rest;
       return cachedCountries;
     }
   } catch (err) {
-    console.warn('Using default fallback countries list:', err);
+    console.error('Error fetching country codes from API:', err);
+    throw err;
   }
 
-  cachedCountries = DEFAULT_COUNTRIES;
-  return cachedCountries;
+  return [];
 };
