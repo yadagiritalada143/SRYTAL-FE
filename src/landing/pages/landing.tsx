@@ -68,7 +68,7 @@ const Landing = () => {
         <ContactComponent />
       </div>
 
-      <div className=' py-6 w-full max-w-5xl mx-auto'>
+      <div className='w-full mt-10 border-t border-slate-800/80 bg-slate-950/60'>
         <Footer />
       </div>
 

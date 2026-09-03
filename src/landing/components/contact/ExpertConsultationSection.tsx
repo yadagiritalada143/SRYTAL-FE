@@ -173,7 +173,7 @@ export const ExpertConsultationSection = () => {
             }}
           >
             <div className='relative z-10'>
-              <div className='inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-slate-800/80 border border-slate-700/80 text-xs font-semibold text-gray-200 tracking-wide mb-6 shadow-sm backdrop-blur-md'>
+              <div className='inline-flex items-center gap-1.5 px-3.5 py-3 rounded-full bg-slate-800/80 border border-slate-700/80 text-xs font-semibold text-gray-200 tracking-wide mb-6 shadow-sm backdrop-blur-md'>
                 <IconStarFilled size={12} className='text-amber-400' />
                 <span>Customer Support</span>
               </div>
@@ -230,7 +230,7 @@ export const ExpertConsultationSection = () => {
 
             <form
               onSubmit={handleSubmit(onSubmit)}
-              className='space-y-4 sm:space-y-4.5'
+              className='space-y-6 sm:space-y-4.5'
             >
               {/* Row 1: Full Name * & Email * */}
               <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5'>

@@ -1,116 +1,268 @@
-import { IconBrandLinkedin, IconBrandFacebook } from '@tabler/icons-react';
-import TechIcon from '@common/tech-icons/tech-icons';
+import React from 'react';
 import { HashLink as Link } from 'react-router-hash-link';
+import {
+  IconBrandLinkedin,
+  IconBrandFacebook,
+  IconBrandX,
+  IconBrandGithub,
+  IconChevronRight
+} from '@tabler/icons-react';
 
 const SocialIcons = [
   {
-    name: 'Follow us on LinkedIn',
+    name: 'LinkedIn',
     icon: IconBrandLinkedin,
-    link: 'https://www.linkedin.com/company/srytal-systems-india-pvt-ltd '
+    link: 'https://www.linkedin.com/company/srytal-systems-india-pvt-ltd',
+    hoverClass:
+      'hover:text-blue-400 hover:border-blue-500/50 hover:bg-blue-500/10'
   },
-  { name: 'Follow us on Facebook', icon: IconBrandFacebook, link: '' }
-  // {
-  //   name: "Watch us on YouTube",
-  //   icon: IconBrandYoutube,
-  // },
+  {
+    name: 'Facebook',
+    icon: IconBrandFacebook,
+    link: 'https://www.facebook.com',
+    hoverClass:
+      'hover:text-blue-500 hover:border-blue-500/50 hover:bg-blue-500/10'
+  },
+  {
+    name: 'X (Twitter)',
+    icon: IconBrandX,
+    link: 'https://twitter.com',
+    hoverClass: 'hover:text-sky-400 hover:border-sky-500/50 hover:bg-sky-500/10'
+  },
+  {
+    name: 'GitHub',
+    icon: IconBrandGithub,
+    link: 'https://github.com',
+    hoverClass:
+      'hover:text-purple-400 hover:border-purple-500/50 hover:bg-purple-500/10'
+  }
 ];
 
-const Footer = () => {
+const Footer: React.FC = () => {
+  const currentYear = new Date().getFullYear();
+
   return (
-    <div className=" text-white py-10 px-4 border-t-2 border-gray-400">
-      <div className=" px-4">
-        <div className="flex flex-col md:flex-row justify-between">
-          <div className="mb-6 md:mb-0">
-            <h1 className="text-3xl py-4 sm:text-4xl cursor-pointer font-bold  text-white hover:text-transparent bg-gradient-to-r from-purple-500 to-blue-500 bg-clip-text  transition-transform duration-300 ease-in-out hover:scale-110  ">
-              SRYTAL Systems India Pvt Ltd
-            </h1>
-            <p className="text-sm mb-4">Empowering Business with Technology</p>
-            <div className="flex gap-6 mb-4">
-              {SocialIcons.map((icon, index) => {
-                const IconComponent = icon.icon;
+    <footer className='w-full text-white relative overflow-hidden'>
+      <div className='absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-5xl h-px bg-gradient-to-r from-transparent via-blue-500/50 to-transparent' />
+
+      <div className='max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14'>
+        <div className='flex flex-col lg:flex-row justify-between gap-10 lg:gap-14'>
+          <div className='max-w-md space-y-3.5'>
+            <a
+              href='/'
+              className='inline-block cursor-pointer transition-transform duration-300 ease-in-out hover:scale-105'
+            >
+              <img
+                src='/logo.jpg'
+                alt='SRYTAL Systems Logo'
+                className='h-16 sm:h-20 w-auto max-w-[300px] rounded-xl shadow-md border border-slate-800/80'
+              />
+            </a>
+            <p className='text-sm text-gray-400 font-medium'>
+              Empowering Business with Technology
+            </p>
+
+            <div className='flex items-center gap-3 pt-2'>
+              {SocialIcons.map((item, index) => {
+                const IconComponent = item.icon;
                 return (
-                  <a href={icon.link} key={index} target="_blank">
-                    <TechIcon
-                      icon={IconComponent}
-                      name={icon.name}
-                      color="text-white"
-                      hoverColor="text-purple-400"
-                      size={16}
-                    />
+                  <a
+                    key={index}
+                    href={item.link}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    aria-label={item.name}
+                    className={`w-9 h-9 rounded-xl bg-slate-800/80 border border-slate-700/80 flex items-center justify-center text-gray-300 hover:shadow-lg hover:-translate-y-1 active:translate-y-0 transition-all duration-200 shadow-sm ${item.hoverClass}`}
+                  >
+                    <IconComponent size={17} />
                   </a>
                 );
               })}
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-8">
-            <div className="mb-6 md:mb-0">
-              <h2 className=" text-xl font-bold mb-2">Company</h2>
-              <ul className=" text-gray-400">
-                <li className="text-gray-300 nav-item transform transition-transform duration-300 ease-out hover:scale-125 hover:-translate-y-2 hover:rotate-x-16 hover:rotate-y-8 hover:text-purple-400">
-                  <Link to="#header" smooth={true}>
-                    Home
+          <div className='grid grid-cols-2 sm:grid-cols-3 gap-8 sm:gap-12'>
+            <div className='space-y-3'>
+              <h3 className='text-xs font-bold uppercase tracking-wider text-gray-200 border-b border-slate-800/80 pb-2'>
+                Company
+              </h3>
+              <ul className='space-y-2.5 text-xs sm:text-sm text-gray-400'>
+                <li>
+                  <Link
+                    to='#header'
+                    smooth={true}
+                    className='hover:text-white hover:translate-x-1.5 transition-all duration-200 inline-flex items-center gap-1.5 group'
+                  >
+                    <IconChevronRight
+                      size={12}
+                      className='text-slate-600 group-hover:text-blue-400 transition-colors'
+                    />
+                    <span>Home</span>
                   </Link>
                 </li>
-                <li className="text-gray-300 nav-item transform transition-transform duration-300 ease-out hover:scale-125 hover:-translate-y-2 hover:rotate-x-16 hover:rotate-y-8 hover:text-purple-400">
-                  <Link to="#about" smooth={true}>
-                    About Us
+                <li>
+                  <Link
+                    to='#about'
+                    smooth={true}
+                    className='hover:text-white hover:translate-x-1.5 transition-all duration-200 inline-flex items-center gap-1.5 group'
+                  >
+                    <IconChevronRight
+                      size={12}
+                      className='text-slate-600 group-hover:text-blue-400 transition-colors'
+                    />
+                    <span>About Us</span>
                   </Link>
                 </li>
-                <li className="text-gray-300 nav-item transform transition-transform duration-300 ease-out hover:scale-125 hover:-translate-y-2 hover:rotate-x-16 hover:rotate-y-8 hover:text-purple-400">
-                  <a href="#">Careers</a>
+                <li>
+                  <a
+                    href='#'
+                    className='hover:text-white hover:translate-x-1.5 transition-all duration-200 inline-flex items-center gap-1.5 group'
+                  >
+                    <IconChevronRight
+                      size={12}
+                      className='text-slate-600 group-hover:text-blue-400 transition-colors'
+                    />
+                    <span>Careers</span>
+                  </a>
                 </li>
-                <li className="text-gray-300 nav-item transform transition-transform duration-300 ease-out hover:scale-125 hover:-translate-y-2 hover:rotate-x-16 hover:rotate-y-8 hover:text-purple-400">
-                  <a href="#">Press</a>
+                <li>
+                  <a
+                    href='#'
+                    className='hover:text-white hover:translate-x-1.5 transition-all duration-200 inline-flex items-center gap-1.5 group'
+                  >
+                    <IconChevronRight
+                      size={12}
+                      className='text-slate-600 group-hover:text-blue-400 transition-colors'
+                    />
+                    <span>Press</span>
+                  </a>
                 </li>
               </ul>
             </div>
 
-            <div className="mb-6 md:mb-0">
-              <h2 className="text-xl font-bold mb-2">Product</h2>
-              <ul className="space-y-1  text-gray-400">
-                <li className="text-gray-300 nav-item transform transition-transform duration-300 ease-out hover:scale-125 hover:-translate-y-2 hover:rotate-x-16 hover:rotate-y-8 hover:text-purple-400">
-                  <a href="#">Features</a>
+            <div className='space-y-3'>
+              <h3 className='text-xs font-bold uppercase tracking-wider text-gray-200 border-b border-slate-800/80 pb-2'>
+                Product
+              </h3>
+              <ul className='space-y-2.5 text-xs sm:text-sm text-gray-400'>
+                <li>
+                  <a
+                    href='#'
+                    className='hover:text-white hover:translate-x-1.5 transition-all duration-200 inline-flex items-center gap-1.5 group'
+                  >
+                    <IconChevronRight
+                      size={12}
+                      className='text-slate-600 group-hover:text-blue-400 transition-colors'
+                    />
+                    <span>Features</span>
+                  </a>
                 </li>
-                <li className="text-gray-300 nav-item transform transition-transform duration-300 ease-out hover:scale-125 hover:-translate-y-2 hover:rotate-x-16 hover:rotate-y-8 hover:text-purple-400">
-                  <a href="#">Integrations</a>
+                <li>
+                  <a
+                    href='#'
+                    className='hover:text-white hover:translate-x-1.5 transition-all duration-200 inline-flex items-center gap-1.5 group'
+                  >
+                    <IconChevronRight
+                      size={12}
+                      className='text-slate-600 group-hover:text-blue-400 transition-colors'
+                    />
+                    <span>Integrations</span>
+                  </a>
                 </li>
-                <li className="text-gray-300 nav-item transform transition-transform duration-300 ease-out hover:scale-125 hover:-translate-y-2 hover:rotate-x-16 hover:rotate-y-8 hover:text-purple-400">
-                  <a href="#">Pricing</a>
+                <li>
+                  <a
+                    href='#'
+                    className='hover:text-white hover:translate-x-1.5 transition-all duration-200 inline-flex items-center gap-1.5 group'
+                  >
+                    <IconChevronRight
+                      size={12}
+                      className='text-slate-600 group-hover:text-blue-400 transition-colors'
+                    />
+                    <span>Pricing</span>
+                  </a>
                 </li>
-                <li className="text-gray-300 nav-item transform transition-transform duration-300 ease-out hover:scale-125 hover:-translate-y-2 hover:rotate-x-16 hover:rotate-y-8 hover:text-purple-400">
-                  <a href="#">Demo</a>
+                <li>
+                  <a
+                    href='#'
+                    className='hover:text-white hover:translate-x-1.5 transition-all duration-200 inline-flex items-center gap-1.5 group'
+                  >
+                    <IconChevronRight
+                      size={12}
+                      className='text-slate-600 group-hover:text-blue-400 transition-colors'
+                    />
+                    <span>Demo</span>
+                  </a>
                 </li>
               </ul>
             </div>
 
-            <div className=" mb-6 md:mb-0">
-              <h2 className="text-xl font-bold mb-2">Resources</h2>
-              <ul className="space-y-1  text-gray-400">
-                <li className="text-gray-300 nav-item transform transition-transform duration-300 ease-out hover:scale-125 hover:-translate-y-2 hover:rotate-x-16 hover:rotate-y-8 hover:text-purple-400">
-                  <a href="#">Privacy Policy</a>
+            <div className='space-y-3'>
+              <h3 className='text-xs font-bold uppercase tracking-wider text-gray-200 border-b border-slate-800/80 pb-2'>
+                Resources
+              </h3>
+              <ul className='space-y-2.5 text-xs sm:text-sm text-gray-400'>
+                <li>
+                  <a
+                    href='#'
+                    className='hover:text-white hover:translate-x-1.5 transition-all duration-200 inline-flex items-center gap-1.5 group'
+                  >
+                    <IconChevronRight
+                      size={12}
+                      className='text-slate-600 group-hover:text-blue-400 transition-colors'
+                    />
+                    <span>Privacy Policy</span>
+                  </a>
                 </li>
-                <li className="text-gray-300 nav-item transform transition-transform duration-300 ease-out hover:scale-125 hover:-translate-y-2 hover:rotate-x-16 hover:rotate-y-8 hover:text-purple-400">
-                  <a href="#">Terms of Service</a>
+                <li>
+                  <a
+                    href='#'
+                    className='hover:text-white hover:translate-x-1.5 transition-all duration-200 inline-flex items-center gap-1.5 group'
+                  >
+                    <IconChevronRight
+                      size={12}
+                      className='text-slate-600 group-hover:text-blue-400 transition-colors'
+                    />
+                    <span>Terms of Service</span>
+                  </a>
                 </li>
-                <li className="text-gray-300 nav-item transform transition-transform duration-300 ease-out hover:scale-125 hover:-translate-y-2 hover:rotate-x-16 hover:rotate-y-8 hover:text-purple-400">
-                  <a href="#">Help Center</a>
+                <li>
+                  <a
+                    href='#'
+                    className='hover:text-white hover:translate-x-1.5 transition-all duration-200 inline-flex items-center gap-1.5 group'
+                  >
+                    <IconChevronRight
+                      size={12}
+                      className='text-slate-600 group-hover:text-blue-400 transition-colors'
+                    />
+                    <span>Help Center</span>
+                  </a>
                 </li>
-                <li className="text-gray-300 nav-item transform transition-transform duration-300 ease-out hover:scale-125 hover:-translate-y-2 hover:rotate-x-16 hover:rotate-y-8 hover:text-purple-400">
-                  <Link to="#contact" smooth={true}>
-                    Contact Us
+                <li>
+                  <Link
+                    to='#contact'
+                    smooth={true}
+                    className='hover:text-white hover:translate-x-1.5 transition-all duration-200 inline-flex items-center gap-1.5 group'
+                  >
+                    <IconChevronRight
+                      size={12}
+                      className='text-slate-600 group-hover:text-blue-400 transition-colors'
+                    />
+                    <span>Contact Us</span>
                   </Link>
                 </li>
               </ul>
             </div>
           </div>
         </div>
+
+        <div className='mt-10 pt-6 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-400'>
+          <p>
+            &copy; SRYTAL Systems India Pvt Ltd 2024 - {currentYear} | All
+            Rights Reserved
+          </p>
+        </div>
       </div>
-      <p className="text-xs text-gray-400">
-        &copy; SRYTAL Systems India Pvt Ltd 2024 - {new Date().getFullYear()} |
-        All Rights Reserved
-      </p>
-    </div>
+    </footer>
   );
 };
 

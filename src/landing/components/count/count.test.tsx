@@ -7,7 +7,6 @@ jest.mock('../../../services/common-services', () => ({
   getVisitorCount: jest.fn().mockResolvedValue(12500)
 }));
 
-// Mock IntersectionObserver
 class MockIntersectionObserver {
   callback: IntersectionObserverCallback;
   constructor(callback: IntersectionObserverCallback) {

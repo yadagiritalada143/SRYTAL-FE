@@ -99,7 +99,7 @@ const VisitorCount = () => {
           </div>
 
           <h4 className='text-sm sm:text-base font-semibold text-gray-200 mt-2 tracking-wide'>
-            Global Platform Activity
+            Global Platform Visitors
           </h4>
           <p className='text-xs sm:text-sm text-gray-400 mt-1 max-w-md mx-auto leading-relaxed'>
             Monitor live engagement from enterprises and professionals accessing
