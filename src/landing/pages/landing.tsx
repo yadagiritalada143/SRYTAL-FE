@@ -11,11 +11,15 @@ import VisitorCount from '@landing/components/count/count';
 import { useMediaQuery } from '@mantine/hooks';
 import { Suspense } from 'react';
 import { LazySection } from '@hooks/lazy-loading';
+import ScrollToTop from '@components/common/scroll-to-top/ScrollToTop';
 
 const Landing = () => {
   const isSmallScreen = useMediaQuery('(max-width: 768px)');
   return (
-    <div className='relative  w-full h-screen bg-gray-900 text-white overflow-x-hidden'>
+    <div
+      id='landing-root'
+      className='relative w-full min-h-screen bg-gray-900 text-white overflow-x-hidden'
+    >
       <div className='fixed top-10 left-10 w-32 h-32 bg-purple-500 rounded-full opacity-50 animate-move1'></div>
       <div className='fixed top-20 right-10 w-40 h-40 bg-pink-500 rounded-full opacity-50 animate-move2'></div>
       <div className='fixed bottom-10 left-20 w-48 h-48 bg-blue-500 rounded-full opacity-50 animate-move3'></div>
@@ -67,6 +71,8 @@ const Landing = () => {
       <div className=' py-6 w-full max-w-5xl mx-auto'>
         <Footer />
       </div>
+
+      <ScrollToTop />
     </div>
   );
 };

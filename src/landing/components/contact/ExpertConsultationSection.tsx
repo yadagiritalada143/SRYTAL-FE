@@ -528,7 +528,7 @@ export const ExpertConsultationSection = () => {
                 <button
                   type='submit'
                   disabled={isSubmitting}
-                  className='w-full sm:w-auto inline-flex items-center justify-between sm:justify-center gap-4 pl-6 pr-2 py-2 rounded-full font-bold text-sm sm:text-base text-white bg-[#1d4ed8] hover:bg-[#1e40af] active:bg-[#1e3a8a] shadow-lg shadow-blue-700/25 hover:shadow-xl hover:shadow-blue-600/35 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer group'
+                  className='w-full sm:w-auto inline-flex items-center justify-between sm:justify-center gap-4 pl-6 pr-2 py-2 rounded-2xl font-bold text-sm sm:text-base text-white bg-[#1d4ed8] hover:bg-[#1e40af] active:bg-[#1e3a8a] shadow-lg shadow-blue-700/25 hover:shadow-xl hover:shadow-blue-600/35 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer group'
                 >
                   <span className='tracking-wide'>
                     {isSubmitting ? 'Submitting...' : 'Get Expert Guidance'}
