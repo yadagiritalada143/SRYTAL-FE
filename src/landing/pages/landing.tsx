@@ -53,7 +53,7 @@ const Landing = () => {
         <PromoBanner />
       </div>
 
-      <div className=' py-6 w-full max-w-5xl mx-auto'>
+      <div className=' py-6 w-full max-w-6xl mx-auto'>
         <WhyChooseUs />
       </div>
       <Suspense fallback={<div className='text-center'>Loading About...</div>}>
