@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ConsultationForm, consultationFormSchema } from '@forms/consultation';
 import { sendExpertConsultationMail } from '@services/common-services';
@@ -41,7 +41,6 @@ export const ExpertConsultationSection = () => {
   const {
     register,
     handleSubmit,
-    control,
     setValue,
     reset,
     formState: { errors, isSubmitting }
@@ -56,8 +55,7 @@ export const ExpertConsultationSection = () => {
       company: '',
       budget: '',
       currency: 'INR',
-      timeline: '',
-      agreedToTerms: false as unknown as true
+      timeline: ''
     }
   });
 
@@ -138,8 +136,7 @@ export const ExpertConsultationSection = () => {
         company: '',
         budget: '',
         currency: selectedCurrency,
-        timeline: '',
-        agreedToTerms: false as unknown as true
+        timeline: ''
       });
       setTimeout(() => {
         setNotification({ type: null, message: '' });
@@ -487,36 +484,6 @@ export const ExpertConsultationSection = () => {
                     </p>
                   )}
                 </div>
-              </div>
-
-              <div className='pt-1'>
-                <label className='inline-flex items-center gap-2.5 cursor-pointer select-none text-xs sm:text-sm text-gray-300'>
-                  <Controller
-                    name='agreedToTerms'
-                    control={control}
-                    render={({ field }) => (
-                      <input
-                        type='checkbox'
-                        checked={Boolean(field.value)}
-                        onChange={e => field.onChange(e.target.checked)}
-                        className='w-4 h-4 rounded border-slate-700 bg-slate-800 text-blue-600 focus:ring-blue-500 focus:ring-offset-slate-900 cursor-pointer accent-blue-600'
-                      />
-                    )}
-                  />
-                  <span>
-                    I agree to{' '}
-                    <span className='text-blue-400 hover:underline'>
-                      Terms & Privacy Policy
-                    </span>{' '}
-                    <span className='text-red-400'>*</span>
-                  </span>
-                </label>
-                {errors.agreedToTerms && (
-                  <p className='mt-1 text-xs text-red-400 flex items-center gap-1'>
-                    <IconAlertCircle size={13} />
-                    {errors.agreedToTerms.message}
-                  </p>
-                )}
               </div>
 
               {notification.type === 'success' && (

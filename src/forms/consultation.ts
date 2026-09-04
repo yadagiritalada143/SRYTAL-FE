@@ -23,11 +23,7 @@ export const consultationFormSchema = z.object({
   timeline: z
     .string({ required_error: 'Please select a timeline' })
     .min(1, { message: 'Please select a project timeline' }),
-  agreedToTerms: z.literal(true, {
-    errorMap: () => ({
-      message: 'You must agree to the Terms & Privacy Policy'
-    })
-  })
+  agreedToTerms: z.boolean().optional()
 });
 
 export type ConsultationForm = z.infer<typeof consultationFormSchema>;

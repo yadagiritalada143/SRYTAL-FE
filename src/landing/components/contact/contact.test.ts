@@ -93,8 +93,7 @@ describe('Form Validation Schemas', () => {
       phone: '9876543210',
       budget: '50,000',
       currency: 'INR',
-      timeline: '1 - 3 Months',
-      agreedToTerms: true
+      timeline: '1 - 3 Months'
     });
     expect(validConsultation.success).toBe(true);
 
@@ -107,22 +106,19 @@ describe('Form Validation Schemas', () => {
       phone: '9876543210',
       budget: '50,000',
       currency: 'INR',
-      timeline: '1 - 3 Months',
-      agreedToTerms: true
+      timeline: '1 - 3 Months'
     });
     expect(validWithOptionalCompany.success).toBe(true);
 
-    const invalidWithoutTerms = consultationFormSchema.safeParse({
+    const invalidWithoutEmail = consultationFormSchema.safeParse({
       fullName: 'John Doe',
-      email: 'john@example.com',
       countryCode: '+91',
       countryIso: 'IN',
       phone: '9876543210',
       budget: '50,000',
       currency: 'INR',
-      timeline: '1 - 3 Months',
-      agreedToTerms: false
+      timeline: '1 - 3 Months'
     });
-    expect(invalidWithoutTerms.success).toBe(false);
+    expect(invalidWithoutEmail.success).toBe(false);
   });
 });
