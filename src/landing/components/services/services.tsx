@@ -167,7 +167,7 @@ export const Services: React.FC = () => {
   return (
     <section
       id='services'
-      className='w-full max-w-6xl mx-auto px-4 py-9 sm:py-9'
+      className='w-full max-w-6xl mx-auto px-4 py-9 sm:py-7'
       aria-label='Our Services'
     >
       <div className='text-center mb-10 sm:mb-12'>
