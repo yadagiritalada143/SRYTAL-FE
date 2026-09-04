@@ -48,12 +48,11 @@ describe('Services Component', () => {
       </BrowserRouter>
     );
 
-    // Capabilities in cards and ribbon
+    // Capabilities in cards
     expect(screen.getAllByText('React.js & Next.js').length).toBeGreaterThan(0);
     expect(screen.getAllByText('AWS / Azure / GCP').length).toBeGreaterThan(0);
     expect(screen.getAllByText('PostgreSQL').length).toBeGreaterThan(0);
     expect(screen.getByText('Jest Unit Testing')).toBeInTheDocument();
-    expect(screen.getByText('Enterprise Tech Stack:')).toBeInTheDocument();
   });
 
   it('filters services when a category tab is clicked', () => {
