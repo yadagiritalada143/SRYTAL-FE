@@ -32,7 +32,7 @@ const Landing = () => {
           backgroundRepeat: 'no-repeat',
           backgroundPosition: 'center center',
           backgroundAttachment: 'fixed',
-          height: isSmallScreen ? '140dvh' : '120dvh'
+          height: isSmallScreen ? '112dvh' : '110dvh'
         }}
       >
         <Header />

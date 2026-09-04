@@ -53,7 +53,7 @@ const Main: React.FC = () => {
     >
       <div className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl h-72 sm:h-96 bg-gradient-to-r from-blue-600/20 via-purple-600/20 to-indigo-600/20 blur-3xl pointer-events-none rounded-full' />
 
-      <h1 className='relative z-10 text-3xl sm:text-5xl md:text-6xl lg:text-5xl font-extrabold text-white tracking-tight leading-[1.15] max-w-4xl mx-auto mt-4 sm:mt-6 md:mt-4'>
+      <h1 className='relative z-10 text-3xl sm:text-5xl md:text-6xl lg:text-5xl font-extrabold text-white tracking-tight leading-[1.15] max-w-4xl mx-auto mt-4 sm:mt-6 md:mt-12'>
         Empowering Businesses with{' '}
         <span className='bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent'>
           Innovative Technology Solutions
