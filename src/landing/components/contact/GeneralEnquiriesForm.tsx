@@ -11,7 +11,7 @@ import {
   IconSend,
   IconCheck,
   IconAlertCircle,
-  IconSparkles
+  IconMessageCircle
 } from '@tabler/icons-react';
 
 export const GeneralEnquiriesForm = () => {
@@ -64,7 +64,7 @@ export const GeneralEnquiriesForm = () => {
     <div className='w-full max-w-2xl mx-auto px-4'>
       <div className='text-center mb-4 sm:mb-5'>
         <div className='inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-[11px] font-medium uppercase tracking-wider mb-2'>
-          <IconSparkles size={12} className='text-purple-400' />
+          <IconMessageCircle size={12} className='text-purple-400' />
           <span>Direct Communication</span>
         </div>
         <h2 className='text-2xl sm:text-3xl font-bold text-white tracking-tight'>
