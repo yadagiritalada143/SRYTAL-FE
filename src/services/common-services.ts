@@ -1,5 +1,6 @@
 import { LoginForm } from '@forms/login';
 import { ContactForm } from '@forms/contact';
+import { ConsultationForm } from '@forms/consultation';
 import { DateValue } from '@mantine/dates';
 
 import moment from 'moment';
@@ -55,11 +56,54 @@ export const getVisitorCount = async () => {
 
 export const sendContactUsMail = async (data: ContactForm) => {
   try {
-    const response = await apiClientComm.post('/sendContactUsMail', data);
+    const payload = {
+      ...data,
+      companyName: data.companyName?.trim() || 'Individual / General Enquiry'
+    };
+    const response = await apiClientComm.post('/sendContactUsMail', payload);
     return response.data;
   } catch (error) {
     console.error('Contact Us Mail Error:', error);
     throw error;
+  }
+};
+
+export const sendExpertConsultationMail = async (data: ConsultationForm) => {
+  const payload = {
+    fullName: data.fullName,
+    email: data.email,
+    phoneNumber: `${data.countryCode} ${data.phone}`,
+    company: data.company?.trim() || 'Individual / Not specified',
+    projectBudget: `${data.currency} ${data.budget}`,
+    timeline: data.timeline
+  };
+
+  try {
+    const response = await apiClientComm.post('/expertconsultation', payload);
+    return response.data;
+  } catch (error) {
+    console.warn(
+      'expertconsultation failed, attempting fallback to sendContactUsMail:',
+      error
+    );
+    const fallbackPayload = {
+      companyName: data.company?.trim() || `${data.fullName} (Individual)`,
+      customerEmail: data.email,
+      subject: `[Expert Consultation] ${data.fullName} - ${data.timeline}`,
+      message: `New Expert Consultation Request:
+- Full Name: ${data.fullName}
+- Email: ${data.email}
+- Phone: ${data.countryCode} ${data.phone} (Country: ${data.countryIso})
+- Company: ${data.company?.trim() || 'Not specified (Individual)'}
+- Project Budget: ${data.currency} ${data.budget}
+- Timeline: ${data.timeline}
+- Terms & Privacy: Agreed to Terms & Privacy Policy`
+    };
+    const fallbackResponse = await apiClientComm.post(
+      '/sendContactUsMail',
+      fallbackPayload
+    );
+    return fallbackResponse.data;
   }
 };
 
