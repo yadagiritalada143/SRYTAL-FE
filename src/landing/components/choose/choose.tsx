@@ -4,8 +4,8 @@ import {
   IconShieldCheck,
   IconBulb,
   IconUserCheck,
-  IconSparkles,
-  IconArrowRight
+  IconArrowRight,
+  IconAward
 } from '@tabler/icons-react';
 
 export const WhyChooseUs: React.FC = () => {
@@ -60,7 +60,7 @@ export const WhyChooseUs: React.FC = () => {
     >
       <div className='text-center mb-10 sm:mb-14'>
         <div className='inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/25 text-blue-300 text-xs font-semibold uppercase tracking-wider mb-3 shadow-sm'>
-          <IconSparkles size={14} className='text-blue-400' />
+          <IconAward size={14} className='text-blue-400' />
           <span>Proven Enterprise Excellence</span>
         </div>
 
