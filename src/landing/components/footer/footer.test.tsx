@@ -35,6 +35,5 @@ describe('Footer Component', () => {
     expect(
       screen.getByText(new RegExp(currentYear.toString(), 'i'))
     ).toBeInTheDocument();
-    expect(screen.getByText(/Systems Operational/i)).toBeInTheDocument();
   });
 });

@@ -79,14 +79,11 @@ export const sendExpertConsultationMail = async (data: ConsultationForm) => {
   };
 
   try {
-    const response = await apiClientComm.post(
-      '/createExpertConsultation',
-      payload
-    );
+    const response = await apiClientComm.post('/expertconsultation', payload);
     return response.data;
   } catch (error) {
     console.warn(
-      'createExpertConsultation failed, attempting fallback to sendContactUsMail:',
+      'expertconsultation failed, attempting fallback to sendContactUsMail:',
       error
     );
     const fallbackPayload = {

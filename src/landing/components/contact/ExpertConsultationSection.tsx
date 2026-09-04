@@ -6,8 +6,9 @@ import { sendExpertConsultationMail } from '@services/common-services';
 import { useAppTheme } from '@hooks/use-app-theme';
 import {
   fetchCountryCodes,
+  fetchCurrencies,
   CountryItem,
-  CURRENCY_OPTIONS,
+  CurrencyOption,
   TIMELINE_OPTIONS
 } from '@utils/country-codes';
 import {
@@ -34,6 +35,7 @@ export const ExpertConsultationSection = () => {
   const [selectedCountry, setSelectedCountry] = useState<CountryItem | null>(
     null
   );
+  const [currencies, setCurrencies] = useState<CurrencyOption[]>([]);
   const [selectedCurrency, setSelectedCurrency] = useState<string>('INR');
 
   const {
@@ -81,6 +83,17 @@ export const ExpertConsultationSection = () => {
       .catch(err => {
         console.warn('Could not fetch country codes from API:', err);
       });
+
+    fetchCurrencies()
+      .then(data => {
+        if (isMounted && data.length > 0) {
+          setCurrencies(data);
+        }
+      })
+      .catch(err => {
+        console.warn('Could not fetch currencies from API:', err);
+      });
+
     return () => {
       isMounted = false;
     };
@@ -94,7 +107,7 @@ export const ExpertConsultationSection = () => {
       setValue('countryIso', found.code);
       if (
         found.currency &&
-        CURRENCY_OPTIONS.some(curr => curr.value === found.currency)
+        currencies.some(curr => curr.value === found.currency)
       ) {
         setSelectedCurrency(found.currency);
         setValue('currency', found.currency);
@@ -385,14 +398,14 @@ export const ExpertConsultationSection = () => {
                     </span>
                   </label>
                   <div className='flex h-11 sm:h-12 rounded-xl overflow-hidden border border-slate-700/80 bg-slate-800/80 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent transition-all'>
-                    <div className='relative shrink-0 border-r border-slate-700/80 bg-slate-800 flex items-center'>
+                    <div className='relative shrink-0 border-l border-slate-700/80 bg-slate-800 flex items-center w-28 sm:w-30'>
                       <select
                         value={selectedCurrency}
                         onChange={e => handleCurrencyChange(e.target.value)}
                         aria-label='Currency'
-                        className='h-full bg-transparent text-white text-xs sm:text-sm pl-3 pr-5 focus:outline-none cursor-pointer appearance-none font-medium'
+                        className='w-full h-full bg-transparent text-white text-xs sm:text-sm pl-3 pr-6 focus:outline-none cursor-pointer appearance-none font-medium'
                       >
-                        {CURRENCY_OPTIONS.map(curr => (
+                        {currencies.map(curr => (
                           <option
                             key={curr.value}
                             value={curr.value}
@@ -404,7 +417,7 @@ export const ExpertConsultationSection = () => {
                       </select>
                       <IconChevronDown
                         size={13}
-                        className='pointer-events-none absolute right-1.5 text-gray-400'
+                        className='pointer-events-none absolute right-2 text-gray-400'
                       />
                     </div>
 
@@ -413,7 +426,7 @@ export const ExpertConsultationSection = () => {
                       type='text'
                       placeholder='e.g. 50,000'
                       {...register('budget')}
-                      className='w-full h-full px-3.5 bg-transparent text-white placeholder-gray-400 text-sm focus:outline-none'
+                      className='flex-1 min-w-0 w-full h-full px-3.5 bg-transparent text-white placeholder-gray-400 text-sm focus:outline-none'
                     />
                   </div>
                   {errors.budget && (

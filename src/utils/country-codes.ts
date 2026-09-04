@@ -6,6 +6,11 @@ export interface CountryItem {
   currency?: string;
 }
 
+export interface CurrencyOption {
+  value: string;
+  label: string;
+}
+
 export const getFlagEmoji = (countryCode: string): string => {
   if (!countryCode || countryCode.length !== 2) return '🌐';
   try {
@@ -19,18 +24,19 @@ export const getFlagEmoji = (countryCode: string): string => {
   }
 };
 
-export const CURRENCY_OPTIONS = [
-  { value: 'INR', label: 'INR (₹)' },
-  { value: 'USD', label: 'USD ($)' },
-  { value: 'EUR', label: 'EUR (€)' },
-  { value: 'GBP', label: 'GBP (£)' },
-  { value: 'AED', label: 'AED (د.إ)' },
-  { value: 'CAD', label: 'CAD ($)' },
-  { value: 'AUD', label: 'AUD ($)' },
-  { value: 'SGD', label: 'SGD ($)' },
-  { value: 'SAR', label: 'SAR (﷼)' },
-  { value: 'JPY', label: 'JPY (¥)' }
-];
+export const getCurrencySymbol = (currencyCode: string): string => {
+  try {
+    const parts = new Intl.NumberFormat('en', {
+      style: 'currency',
+      currency: currencyCode,
+      currencyDisplay: 'narrowSymbol'
+    }).formatToParts(0);
+    const symbolPart = parts.find(p => p.type === 'currency');
+    return symbolPart ? symbolPart.value : currencyCode;
+  } catch {
+    return currencyCode;
+  }
+};
 
 export const TIMELINE_OPTIONS = [
   { value: '< 1 Month', label: 'Less than 1 Month' },
@@ -41,6 +47,7 @@ export const TIMELINE_OPTIONS = [
 ];
 
 let cachedCountries: CountryItem[] | null = null;
+let cachedCurrencies: CurrencyOption[] | null = null;
 
 export const fetchCountryCodes = async (): Promise<CountryItem[]> => {
   if (cachedCountries && cachedCountries.length > 0) {
@@ -78,6 +85,79 @@ export const fetchCountryCodes = async (): Promise<CountryItem[]> => {
   } catch (err) {
     console.error('Error fetching country codes from API:', err);
     throw err;
+  }
+
+  return [];
+};
+
+export const fetchCurrencies = async (): Promise<CurrencyOption[]> => {
+  if (cachedCurrencies && cachedCurrencies.length > 0) {
+    return cachedCurrencies;
+  }
+
+  try {
+    const response = await fetch(
+      'https://countriesnow.space/api/v0.1/countries/currency'
+    );
+    if (!response.ok) {
+      throw new Error(`Failed to fetch currencies: ${response.statusText}`);
+    }
+    const result = await response.json();
+    if (result && Array.isArray(result.data)) {
+      const uniqueCurrencies = new Map<string, string>();
+
+      result.data.forEach((item: any) => {
+        if (item.currency && typeof item.currency === 'string') {
+          const code = item.currency.trim().toUpperCase();
+          if (/^[A-Z]{3}$/.test(code) && !uniqueCurrencies.has(code)) {
+            let label = code;
+            try {
+              const symbol = getCurrencySymbol(code);
+              label = symbol && symbol !== code ? `${code} (${symbol})` : code;
+            } catch {
+              label = code;
+            }
+            uniqueCurrencies.set(code, label);
+          }
+        }
+      });
+
+      const priorityCodes = [
+        'INR',
+        'USD',
+        'EUR',
+        'GBP',
+        'AED',
+        'CAD',
+        'AUD',
+        'SGD',
+        'SAR',
+        'JPY'
+      ];
+
+      const currencyList: CurrencyOption[] = Array.from(
+        uniqueCurrencies.entries()
+      ).map(([value, label]) => ({
+        value,
+        label
+      }));
+
+      const prioritized = currencyList
+        .filter(c => priorityCodes.includes(c.value))
+        .sort(
+          (a, b) =>
+            priorityCodes.indexOf(a.value) - priorityCodes.indexOf(b.value)
+        );
+
+      const rest = currencyList
+        .filter(c => !priorityCodes.includes(c.value))
+        .sort((a, b) => a.value.localeCompare(b.value));
+
+      cachedCurrencies = [...prioritized, ...rest];
+      return cachedCurrencies;
+    }
+  } catch (err) {
+    console.error('Error fetching currencies from API:', err);
   }
 
   return [];

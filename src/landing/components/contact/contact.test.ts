@@ -1,7 +1,7 @@
 import {
   getFlagEmoji,
   fetchCountryCodes,
-  CURRENCY_OPTIONS,
+  fetchCurrencies,
   TIMELINE_OPTIONS
 } from '../../../utils/country-codes';
 import { consultationFormSchema } from '../../../forms/consultation';
@@ -15,12 +15,7 @@ describe('Country Code & Currency Utilities', () => {
     expect(getFlagEmoji('DE')).toBe('🇩🇪');
   });
 
-  it('contains expected currency and timeline options', () => {
-    const currencies = CURRENCY_OPTIONS.map(c => c.value);
-    expect(currencies).toContain('INR');
-    expect(currencies).toContain('USD');
-    expect(currencies).toContain('EUR');
-
+  it('contains expected timeline options', () => {
     expect(TIMELINE_OPTIONS.length).toBeGreaterThanOrEqual(4);
   });
 
@@ -43,6 +38,29 @@ describe('Country Code & Currency Utilities', () => {
     expect(countries[0].code).toBe('IN');
     expect(countries[0].dial_code).toBe('+91');
     expect(countries[0].flag).toBe('🇮🇳');
+
+    global.fetch = originalFetch;
+  });
+
+  it('fetches currencies from open source API dynamically', async () => {
+    const mockCurrencyData = {
+      data: [
+        { name: 'India', currency: 'INR', iso2: 'IN' },
+        { name: 'United States', currency: 'USD', iso2: 'US' },
+        { name: 'Eurozone', currency: 'EUR', iso2: 'EU' }
+      ]
+    };
+    const originalFetch = global.fetch;
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => mockCurrencyData
+    }) as any;
+
+    const currencies = await fetchCurrencies();
+    expect(currencies.length).toBeGreaterThan(0);
+    const inr = currencies.find(c => c.value === 'INR');
+    expect(inr).toBeDefined();
+    expect(inr?.label).toContain('INR');
 
     global.fetch = originalFetch;
   });
