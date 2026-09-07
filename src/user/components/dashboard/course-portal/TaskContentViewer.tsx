@@ -172,8 +172,6 @@ const TaskContentViewer = ({ task, onFinished }: TaskContentViewerProps) => {
           leftSection={<IconExternalLink size={16} />}
           onClick={() => {
             window.open(openUrl, '_blank', 'noopener');
-            // Opening the resource is the only completion signal these types give.
-            onFinished?.();
           }}
         >
           {isExternal ? 'Open resource' : 'Open file'}

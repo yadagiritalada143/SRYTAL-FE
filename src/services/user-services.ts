@@ -244,6 +244,9 @@ export const addCourseTaskContentWriter = async (data: AddTaskPayload) => {
     } else if (data.link) {
       formData.append('link', data.link);
     }
+    if (data.thumbnail) {
+      formData.append('thumbnailFile', data.thumbnail);
+    }
     const response = await apiClient.post(
       '/contentwriter/addCourseTask',
       formData,
@@ -257,7 +260,22 @@ export const addCourseTaskContentWriter = async (data: AddTaskPayload) => {
 
 export const updateCourseContentWriter = async (data: UpdateCoursePayload) => {
   try {
-    const response = await apiClient.put('/contentwriter/updatecourse', data);
+    // The update endpoint is multipart (multer `single('thumbnail')`). Send
+    // the metadata as fields and the thumbnail as a file so it can be
+    // replaced; when no file is included the stored thumbnail is kept.
+    const formData = new FormData();
+    formData.append('id', data.id);
+    formData.append('courseName', data.courseName);
+    formData.append('courseDescription', data.courseDescription);
+    formData.append('status', data.status);
+    if (data.thumbnail) {
+      formData.append('thumbnail', data.thumbnail);
+    }
+    const response = await apiClient.put(
+      '/contentwriter/updatecourse',
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    );
     return response.data;
   } catch (error) {
     throw error;
@@ -268,9 +286,20 @@ export const updateCourseModuleContentWriter = async (
   data: UpdateModulePayload
 ) => {
   try {
+    // Multipart so the thumbnail file can be replaced with it (multer
+    // `single('thumbnail')`).
+    const formData = new FormData();
+    formData.append('id', data.id);
+    formData.append('moduleName', data.moduleName);
+    formData.append('moduleDescription', data.moduleDescription);
+    formData.append('status', data.status);
+    if (data.thumbnail) {
+      formData.append('thumbnail', data.thumbnail);
+    }
     const response = await apiClient.put(
       '/contentwriter/updatecoursemodule',
-      data
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
     );
     return response.data;
   } catch (error) {
@@ -282,9 +311,21 @@ export const updateCourseTaskContentWriter = async (
   data: UpdateTaskPayload
 ) => {
   try {
+    // Multipart — the backend accepts an optional `thumbnailFile` field
+    // (`upload.fields([{ taskFile }, { thumbnailFile }])`). The file/link
+    // content is still NOT editable here; only the thumbnail gets replaced.
+    const formData = new FormData();
+    formData.append('id', data.id);
+    formData.append('taskName', data.taskName);
+    formData.append('taskDescription', data.taskDescription);
+    formData.append('status', data.status);
+    if (data.thumbnail) {
+      formData.append('thumbnailFile', data.thumbnail);
+    }
     const response = await apiClient.put(
       '/contentwriter/updatecoursetask',
-      data
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
     );
     return response.data;
   } catch (error) {

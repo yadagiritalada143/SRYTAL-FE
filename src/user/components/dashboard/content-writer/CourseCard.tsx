@@ -5,13 +5,17 @@ import {
   Badge,
   ActionIcon,
   Menu,
-  Group
+  Group,
+  Box
 } from '@mantine/core';
 import {
   IconDots,
   IconEdit,
   IconArchive,
-  IconTrash
+  IconTrash,
+  IconLayersSubtract,
+  IconListCheck,
+  IconClock
 } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom';
 import { organizationEmployeeUrls } from '@utils/common/constants';
@@ -46,64 +50,58 @@ const CourseCard = ({
     ? course.courseDescription.replace(/<[^>]*>/g, '').trim()
     : '';
 
+  const moduleCount = course.modules?.length ?? 0;
+  const taskCount =
+    course.modules?.reduce((sum, m) => sum + (m.tasks?.length ?? 0), 0) ?? 0;
+
   return (
     <Card
-      shadow='xs'
-      radius='md'
-      p='xs'
       withBorder
+      radius='lg'
+      padding={0}
       onClick={goToCourse}
       style={{
         cursor: 'pointer',
-        transition: 'box-shadow 0.15s ease, transform 0.15s ease'
-      }}
-      onMouseEnter={e => {
-        e.currentTarget.style.transform = 'translateY(-2px)';
-        e.currentTarget.style.boxShadow = '0 6px 18px rgba(0,0,0,0.10)';
-      }}
-      onMouseLeave={e => {
-        e.currentTarget.style.transform = '';
-        e.currentTarget.style.boxShadow = '';
+        overflow: 'hidden',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        borderColor: themeConfig.borderColor
       }}
     >
-      <Group wrap='nowrap' gap='sm' align='flex-start'>
+      <Box style={{ position: 'relative' }}>
         <CourseThumbnail
           name={course.courseName}
           src={course.thumbnailUrl}
-          size={68}
-          radius='sm'
+          size='100%'
+          height={140}
+          radius={0}
         />
-
-        <Stack gap={3} style={{ flex: 1, minWidth: 0 }}>
-          <Text fw={600} size='sm' lineClamp={1}>
-            {course.courseName}
-          </Text>
-          <Text size='xs' c='dimmed' lineClamp={2}>
-            {description || 'No description available'}
-          </Text>
-          <Badge
-            color={course.status === 'ACTIVE' ? 'green' : 'blue'}
-            radius='sm'
-            variant='light'
-            size='xs'
-            style={{ width: 'fit-content' }}
-          >
-            {course.status || 'Draft'}
-          </Badge>
-        </Stack>
-
+        <Badge
+          size='sm'
+          variant='filled'
+          color={course.status === 'ACTIVE' ? 'green' : 'blue'}
+          style={{ position: 'absolute', top: 10, right: 10 }}
+        >
+          {course.status === 'ACTIVE' ? 'Active' : 'Archived'}
+        </Badge>
         {hasMenu && (
           <Menu position='bottom-end' shadow='md' width={160}>
             <Menu.Target>
               <ActionIcon
-                variant='subtle'
+                variant='filled'
                 size='sm'
-                color='gray'
+                color='dark'
                 onClick={stop}
                 aria-label='Course actions'
-                style={{ flexShrink: 0, marginTop: 2 }}
+                style={{
+                  position: 'absolute',
+                  top: 10,
+                  left: 10,
+                  backdropFilter: 'blur(4px)'
+                }}
               >
-                <IconDots size={16} />
+                <IconDots size={14} />
               </ActionIcon>
             </Menu.Target>
             <Menu.Dropdown>
@@ -149,7 +147,47 @@ const CourseCard = ({
             </Menu.Dropdown>
           </Menu>
         )}
-      </Group>
+      </Box>
+
+      <Stack gap='sm' p='md' style={{ flex: 1 }}>
+        <Stack gap={4} style={{ flex: 1, minWidth: 0 }}>
+          <Text fw={600} lineClamp={2}>
+            {course.courseName}
+          </Text>
+          <Text size='xs' c='dimmed' lineClamp={2}>
+            {description || 'No description available'}
+          </Text>
+        </Stack>
+
+        <Group gap='lg' wrap='nowrap'>
+          <Group gap={4} wrap='nowrap'>
+            <IconLayersSubtract size={14} color={themeConfig.mutedTextColor} />
+            <Text size='xs' c={themeConfig.mutedTextColor}>
+              {moduleCount} module{moduleCount !== 1 ? 's' : ''}
+            </Text>
+          </Group>
+          <Group gap={4} wrap='nowrap'>
+            <IconListCheck size={14} color={themeConfig.mutedTextColor} />
+            <Text size='xs' c={themeConfig.mutedTextColor}>
+              {taskCount} task{taskCount !== 1 ? 's' : ''}
+            </Text>
+          </Group>
+        </Group>
+
+        {course.updatedAt && (
+          <Group gap={4} wrap='nowrap'>
+            <IconClock size={12} color={themeConfig.mutedTextColor} />
+            <Text size='xs' c={themeConfig.mutedTextColor}>
+              Updated{' '}
+              {new Date(course.updatedAt).toLocaleDateString(undefined, {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+              })}
+            </Text>
+          </Group>
+        )}
+      </Stack>
     </Card>
   );
 };
