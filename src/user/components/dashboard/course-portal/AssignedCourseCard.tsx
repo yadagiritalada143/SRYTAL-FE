@@ -21,7 +21,6 @@ interface AssignedCourseCardProps {
   onOpen: (courseAssignmentId: string) => void;
 }
 
-/** "Start" for an untouched course, "Review" once it's finished. */
 const actionLabel = (course: AssignedCourse) => {
   if (course.progress.completedTasks === 0) return 'Start course';
   if (course.status === 'Completed') return 'Review course';
@@ -137,7 +136,6 @@ const AssignedCourseCard = ({ course, onOpen }: AssignedCourseCardProps) => {
           fullWidth
           variant={isComplete ? 'light' : 'filled'}
           onClick={event => {
-            // The whole card is clickable; don't fire the handler twice.
             event.stopPropagation();
             onOpen(course.courseAssignmentId);
           }}

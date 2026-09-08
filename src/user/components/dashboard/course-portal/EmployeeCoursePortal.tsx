@@ -1,5 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useRecoilValue } from 'recoil';
+import { userDetailsAtom } from '@atoms/user';
 import {
   Card,
   Center,
@@ -20,8 +22,13 @@ import {
   IconSearch,
   IconTrophy
 } from '@tabler/icons-react';
+import OpenRouterSetup, { OPENROUTER_API_KEY_STORAGE } from './OpenRouterSetup';
 import { useAppTheme } from '@hooks/use-app-theme';
-import { useGetMyAssignedCourses } from '@hooks/queries/useUserQueries';
+import {
+  useGetMyAssignedCourses,
+  useGetUserDetails,
+  useGetUserOpenRouterKey
+} from '@hooks/queries/useUserQueries';
 import PageHeader from '@components/common/page-header/PageHeader';
 import DataView from '@components/common/loaders/DataView';
 import SkeletonLoader from '@components/common/loaders/SkeletonLoader';
@@ -48,6 +55,44 @@ const EmployeeCoursePortal = () => {
   const [filter, setFilter] = useState<CourseFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
+  const user = useRecoilValue(userDetailsAtom);
+  const { data: userDetails, isLoading: isUserLoading } = useGetUserDetails();
+  const userId = user.id || userDetails?.id || userDetails?._id || '';
+
+  const {
+    data: openRouterKeyResponse,
+    isLoading: isKeyLoading,
+    isFetched: isKeyFetched,
+    refetch: refetchKey
+  } = useGetUserOpenRouterKey(userId, !!userId);
+
+  const [sessionKey, setSessionKey] = useState<string>('');
+
+  const backendKey = (
+    openRouterKeyResponse?.data?.openrouterKey ||
+    (openRouterKeyResponse as any)?.openrouterKey ||
+    ''
+  ).trim();
+
+  useEffect(() => {
+    if (isKeyFetched || !isKeyLoading) {
+      if (backendKey) {
+        try {
+          localStorage.setItem(OPENROUTER_API_KEY_STORAGE, backendKey);
+        } catch {
+          // ignore
+        }
+      } else {
+        try {
+          localStorage.removeItem(OPENROUTER_API_KEY_STORAGE);
+        } catch {
+          // ignore
+        }
+        setSessionKey('');
+      }
+    }
+  }, [backendKey, isKeyFetched, isKeyLoading]);
+
   const stats = useMemo(() => {
     const completed = courses.filter(
       (course: AssignedCourse) => course.status === 'Completed'
@@ -55,7 +100,6 @@ const EmployeeCoursePortal = () => {
     const inProgress = courses.filter(
       (course: AssignedCourse) => course.status === 'In Progress'
     ).length;
-    // Averaged over courses, not tasks, so a large course can't dominate.
     const overall = courses.length
       ? Math.round(
           courses.reduce(
@@ -106,6 +150,39 @@ const EmployeeCoursePortal = () => {
       color: 'grape'
     }
   ];
+
+  const hasKey = Boolean(backendKey || sessionKey);
+
+  const isCheckingKey =
+    (!userId && isUserLoading) || (!!userId && isKeyLoading && !isKeyFetched);
+
+  if (isCheckingKey) {
+    return (
+      <Container
+        size='xl'
+        py={{ base: 'md', sm: 'xl' }}
+        px={{ base: 'xs', sm: 'md' }}
+      >
+        <SkeletonLoader type='cards' />
+      </Container>
+    );
+  }
+
+  if (!hasKey) {
+    return (
+      <OpenRouterSetup
+        onKeySaved={key => {
+          setSessionKey(key);
+          try {
+            localStorage.setItem(OPENROUTER_API_KEY_STORAGE, key);
+          } catch {
+            // ignore
+          }
+          refetchKey();
+        }}
+      />
+    );
+  }
 
   return (
     <Container

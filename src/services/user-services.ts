@@ -380,3 +380,32 @@ export const getEmployeeDashboard = async () => {
   const response = await apiClient.get('/getEmployeeDashboard');
   return response.data;
 };
+
+// OpenRouter Key
+export interface UserOpenRouterKeyResponse {
+  success: boolean;
+  message: string;
+  data?: {
+    _id?: string;
+    userId: string;
+    openrouterKey: string;
+    createdAt?: string;
+    updatedAt?: string;
+  };
+}
+
+export const saveUserOpenRouterKey = async (
+  openrouterKey: string
+): Promise<UserOpenRouterKeyResponse> => {
+  const response = await apiClient.post('/user/UserOpenRouterKey', {
+    openrouterKey
+  });
+  return response.data;
+};
+
+export const getUserOpenRouterKey = async (
+  userId: string
+): Promise<UserOpenRouterKeyResponse> => {
+  const response = await apiClient.get(`/user/getUserOpenRouterKey/${userId}`);
+  return response.data;
+};

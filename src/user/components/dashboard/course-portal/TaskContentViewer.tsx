@@ -12,23 +12,11 @@ import { resolveTaskContent } from './task-content';
 
 interface TaskContentViewerProps {
   task: AssignedTask;
-  /**
-   * Fired when the learner reaches the end of a video/audio task, so the player
-   * can tick it off the way a course platform normally would.
-   */
   onFinished?: () => void;
 }
 
-/**
- * Renders one task's content inline. Every task type the content writer can
- * author is handled: uploaded video/audio/image/PDF/text files, YouTube, Vimeo
- * and Google Drive links, direct media URLs, and — for anything that cannot be
- * shown in-page (Office documents, arbitrary articles) — an explicit card that
- * opens the content in a new tab.
- */
 const TaskContentViewer = ({ task, onFinished }: TaskContentViewerProps) => {
   const { themeConfig } = useAppTheme();
-  // FILE tasks are streamed through the backend proxy; LINK tasks ignore this.
   const content = resolveTaskContent(task, getCourseTaskContentUrl(task._id));
 
   const surface = {
@@ -53,7 +41,6 @@ const TaskContentViewer = ({ task, onFinished }: TaskContentViewerProps) => {
   }
 
   if (content.kind === 'embed') {
-    // 16:9 box — iframes have no intrinsic aspect ratio to size against.
     return (
       <Box style={{ ...surface, position: 'relative', paddingTop: '56.25%' }}>
         <iframe
@@ -139,8 +126,6 @@ const TaskContentViewer = ({ task, onFinished }: TaskContentViewerProps) => {
     );
   }
 
-  // 'external' and 'download': nothing can be framed, so be explicit about it
-  // instead of showing an empty box the browser has quietly blocked.
   const isExternal = content.kind === 'external';
   const openUrl = content.externalUrl || content.url;
 
