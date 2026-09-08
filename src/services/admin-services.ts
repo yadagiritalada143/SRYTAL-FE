@@ -905,7 +905,7 @@ export const updateCourseAssignmentDueDate = async (
 
 export const unassignCourse = async (courseAssignmentId: string) => {
   const response = await apiClient.delete(
-    `/admin/courses/assignments/${courseAssignmentId}/unassign`
+    `/admin/deletecourseassignment/${courseAssignmentId}`
   );
   return response.data;
 };

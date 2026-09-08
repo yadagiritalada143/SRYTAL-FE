@@ -223,8 +223,9 @@ const EmployeeCourseProgress = () => {
   const handleConfirmUnassign = async () => {
     if (!unassignTargetId) return;
     try {
-      await unassignMutation.mutateAsync(unassignTargetId);
-      showSuccessToast('Course un-assigned successfully');
+      const res: { message?: string } =
+        await unassignMutation.mutateAsync(unassignTargetId);
+      showSuccessToast(res?.message ?? 'Course un-assigned successfully');
       closeUnassign();
       setUnassignTargetId(null);
     } catch (error) {
