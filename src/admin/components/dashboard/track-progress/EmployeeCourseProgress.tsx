@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import {
   ActionIcon,
   Badge,
+  Box,
   Button,
   Card,
   Center,
@@ -15,7 +16,8 @@ import {
   Table,
   Text,
   ThemeIcon,
-  Tooltip
+  Tooltip,
+  UnstyledButton
 } from '@mantine/core';
 import { DatePickerInput } from '@mantine/dates';
 import { useDisclosure } from '@mantine/hooks';
@@ -24,8 +26,12 @@ import {
   IconBook,
   IconCalendar,
   IconCheck,
+  IconChevronDown,
   IconChevronRight,
-  IconCircleDot
+  IconChevronUp,
+  IconCircleDot,
+  IconSelector,
+  IconTrash
 } from '@tabler/icons-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAppTheme } from '@hooks/use-app-theme';
@@ -33,7 +39,10 @@ import {
   useGetAllCourseAssignments,
   useGetCourseAssignmentDetails
 } from '@hooks/queries/useAdminQueries';
-import { useUpdateCourseAssignmentDueDate } from '@hooks/mutations/useAdminMutations';
+import {
+  useUpdateCourseAssignmentDueDate,
+  useUnassignCourse
+} from '@hooks/mutations/useAdminMutations';
 import { useCustomToast } from '@utils/common/toast';
 import { getErrorMessage } from '@utils/common/get-error-message';
 import {
@@ -42,6 +51,7 @@ import {
 } from '@interfaces/course-assignment';
 import PageHeader from '@components/common/page-header/PageHeader';
 import DataView from '@components/common/loaders/DataView';
+import { CommonButton } from '@components/common/button/CommonButton';
 import { organizationAdminUrls } from '@utils/common/constants';
 
 const STATUS_COLORS: Record<CourseAssignmentStatus, string> = {
@@ -61,6 +71,50 @@ const formatDate = (value?: string | Date) => {
   });
 };
 
+type SortKey = 'status' | 'dueDate' | 'progress';
+type SortDir = 'asc' | 'desc';
+
+const STATUS_ORDER: Record<string, number> = {
+  Assigned: 0,
+  'In Progress': 1,
+  Completed: 2
+};
+
+const ThSortable = ({
+  label,
+  sortKey,
+  activeKey,
+  activeDir,
+  onSort
+}: {
+  label: string;
+  sortKey: SortKey;
+  activeKey: SortKey | null;
+  activeDir: SortDir;
+  onSort: (key: SortKey) => void;
+}) => {
+  const isActive = activeKey === sortKey;
+  return (
+    <UnstyledButton
+      onClick={() => onSort(sortKey)}
+      style={{ display: 'flex', alignItems: 'center', gap: 4 }}
+    >
+      <Text size='sm' fw={500}>
+        {label}
+      </Text>
+      {isActive ? (
+        activeDir === 'asc' ? (
+          <IconChevronUp size={14} />
+        ) : (
+          <IconChevronDown size={14} />
+        )
+      ) : (
+        <IconSelector size={14} style={{ opacity: 0.4 }} />
+      )}
+    </UnstyledButton>
+  );
+};
+
 const EmployeeCourseProgress = () => {
   const { themeConfig } = useAppTheme();
   const navigate = useNavigate();
@@ -76,15 +130,43 @@ const EmployeeCourseProgress = () => {
   >(null);
   const [editingDate, setEditingDate] = useState<Date | null>(null);
   const [opened, { open, close }] = useDisclosure(false);
+  const [sortKey, setSortKey] = useState<SortKey | null>(null);
+  const [sortDir, setSortDir] = useState<SortDir>('asc');
 
-  const employee = assignments.find(a => a.employee?.employeeId === employeeId)
-    ?.employee;
+  const handleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDir(d => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortKey(key);
+      setSortDir('asc');
+    }
+  };
 
-  const employeeAssignments = useMemo(
-    () =>
-      assignments.filter(a => a.employee?.employeeId === employeeId),
-    [assignments, employeeId]
-  );
+  const employee = assignments.find(
+    a => a.employee?.employeeId === employeeId
+  )?.employee;
+
+  const employeeAssignments = useMemo(() => {
+    const filtered = assignments.filter(
+      a => a.employee?.employeeId === employeeId
+    );
+    if (!sortKey) return filtered;
+
+    return [...filtered].sort((a, b) => {
+      let cmp = 0;
+      if (sortKey === 'status') {
+        cmp = (STATUS_ORDER[a.status] ?? 0) - (STATUS_ORDER[b.status] ?? 0);
+      } else if (sortKey === 'dueDate') {
+        const da = a.dueDate ? new Date(a.dueDate).getTime() : Infinity;
+        const db = b.dueDate ? new Date(b.dueDate).getTime() : Infinity;
+        cmp = da - db;
+      } else if (sortKey === 'progress') {
+        cmp =
+          (a.progress.percentComplete ?? 0) - (b.progress.percentComplete ?? 0);
+      }
+      return sortDir === 'asc' ? cmp : -cmp;
+    });
+  }, [assignments, employeeId, sortKey, sortDir]);
 
   const { data: detail, isLoading: detailLoading } =
     useGetCourseAssignmentDetails(
@@ -93,6 +175,10 @@ const EmployeeCourseProgress = () => {
     );
 
   const updateDueDateMutation = useUpdateCourseAssignmentDueDate();
+  const unassignMutation = useUnassignCourse();
+  const [unassignTargetId, setUnassignTargetId] = useState<string | null>(null);
+  const [unassignOpened, { open: openUnassign, close: closeUnassign }] =
+    useDisclosure(false);
 
   const selectedAssignment = assignments.find(
     a => a.courseAssignmentId === selectedAssignmentId
@@ -125,7 +211,34 @@ const EmployeeCourseProgress = () => {
     }
   };
 
+  const handleUnassignClick = (
+    event: React.MouseEvent,
+    assignmentId: string
+  ) => {
+    event.stopPropagation();
+    setUnassignTargetId(assignmentId);
+    openUnassign();
+  };
+
+  const handleConfirmUnassign = async () => {
+    if (!unassignTargetId) return;
+    try {
+      await unassignMutation.mutateAsync(unassignTargetId);
+      showSuccessToast('Course un-assigned successfully');
+      closeUnassign();
+      setUnassignTargetId(null);
+    } catch (error) {
+      showErrorToast(getErrorMessage(error, 'Failed to un-assign course'));
+    }
+  };
+
+  const unassignTarget = assignments.find(
+    a => a.courseAssignmentId === unassignTargetId
+  );
+
   const detailCourse = detail?.course;
+  const isCompletedCourse =
+    (detailCourse?.progress?.percentComplete ?? 0) >= 100;
   const completed = employeeAssignments.filter(
     a => a.status === 'Completed'
   ).length;
@@ -144,20 +257,21 @@ const EmployeeCourseProgress = () => {
       py={{ base: 'md', sm: 'xl' }}
       px={{ base: 'xs', sm: 'md' }}
     >
-      <Group mb='md'>
-        <ActionIcon
-          variant='light'
-          color={themeConfig.color}
-          radius='xl'
-          onClick={goBack}
-        >
-          <IconArrowLeft size={18} />
-        </ActionIcon>
+      <Box mt={{ base: 'md', sm: 'xl' }} mb='md'>
         <PageHeader
           title='Employee Course Progress'
           subtitle='View and manage the courses assigned to this employee'
+          actions={
+            <CommonButton
+              variant='default'
+              leftSection={<IconArrowLeft size={16} />}
+              onClick={goBack}
+            >
+              Back
+            </CommonButton>
+          }
         />
-      </Group>
+      </Box>
 
       <DataView isLoading={isLoading} label='courses' isEmpty={false}>
         <Stack gap='lg'>
@@ -238,9 +352,33 @@ const EmployeeCourseProgress = () => {
                   <Table.Thead>
                     <Table.Tr>
                       <Table.Th>Course</Table.Th>
-                      <Table.Th>Status</Table.Th>
-                      <Table.Th>Due Date</Table.Th>
-                      <Table.Th style={{ width: 220 }}>Progress</Table.Th>
+                      <Table.Th>
+                        <ThSortable
+                          label='Status'
+                          sortKey='status'
+                          activeKey={sortKey}
+                          activeDir={sortDir}
+                          onSort={handleSort}
+                        />
+                      </Table.Th>
+                      <Table.Th>
+                        <ThSortable
+                          label='Due Date'
+                          sortKey='dueDate'
+                          activeKey={sortKey}
+                          activeDir={sortDir}
+                          onSort={handleSort}
+                        />
+                      </Table.Th>
+                      <Table.Th style={{ width: 220 }}>
+                        <ThSortable
+                          label='Progress'
+                          sortKey='progress'
+                          activeKey={sortKey}
+                          activeDir={sortDir}
+                          onSort={handleSort}
+                        />
+                      </Table.Th>
                       <Table.Th />
                     </Table.Tr>
                   </Table.Thead>
@@ -292,11 +430,7 @@ const EmployeeCourseProgress = () => {
                                 {assignment.progress.completedTasks}/
                                 {assignment.progress.totalTasks} tasks
                               </Text>
-                              <Text
-                                size='xs'
-                                fw={600}
-                                c={themeConfig.color}
-                              >
+                              <Text size='xs' fw={600} c={themeConfig.color}>
                                 {assignment.progress.percentComplete}%
                               </Text>
                             </Group>
@@ -315,13 +449,32 @@ const EmployeeCourseProgress = () => {
                           </Stack>
                         </Table.Td>
                         <Table.Td align='right'>
-                          <ActionIcon
-                            variant='light'
-                            color={themeConfig.color}
-                            radius='xl'
-                          >
-                            <IconChevronRight size={16} />
-                          </ActionIcon>
+                          <Group gap='xs' justify='flex-end' wrap='nowrap'>
+                            <ActionIcon
+                              variant='light'
+                              color='red'
+                              radius='xl'
+                              loading={unassignMutation.isPending}
+                              onClick={e =>
+                                handleUnassignClick(
+                                  e,
+                                  assignment.courseAssignmentId
+                                )
+                              }
+                            >
+                              <IconTrash size={16} />
+                            </ActionIcon>
+                            <ActionIcon
+                              variant='light'
+                              color={themeConfig.color}
+                              radius='xl'
+                              onClick={() =>
+                                handleRowClick(assignment.courseAssignmentId)
+                              }
+                            >
+                              <IconChevronRight size={16} />
+                            </ActionIcon>
+                          </Group>
                         </Table.Td>
                       </Table.Tr>
                     ))}
@@ -340,11 +493,7 @@ const EmployeeCourseProgress = () => {
         title={selectedAssignment?.courseName ?? 'Course details'}
         size='xl'
       >
-        <DataView
-          isLoading={detailLoading}
-          label='details'
-          isEmpty={!detail}
-        >
+        <DataView isLoading={detailLoading} label='details' isEmpty={!detail}>
           {detailCourse && (
             <Stack gap='md' pt='sm'>
               <Group
@@ -391,16 +540,22 @@ const EmployeeCourseProgress = () => {
                       minDate={new Date(new Date().setHours(0, 0, 0, 0))}
                       valueFormat='DD MMM YYYY'
                       w={{ base: '100%', sm: 240 }}
+                      disabled={isCompletedCourse}
                     />
                     <Button
                       color={themeConfig.color}
                       loading={updateDueDateMutation.isPending}
-                      disabled={!editingDate}
+                      disabled={!editingDate || isCompletedCourse}
                       onClick={handleSaveDueDate}
                     >
                       Save
                     </Button>
                   </Group>
+                  {isCompletedCourse && (
+                    <Text size='xs' c='dimmed'>
+                      Due date cannot be changed for a completed course.
+                    </Text>
+                  )}
                   <Text size='xs' c='dimmed'>
                     Current due date:{' '}
                     <Text component='span' fw={600}>
@@ -533,6 +688,46 @@ const EmployeeCourseProgress = () => {
             Close
           </Button>
         </Group>
+      </Modal>
+
+      {/* Un-assign confirmation modal */}
+      <Modal
+        opened={unassignOpened}
+        onClose={closeUnassign}
+        title='Un-assign Course'
+        size='sm'
+        centered
+        styles={{
+          header: { paddingBottom: '8px' },
+          body: { paddingTop: '12px' }
+        }}
+      >
+        <Stack gap='md'>
+          <Text size='sm' pt='xs'>
+            Are you sure you want to un-assign{' '}
+            <Text component='span' fw={600}>
+              {unassignTarget?.courseName ?? 'this course'}
+            </Text>{' '}
+            from{' '}
+            <Text component='span' fw={600}>
+              {employee?.firstName} {employee?.lastName}
+            </Text>
+            ? This will also remove their progress for this course.
+          </Text>
+          <Group justify='flex-end' gap='sm'>
+            <Button variant='default' onClick={closeUnassign}>
+              Cancel
+            </Button>
+            <Button
+              color='red'
+              loading={unassignMutation.isPending}
+              leftSection={<IconTrash size={16} />}
+              onClick={handleConfirmUnassign}
+            >
+              Un-assign
+            </Button>
+          </Group>
+        </Stack>
       </Modal>
     </Container>
   );

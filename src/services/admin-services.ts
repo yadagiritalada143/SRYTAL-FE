@@ -902,3 +902,10 @@ export const updateCourseAssignmentDueDate = async (
   );
   return response.data;
 };
+
+export const unassignCourse = async (courseAssignmentId: string) => {
+  const response = await apiClient.delete(
+    `/admin/courses/assignments/${courseAssignmentId}/unassign`
+  );
+  return response.data;
+};
