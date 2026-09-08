@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Alert,
   Badge,
@@ -8,9 +8,9 @@ import {
   Container,
   Divider,
   Group,
+  Modal,
   Paper,
   PasswordInput,
-  Progress,
   SimpleGrid,
   Stack,
   Text,
@@ -18,9 +18,9 @@ import {
   Title,
   Tooltip
 } from '@mantine/core';
+import { useMediaQuery } from '@mantine/hooks';
 import {
   IconAlertTriangle,
-  IconArrowLeft,
   IconArrowRight,
   IconBrandGoogle,
   IconBriefcase,
@@ -35,6 +35,7 @@ import {
   IconInfoCircle,
   IconKey,
   IconLogin,
+  IconMapRoute,
   IconMessageQuestion,
   IconPointer,
   IconRobot,
@@ -46,6 +47,10 @@ import {
 import { useAppTheme } from '@hooks/use-app-theme';
 import { useCustomToast } from '@utils/common/toast';
 import { useSaveUserOpenRouterKey } from '@hooks/mutations/useUserMutations';
+import {
+  GuidedStepper,
+  GuidedStepItem
+} from '@components/common/guided-stepper';
 
 export const OPENROUTER_API_KEY_STORAGE = 'openrouter_api_key';
 
@@ -55,21 +60,37 @@ export interface OpenRouterSetupProps {
   currentApiKey?: string;
 }
 
-interface StepItem {
-  number: number;
-  title: string;
-  subtitle: string;
-  icon: React.ReactNode;
-  color: string;
-  details: React.ReactNode;
-  badge?: string;
+type StepItem = GuidedStepItem;
+
+interface StepRoadmapBadge {
+  tag: string;
+  gradient: string;
 }
+
+const STEP_ROADMAP_BADGES: StepRoadmapBadge[] = [
+  { tag: 'START', gradient: 'linear-gradient(135deg, #4f46e5, #6366f1)' },
+  { tag: 'ACTION', gradient: 'linear-gradient(135deg, #2563eb, #3b82f6)' },
+  { tag: 'LOGIN', gradient: 'linear-gradient(135deg, #7c3aed, #8b5cf6)' },
+  { tag: 'VERIFY', gradient: 'linear-gradient(135deg, #8b5cf6, #a855f7)' },
+  { tag: 'TERMS', gradient: 'linear-gradient(135deg, #a855f7, #c084fc)' },
+  { tag: 'SELECT', gradient: 'linear-gradient(135deg, #c026d3, #d946ef)' },
+  { tag: 'KEY', gradient: 'linear-gradient(135deg, #db2777, #ec4899)' },
+  { tag: 'FREE', gradient: 'linear-gradient(135deg, #ea580c, #f97316)' },
+  { tag: 'CHOOSE', gradient: 'linear-gradient(135deg, #0d9488, #14b8a6)' },
+  { tag: 'FINISH', gradient: 'linear-gradient(135deg, #e11d48, #f43f5e)' },
+  { tag: 'READY', gradient: 'linear-gradient(135deg, #059669, #10b981)' }
+];
+
+const getRoadmapLane = (index: number): 'left' | 'right' => {
+  return index % 2 === 0 ? 'left' : 'right';
+};
 
 export const OpenRouterSetup: React.FC<OpenRouterSetupProps> = ({
   onKeySaved,
   onCancel,
   currentApiKey = ''
 }) => {
+  const isMobile = useMediaQuery('(max-width: 768px)');
   const { isDarkTheme, appColors: colors } = useAppTheme();
   const { showSuccessToast, showErrorToast } = useCustomToast();
   const saveKeyMutation = useSaveUserOpenRouterKey();
@@ -80,9 +101,22 @@ export const OpenRouterSetup: React.FC<OpenRouterSetupProps> = ({
   const [viewMode, setViewMode] = useState<'stepper' | 'overview'>('stepper');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [copiedMock, setCopiedMock] = useState<boolean>(false);
+  const [selectedStepModal, setSelectedStepModal] = useState<number | null>(
+    null
+  );
   const [selectedSurveyOption, setSelectedSurveyOption] = useState<string>(
     'Friend or Colleague'
   );
+
+  const overviewContainerRef = useRef<HTMLDivElement>(null);
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [curvePaths, setCurvePaths] = useState<
+    {
+      d: string;
+      startDot: { x: number; y: number };
+      endDot: { x: number; y: number };
+    }[]
+  >([]);
 
   const defaultBtnStyle: React.CSSProperties = colors.buttonDefault;
 
@@ -92,11 +126,100 @@ export const OpenRouterSetup: React.FC<OpenRouterSetupProps> = ({
     setTimeout(() => setCopiedMock(false), 2500);
   };
 
+  const updateRoadmapCurves = useCallback(() => {
+    if (!overviewContainerRef.current) return;
+    const containerRect = overviewContainerRef.current.getBoundingClientRect();
+    if (containerRect.width === 0) return;
+
+    const paths: {
+      d: string;
+      startDot: { x: number; y: number };
+      endDot: { x: number; y: number };
+    }[] = [];
+
+    for (let i = 0; i < 10; i++) {
+      const el1 = cardRefs.current[i];
+      const el2 = cardRefs.current[i + 1];
+      if (!el1 || !el2) continue;
+
+      const r1 = el1.getBoundingClientRect();
+      const r2 = el2.getBoundingClientRect();
+
+      const c1x = r1.left - containerRect.left + r1.width / 2;
+      const c2x = r2.left - containerRect.left + r2.width / 2;
+
+      const startX = c1x;
+      const startY = r1.bottom - containerRect.top;
+      const endX = c2x;
+      const endY = r2.top - containerRect.top;
+      const dy = endY - startY;
+      const dx = endX - startX;
+
+      let d = '';
+      if (Math.abs(dx) < 16) {
+        d = `M ${startX} ${startY} L ${endX} ${endY}`;
+      } else {
+        const midY = startY + dy * 0.5;
+        const dir = dx > 0 ? 1 : -1;
+        const radius = Math.min(
+          22,
+          Math.max(6, Math.abs(dy) * 0.38),
+          Math.abs(dx) * 0.38
+        );
+
+        d = [
+          `M ${startX} ${startY}`,
+          `L ${startX} ${midY - radius}`,
+          `Q ${startX} ${midY}, ${startX + dir * radius} ${midY}`,
+          `L ${endX - dir * radius} ${midY}`,
+          `Q ${endX} ${midY}, ${endX} ${midY + radius}`,
+          `L ${endX} ${endY}`
+        ].join(' ');
+      }
+
+      paths.push({
+        d,
+        startDot: { x: startX, y: startY },
+        endDot: { x: endX, y: endY }
+      });
+    }
+
+    setCurvePaths(paths);
+  }, []);
+
+  useEffect(() => {
+    if (viewMode !== 'overview') return;
+
+    updateRoadmapCurves();
+    const frameId = requestAnimationFrame(updateRoadmapCurves);
+    const timeoutId1 = setTimeout(updateRoadmapCurves, 100);
+    const timeoutId2 = setTimeout(updateRoadmapCurves, 300);
+
+    const handleResize = () => updateRoadmapCurves();
+    window.addEventListener('resize', handleResize);
+
+    let resizeObserver: ResizeObserver | null = null;
+    if (overviewContainerRef.current && typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(() => {
+        updateRoadmapCurves();
+      });
+      resizeObserver.observe(overviewContainerRef.current);
+    }
+
+    return () => {
+      cancelAnimationFrame(frameId);
+      clearTimeout(timeoutId1);
+      clearTimeout(timeoutId2);
+      window.removeEventListener('resize', handleResize);
+      if (resizeObserver) resizeObserver.disconnect();
+    };
+  }, [viewMode, updateRoadmapCurves]);
+
   const steps: StepItem[] = [
     {
       number: 1,
-      title: 'Open OpenRouter',
-      subtitle: 'Visit the official OpenRouter website',
+      title: 'Visit OpenRouter',
+      subtitle: 'Open the OpenRouter website to get started',
       icon: <IconExternalLink size={20} />,
       color: 'blue',
       badge: 'Step 1 • Portal',
@@ -124,7 +247,7 @@ export const OpenRouterSetup: React.FC<OpenRouterSetupProps> = ({
                 boxShadow: '0 2px 8px rgba(37, 99, 235, 0.3)'
               }}
             >
-              Open OpenRouter (openrouter.ai)
+              Visit OpenRouter (openrouter.ai)
             </Button>
             <Badge
               variant='outline'
@@ -1049,8 +1172,6 @@ export const OpenRouterSetup: React.FC<OpenRouterSetupProps> = ({
     }
   };
 
-  const progressPercent = Math.round(((activeStep + 1) / steps.length) * 100);
-
   return (
     <Container
       size='lg'
@@ -1136,7 +1257,7 @@ export const OpenRouterSetup: React.FC<OpenRouterSetupProps> = ({
                         color: colors.primaryText
                       }}
                     >
-                      OpenRouter AI Key Setup
+                      OpenRouter API Key Setup
                     </Title>
                   </Group>
                   <Text size='xs' c={colors.secondaryText} mt={2}>
@@ -1189,13 +1310,13 @@ export const OpenRouterSetup: React.FC<OpenRouterSetupProps> = ({
                 <Badge
                   variant='light'
                   color='teal'
-                  size='sm'
-                  radius='sm'
+                  size='md'
+                  radius='md'
                   leftSection={<IconRobot size={12} />}
                 >
                   Free Models Available
                 </Badge>
-                <Badge variant='light' color='indigo' size='sm' radius='sm'>
+                <Badge variant='light' color='indigo' size='md' radius='sm'>
                   11 Simple Steps
                 </Badge>
               </Group>
@@ -1211,7 +1332,7 @@ export const OpenRouterSetup: React.FC<OpenRouterSetupProps> = ({
               >
                 <Group gap={6}>
                   <Button
-                    size='compact-sm'
+                    size='compact-md'
                     variant={viewMode === 'stepper' ? 'filled' : 'subtle'}
                     color='indigo'
                     radius='xl'
@@ -1221,7 +1342,7 @@ export const OpenRouterSetup: React.FC<OpenRouterSetupProps> = ({
                     Step-by-Step
                   </Button>
                   <Button
-                    size='compact-sm'
+                    size='compact-md'
                     variant={viewMode === 'overview' ? 'filled' : 'subtle'}
                     color='indigo'
                     radius='xl'
@@ -1237,231 +1358,566 @@ export const OpenRouterSetup: React.FC<OpenRouterSetupProps> = ({
         </Card>
 
         {viewMode === 'stepper' && (
-          <Card
-            withBorder
-            radius='lg'
-            p={{ base: 'md', sm: 'xl' }}
-            style={{
-              backgroundColor: colors.cardBackground,
-              borderColor: colors.cardBorder,
-              boxShadow: isDarkTheme
-                ? '0 4px 16px rgba(0,0,0,0.25)'
-                : '0 4px 16px rgba(0,0,0,0.02)'
+          <GuidedStepper
+            steps={steps}
+            activeStep={activeStep}
+            onStepChange={setActiveStep}
+            finishButtonText='I have my API key'
+            onFinish={() => {
+              const inputEl = document.getElementById(
+                'openrouter-api-key-input'
+              );
+              inputEl?.scrollIntoView({ behavior: 'smooth' });
+              inputEl?.focus();
             }}
-          >
-            <Stack gap='md'>
-              {/* Stepper Header */}
+          />
+        )}
+
+        {viewMode === 'overview' && (
+          <Stack gap='xl'>
+            <style>{`
+              .roadmap-step-card {
+                transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s ease !important;
+              }
+              .roadmap-step-card:hover {
+                transform: translateY(-4px) !important;
+                box-shadow: 0 16px 36px rgba(139, 92, 246, 0.22), 0 4px 12px rgba(0, 0, 0, 0.06) !important;
+              }
+              @keyframes zigzagDashFlow {
+                0% {
+                  stroke-dashoffset: 51;
+                }
+                100% {
+                  stroke-dashoffset: 0;
+                }
+              }
+              @keyframes nodePulseGlow {
+                0%, 100% {
+                  box-shadow: 0 0 8px rgba(139, 92, 246, 0.7);
+                  transform: translateX(-50%) scale(1);
+                }
+                50% {
+                  box-shadow: 0 0 16px rgba(168, 85, 247, 0.95), 0 0 22px rgba(99, 102, 241, 0.5);
+                  transform: translateX(-50%) scale(1.15);
+                }
+              }
+              .animated-zigzag-pulse {
+                stroke-dasharray: 10 7;
+                animation: zigzagDashFlow 1.1s linear infinite;
+              }
+              .roadmap-connection-node {
+                animation: nodePulseGlow 2.4s ease-in-out infinite;
+              }
+            `}</style>
+
+            <Paper
+              withBorder
+              radius='lg'
+              p='md'
+              style={{
+                backgroundColor: colors.cardBackground,
+                borderColor: colors.cardBorder,
+                background: isDarkTheme
+                  ? 'linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(49, 46, 129, 0.2))'
+                  : 'linear-gradient(135deg, #ffffff, #f5f3ff)',
+                boxShadow: '0 4px 14px rgba(139, 92, 246, 0.08)'
+              }}
+            >
               <Group
                 justify='space-between'
                 align='center'
                 wrap='wrap'
                 gap='sm'
               >
-                <div>
-                  <Group gap='xs'>
-                    <Badge
-                      variant='filled'
-                      color='indigo'
-                      size='xs'
-                      radius='sm'
-                    >
-                      Step {activeStep + 1} of {steps.length}
-                    </Badge>
-                    <Badge
-                      variant='outline'
-                      color={steps[activeStep].color}
-                      size='xs'
-                      radius='sm'
-                    >
-                      {steps[activeStep].badge}
-                    </Badge>
-                  </Group>
-                  <Title
-                    order={2}
-                    size='h4'
-                    fw={700}
-                    mt={4}
-                    style={{ color: colors.primaryText }}
+                <Group gap='sm' wrap='nowrap'>
+                  <ThemeIcon
+                    size={38}
+                    radius='lg'
+                    color='indigo'
+                    variant='light'
+                    style={{
+                      background: isDarkTheme
+                        ? 'rgba(99, 102, 241, 0.2)'
+                        : 'rgba(99, 102, 241, 0.12)'
+                    }}
                   >
-                    {steps[activeStep].title}
-                  </Title>
-                  <Text size='xs' c={colors.mutedText}>
-                    {steps[activeStep].subtitle}
-                  </Text>
-                </div>
-
-                <ThemeIcon
-                  size={40}
-                  radius='md'
-                  color={steps[activeStep].color}
-                  variant='light'
-                  style={{
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
-                  }}
-                >
-                  {steps[activeStep].icon}
-                </ThemeIcon>
-              </Group>
-
-              {/* Progress bar */}
-              <div>
-                <Group justify='space-between' align='center' mb={4}>
-                  <Text size='xs' fw={600} c={colors.mutedText}>
-                    Progress
-                  </Text>
-                  <Text size='xs' fw={700} c='indigo'>
-                    {progressPercent}%
-                  </Text>
+                    <IconMapRoute size={20} color='#8b5cf6' />
+                  </ThemeIcon>
+                  <div>
+                    <Text fw={800} size='sm' c={colors.primaryText}>
+                      OpenRouter Setup Journey
+                    </Text>
+                    <Text size='xs' c={colors.mutedText}>
+                      Complete each step in order to configure your OpenRouter
+                      API key. Click any step to view detailed instructions.
+                    </Text>
+                  </div>
                 </Group>
-                <Progress
-                  value={progressPercent}
-                  size='sm'
-                  radius='xl'
+                <Button
+                  size='xs'
+                  variant='light'
                   color='indigo'
-                />
-              </div>
+                  radius='md'
+                  leftSection={<IconArrowRight size={14} />}
+                  onClick={() => setViewMode('stepper')}
+                >
+                  Switch to Stepper
+                </Button>
+              </Group>
+            </Paper>
 
-              <Paper
-                withBorder
-                p={{ base: 'sm', sm: 'md' }}
-                radius='md'
+            <Box
+              ref={overviewContainerRef}
+              style={{
+                position: 'relative',
+                width: '100%',
+                maxWidth: 960,
+                margin: '0 auto',
+                paddingTop: 10,
+                paddingBottom: 20
+              }}
+            >
+              <svg
                 style={{
-                  backgroundColor: colors.cardSurface,
-                  borderColor: colors.cardBorder
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  pointerEvents: 'none',
+                  zIndex: 1,
+                  overflow: 'visible'
                 }}
               >
-                {steps[activeStep].details}
-              </Paper>
+                <defs>
+                  <linearGradient
+                    id='roadmap-path-gradient'
+                    x1='0%'
+                    y1='0%'
+                    x2='100%'
+                    y2='100%'
+                  >
+                    <stop offset='0%' stopColor='#8b5cf6' />
+                    <stop offset='50%' stopColor='#a855f7' />
+                    <stop offset='100%' stopColor='#06b6d4' />
+                  </linearGradient>
+                  <filter
+                    id='roadmap-path-glow'
+                    x='-20%'
+                    y='-20%'
+                    width='140%'
+                    height='140%'
+                  >
+                    <feDropShadow
+                      dx='0'
+                      dy='0'
+                      stdDeviation='3'
+                      floodColor='#8b5cf6'
+                      floodOpacity='0.5'
+                    />
+                  </filter>
+                </defs>
 
-              <Group
-                justify='space-between'
-                align='center'
-                wrap='wrap'
-                gap='xs'
-                pt='xs'
-              >
-                <Button
-                  variant='default'
-                  size='sm'
-                  leftSection={<IconArrowLeft size={16} />}
-                  disabled={activeStep === 0}
-                  onClick={() => setActiveStep(prev => Math.max(0, prev - 1))}
-                  radius='md'
-                  style={{
-                    ...defaultBtnStyle,
-                    height: 34
-                  }}
-                >
-                  Previous Step
-                </Button>
+                {curvePaths.map((cp, idx) => (
+                  <g key={idx}>
+                    <path
+                      d={cp.d}
+                      fill='none'
+                      stroke={
+                        isDarkTheme
+                          ? 'rgba(139, 92, 246, 0.28)'
+                          : 'rgba(139, 92, 246, 0.18)'
+                      }
+                      strokeWidth={4}
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                    />
+                    <path
+                      d={cp.d}
+                      fill='none'
+                      stroke='url(#roadmap-path-gradient)'
+                      strokeWidth={3.5}
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      className='animated-zigzag-pulse'
+                      filter='url(#roadmap-path-glow)'
+                    />
+                    <circle
+                      r={4.5}
+                      fill='#c084fc'
+                      filter='url(#roadmap-path-glow)'
+                    >
+                      <animateMotion
+                        path={cp.d}
+                        dur={`${2.0 + (idx % 3) * 0.4}s`}
+                        repeatCount='indefinite'
+                        rotate='auto'
+                      />
+                    </circle>
+                    <circle
+                      cx={cp.startDot.x}
+                      cy={cp.startDot.y}
+                      r={4}
+                      fill='#8b5cf6'
+                    />
+                    <circle
+                      cx={cp.endDot.x}
+                      cy={cp.endDot.y}
+                      r={4}
+                      fill='#a855f7'
+                    />
+                  </g>
+                ))}
+              </svg>
 
-                <Group gap='xs'>
-                  {activeStep < steps.length - 1 ? (
+              <Stack gap={0} style={{ position: 'relative', zIndex: 2 }}>
+                {steps.map((step, idx) => {
+                  const lane = getRoadmapLane(idx);
+                  const badge = STEP_ROADMAP_BADGES[idx] || {
+                    tag: `STEP ${step.number}`,
+                    gradient: 'linear-gradient(135deg, #6366f1, #8b5cf6)'
+                  };
+                  const isSelected = activeStep === idx;
+                  const isFinalStep = idx === steps.length - 1;
+
+                  return (
+                    <Box
+                      key={step.number}
+                      style={{
+                        display: 'flex',
+                        justifyContent: isMobile
+                          ? 'center'
+                          : lane === 'left'
+                            ? 'flex-start'
+                            : 'flex-end',
+                        paddingLeft: !isMobile && lane === 'left' ? '4%' : 0,
+                        paddingRight: !isMobile && lane === 'right' ? '4%' : 0,
+                        marginBottom: isFinalStep ? 20 : isMobile ? 48 : 88,
+                        position: 'relative',
+                        zIndex: 2
+                      }}
+                    >
+                      <Box
+                        ref={el => {
+                          cardRefs.current[idx] = el;
+                        }}
+                        style={{
+                          width: isMobile ? '100%' : 360,
+                          maxWidth: 360,
+                          position: 'relative'
+                        }}
+                      >
+                        <Card
+                          withBorder
+                          radius={20}
+                          p='md'
+                          onClick={() => setSelectedStepModal(idx)}
+                          style={{
+                            width: '100%',
+                            backgroundColor: isDarkTheme
+                              ? '#1e293b'
+                              : '#ffffff',
+                            borderColor:
+                              isSelected || isFinalStep
+                                ? '#8b5cf6'
+                                : isDarkTheme
+                                  ? '#334155'
+                                  : '#e2e8f0',
+                            borderWidth: isSelected || isFinalStep ? 2 : 1.5,
+                            boxShadow:
+                              isSelected || isFinalStep
+                                ? isDarkTheme
+                                  ? '0 14px 32px rgba(139, 92, 246, 0.35)'
+                                  : '0 14px 32px rgba(139, 92, 246, 0.22), 0 4px 12px rgba(0, 0, 0, 0.04)'
+                                : isDarkTheme
+                                  ? '0 10px 25px rgba(0, 0, 0, 0.25)'
+                                  : '0 10px 25px rgba(0, 0, 0, 0.05), 0 2px 8px rgba(0, 0, 0, 0.02)',
+                            cursor: 'pointer',
+                            position: 'relative',
+                            overflow: 'visible'
+                          }}
+                          className='roadmap-step-card'
+                        >
+                          {idx > 0 && (
+                            <Box
+                              className='roadmap-connection-node'
+                              style={{
+                                position: 'absolute',
+                                top: -7,
+                                left: '50%',
+                                transform: 'translateX(-50%)',
+                                width: 14,
+                                height: 14,
+                                borderRadius: '50%',
+                                backgroundColor: '#8b5cf6',
+                                border: `2.5px solid ${isDarkTheme ? '#1e293b' : '#ffffff'}`,
+                                boxShadow: '0 0 10px rgba(139, 92, 246, 0.8)',
+                                zIndex: 4,
+                                pointerEvents: 'none'
+                              }}
+                            />
+                          )}
+
+                          {idx < steps.length - 1 && (
+                            <Box
+                              className='roadmap-connection-node'
+                              style={{
+                                position: 'absolute',
+                                bottom: -7,
+                                left: '50%',
+                                transform: 'translateX(-50%)',
+                                width: 14,
+                                height: 14,
+                                borderRadius: '50%',
+                                backgroundColor: '#8b5cf6',
+                                border: `2.5px solid ${isDarkTheme ? '#1e293b' : '#ffffff'}`,
+                                boxShadow: '0 0 10px rgba(139, 92, 246, 0.8)',
+                                zIndex: 4,
+                                pointerEvents: 'none'
+                              }}
+                            />
+                          )}
+
+                          {isFinalStep && (
+                            <Box
+                              className='roadmap-connection-node'
+                              style={{
+                                position: 'absolute',
+                                bottom: -7,
+                                left: '50%',
+                                transform: 'translateX(-50%)',
+                                width: 14,
+                                height: 14,
+                                borderRadius: '50%',
+                                backgroundColor: '#10b981',
+                                border: `2.5px solid ${isDarkTheme ? '#1e293b' : '#ffffff'}`,
+                                boxShadow: '0 0 10px rgba(16, 185, 129, 0.8)',
+                                zIndex: 4,
+                                pointerEvents: 'none'
+                              }}
+                            />
+                          )}
+
+                          <Group
+                            justify='space-between'
+                            align='center'
+                            wrap='nowrap'
+                            mb={8}
+                          >
+                            <Group gap='xs' wrap='nowrap'>
+                              <Badge
+                                size='xs'
+                                variant='light'
+                                color={step.color}
+                                radius='sm'
+                                style={{ fontWeight: 800, letterSpacing: 0.5 }}
+                              >
+                                STEP {step.number}
+                              </Badge>
+                              <Text
+                                size='10px'
+                                fw={600}
+                                c={colors.mutedText}
+                                style={{ textTransform: 'uppercase' }}
+                              >
+                                Milestone {step.number}/11
+                              </Text>
+                            </Group>
+
+                            <Badge
+                              size='sm'
+                              radius='xl'
+                              variant='filled'
+                              style={{
+                                background: badge.gradient,
+                                fontWeight: 800,
+                                fontSize: 10,
+                                letterSpacing: 0.6,
+                                textTransform: 'uppercase',
+                                flexShrink: 0,
+                                boxShadow: '0 2px 6px rgba(0,0,0,0.12)'
+                              }}
+                            >
+                              {badge.tag}
+                            </Badge>
+                          </Group>
+
+                          <Group gap='sm' align='flex-start' wrap='nowrap'>
+                            <ThemeIcon
+                              size={40}
+                              radius='xl'
+                              variant='light'
+                              color={step.color}
+                              style={{
+                                background: isDarkTheme
+                                  ? 'rgba(255, 255, 255, 0.08)'
+                                  : '#f1f5f9',
+                                boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
+                                flexShrink: 0,
+                                marginTop: 2
+                              }}
+                            >
+                              {step.icon}
+                            </ThemeIcon>
+
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <Text
+                                fw={700}
+                                size='sm'
+                                c={colors.primaryText}
+                                lineClamp={1}
+                              >
+                                {step.number}. {step.title}
+                              </Text>
+                              <Text
+                                size='xs'
+                                c={colors.mutedText}
+                                lineClamp={2}
+                                mt={3}
+                                style={{ lineHeight: 1.5 }}
+                              >
+                                {step.subtitle}
+                              </Text>
+                            </div>
+                          </Group>
+
+                          <Group
+                            justify='space-between'
+                            align='center'
+                            mt={12}
+                            pt={8}
+                            style={{
+                              borderTop: `1px solid ${
+                                isDarkTheme
+                                  ? 'rgba(255,255,255,0.06)'
+                                  : '#f1f5f9'
+                              }`
+                            }}
+                          >
+                            <Text size='10px' c={colors.mutedText}>
+                              Click to view full guide
+                            </Text>
+                            <Text
+                              size='11px'
+                              fw={600}
+                              c={
+                                isSelected || isFinalStep
+                                  ? '#8b5cf6'
+                                  : colors.primaryIndigo
+                              }
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 4
+                              }}
+                            >
+                              View details →
+                            </Text>
+                          </Group>
+                        </Card>
+                      </Box>
+                    </Box>
+                  );
+                })}
+              </Stack>
+            </Box>
+
+            <Modal
+              opened={selectedStepModal !== null}
+              onClose={() => setSelectedStepModal(null)}
+              title={
+                selectedStepModal !== null ? (
+                  <Group gap='sm' wrap='nowrap'>
+                    <ThemeIcon
+                      size={36}
+                      radius='xl'
+                      color={steps[selectedStepModal].color}
+                      variant='light'
+                    >
+                      {steps[selectedStepModal].icon}
+                    </ThemeIcon>
+                    <div>
+                      <Group gap='xs'>
+                        <Text fw={800} size='sm' c={colors.primaryText}>
+                          Step {steps[selectedStepModal].number}:{' '}
+                          {steps[selectedStepModal].title}
+                        </Text>
+                        <Badge
+                          size='sm'
+                          radius='xl'
+                          style={{
+                            background:
+                              STEP_ROADMAP_BADGES[selectedStepModal]?.gradient,
+                            fontWeight: 800,
+                            fontSize: 10
+                          }}
+                        >
+                          {STEP_ROADMAP_BADGES[selectedStepModal]?.tag}
+                        </Badge>
+                      </Group>
+                      <Text size='xs' c={colors.mutedText}>
+                        {steps[selectedStepModal].subtitle}
+                      </Text>
+                    </div>
+                  </Group>
+                ) : null
+              }
+              size='lg'
+              radius='lg'
+              centered
+              styles={{
+                content: {
+                  backgroundColor: colors.cardBackground,
+                  border: `1px solid ${colors.cardBorder}`
+                },
+                header: {
+                  backgroundColor: colors.cardBackground
+                }
+              }}
+            >
+              {selectedStepModal !== null && (
+                <Stack gap='md' pt='xs'>
+                  <Divider color={colors.cardBorder} />
+                  {steps[selectedStepModal].details}
+                  <Divider color={colors.cardBorder} mt='sm' />
+                  <Group
+                    justify='space-between'
+                    align='center'
+                    wrap='wrap'
+                    gap='sm'
+                  >
                     <Button
-                      variant='filled'
+                      variant='default'
+                      radius='md'
+                      size='sm'
+                      onClick={() => setSelectedStepModal(null)}
+                      style={{ ...defaultBtnStyle, height: 34 }}
+                    >
+                      Close
+                    </Button>
+                    <Button
                       color='indigo'
+                      radius='md'
                       size='sm'
                       rightSection={<IconArrowRight size={16} />}
-                      onClick={() =>
-                        setActiveStep(prev =>
-                          Math.min(steps.length - 1, prev + 1)
-                        )
-                      }
-                      radius='md'
+                      onClick={() => {
+                        setActiveStep(selectedStepModal);
+                        setViewMode('stepper');
+                        setSelectedStepModal(null);
+                      }}
                       className='btn-modern'
                       style={{
                         background: 'linear-gradient(135deg, #4f46e5, #6366f1)',
                         boxShadow: '0 2px 8px rgba(79, 70, 229, 0.3)',
-                        fontWeight: 600,
                         height: 34
                       }}
                     >
-                      Next Step
+                      Switch to Step-by-Step Guide
                     </Button>
-                  ) : (
-                    <Button
-                      variant='filled'
-                      color='teal'
-                      size='sm'
-                      rightSection={<IconCheck size={16} />}
-                      onClick={() => {
-                        const inputEl = document.getElementById(
-                          'openrouter-api-key-input'
-                        );
-                        inputEl?.scrollIntoView({ behavior: 'smooth' });
-                        inputEl?.focus();
-                      }}
-                      radius='md'
-                      className='btn-modern'
-                      style={{
-                        background: 'linear-gradient(135deg, #059669, #10b981)',
-                        boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)',
-                        fontWeight: 700,
-                        height: 34
-                      }}
-                    >
-                      I have my API key
-                    </Button>
-                  )}
-                </Group>
-              </Group>
-            </Stack>
-          </Card>
-        )}
-
-        {viewMode === 'overview' && (
-          <Stack gap='md'>
-            <SimpleGrid cols={{ base: 1, sm: 2 }} spacing='md'>
-              {steps.map((step, idx) => (
-                <Card
-                  key={step.number}
-                  withBorder
-                  radius='lg'
-                  p='md'
-                  style={{
-                    backgroundColor: colors.cardBackground,
-                    borderColor:
-                      activeStep === idx
-                        ? colors.primaryIndigo
-                        : colors.cardBorder,
-                    borderWidth: activeStep === idx ? 2 : 1,
-                    boxShadow:
-                      activeStep === idx
-                        ? '0 4px 14px rgba(79, 70, 229, 0.12)'
-                        : '0 2px 6px rgba(0,0,0,0.02)'
-                  }}
-                >
-                  <Stack gap='xs'>
-                    <Group justify='space-between' align='center' wrap='nowrap'>
-                      <Group gap='xs' wrap='nowrap'>
-                        <ThemeIcon
-                          size={32}
-                          radius='md'
-                          color={step.color}
-                          variant='light'
-                          style={{ flexShrink: 0 }}
-                        >
-                          {step.icon}
-                        </ThemeIcon>
-                        <div>
-                          <Text fw={700} size='xs' c={colors.primaryText}>
-                            {step.number}. {step.title}
-                          </Text>
-                          <Text size='xs' c={colors.mutedText}>
-                            {step.subtitle}
-                          </Text>
-                        </div>
-                      </Group>
-                      <Badge size='xs' variant='light' color={step.color}>
-                        {step.badge}
-                      </Badge>
-                    </Group>
-                    <Divider my={2} color={colors.cardBorder} />
-                    {step.details}
-                  </Stack>
-                </Card>
-              ))}
-            </SimpleGrid>
+                  </Group>
+                </Stack>
+              )}
+            </Modal>
           </Stack>
         )}
 
@@ -1502,17 +1958,17 @@ export const OpenRouterSetup: React.FC<OpenRouterSetupProps> = ({
                     fw={800}
                     style={{ color: colors.primaryText }}
                   >
-                    Enter Your OpenRouter API Key
+                    Connect Your OpenRouter API Key
                   </Title>
                   <Text size='xs' c={colors.secondaryText} mt={2}>
-                    Paste the key you copied in Step 7 (or retrieved from the
-                    API Keys menu in Step 11)
+                    Paste the API key you copied in Step 7, or retrieve it from
+                    the API Keys menu in Step 11 to continue.
                   </Text>
                 </div>
               </Group>
 
               <Badge color='teal' variant='filled' size='md' radius='sm'>
-                Required to Unlock
+                Ready to Connect
               </Badge>
             </Group>
 
@@ -1520,9 +1976,9 @@ export const OpenRouterSetup: React.FC<OpenRouterSetupProps> = ({
 
             <PasswordInput
               id='openrouter-api-key-input'
-              label='OpenRouter API Key'
-              description='Starts with "sk-or-v1-" or similar OpenRouter key format'
-              placeholder='sk-or-v1-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+              label='Your OpenRouter API Key'
+              description='Enter the API key you copied from OpenRouter.'
+              placeholder='Paste your API key here'
               value={apiKeyInput}
               onChange={e => {
                 setApiKeyInput(e.currentTarget.value);
@@ -1552,7 +2008,7 @@ export const OpenRouterSetup: React.FC<OpenRouterSetupProps> = ({
               <Group gap='xs'>
                 <IconShieldLock size={16} color='#10b981' />
                 <Text size='xs' c={colors.mutedText}>
-                  Stored securely in your private local browser storage.
+                  Your API key is securely stored and protected in our backend.
                 </Text>
               </Group>
 
@@ -1588,7 +2044,7 @@ export const OpenRouterSetup: React.FC<OpenRouterSetupProps> = ({
                     padding: '0 18px'
                   }}
                 >
-                  Verify & Unlock Courses
+                  Connect & Unlock Courses
                 </Button>
               </Group>
             </Group>
