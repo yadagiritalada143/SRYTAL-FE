@@ -1,7 +1,8 @@
 import { resolveTaskContent } from './task-content';
 import { AssignedTask } from '@interfaces/course-assignment';
 
-const FILE_URL = 'http://api.test/contentwriter/getCourseTaskContent/t1?auth_token=x';
+const FILE_URL =
+  'http://api.test/contentwriter/getCourseTaskContent/t1?auth_token=x';
 
 const task = (overrides: Partial<AssignedTask>): AssignedTask => ({
   _id: 't1',
@@ -38,7 +39,10 @@ describe('resolveTaskContent — LINK tasks', () => {
 
   it('uses the preview frame for Google Drive files', () => {
     const resolved = resolveTaskContent(
-      task({ type: 'LINK', link: 'https://drive.google.com/file/d/abc123/view?usp=sharing' }),
+      task({
+        type: 'LINK',
+        link: 'https://drive.google.com/file/d/abc123/view?usp=sharing'
+      }),
       FILE_URL
     );
     expect(resolved).toMatchObject({
@@ -57,7 +61,8 @@ describe('resolveTaskContent — LINK tasks', () => {
   });
 
   it('falls back to opening an ordinary article externally', () => {
-    const link = 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide';
+    const link =
+      'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide';
     const resolved = resolveTaskContent(task({ type: 'LINK', link }), FILE_URL);
     expect(resolved).toMatchObject({ kind: 'external', externalUrl: link });
   });
@@ -108,6 +113,8 @@ describe('resolveTaskContent — FILE tasks', () => {
   });
 
   it('treats an unknown, unnamed file as a download', () => {
-    expect(resolveTaskContent(task({ type: 'FILE' }), FILE_URL).kind).toBe('download');
+    expect(resolveTaskContent(task({ type: 'FILE' }), FILE_URL).kind).toBe(
+      'download'
+    );
   });
 });

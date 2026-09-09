@@ -1,14 +1,5 @@
 import { AssignedTask } from '@interfaces/course-assignment';
 
-/**
- * Works out how a task's content should be rendered in the course player.
- *
- * A task is either a LINK (an external URL) or a FILE (streamed from S3 through
- * `/contentwriter/getCourseTaskContent/:id`). Most providers refuse to be framed
- * — only the ones with a documented embed player below are shown inline; every
- * other link falls back to an "open in a new tab" card rather than rendering a
- * frame the browser will silently blank out.
- */
 export type TaskContentKind =
   | 'video'
   | 'audio'
@@ -21,11 +12,8 @@ export type TaskContentKind =
 
 export interface ResolvedTaskContent {
   kind: TaskContentKind;
-  /** The URL to feed to the player/frame/link. */
   url: string;
-  /** Human label for the content type, shown next to the task title. */
   label: string;
-  /** Set when the content can only be opened outside the app. */
   externalUrl?: string;
 }
 
@@ -56,7 +44,6 @@ const extensionOf = (name?: string) => {
   return match ? match[1].toLowerCase() : '';
 };
 
-/** `contentMimeType` is set at upload time but older tasks may not have one. */
 const mimeTypeOf = (task: AssignedTask) =>
   task.contentMimeType ||
   EXTENSION_MIME_TYPES[extensionOf(task.contentFileName)] ||
@@ -68,9 +55,6 @@ const kindForMimeType = (mimeType: string): TaskContentKind => {
   if (mimeType.startsWith('image/')) return 'image';
   if (mimeType === 'application/pdf') return 'pdf';
   if (mimeType.startsWith('text/')) return 'text';
-  // Office documents and archives have no in-browser viewer we can point at:
-  // the content URL is authenticated, so third-party preview services (Office
-  // Online, Google Docs viewer) cannot reach it.
   return 'download';
 };
 
@@ -85,7 +69,6 @@ const CONTENT_LABELS: Record<TaskContentKind, string> = {
   download: 'File'
 };
 
-/** youtube.com/watch?v=, youtu.be/, /embed/, /shorts/ and /live/ all resolve. */
 const youTubeId = (url: URL): string => {
   if (url.hostname.endsWith('youtu.be')) return url.pathname.slice(1);
   if (!url.hostname.includes('youtube.com')) return '';
@@ -100,7 +83,6 @@ const vimeoId = (url: URL): string => {
   return match ? match[1] : '';
 };
 
-/** Google Drive share links have a documented `/preview` frame variant. */
 const googleDrivePreviewUrl = (url: URL): string => {
   if (!url.hostname.includes('drive.google.com')) return '';
   const match = /\/file\/d\/([^/]+)/.exec(url.pathname);
@@ -112,7 +94,6 @@ const resolveLink = (link: string): ResolvedTaskContent => {
   try {
     url = new URL(link);
   } catch {
-    // Not a URL we can reason about — hand it to the browser as-is.
     return { kind: 'external', url: link, label: 'Link', externalUrl: link };
   }
 
@@ -146,7 +127,6 @@ const resolveLink = (link: string): ResolvedTaskContent => {
     };
   }
 
-  // A link straight to a media file plays inline just like an upload would.
   const mimeType = EXTENSION_MIME_TYPES[extensionOf(url.pathname)];
   if (mimeType) {
     const kind = kindForMimeType(mimeType);

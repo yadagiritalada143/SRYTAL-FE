@@ -1,12 +1,114 @@
 import { MantineColorsTuple } from '@mantine/core';
 import { OrganizationConfig } from '@interfaces/organization';
 
-// Helper to ensure colors are valid MantineColorsTuple
 const toMantineColors = (colors: string[]): MantineColorsTuple => {
-  // Mantine requires exactly 10 colors in the tuple.
-  // If the array is shorter or longer, it might still work at runtime but TS will complain.
-  // We cast to unknown then to MantineColorsTuple to satisfy the type system.
   return colors as unknown as MantineColorsTuple;
+};
+
+export interface AppColorPalette {
+  primaryText: string;
+  secondaryText: string;
+  mutedText: string;
+  cardBackground: string;
+  cardSurface: string;
+  cardBorder: string;
+  primaryIndigo: string;
+  primaryIndigoLight: string;
+  emeraldGreen: string;
+  emeraldBg: string;
+  amberOrange: string;
+  amberBg: string;
+  purpleViolet: string;
+  purpleBg: string;
+  codeBoxBg: string;
+  buttonDefault: {
+    backgroundColor: string;
+    borderColor: string;
+    color: string;
+    hoverBg: string;
+  };
+  buttonPrimary: {
+    background: string;
+    color: string;
+    boxShadow: string;
+  };
+  buttonSuccess: {
+    background: string;
+    color: string;
+    boxShadow: string;
+  };
+}
+
+export const appColorsDark: AppColorPalette = {
+  primaryText: '#f8fafc',
+  secondaryText: '#cbd5e1',
+  mutedText: '#94a3b8',
+  cardBackground: '#0f172a',
+  cardSurface: '#1e293b',
+  cardBorder: '#334155',
+  primaryIndigo: '#4f46e5',
+  primaryIndigoLight: '#818cf8',
+  emeraldGreen: '#34d399',
+  emeraldBg: 'rgba(16, 185, 129, 0.12)',
+  amberOrange: '#fbbf24',
+  amberBg: 'rgba(245, 158, 11, 0.12)',
+  purpleViolet: '#c084fc',
+  purpleBg: 'rgba(139, 92, 246, 0.12)',
+  codeBoxBg: '#0f172a',
+  buttonDefault: {
+    backgroundColor: '#1e293b',
+    borderColor: '#475569',
+    color: '#f1f5f9',
+    hoverBg: '#334155'
+  },
+  buttonPrimary: {
+    background: 'linear-gradient(135deg, #4f46e5, #6366f1)',
+    color: '#ffffff',
+    boxShadow: '0 2px 8px rgba(79, 70, 229, 0.4)'
+  },
+  buttonSuccess: {
+    background: 'linear-gradient(135deg, #059669, #10b981)',
+    color: '#ffffff',
+    boxShadow: '0 2px 8px rgba(16, 185, 129, 0.4)'
+  }
+};
+
+export const appColorsLight: AppColorPalette = {
+  primaryText: '#0f172a',
+  secondaryText: '#334155',
+  mutedText: '#64748b',
+  cardBackground: '#ffffff',
+  cardSurface: '#f8fafc',
+  cardBorder: '#e2e8f0',
+  primaryIndigo: '#4f46e5',
+  primaryIndigoLight: '#4f46e5',
+  emeraldGreen: '#059669',
+  emeraldBg: 'rgba(236, 253, 245, 0.95)',
+  amberOrange: '#d97706',
+  amberBg: 'rgba(254, 243, 199, 0.95)',
+  purpleViolet: '#7c3aed',
+  purpleBg: 'rgba(245, 243, 255, 0.95)',
+  codeBoxBg: '#0f172a',
+  buttonDefault: {
+    backgroundColor: '#ffffff',
+    borderColor: '#cbd5e1',
+    color: '#1e293b',
+    hoverBg: '#f1f5f9'
+  },
+  buttonPrimary: {
+    background: 'linear-gradient(135deg, #4f46e5, #6366f1)',
+    color: '#ffffff',
+    boxShadow: '0 2px 8px rgba(79, 70, 229, 0.25)'
+  },
+  buttonSuccess: {
+    background: 'linear-gradient(135deg, #059669, #10b981)',
+    color: '#ffffff',
+    boxShadow: '0 2px 8px rgba(16, 185, 129, 0.25)'
+  }
+};
+
+export const getAppColors = (isDarkTheme: boolean): AppColorPalette => {
+  return isDarkTheme ? appColorsDark : appColorsLight;
 };
 
 // Default theme configs as fallback when API response doesn't include themes
@@ -14,6 +116,7 @@ const defaultDarkTheme = {
   primaryColor: 'primary',
   colorScheme: 'dark' as const,
   fontFamily: 'Arial, sans-serif',
+  appColors: appColorsDark,
   button: {
     color: '#343a40',
     textColor: '#ffffff',
@@ -64,6 +167,7 @@ const defaultLightTheme = {
   primaryColor: 'primary',
   colorScheme: 'light' as const,
   fontFamily: 'Arial, sans-serif',
+  appColors: appColorsLight,
   button: {
     color: '#495057',
     textColor: '#ffffff',
@@ -127,6 +231,7 @@ export function getThemeConfig(
     return {
       ...defaultTheme,
       ...rawTheme,
+      appColors: getAppColors(isDarkTheme),
       colors: {
         ...defaultTheme.colors,
         ...(rawTheme.colors
@@ -149,6 +254,7 @@ export function getThemeConfig(
     return {
       ...defaultTheme,
       ...rawTheme,
+      appColors: getAppColors(isDarkTheme),
       button: {
         ...defaultTheme.button,
         ...rawTheme.button
@@ -170,5 +276,8 @@ export function getThemeConfig(
   }
 
   // Fallback to default themes
-  return defaultTheme;
+  return {
+    ...defaultTheme,
+    appColors: getAppColors(isDarkTheme)
+  };
 }

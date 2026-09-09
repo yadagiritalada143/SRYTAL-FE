@@ -9,7 +9,8 @@ import {
   getCourseByIdContentWriter,
   getEmployeeDashboard,
   getMyAssignedCourses,
-  getMyAssignedCourseById
+  getMyAssignedCourseById,
+  getUserOpenRouterKey
 } from '@services/user-services';
 import { getProfileImage } from '@services/common-services';
 
@@ -26,7 +27,8 @@ export const userQueryKeys = {
   employeeDashboard: ['employeeDashboard'] as const,
   myCourses: ['myAssignedCourses'] as const,
   myCourse: (courseAssignmentId: string) =>
-    ['myAssignedCourse', courseAssignmentId] as const
+    ['myAssignedCourse', courseAssignmentId] as const,
+  openRouterKey: (userId: string) => ['userOpenRouterKey', userId] as const
 };
 
 export const useGetCompanyDetails = () => {
@@ -110,5 +112,14 @@ export const useGetMyAssignedCourse = (
     queryKey: userQueryKeys.myCourse(courseAssignmentId),
     queryFn: () => getMyAssignedCourseById(courseAssignmentId),
     enabled: !!courseAssignmentId && enabled
+  });
+};
+
+export const useGetUserOpenRouterKey = (userId?: string, enabled = true) => {
+  return useQuery({
+    queryKey: userQueryKeys.openRouterKey(userId || 'current'),
+    queryFn: () => getUserOpenRouterKey(userId),
+    enabled,
+    retry: false
   });
 };

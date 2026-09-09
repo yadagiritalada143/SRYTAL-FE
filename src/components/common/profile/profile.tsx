@@ -5,6 +5,7 @@ import {
   Grid,
   Text,
   Badge,
+  Button,
   Group,
   Container,
   Divider,
@@ -30,12 +31,17 @@ import {
   IconUserCog,
   IconCreditCard,
   IconAddressBook,
-  IconCalendarPlus
+  IconCalendarPlus,
+  IconKey,
+  IconShieldLock
 } from '@tabler/icons-react';
 import { useAppTheme } from '@hooks/use-app-theme';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useGetUserOpenRouterKey } from '@hooks/queries/useUserQueries';
+import { OPENROUTER_API_KEY_STORAGE } from '@user/components/dashboard/course-portal/OpenRouterSetup';
+import OpenRouterKeyModal from './OpenRouterKeyModal';
 
-/** Convert a #rrggbb hex to an rgba() string with the given alpha. */
 const hexToRgba = (hex: string, alpha: number): string => {
   if (!hex || !hex.startsWith('#')) return hex;
   let h = hex.slice(1);
@@ -99,7 +105,6 @@ const InfoTile: React.FC<{
   </Paper>
 );
 
-/** A card with a consistent icon + title header. */
 const SectionCard: React.FC<{
   title: string;
   icon: React.ReactNode;
@@ -139,7 +144,24 @@ const SectionCard: React.FC<{
 const Profile = ({ details }: { details: EmployeeInterface }) => {
   const isMobile = useMediaQuery('(max-width: 768px)');
   const { themeConfig, isDarkTheme } = useAppTheme();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<string | null>('employment');
+  const [openRouterModalOpen, setOpenRouterModalOpen] = useState(false);
+
+  const { data: openRouterResponse } = useGetUserOpenRouterKey(details.id);
+
+  const existingKey =
+    openRouterResponse?.data?.openrouterKey ||
+    localStorage.getItem(OPENROUTER_API_KEY_STORAGE) ||
+    '';
+  const hasConfiguredKey = !!existingKey && existingKey.trim().length > 0;
+
+  const maskKey = (key: string) => {
+    if (!key || key.length < 10) return '••••••••••••••••';
+    const prefix = key.slice(0, 8);
+    const suffix = key.slice(-4);
+    return `${prefix}••••••••••••••••${suffix}`;
+  };
 
   const {
     color,
@@ -305,6 +327,32 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                   </Group>
                 </Stack>
               </Group>
+
+              <Button
+                variant='light'
+                color='indigo'
+                radius='md'
+                size='sm'
+                leftSection={<IconKey size={16} />}
+                rightSection={
+                  <Badge
+                    size='xs'
+                    variant='filled'
+                    color={hasConfiguredKey ? 'teal' : 'orange'}
+                    radius='xl'
+                  >
+                    {hasConfiguredKey ? 'Active' : 'Setup Key'}
+                  </Badge>
+                }
+                onClick={() => setOpenRouterModalOpen(true)}
+                style={{
+                  alignSelf: isMobile ? 'center' : 'flex-end',
+                  marginBottom: isMobile ? 0 : 8,
+                  boxShadow: '0 2px 8px rgba(99, 102, 241, 0.12)'
+                }}
+              >
+                OpenRouter API Key
+              </Button>
             </Group>
 
             {/* Quick contact chips */}
@@ -450,6 +498,12 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
               >
                 Bank Details
               </Tabs.Tab>
+              <Tabs.Tab
+                value='openRouter'
+                leftSection={<IconKey size={16} stroke={1.8} />}
+              >
+                OpenRouter API Key
+              </Tabs.Tab>
             </Tabs.List>
 
             {/* Employment */}
@@ -552,7 +606,6 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
               </Grid>
             </Tabs.Panel>
 
-            {/* Bank Details */}
             <Tabs.Panel value='bankDetails'>
               <Grid gutter='md'>
                 <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
@@ -597,9 +650,149 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
                 </Grid.Col>
               </Grid>
             </Tabs.Panel>
+
+            <Tabs.Panel value='openRouter'>
+              <Stack gap='md'>
+                <Paper
+                  withBorder
+                  p='lg'
+                  radius='md'
+                  style={{
+                    backgroundColor: cardBackground,
+                    borderColor
+                  }}
+                >
+                  <Group
+                    justify='space-between'
+                    align='center'
+                    wrap='wrap'
+                    gap='md'
+                  >
+                    <Group gap='md' wrap='nowrap'>
+                      <ThemeIcon
+                        size={44}
+                        radius='lg'
+                        color='indigo'
+                        variant='light'
+                        style={{
+                          background: isDarkTheme
+                            ? 'rgba(99, 102, 241, 0.2)'
+                            : 'rgba(99, 102, 241, 0.1)'
+                        }}
+                      >
+                        <IconKey size={24} color='#8b5cf6' />
+                      </ThemeIcon>
+                      <div>
+                        <Group gap='xs'>
+                          <Title order={4} fw={700}>
+                            OpenRouter API Credentials
+                          </Title>
+                          <Badge
+                            size='sm'
+                            variant='filled'
+                            color={hasConfiguredKey ? 'teal' : 'orange'}
+                          >
+                            {hasConfiguredKey
+                              ? 'Active & Configured'
+                              : 'Not Configured'}
+                          </Badge>
+                        </Group>
+                        <Text size='xs' c={mutedTextColor} mt={4}>
+                          Power interactive API course evaluations, mock
+                          mentors, and intelligent exercise grading.
+                        </Text>
+                      </div>
+                    </Group>
+
+                    <Button
+                      variant='filled'
+                      color='indigo'
+                      radius='md'
+                      size='sm'
+                      leftSection={<IconKey size={16} />}
+                      onClick={() => setOpenRouterModalOpen(true)}
+                      className='btn-modern'
+                      style={{
+                        background: 'linear-gradient(135deg, #4f46e5, #6366f1)',
+                        boxShadow: '0 2px 8px rgba(79, 70, 229, 0.3)'
+                      }}
+                    >
+                      {hasConfiguredKey
+                        ? 'Update / Rotate Key'
+                        : 'Configure API Key'}
+                    </Button>
+                  </Group>
+                </Paper>
+
+                <Grid gutter='md'>
+                  <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
+                    <InfoTile
+                      icon={<IconShieldLock size={18} />}
+                      label='API Key Status'
+                      mutedTextColor={mutedTextColor}
+                      iconColor={hasConfiguredKey ? '#10b981' : '#f59e0b'}
+                      borderColor={borderColor}
+                      value={
+                        <Badge
+                          size='md'
+                          variant='light'
+                          color={hasConfiguredKey ? 'teal' : 'orange'}
+                        >
+                          {hasConfiguredKey
+                            ? 'Verified & Working'
+                            : 'Expired / Missing'}
+                        </Badge>
+                      }
+                    />
+                  </Grid.Col>
+                  <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
+                    <InfoTile
+                      icon={<IconKey size={18} />}
+                      label='Masked Key'
+                      mutedTextColor={mutedTextColor}
+                      iconColor={iconColor}
+                      borderColor={borderColor}
+                      value={
+                        hasConfiguredKey
+                          ? maskKey(existingKey)
+                          : 'No key configured'
+                      }
+                    />
+                  </Grid.Col>
+                  <Grid.Col span={{ base: 12, sm: 12, md: 4 }}>
+                    <InfoTile
+                      icon={<IconCalendar size={18} />}
+                      label='Last Validated'
+                      mutedTextColor={mutedTextColor}
+                      iconColor={iconColor}
+                      borderColor={borderColor}
+                      value={
+                        openRouterResponse?.data?.updatedAt
+                          ? formatDate(openRouterResponse.data.updatedAt)
+                          : hasConfiguredKey
+                            ? 'Active'
+                            : '—'
+                      }
+                    />
+                  </Grid.Col>
+                </Grid>
+              </Stack>
+            </Tabs.Panel>
           </Tabs>
         </Card>
       </Stack>
+
+      <OpenRouterKeyModal
+        opened={openRouterModalOpen}
+        onClose={() => setOpenRouterModalOpen(false)}
+        userId={details.id}
+        onOpenSetupGuide={() => {
+          setOpenRouterModalOpen(false);
+          navigate('../course-assignments?setup=true', {
+            state: { openSetup: true }
+          });
+        }}
+      />
     </Container>
   );
 };

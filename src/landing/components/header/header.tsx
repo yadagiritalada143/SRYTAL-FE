@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Burger, HoverCard } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import {
@@ -6,8 +6,10 @@ import {
   IconBrandLinkedin,
   IconBrandMeta,
   IconChevronDown,
+  IconLayoutDashboard,
   IconLogin
 } from '@tabler/icons-react';
+import { ROLES } from '@constants';
 import { HashLink as Link } from 'react-router-hash-link';
 
 const dropdownStyles: React.CSSProperties = {
@@ -37,6 +39,28 @@ const techItems = [
 
 const Header: React.FC = () => {
   const [opened, { toggle, close }] = useDisclosure(false);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [dashboardUrl, setDashboardUrl] = useState<string>(
+    '/srytal/employee/dashboard'
+  );
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const userRole = localStorage.getItem('userRole');
+
+    if (token) {
+      setIsLoggedIn(true);
+      if (userRole === ROLES.SUPER_ADMIN) {
+        setDashboardUrl('/superadmin/dashboard');
+      } else if (userRole === ROLES.ADMIN) {
+        setDashboardUrl('/srytal/admin/dashboard');
+      } else {
+        setDashboardUrl('/srytal/employee/dashboard');
+      }
+    } else {
+      setIsLoggedIn(false);
+    }
+  }, []);
 
   return (
     <header
@@ -181,13 +205,23 @@ const Header: React.FC = () => {
             </a>
           </div>
 
-          <a
-            href='/srytal/employee/login'
-            className='inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 border border-blue-400/50 hover:border-blue-300 shadow-md shadow-blue-900/20 hover:shadow-blue-600/30 hover:-translate-y-0.5 transition-all duration-200'
-          >
-            <IconLogin size={17} />
-            <span>Login</span>
-          </a>
+          {isLoggedIn ? (
+            <a
+              href={dashboardUrl}
+              className='inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 border border-blue-400/50 hover:border-blue-300 shadow-md shadow-blue-900/20 hover:shadow-blue-600/30 hover:-translate-y-0.5 transition-all duration-200'
+            >
+              <IconLayoutDashboard size={17} />
+              <span>Dashboard</span>
+            </a>
+          ) : (
+            <a
+              href='/srytal/employee/login'
+              className='inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 border border-blue-400/50 hover:border-blue-300 shadow-md shadow-blue-900/20 hover:shadow-blue-600/30 hover:-translate-y-0.5 transition-all duration-200'
+            >
+              <IconLogin size={17} />
+              <span>Login</span>
+            </a>
+          )}
         </div>
 
         <div className='lg:hidden flex items-center'>
@@ -285,14 +319,25 @@ const Header: React.FC = () => {
             </a>
           </div>
 
-          <a
-            href='/srytal/employee/login'
-            onClick={close}
-            className='w-full py-3 rounded-xl text-sm font-semibold text-center text-white bg-blue-600 hover:bg-blue-500 border border-blue-400/50 flex items-center justify-center gap-2 shadow-md shadow-blue-900/20'
-          >
-            <IconLogin size={17} />
-            <span>Login</span>
-          </a>
+          {isLoggedIn ? (
+            <a
+              href={dashboardUrl}
+              onClick={close}
+              className='w-full py-3 rounded-xl text-sm font-semibold text-center text-white bg-blue-600 hover:bg-blue-500 border border-blue-400/50 flex items-center justify-center gap-2 shadow-md shadow-blue-900/20'
+            >
+              <IconLayoutDashboard size={17} />
+              <span>Dashboard</span>
+            </a>
+          ) : (
+            <a
+              href='/srytal/employee/login'
+              onClick={close}
+              className='w-full py-3 rounded-xl text-sm font-semibold text-center text-white bg-blue-600 hover:bg-blue-500 border border-blue-400/50 flex items-center justify-center gap-2 shadow-md shadow-blue-900/20'
+            >
+              <IconLogin size={17} />
+              <span>Login</span>
+            </a>
+          )}
         </div>
       </div>
     </header>

@@ -13,7 +13,8 @@ import {
   updateCourseContentWriter,
   updateCourseModuleContentWriter,
   updateCourseTaskContentWriter,
-  updateMyTaskProgress
+  updateMyTaskProgress,
+  saveUserOpenRouterKey
 } from '@services/user-services';
 import { userQueryKeys } from '../queries/useUserQueries';
 import { AddCompanyForm } from '@forms/add-company';
@@ -221,6 +222,16 @@ export const useUpdateMyTaskProgress = () => {
         queryKey: userQueryKeys.myCourse(variables.courseAssignmentId)
       });
       queryClient.invalidateQueries({ queryKey: userQueryKeys.myCourses });
+    }
+  });
+};
+
+export const useSaveUserOpenRouterKey = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (openrouterKey: string) => saveUserOpenRouterKey(openrouterKey),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['userOpenRouterKey'] });
     }
   });
 };
