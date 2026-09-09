@@ -387,25 +387,27 @@ export interface UserOpenRouterKeyResponse {
   message: string;
   data?: {
     _id?: string;
-    userId: string;
-    openrouterKey: string;
+    userId?: string;
+    openrouterKey?: string;
     createdAt?: string;
     updatedAt?: string;
-  };
+  } | null;
 }
 
 export const saveUserOpenRouterKey = async (
   openrouterKey: string
 ): Promise<UserOpenRouterKeyResponse> => {
-  const response = await apiClient.post('/user/UserOpenRouterKey', {
-    openrouterKey
-  });
+  const response = await apiClient.post(
+    '/user/validateandsaveopenrouterapikey',
+    {
+      openrouterKey
+    }
+  );
   return response.data;
 };
 
-export const getUserOpenRouterKey = async (
-  userId: string
-): Promise<UserOpenRouterKeyResponse> => {
-  const response = await apiClient.get(`/user/getUserOpenRouterKey/${userId}`);
-  return response.data;
-};
+export const getUserOpenRouterKey =
+  async (): Promise<UserOpenRouterKeyResponse> => {
+    const response = await apiClient.get('/user/getuseropenrouterkey');
+    return response.data;
+  };

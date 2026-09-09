@@ -49,7 +49,7 @@ describe('OpenRouterSetup Component', () => {
   it('renders title, value badges, and external link to OpenRouter', () => {
     renderSetup();
 
-    expect(screen.getByText('OpenRouter AI Key Setup')).toBeInTheDocument();
+    expect(screen.getByText('OpenRouter API Key Setup')).toBeInTheDocument();
     expect(screen.getByText('Free Models Available')).toBeInTheDocument();
     expect(screen.getByText('Stored Locally')).toBeInTheDocument();
 

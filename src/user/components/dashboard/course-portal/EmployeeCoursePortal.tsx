@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useRecoilValue } from 'recoil';
 import { userDetailsAtom } from '@atoms/user';
 import {
@@ -67,6 +67,24 @@ const EmployeeCoursePortal = () => {
   } = useGetUserOpenRouterKey(userId, !!userId);
 
   const [sessionKey, setSessionKey] = useState<string>('');
+  const [showManualSetup, setShowManualSetup] = useState<boolean>(false);
+
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  useEffect(() => {
+    const isSetupParam = searchParams.get('setup') === 'true';
+    const isSetupState = Boolean((location.state as any)?.openSetup);
+
+    if (isSetupParam || isSetupState) {
+      setShowManualSetup(true);
+      if (isSetupParam) {
+        const nextParams = new URLSearchParams(searchParams);
+        nextParams.delete('setup');
+        setSearchParams(nextParams, { replace: true });
+      }
+    }
+  }, [searchParams, location.state, setSearchParams]);
 
   const backendKey = (
     openRouterKeyResponse?.data?.openrouterKey ||
@@ -168,9 +186,10 @@ const EmployeeCoursePortal = () => {
     );
   }
 
-  if (!hasKey) {
+  if (!hasKey || showManualSetup) {
     return (
       <OpenRouterSetup
+        currentApiKey={backendKey || sessionKey}
         onKeySaved={key => {
           setSessionKey(key);
           try {
@@ -179,7 +198,9 @@ const EmployeeCoursePortal = () => {
             // ignore
           }
           refetchKey();
+          setShowManualSetup(false);
         }}
+        onCancel={hasKey ? () => setShowManualSetup(false) : undefined}
       />
     );
   }

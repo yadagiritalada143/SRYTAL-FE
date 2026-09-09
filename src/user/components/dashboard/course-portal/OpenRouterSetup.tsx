@@ -1150,23 +1150,20 @@ export const OpenRouterSetup: React.FC<OpenRouterSetupProps> = ({
     setIsSubmitting(true);
 
     try {
-      await saveKeyMutation.mutateAsync(trimmed);
-    } catch (apiError: any) {
-      const status = apiError?.response?.status;
-      const message = apiError?.response?.data?.message;
-      if (status !== 409 && message !== 'USER_OPENROUTER_KEY_EXISTS') {
-        console.warn('Backend save notice:', message || apiError.message);
-      }
-    }
-
-    try {
+      const result = await saveKeyMutation.mutateAsync(trimmed);
       localStorage.setItem(OPENROUTER_API_KEY_STORAGE, trimmed);
       showSuccessToast(
-        'OpenRouter API Key saved successfully! Courses unlocked.'
+        result?.message ||
+          'OpenRouter API Key verified and saved successfully! Courses unlocked.'
       );
       onKeySaved(trimmed);
-    } catch {
-      showErrorToast('Could not save API key to local storage.');
+    } catch (apiError: any) {
+      const message =
+        apiError?.response?.data?.message ||
+        apiError?.message ||
+        'Failed to validate and save OpenRouter API key.';
+      setErrorMsg(message);
+      showErrorToast(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -2044,7 +2041,7 @@ export const OpenRouterSetup: React.FC<OpenRouterSetupProps> = ({
                     padding: '0 18px'
                   }}
                 >
-                  Connect & Unlock Courses
+                  Save
                 </Button>
               </Group>
             </Group>

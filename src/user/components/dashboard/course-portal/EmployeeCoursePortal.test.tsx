@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { BrowserRouter } from 'react-router-dom';
 import { MantineProvider } from '@mantine/core';
@@ -85,7 +85,7 @@ describe('EmployeeCoursePortal Component - OpenRouter Key Gating & Backend Integ
     renderPortal();
 
     expect(
-      screen.queryByText('OpenRouter AI Key Setup')
+      screen.queryByText('OpenRouter API Key Setup')
     ).not.toBeInTheDocument();
     expect(screen.queryByText('My Courses')).not.toBeInTheDocument();
   });
@@ -94,7 +94,7 @@ describe('EmployeeCoursePortal Component - OpenRouter Key Gating & Backend Integ
     mockBackendKey = null;
     renderPortal();
 
-    expect(screen.getByText('OpenRouter AI Key Setup')).toBeInTheDocument();
+    expect(screen.getByText('OpenRouter API Key Setup')).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: /verify & unlock courses/i })
     ).toBeInTheDocument();
@@ -112,7 +112,7 @@ describe('EmployeeCoursePortal Component - OpenRouter Key Gating & Backend Integ
     renderPortal();
 
     // Must show setup guide because BE has no key
-    expect(screen.getByText('OpenRouter AI Key Setup')).toBeInTheDocument();
+    expect(screen.getByText('OpenRouter API Key Setup')).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: /verify & unlock courses/i })
     ).toBeInTheDocument();
@@ -135,14 +135,14 @@ describe('EmployeeCoursePortal Component - OpenRouter Key Gating & Backend Integ
       screen.queryByRole('button', { name: /openrouter key configured/i })
     ).not.toBeInTheDocument();
     expect(
-      screen.queryByText('OpenRouter AI Key Setup')
+      screen.queryByText('OpenRouter API Key Setup')
     ).not.toBeInTheDocument();
     expect(localStorage.getItem(OPENROUTER_API_KEY_STORAGE)).toBe(
       'sk-or-v1-backendkey1234567890'
     );
   });
 
-  it('renders only the courses portal with no back or configure button when backend key is active', () => {
+  it('renders only the courses portal with no back, configure, or API Key Settings button when backend key is active', () => {
     mockBackendKey = 'sk-or-v1-validkey1234567890';
     renderPortal();
 
@@ -152,7 +152,30 @@ describe('EmployeeCoursePortal Component - OpenRouter Key Gating & Backend Integ
       screen.queryByRole('button', { name: /openrouter key configured/i })
     ).not.toBeInTheDocument();
     expect(
-      screen.queryByText('OpenRouter AI Key Setup')
+      screen.queryByRole('button', { name: /api key settings/i })
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('OpenRouter API Key Setup')
+    ).not.toBeInTheDocument();
+  });
+
+  it('switches to OpenRouter setup guide within courses menu when navigated with setup query param and returns to courses on cancel', () => {
+    mockBackendKey = 'sk-or-v1-validkey1234567890';
+    window.history.pushState({}, 'Test', '/?setup=true');
+    renderPortal();
+
+    // OpenRouter API Key Setup must be displayed in the courses menu
+    expect(screen.getByText('OpenRouter API Key Setup')).toBeInTheDocument();
+    expect(screen.queryByText('My Courses')).not.toBeInTheDocument();
+
+    // Click Back to Courses button
+    const backBtn = screen.getByRole('button', { name: /back to courses/i });
+    fireEvent.click(backBtn);
+
+    // Must return back to the courses portal
+    expect(screen.getByText('My Courses')).toBeInTheDocument();
+    expect(
+      screen.queryByText('OpenRouter API Key Setup')
     ).not.toBeInTheDocument();
   });
 });

@@ -115,11 +115,11 @@ export const useGetMyAssignedCourse = (
   });
 };
 
-export const useGetUserOpenRouterKey = (userId: string, enabled = true) => {
+export const useGetUserOpenRouterKey = (userId?: string, enabled = true) => {
   return useQuery({
-    queryKey: userQueryKeys.openRouterKey(userId),
+    queryKey: userQueryKeys.openRouterKey(userId || 'current'),
     queryFn: () => getUserOpenRouterKey(userId),
-    enabled: !!userId && enabled,
+    enabled,
     retry: false
   });
 };
