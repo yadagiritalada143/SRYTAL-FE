@@ -122,7 +122,7 @@ const TrackProgress = () => {
       py={{ base: 'md', sm: 'xl' }}
       px={{ base: 'xs', sm: 'md' }}
     >
-      <Box mb='xl'>
+      <Box mt={{ base: 'md', sm: 'xl' }} mb='xl'>
         <PageHeader
           title='Track Progress'
           subtitle='Select an employee to view their assigned courses and progress'
@@ -142,7 +142,12 @@ const TrackProgress = () => {
           >
             {statCards.map(card => (
               <Card key={card.label} withBorder radius='md' p='lg'>
-                <Group gap='xs' justify='space-between' wrap='nowrap' align='center'>
+                <Group
+                  gap='xs'
+                  justify='space-between'
+                  wrap='nowrap'
+                  align='center'
+                >
                   <Stack gap={2} style={{ minWidth: 0, flex: 1 }}>
                     <Text
                       size='xs'
