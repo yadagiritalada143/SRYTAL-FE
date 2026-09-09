@@ -118,7 +118,7 @@ export const useGetMyAssignedCourse = (
 export const useGetUserOpenRouterKey = (userId?: string, enabled = true) => {
   return useQuery({
     queryKey: userQueryKeys.openRouterKey(userId || 'current'),
-    queryFn: () => getUserOpenRouterKey(userId),
+    queryFn: getUserOpenRouterKey,
     enabled,
     retry: false
   });
