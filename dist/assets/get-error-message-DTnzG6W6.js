@@ -1,0 +1,1 @@
+const o=(e,t="Something went wrong. Please try again.")=>{var n,g,r,i;if(!e)return t;const s=e;return s!=null&&s.isAxiosError?((g=(n=s.response)==null?void 0:n.data)==null?void 0:g.message)||((i=(r=s.response)==null?void 0:r.data)==null?void 0:i.error)||s.message||t:e instanceof Error?e.message||t:typeof e=="string"&&e||t};export{o as g};
