@@ -28,7 +28,7 @@ import {
 } from '@tabler/icons-react';
 import moment from 'moment';
 import { useParams } from 'react-router-dom';
-import { useRecoilState, useRecoilValue } from 'recoil';
+import { useRecoilState } from 'recoil';
 
 import { EmployeeTimesheet, TimesheetStatus } from '@interfaces/timesheet';
 import { formatData, prepareSubmitData } from '@common/timesheet/helper';
@@ -213,8 +213,7 @@ export const EmployeeTimesheetAdminView = () => {
       try {
         const response = await getEmployeeDetailsByAdmin(employeeId);
         setEmployeeDetails(response);
-      } catch (error: any) {
-        console.error('Error fetching employee details:', error);
+      } catch {
         toast.error('Failed to load employee details');
       }
     };

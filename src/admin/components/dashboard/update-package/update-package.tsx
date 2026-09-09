@@ -115,8 +115,7 @@ const UpdatePackage = () => {
           })
         );
         setApproversOptions(filterApprovers);
-      } catch (error: any) {
-        console.log(error);
+      } catch {
         toast.error('Failed to fetch approvers.');
       }
     };

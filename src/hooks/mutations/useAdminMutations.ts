@@ -32,7 +32,10 @@ import {
   deleteFeedbackAttributeByAdmin,
   addDepartmentByAdmin,
   updateDepartmentByAdmin,
-  deleteDepartmentByAdmin
+  deleteDepartmentByAdmin,
+  assignCourseToEmployee,
+  updateCourseAssignmentDueDate,
+  unassignCourse
 } from '@services/admin-services';
 import { adminQueryKeys } from '../queries/useAdminQueries';
 import { AddEmployeeForm } from '@forms/add-employee';
@@ -244,3 +247,47 @@ export const useDeleteDepartmentByAdmin = createMutationHook(
   deleteDepartmentByAdmin,
   [adminQueryKeys.departments]
 );
+
+export const useAssignCourseToEmployee = createMutationHook(
+  assignCourseToEmployee,
+  [adminQueryKeys.courses]
+);
+
+export const useUpdateCourseAssignmentDueDate = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      courseAssignmentId,
+      dueDate
+    }: {
+      courseAssignmentId: string;
+      dueDate: string;
+    }) => updateCourseAssignmentDueDate(courseAssignmentId, dueDate),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: adminQueryKeys.courseAssignments
+      });
+      queryClient.invalidateQueries({
+        queryKey: adminQueryKeys.courseAssignmentDetail(
+          variables.courseAssignmentId
+        )
+      });
+    }
+  });
+};
+
+export const useUnassignCourse = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (courseAssignmentId: string) =>
+      unassignCourse(courseAssignmentId),
+    onSuccess: (_, courseAssignmentId) => {
+      queryClient.invalidateQueries({
+        queryKey: adminQueryKeys.courseAssignments
+      });
+      queryClient.invalidateQueries({
+        queryKey: adminQueryKeys.courseAssignmentDetail(courseAssignmentId)
+      });
+    }
+  });
+};

@@ -22,6 +22,7 @@ import {
   IconPlus,
   IconEdit,
   IconUser,
+  IconUsers,
   IconSortAscending,
   IconSortDescending
 } from '@tabler/icons-react';
@@ -46,6 +47,7 @@ import useHorizontalScroll from '@hooks/horizontal-scroll';
 import { CandidateInterface } from '@interfaces/candidate';
 import { debounce } from '@utils/common/debounce';
 import { CommonButton } from '@components/common/button/CommonButton';
+import PageHeader from '@components/common/page-header/PageHeader';
 
 // Constants
 const ITEMS_PER_PAGE_OPTIONS = ['5', '10', '20', '50'];
@@ -63,11 +65,6 @@ interface SortConfig {
 // Custom hook for candidate filtering and sorting
 const useCandidateFilters = (candidates: CandidateInterface[]) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const {
-    themeConfig: currentThemeConfig,
-    organizationConfig,
-    isDarkTheme
-  } = useAppTheme();
   const [sortConfig, setSortConfig] = useState<SortConfig>({
     field: 'candidateName',
     order: 'asc'
@@ -365,38 +362,6 @@ const TableHeader: React.FC<{
   );
 };
 
-const HeadingComponent: React.FC<{
-  filteredCount: number;
-  handleAddCandidate: () => void;
-  isMobile?: boolean;
-}> = ({ filteredCount = 0, handleAddCandidate, isMobile = false }) => (
-  <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md' withBorder mt='xl'>
-    <Flex
-      direction={isMobile ? 'column' : 'row'}
-      justify='space-between'
-      align='center'
-      gap='md'
-    >
-      <Text
-        size={isMobile ? 'lg' : 'xl'}
-        fw={700}
-        ta={isMobile ? 'center' : 'left'}
-      >
-        Manage Candidates ({filteredCount} Candidates)
-      </Text>
-      <CommonButton
-        leftSection={<IconPlus size={16} />}
-        onClick={handleAddCandidate}
-        variant='filled'
-        fullWidth={isMobile}
-        size={isMobile ? 'md' : 'sm'}
-      >
-        Add Candidate
-      </CommonButton>
-    </Flex>
-  </Card>
-);
-
 const PoolCandidateList = () => {
   const { themeConfig: currentThemeConfig, organizationConfig } = useAppTheme();
   const navigate = useNavigate();
@@ -548,10 +513,22 @@ const PoolCandidateList = () => {
     <Container size='xl' py='md' my='xl' px={isSmallMobile ? 'xs' : 'md'}>
       <Stack gap='md'>
         {/* Header */}
-        <HeadingComponent
-          filteredCount={filteredCandidates.length}
-          handleAddCandidate={handleAddCandidate}
-          isMobile={isMobile}
+        <PageHeader
+          title='Pool Candidates'
+          subtitle='Manage the candidates in your recruitment pool.'
+          icon={<IconUsers size={24} />}
+          count={filteredCandidates.length}
+          actions={
+            <CommonButton
+              leftSection={<IconPlus size={16} />}
+              onClick={handleAddCandidate}
+              variant='filled'
+              fullWidth={isMobile}
+              size={isMobile ? 'md' : 'sm'}
+            >
+              Add Candidate
+            </CommonButton>
+          }
         />
 
         {/* Filters */}

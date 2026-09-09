@@ -4,6 +4,10 @@ import { AddPackageForm } from '@forms/add-package';
 import { PackageUpdateForm } from '@forms/update-package';
 import moment from 'moment';
 import { apiClient } from '@utils/api-client';
+import {
+  AdminAssignment,
+  AdminAssignmentDetail
+} from '@interfaces/course-assignment';
 
 export const registerEmployee = async (employeeDetails: AddEmployeeForm) => {
   const token = localStorage.getItem('token');
@@ -266,6 +270,21 @@ export const getAllEmployeeDetailsByAdmin = async () => {
       headers: { auth_token: token }
     });
     return response.data.usersList;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getDashboardStatsByAdmin = async () => {
+  const token = localStorage.getItem('token');
+  try {
+    if (!token) {
+      throw 'Not authorized to access';
+    }
+    const response = await apiClient('/admin/getDashboardStatsByAdmin', {
+      headers: { auth_token: token }
+    });
+    return response.data;
   } catch (error) {
     throw error;
   }
@@ -767,4 +786,126 @@ export const deleteDepartmentByAdmin = async (id: string) => {
   } catch (error) {
     throw error;
   }
+};
+
+// ── Navigation / Menu Access management ──────────────────────────────────────
+
+export const getNavCatalogByAdmin = async (surface?: string) => {
+  const token = localStorage.getItem('token');
+  const response = await apiClient.get('/admin/getNavCatalog', {
+    params: surface ? { surface } : undefined,
+    headers: { auth_token: token }
+  });
+  return response.data.catalog;
+};
+
+export const getNavRoleAccessByAdmin = async (role: string) => {
+  const token = localStorage.getItem('token');
+  const response = await apiClient.get(`/admin/getNavRoleAccess/${role}`, {
+    headers: { auth_token: token }
+  });
+  return response.data;
+};
+
+export const updateNavRoleAccessByAdmin = async (
+  role: string,
+  navKeys: string[]
+) => {
+  const token = localStorage.getItem('token');
+  const response = await apiClient.put(
+    '/admin/updateNavRoleAccess',
+    { role, navKeys },
+    { headers: { auth_token: token } }
+  );
+  return response.data;
+};
+
+export const getNavUserAccessByAdmin = async (userId: string) => {
+  const token = localStorage.getItem('token');
+  const response = await apiClient.get(`/admin/getNavUserAccess/${userId}`, {
+    headers: { auth_token: token }
+  });
+  return response.data;
+};
+
+export const updateNavUserAccessByAdmin = async (
+  userId: string,
+  addedKeys: string[],
+  removedKeys: string[]
+) => {
+  const token = localStorage.getItem('token');
+  const response = await apiClient.put(
+    '/admin/updateNavUserAccess',
+    { userId, addedKeys, removedKeys },
+    { headers: { auth_token: token } }
+  );
+  return response.data;
+};
+
+export const getAllCoursesByAdmin = async () => {
+  try {
+    const response = await apiClient.get('/contentwriter/getAllCourses');
+    return response.data.courses;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getCourseByIdAdmin = async (id: string) => {
+  try {
+    const response = await apiClient.get(`/contentwriter/getCourseById/${id}`);
+    return response.data.coursedata;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const assignCourseToEmployee = async (payload: {
+  employeeId: string;
+  courseId: string;
+  dueDate: string;
+}) => {
+  try {
+    const response = await apiClient.post(
+      '/admin/createcourseassignment',
+      payload
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getAllCourseAssignments = async (): Promise<AdminAssignment[]> => {
+  const response = await apiClient.get('/admin/getallcourseassignments', {
+    params: { limit: 100000 }
+  });
+  return response.data.data;
+};
+
+export const getCourseAssignmentDetails = async (
+  courseAssignmentId: string
+): Promise<AdminAssignmentDetail> => {
+  const response = await apiClient.get(
+    `/admin/courses/assignments/${courseAssignmentId}/details`
+  );
+  return response.data.data;
+};
+
+export const updateCourseAssignmentDueDate = async (
+  courseAssignmentId: string,
+  dueDate: string
+) => {
+  const response = await apiClient.put(
+    `/admin/courses/assignments/${courseAssignmentId}/duedate`,
+    { dueDate }
+  );
+  return response.data;
+};
+
+export const unassignCourse = async (courseAssignmentId: string) => {
+  const response = await apiClient.delete(
+    `/admin/deletecourseassignment/${courseAssignmentId}`
+  );
+  return response.data;
 };

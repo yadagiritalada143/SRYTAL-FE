@@ -3,7 +3,7 @@ import PremiumLoader from '@components/common/loaders/PremiumLoader';
 import { useForm } from 'react-hook-form';
 import { LoginForm, loginSchema } from '@forms/login';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { login } from '@services/common-services';
 import axios from 'axios';
@@ -47,10 +47,12 @@ const EmployeeLogin = () => {
     const userRole = localStorage.getItem('userRole');
 
     if (token) {
-      if (userRole === ROLES.RECRUITER) {
-        navigate(`/${organization}/employee/dashboard/pool-companies`);
-      } else if (userRole === ROLES.USER) {
-        navigate(`/${organization}/employee/dashboard/profile`);
+      if (
+        userRole === ROLES.USER ||
+        userRole === ROLES.RECRUITER ||
+        userRole === ROLES.CONTENT_WRITER
+      ) {
+        navigate(`/${organization}/employee/dashboard`);
       }
     }
   }, [navigate, organization]);
@@ -66,17 +68,17 @@ const EmployeeLogin = () => {
         id: data.id
       });
 
-      if (data.userRole === ROLES.RECRUITER) {
+      if (
+        data.userRole === ROLES.USER ||
+        data.userRole === ROLES.RECRUITER ||
+        data.userRole === ROLES.CONTENT_WRITER
+      ) {
         navigate(
-          `${organizationEmployeeUrls(
-            organizationConfig.organization_name
-          )}/dashboard/pool-companies`
+          `${organizationEmployeeUrls(organizationConfig.organization_name)}/dashboard`
         );
       } else {
         navigate(
-          `${organizationEmployeeUrls(
-            organizationConfig.organization_name
-          )}/dashboard/profile`
+          `${organizationEmployeeUrls(organizationConfig.organization_name)}/dashboard/profile`
         );
       }
       showSuccessToast('Login successfully !');

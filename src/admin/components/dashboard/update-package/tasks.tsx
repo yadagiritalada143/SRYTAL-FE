@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Group,
   Modal,
@@ -111,15 +111,14 @@ const MobileTaskCard: React.FC<{
 
 const PackageTasksTable = ({
   tasks = [],
-  organizationConfig,
   fetchPackageDetails
 }: {
   tasks: any[];
-  organizationConfig: OrganizationConfig;
+  organizationConfig?: OrganizationConfig;
   fetchPackageDetails: () => void;
 }) => {
   const [opened, { open, close }] = useDisclosure(false);
-  const { themeConfig: currentThemeConfig, isDarkTheme } = useAppTheme();
+  const { themeConfig: currentThemeConfig } = useAppTheme();
   const [taskList, setTaskList] = useState([...tasks]);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
@@ -154,8 +153,7 @@ const PackageTasksTable = ({
       close();
       showSuccessToast('Task deleted successfully');
       fetchPackageDetails();
-    } catch (error) {
-      console.error('Error deleting task:', error);
+    } catch {
       toast.error('Failed to delete task');
     }
   };
@@ -177,8 +175,7 @@ const PackageTasksTable = ({
 
       fetchPackageDetails();
       closeEditModal();
-    } catch (err) {
-      console.error(err);
+    } catch {
       toast.error('Failed to update task');
     }
   };

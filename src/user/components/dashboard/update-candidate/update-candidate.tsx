@@ -11,7 +11,6 @@ import {
   Grid,
   Badge,
   Divider,
-  Flex,
   Container
 } from '@mantine/core';
 import PremiumLoader from '@components/common/loaders/PremiumLoader';
@@ -31,6 +30,8 @@ import CommentsTable from './comments-table';
 import { useDisclosure, useMediaQuery } from '@mantine/hooks';
 import { BackButton } from '@components/common/style-components/buttons';
 import { StandardModal } from '@components/UI/Models/base-model';
+import { IconUser } from '@tabler/icons-react';
+import PageHeader from '@components/common/page-header/PageHeader';
 import { useAppTheme } from '@hooks/use-app-theme';
 import { useGetPoolCandidateById } from '@hooks/queries/useUserQueries';
 import { useUpdateCandidate } from '@hooks/mutations/useUserMutations';
@@ -127,19 +128,13 @@ const UpdatePoolCandidateForm = () => {
   return (
     <Container size='lg' py='md' my='xl' px={isSmallMobile ? 'xs' : 'md'}>
       <Stack gap='md'>
-        {/* Header Card */}
-        <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md' withBorder>
-          <Flex direction='row' justify='space-between' align='center' gap='md'>
-            <Text
-              size={isMobile ? 'lg' : 'xl'}
-              fw={700}
-              ta={isMobile ? 'center' : 'left'}
-            >
-              Edit Candidate Details
-            </Text>
-            <BackButton id={candidateId} />
-          </Flex>
-        </Card>
+        {/* Header */}
+        <PageHeader
+          title='Edit Candidate Details'
+          subtitle='Update this candidate’s details and comments.'
+          icon={<IconUser size={24} />}
+          actions={<BackButton id={candidateId} />}
+        />
 
         <DataView isLoading={isLoading} label='candidate details'>
           <Stack gap='md'>

@@ -7,7 +7,14 @@ import {
   addPoolCandidateCommentByRecruiter,
   addPoolCandidateByRecruiter,
   updatePoolCandidateByRecruiter,
-  addCourseContentWriter
+  addCourseContentWriter,
+  addCourseModuleContentWriter,
+  addCourseTaskContentWriter,
+  updateCourseContentWriter,
+  updateCourseModuleContentWriter,
+  updateCourseTaskContentWriter,
+  updateMyTaskProgress,
+  saveUserOpenRouterKey
 } from '@services/user-services';
 import { userQueryKeys } from '../queries/useUserQueries';
 import { AddCompanyForm } from '@forms/add-company';
@@ -17,6 +24,14 @@ import {
   AddCommentForm,
   UpdateCandidateSchema
 } from '@forms/add-candidate';
+import {
+  AddModulePayload,
+  AddTaskPayload,
+  UpdateCoursePayload,
+  UpdateModulePayload,
+  UpdateTaskPayload
+} from '@interfaces/contentwriter';
+import { UpdateTaskProgressPayload } from '@interfaces/course-assignment';
 
 export const useAddCompany = () => {
   const queryClient = useQueryClient();
@@ -114,6 +129,109 @@ export const useAddCourse = () => {
     }) => addCourseContentWriter(name, description, image),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: userQueryKeys.courses });
+    }
+  });
+};
+
+export const useAddCourseModule = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: AddModulePayload) => addCourseModuleContentWriter(data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: userQueryKeys.course(variables.courseId)
+      });
+      queryClient.invalidateQueries({ queryKey: userQueryKeys.courses });
+    }
+  });
+};
+
+export const useAddCourseTask = (courseId?: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: AddTaskPayload) => addCourseTaskContentWriter(data),
+    onSuccess: () => {
+      if (courseId) {
+        queryClient.invalidateQueries({
+          queryKey: userQueryKeys.course(courseId)
+        });
+      }
+    }
+  });
+};
+
+export const useUpdateCourse = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: UpdateCoursePayload) => updateCourseContentWriter(data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: userQueryKeys.course(variables.id)
+      });
+      queryClient.invalidateQueries({ queryKey: userQueryKeys.courses });
+    }
+  });
+};
+
+/**
+ * Modules and tasks are only ever read through their parent course, so both
+ * update hooks refresh that course's cache entry.
+ */
+export const useUpdateCourseModule = (courseId?: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: UpdateModulePayload) =>
+      updateCourseModuleContentWriter(data),
+    onSuccess: () => {
+      if (courseId) {
+        queryClient.invalidateQueries({
+          queryKey: userQueryKeys.course(courseId)
+        });
+      }
+      queryClient.invalidateQueries({ queryKey: userQueryKeys.courses });
+    }
+  });
+};
+
+export const useUpdateCourseTask = (courseId?: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: UpdateTaskPayload) =>
+      updateCourseTaskContentWriter(data),
+    onSuccess: () => {
+      if (courseId) {
+        queryClient.invalidateQueries({
+          queryKey: userQueryKeys.course(courseId)
+        });
+      }
+      queryClient.invalidateQueries({ queryKey: userQueryKeys.courses });
+    }
+  });
+};
+
+/**
+ * Marking a task complete changes both the open course's tree and the summary
+ * shown in the course list, so both cache entries are refreshed.
+ */
+export const useUpdateMyTaskProgress = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: UpdateTaskProgressPayload) => updateMyTaskProgress(data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: userQueryKeys.myCourse(variables.courseAssignmentId)
+      });
+      queryClient.invalidateQueries({ queryKey: userQueryKeys.myCourses });
+    }
+  });
+};
+
+export const useSaveUserOpenRouterKey = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (openrouterKey: string) => saveUserOpenRouterKey(openrouterKey),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['userOpenRouterKey'] });
     }
   });
 };

@@ -36,6 +36,7 @@ import { debounce } from '@utils/common/debounce';
 import { useAppTheme } from '@hooks/use-app-theme';
 import { useGetAllPackagesByAdmin } from '@hooks/queries/useAdminQueries';
 import { CommonButton } from '@components/common/button/CommonButton';
+import PageHeader from '@components/common/page-header/PageHeader';
 
 const ITEMS_PER_PAGE_OPTIONS = ['5', '10', '20', '50'];
 const DEFAULT_ITEMS_PER_PAGE = 10;
@@ -269,42 +270,6 @@ const TableHeader = ({
   );
 };
 
-const HeadingComponent = ({
-  filteredCount,
-  handleAddPackage,
-  isMobile
-}: {
-  filteredCount: number;
-  handleAddPackage: () => void;
-  isMobile?: boolean;
-}) => (
-  <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md' withBorder mt='xl'>
-    <Flex
-      direction={isMobile ? 'column' : 'row'}
-      justify='space-between'
-      align='center'
-      gap='md'
-    >
-      <Text
-        size={isMobile ? 'lg' : 'xl'}
-        fw={700}
-        ta={isMobile ? 'center' : 'left'}
-      >
-        Manage Packages ({filteredCount} Packages)
-      </Text>
-      <CommonButton
-        leftSection={<IconPlus size={16} />}
-        onClick={handleAddPackage}
-        variant='filled'
-        fullWidth={isMobile}
-        size={isMobile ? 'md' : 'sm'}
-      >
-        Add Package
-      </CommonButton>
-    </Flex>
-  </Card>
-);
-
 const Packages = () => {
   const {
     data: packages = [],
@@ -439,10 +404,22 @@ const Packages = () => {
   return (
     <Container size='xl' py='md' my='xl' px={isSmallMobile ? 'xs' : 'md'}>
       <Stack gap='md'>
-        <HeadingComponent
-          filteredCount={filteredPackages.length}
-          handleAddPackage={handleAddPackage}
-          isMobile={isMobile}
+        <PageHeader
+          title='Manage Packages'
+          subtitle='Create and manage work packages assigned to employees.'
+          icon={<IconPackage size={24} />}
+          count={filteredPackages.length}
+          actions={
+            <CommonButton
+              leftSection={<IconPlus size={16} />}
+              onClick={handleAddPackage}
+              variant='filled'
+              fullWidth={isMobile}
+              size={isMobile ? 'md' : 'sm'}
+            >
+              Add Package
+            </CommonButton>
+          }
         />
 
         <Card shadow='sm' p={isMobile ? 'sm' : 'md'} radius='md' withBorder>

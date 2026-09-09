@@ -2,7 +2,11 @@ import { useMemo } from 'react';
 import { useRecoilValue } from 'recoil';
 import { organizationThemeAtom } from '@atoms/organization-atom';
 import { themeAtom } from '@atoms/theme';
-import { getThemeConfig } from '@utils/common/theme-utils';
+import {
+  getThemeConfig,
+  getAppColors,
+  AppColorPalette
+} from '@utils/common/theme-utils';
 
 export const useAppTheme = () => {
   const organizationConfig = useRecoilValue(organizationThemeAtom);
@@ -12,5 +16,9 @@ export const useAppTheme = () => {
     return getThemeConfig(organizationConfig, isDarkTheme);
   }, [organizationConfig, isDarkTheme]);
 
-  return { themeConfig, isDarkTheme, organizationConfig };
+  const appColors: AppColorPalette = useMemo(() => {
+    return getAppColors(isDarkTheme);
+  }, [isDarkTheme]);
+
+  return { themeConfig, isDarkTheme, organizationConfig, appColors };
 };

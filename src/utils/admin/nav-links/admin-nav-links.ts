@@ -1,23 +1,25 @@
 import {
-  IconBuildings,
-  IconDroplet,
-  IconNetwork,
+  IconBook,
+  IconLayoutDashboard,
   IconNotebook,
   IconNotification,
   IconPackage,
   IconSettings,
   IconUserEdit,
   IconUsers,
-  IconUsersGroup,
-  IconUserStar,
-  IconWorldCheck
+  IconUserStar
 } from '@tabler/icons-react';
-import { Children } from 'react';
 
 export const adminNavLinks = [
   {
     role: 'admin',
     url: 'admin/dashboard',
+    icon: IconLayoutDashboard,
+    name: 'Dashboard'
+  },
+  {
+    role: 'admin',
+    url: 'admin/dashboard/employees',
     icon: IconUsers,
     name: 'Employees'
   },
@@ -32,6 +34,21 @@ export const adminNavLinks = [
     url: 'admin/dashboard/packages',
     icon: IconPackage,
     name: 'Packages'
+  },
+  {
+    role: 'admin',
+    icon: IconBook,
+    name: 'Courses',
+    children: [
+      {
+        name: 'Assign Course',
+        url: 'admin/dashboard/course-assignments'
+      },
+      {
+        name: 'Track Progress',
+        url: 'admin/dashboard/track-progress'
+      }
+    ]
   },
   {
     role: 'admin',

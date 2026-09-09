@@ -18,6 +18,7 @@ import { useCustomToast } from '@utils/common/toast';
 import { useAppTheme } from '@hooks/use-app-theme';
 import { useAddCompany } from '@hooks/mutations/useUserMutations';
 import { CommonButton } from '@components/common/button/CommonButton';
+import PageHeader from '@components/common/page-header/PageHeader';
 
 const AddCompany = () => {
   const navigate = useNavigate();
@@ -70,28 +71,22 @@ const AddCompany = () => {
       }}
     >
       <Stack gap='md'>
-        {/* Header Card */}
-        <Card shadow='sm' p={isMobile ? 'md' : 'lg'} radius='md' withBorder>
-          <Group justify='space-between' wrap='wrap'>
-            <Group gap='sm'>
-              <IconBuilding size={isMobile ? 24 : 28} />
-              <Text
-                size={isMobile ? 'lg' : 'xl'}
-                fw={700}
-                ta={isMobile ? 'center' : 'left'}
-              >
-                Add New Company
-              </Text>
-            </Group>
+        {/* Header */}
+        <PageHeader
+          title='Add New Company'
+          subtitle='Add a new company to your recruitment pool.'
+          icon={<IconBuilding size={24} />}
+          actions={
             <CommonButton
               onClick={handleGoBack}
               variant='light'
               size={isMobile ? 'xs' : 'sm'}
+              leftSection={<IconArrowLeft size={18} />}
             >
-              <IconArrowLeft size={18} />
+              Back
             </CommonButton>
-          </Group>
-        </Card>
+          }
+        />
 
         {/* Form Card */}
         <Card shadow='sm' p={isMobile ? 'md' : 'xl'} radius='md' withBorder>

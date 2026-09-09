@@ -5,14 +5,14 @@ import {
   useNavigate,
   useParams
 } from 'react-router-dom';
-import { useEffect, useMemo, useState, lazy, Suspense } from 'react';
+import { useEffect, useMemo, useState, lazy } from 'react';
 import { toast } from 'react-toastify';
-import { MantineProvider, LoadingOverlay } from '@mantine/core';
+import { MantineProvider } from '@mantine/core';
 import '@mantine/core/styles.css';
 import { getOrganizationConfig } from '@services/common-services';
-import Loader from '@components/common/loader/loader';
+import NavAccessGuard from '@components/common/nav-guard/NavAccessGuard';
 import { ModalsProvider } from '@mantine/modals';
-import { useRecoilValue, useSetRecoilState } from 'recoil';
+import { useSetRecoilState } from 'recoil';
 import { organizationThemeAtom } from '@atoms/organization-atom';
 import { themeAtom } from '@atoms/theme';
 
@@ -56,6 +56,12 @@ const AddCourse = lazy(
 const CourseDetails = lazy(
   () => import('@user/components/dashboard/edit-course/CourseDetails')
 );
+const EmployeeCoursePortal = lazy(
+  () => import('@user/components/dashboard/course-portal/EmployeeCoursePortal')
+);
+const CoursePlayer = lazy(
+  () => import('@user/components/dashboard/course-portal/CoursePlayer')
+);
 
 // Common components
 const Dashboard = lazy(() => import('@components/common/dashboard/dashboard'));
@@ -77,12 +83,8 @@ const SalarySlipReport = lazy(
 
 const EmployeeRoutes = () => {
   const { organization } = useParams<{ organization: string }>();
-  const {
-    themeConfig: currentThemeConfig,
-    organizationConfig,
-    isDarkTheme
-  } = useAppTheme();
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const { themeConfig: currentThemeConfig, isDarkTheme } = useAppTheme();
+  const [, setIsLoading] = useState<boolean>(false);
 
   const setOrganizationConfig = useSetRecoilState(organizationThemeAtom);
 
@@ -104,7 +106,6 @@ const EmployeeRoutes = () => {
 
   const mantineTheme = useMemo(() => {
     return {
-      colorScheme: currentThemeConfig.colorScheme,
       primaryColor: currentThemeConfig.primaryColor,
       fontFamily: currentThemeConfig.fontFamily,
       colors: {
@@ -460,7 +461,10 @@ const EmployeeRoutes = () => {
   }, [currentThemeConfig]);
 
   return (
-    <MantineProvider theme={mantineTheme}>
+    <MantineProvider
+      theme={mantineTheme}
+      forceColorScheme={isDarkTheme ? 'dark' : 'light'}
+    >
       <div
         className='d-flex justify-end p-4 absolute right-0 transition-colors duration-300 ease-in-out'
         style={{
@@ -481,88 +485,101 @@ const EmployeeRoutes = () => {
         >
           <Route path='/dashboard' element={<EmployeeDashboard />}>
             <Route element={<EmployeeProtectedRoutes />}>
-              <Route path='profile' element={<EmployeeProfile />} />
-              <Route element={<RecruiterProtectedRoutes />}>
-                <Route path='pool-candidates' element={<PoolCandidateList />} />
+              <Route element={<NavAccessGuard />}>
+                <Route path='profile' element={<EmployeeProfile />} />
+                <Route element={<RecruiterProtectedRoutes />}>
+                  <Route
+                    path='pool-candidates'
+                    element={<PoolCandidateList />}
+                  />
+                  <Route
+                    path='add-pool-candidate'
+                    element={<AddPoolCandidate />}
+                  />
+                  <Route
+                    path=':candidateId/edit-pool-candidate'
+                    element={<UpdatePoolCandidateForm />}
+                  />
+                  <Route path='pool-companies' element={<Companies />} />
+                  <Route path='add-pool-companies' element={<AddCompany />} />
+                  <Route
+                    path='update-pool-company/:companyId'
+                    element={<UpdateCompany />}
+                  />
+                </Route>
                 <Route
-                  path='add-pool-candidate'
-                  element={<AddPoolCandidate />}
+                  path='timesheet'
+                  element={
+                    <ModalsProvider>
+                      <Timesheet />
+                    </ModalsProvider>
+                  }
                 />
                 <Route
-                  path=':candidateId/edit-pool-candidate'
-                  element={<UpdatePoolCandidateForm />}
+                  index
+                  element={
+                    <div>
+                      <Dashboard />
+                    </div>
+                  }
                 />
-                <Route path='pool-companies' element={<Companies />} />
-                <Route path='add-pool-companies' element={<AddCompany />} />
                 <Route
-                  path='update-pool-company/:companyId'
-                  element={<UpdateCompany />}
+                  path='payslip'
+                  element={
+                    <div>
+                      <PayslipList />
+                    </div>
+                  }
+                />
+                <Route
+                  path='support'
+                  element={
+                    <div>
+                      <Support />
+                    </div>
+                  }
+                />
+                <Route
+                  path='mytasks'
+                  element={
+                    <div>
+                      <MyTasks />
+                    </div>
+                  }
+                />
+                <Route
+                  path='mytasks/:taskId'
+                  element={<div>{<TaskDetail />}</div>}
+                />
+                <Route
+                  path='announcements'
+                  element={
+                    <div>
+                      <Announcements />
+                    </div>
+                  }
+                />
+                <Route path='mentees' element={<Mentees />} />
+                <Route
+                  path='common/mentees/:empId'
+                  element={<div>{<UpdateMenteeTasks />}</div>}
+                />
+                <Route path='content-writer' element={<WriterDashboard />} />
+                <Route path='add-course' element={<AddCourse />} />
+                <Route path='course/:id' element={<CourseDetails />} />
+                <Route
+                  path='course-assignments'
+                  element={<EmployeeCoursePortal />}
+                />
+                <Route
+                  path='course-assignments/:courseAssignmentId'
+                  element={<CoursePlayer />}
+                />
+                <Route
+                  path='reports/salary-slip'
+                  element={<SalarySlipReport />}
                 />
               </Route>
-              <Route
-                path='timesheet'
-                element={
-                  <ModalsProvider>
-                    <Timesheet />
-                  </ModalsProvider>
-                }
-              />
-              <Route
-                path='dashboard'
-                element={
-                  <div>
-                    <Dashboard />
-                  </div>
-                }
-              />
-              <Route
-                path='payslip'
-                element={
-                  <div>
-                    <PayslipList />
-                  </div>
-                }
-              />
-              <Route
-                path='support'
-                element={
-                  <div>
-                    <Support />
-                  </div>
-                }
-              />
-              <Route
-                path='mytasks'
-                element={
-                  <div>
-                    <MyTasks />
-                  </div>
-                }
-              />
-              <Route
-                path='mytasks/:taskId'
-                element={<div>{<TaskDetail />}</div>}
-              />
-              <Route
-                path='announcements'
-                element={
-                  <div>
-                    <Announcements />
-                  </div>
-                }
-              />
-              <Route path='mentees' element={<Mentees />} />
-              <Route
-                path='common/mentees/:empId'
-                element={<div>{<UpdateMenteeTasks />}</div>}
-              />
-              <Route path='content-writer' element={<WriterDashboard />} />
-              <Route path='add-course' element={<AddCourse />} />
-              <Route path='course/:id' element={<CourseDetails />} />
-              <Route
-                path='reports/salary-slip'
-                element={<SalarySlipReport />}
-              />
             </Route>
           </Route>
         </Route>
