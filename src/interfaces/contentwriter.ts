@@ -18,6 +18,7 @@ export interface Task {
   content?: string;
   contentMimeType?: string;
   contentFileName?: string;
+  thumbnailUrl?: string;
   updatedAt?: string;
 }
 
@@ -27,6 +28,7 @@ export interface Module {
   moduleDescription: string;
   courseId?: string;
   thumbnail?: string;
+  thumbnailUrl?: string;
   tasks: Task[];
   status: string;
   updatedAt?: string;
@@ -43,9 +45,9 @@ export interface UpdateCoursePayload {
   id: string;
   courseName: string;
   courseDescription: string;
-  // The stored S3 key. The update endpoint takes a string (not a file upload),
-  // so we send the existing value back untouched.
-  thumbnail?: string;
+  // A new file uploads over the existing thumbnail (multer field `thumbnail`).
+  // When omitted, the stored thumbnail is kept as-is.
+  thumbnail?: File | null;
   status: CourseStatus;
 }
 
@@ -53,7 +55,9 @@ export interface UpdateModulePayload {
   id: string;
   moduleName: string;
   moduleDescription: string;
-  thumbnail?: string;
+  // A new file uploads over the existing thumbnail (multer field `thumbnail`).
+  // When omitted, the stored thumbnail is kept as-is.
+  thumbnail?: File | null;
   status: CourseStatus;
 }
 
@@ -61,7 +65,9 @@ export interface UpdateTaskPayload {
   id: string;
   taskName: string;
   taskDescription: string;
-  thumbnail?: string;
+  // A new file uploads over the existing thumbnail (multer field
+  // `thumbnailFile`). When omitted, the stored thumbnail is kept as-is.
+  thumbnail?: File | null;
   status: CourseStatus;
 }
 
@@ -72,14 +78,16 @@ export interface AddTaskPayload {
   // Provide exactly one of `file` or `link`.
   file?: File | null;
   link?: string;
+  // Optional task thumbnail image (multer field `thumbnailFile`).
+  thumbnail?: File | null;
 }
 
 export interface Course {
   _id: string;
   courseName: string;
   courseDescription: string;
-  // The stored S3 object key. Not loadable directly — sent back untouched by
-  // the update endpoint, which takes a string rather than a file upload.
+  // The stored S3 object key. Not loadable directly — use `thumbnailUrl` to
+  // render it. A new file uploaded via the update endpoint replaces it.
   thumbnail?: string;
   // The resolved, signed URL the API returns alongside it. Render with this.
   thumbnailUrl: string;

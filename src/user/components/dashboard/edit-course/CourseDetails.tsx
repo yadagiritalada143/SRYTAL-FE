@@ -21,8 +21,6 @@ import {
   IconBook,
   IconLayersSubtract,
   IconListCheck,
-  IconLink,
-  IconFile,
   IconExternalLink,
   IconEdit
 } from '@tabler/icons-react';
@@ -41,6 +39,7 @@ import AddTaskModal from './AddTaskModal';
 import EditCourseModal from './EditCourseModal';
 import EditModuleModal from './EditModuleModal';
 import EditTaskModal from './EditTaskModal';
+import CourseThumbnail from '../content-writer/CourseThumbnail';
 
 const CourseDetails = () => {
   const { id = '' } = useParams();
@@ -123,7 +122,15 @@ const CourseDetails = () => {
                 >
                   <IconArrowLeft size={isMobile ? 18 : 20} />
                 </ActionIcon>
-                <Stack gap={4} style={{ flex: 1 }}>
+                {course && (
+                  <CourseThumbnail
+                    name={course.courseName}
+                    src={course.thumbnailUrl || course.thumbnail}
+                    size={isMobile ? 52 : 72}
+                    radius='md'
+                  />
+                )}
+                <Stack gap={4} style={{ flex: 1, minWidth: 0 }}>
                   <Title order={isMobile ? 2 : 1}>{course?.courseName}</Title>
                   <Text size={isMobile ? 'xs' : 'sm'} c='dimmed'>
                     Manage modules and content for this course
@@ -250,16 +257,24 @@ const CourseDetails = () => {
                   <Center>
                     <Accordion.Control style={{ flex: 1, minWidth: 0 }}>
                       <Group justify='space-between' wrap='nowrap' pr='sm'>
-                        <Stack gap={2} style={{ minWidth: 0 }}>
-                          <Text fw={600} lineClamp={1}>
-                            {module.moduleName}
-                          </Text>
-                          {module.moduleDescription && (
-                            <Text size='xs' c='dimmed' lineClamp={1}>
-                              {module.moduleDescription}
+                        <Group gap='sm' wrap='nowrap' style={{ minWidth: 0 }}>
+                          <CourseThumbnail
+                            name={module.moduleName}
+                            src={module.thumbnailUrl || module.thumbnail}
+                            size={40}
+                            radius='sm'
+                          />
+                          <Stack gap={2} style={{ minWidth: 0 }}>
+                            <Text fw={600} lineClamp={1}>
+                              {module.moduleName}
                             </Text>
-                          )}
-                        </Stack>
+                            {module.moduleDescription && (
+                              <Text size='xs' c='dimmed' lineClamp={1}>
+                                {module.moduleDescription}
+                              </Text>
+                            )}
+                          </Stack>
+                        </Group>
                         <Group gap='xs' wrap='nowrap' style={{ flexShrink: 0 }}>
                           {module.status === 'ARCHIVE' && (
                             <Badge color='gray' radius='sm' variant='light'>
@@ -360,18 +375,16 @@ interface TaskRowProps {
 }
 
 const TaskRow = ({ task, onView, onEdit, borderColor }: TaskRowProps) => {
-  const isLink = task.type === 'LINK';
   return (
     <Paper p='sm' radius='md' withBorder style={{ borderColor }}>
       <Group justify='space-between' wrap='nowrap'>
         <Group gap='sm' wrap='nowrap' style={{ minWidth: 0 }}>
-          <ThemeIcon
-            variant='light'
-            radius='md'
-            color={isLink ? 'blue' : 'grape'}
-          >
-            {isLink ? <IconLink size={18} /> : <IconFile size={18} />}
-          </ThemeIcon>
+          <CourseThumbnail
+            name={task.taskName}
+            src={task.thumbnailUrl || task.thumbnail}
+            size={36}
+            radius='sm'
+          />
           <Stack gap={0} style={{ minWidth: 0 }}>
             <Group gap='xs' wrap='nowrap'>
               <Text fw={500} size='sm' lineClamp={1}>

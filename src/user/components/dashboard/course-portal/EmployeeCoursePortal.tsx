@@ -83,9 +83,15 @@ const EmployeeCoursePortal = () => {
   const summaryCards = [
     {
       icon: <IconBook size={20} />,
-      label: 'Assigned',
+      label: 'All',
       value: stats.total,
       color: 'indigo'
+    },
+    {
+      icon: <IconCircleCheck size={20} />,
+      label: 'Not started',
+      value: stats.total - stats.completed - stats.inProgress,
+      color: 'gray'
     },
     {
       icon: <IconPlayerPlay size={20} />,
@@ -125,7 +131,8 @@ const EmployeeCoursePortal = () => {
           <SkeletonLoader type='cards' />
         ) : (
           <>
-            <SimpleGrid cols={{ base: 2, sm: 4 }} spacing='md'>
+            <SimpleGrid cols={{ base: 2, sm: 3, md: 5 }} spacing='md'>
+              {' '}
               {summaryCards.map(card => (
                 <Card key={card.label} withBorder radius='md' p='md'>
                   <Group gap='sm' wrap='nowrap'>

@@ -367,7 +367,7 @@ const CourseAssignments = () => {
 
             {/* Review Summary */}
             <Grid.Col span={{ base: 12, lg: 6 }}>
-              <Stack gap='lg' mt={{ base: 0, lg: 25 }}>
+              <Stack gap='lg'>
                 {showReview && selectedEmployee && selectedCourse ? (
                   <Card
                     withBorder

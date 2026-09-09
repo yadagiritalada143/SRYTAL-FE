@@ -34,7 +34,8 @@ import {
   updateDepartmentByAdmin,
   deleteDepartmentByAdmin,
   assignCourseToEmployee,
-  updateCourseAssignmentDueDate
+  updateCourseAssignmentDueDate,
+  unassignCourse
 } from '@services/admin-services';
 import { adminQueryKeys } from '../queries/useAdminQueries';
 import { AddEmployeeForm } from '@forms/add-employee';
@@ -270,6 +271,22 @@ export const useUpdateCourseAssignmentDueDate = () => {
         queryKey: adminQueryKeys.courseAssignmentDetail(
           variables.courseAssignmentId
         )
+      });
+    }
+  });
+};
+
+export const useUnassignCourse = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (courseAssignmentId: string) =>
+      unassignCourse(courseAssignmentId),
+    onSuccess: (_, courseAssignmentId) => {
+      queryClient.invalidateQueries({
+        queryKey: adminQueryKeys.courseAssignments
+      });
+      queryClient.invalidateQueries({
+        queryKey: adminQueryKeys.courseAssignmentDetail(courseAssignmentId)
       });
     }
   });

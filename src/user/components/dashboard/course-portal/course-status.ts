@@ -7,7 +7,7 @@ import { CourseAssignmentStatus } from '@interfaces/course-assignment';
 
 export const COURSE_FILTERS = [
   { value: 'all', label: 'All' },
-  { value: 'Assigned', label: 'Assigned' },
+  { value: 'Assigned', label: 'Not Started' },
   { value: 'In Progress', label: 'In progress' },
   { value: 'Completed', label: 'Completed' }
 ] as const;

@@ -36,6 +36,7 @@ const AddTaskModal = ({
   const [mode, setMode] = useState<ContentMode>('LINK');
   const [link, setLink] = useState('');
   const [file, setFile] = useState<File | null>(null);
+  const [thumbnail, setThumbnail] = useState<File | null>(null);
 
   const { mutateAsync: addTask, isPending } = useAddCourseTask(courseId);
   const { showSuccessToast, showErrorToast } = useCustomToast();
@@ -46,6 +47,7 @@ const AddTaskModal = ({
     setMode('LINK');
     setLink('');
     setFile(null);
+    setThumbnail(null);
   };
 
   const handleClose = () => {
@@ -64,7 +66,8 @@ const AddTaskModal = ({
         taskName: taskName.trim(),
         taskDescription: taskDescription.trim(),
         link: mode === 'LINK' ? link.trim() : undefined,
-        file: mode === 'FILE' ? file : undefined
+        file: mode === 'FILE' ? file : undefined,
+        thumbnail
       });
       showSuccessToast('Content added successfully!');
       reset();
@@ -145,6 +148,16 @@ const AddTaskModal = ({
             description='Any file type is supported'
           />
         )}
+
+        <FileInput
+          label='Thumbnail (optional)'
+          placeholder='Upload a thumbnail image'
+          accept='image/*'
+          leftSection={<IconUpload size={16} />}
+          value={thumbnail}
+          onChange={setThumbnail}
+          clearable
+        />
 
         <Group justify='flex-end' mt='sm'>
           <CommonButton variant='default' onClick={handleClose}>
