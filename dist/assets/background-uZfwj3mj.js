@@ -1,1 +1,0 @@
-import{t,j as n}from"./index-CocPCZxW.js";const i=({children:o,className:e="",style:r={}})=>{const{themeConfig:s}=t();return n.jsx("div",{className:`transition-colors duration-300 ease-in-out ${e}`,style:{backgroundColor:s.backgroundColor,...r},children:o})};export{i as T};

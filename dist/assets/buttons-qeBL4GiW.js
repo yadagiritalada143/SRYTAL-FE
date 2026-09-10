@@ -1,0 +1,1 @@
+import{D as e,j as t}from"./index-E6cqUHPt.js";import{I as r}from"./IconArrowLeft-Kb9VJa0Z.js";import{C as s}from"./CommonButton-COvDcVq4.js";const c=({id:o})=>{const a=e();return t.jsx(s,{variant:"default",leftSection:t.jsx(r,{size:16}),onClick:()=>{localStorage.setItem("id",o),a(-1)},children:"Back"})};export{c as B};

@@ -1,0 +1,1 @@
+import{ag as o,t as a,j as t,O as n}from"./index-E6cqUHPt.js";const r=()=>{const e=o(),{themeConfig:s}=a();return t.jsx("div",{style:{color:s.button.textColor,fontFamily:e.fontFamily},className:"h-auto",children:t.jsx(n,{})})};export{r as default};
