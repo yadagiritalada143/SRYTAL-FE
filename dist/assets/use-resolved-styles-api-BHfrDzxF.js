@@ -1,0 +1,1 @@
+import{ag as o,aP as r,aQ as v}from"./index-E6cqUHPt.js";function m({classNames:t,styles:l,props:e,stylesCtx:s}){const a=o();return{resolvedClassNames:v({theme:a,classNames:t,props:e,stylesCtx:s||void 0}),resolvedStyles:r({theme:a,styles:l,props:e,stylesCtx:s||void 0})}}export{m as u};
