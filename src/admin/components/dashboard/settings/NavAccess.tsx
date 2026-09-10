@@ -279,7 +279,6 @@ const NavAccess = () => {
         />
 
         {mode === 'role' ? (
-          console.log("surface is:", surface),
           <Select
             label='Role'
             data={ROLES_BY_SURFACE[surface].map(r => ({ value: r, label: r }))}
