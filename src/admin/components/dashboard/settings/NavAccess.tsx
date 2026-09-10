@@ -30,7 +30,7 @@ import {
   useUpdateNavUserAccess
 } from '@hooks/mutations/useNavMutations';
 
-type Surface = 'employee' | 'admin';
+type Surface = 'Employee' | 'admin';
 type Mode = 'role' | 'user';
 
 interface CatalogItem {
@@ -45,7 +45,7 @@ interface CatalogItem {
 }
 
 const ROLES_BY_SURFACE: Record<Surface, string[]> = {
-  employee: [ROLES.USER, ROLES.RECRUITER, ROLES.CONTENT_WRITER],
+  Employee: [ROLES.USER, ROLES.RECRUITER, ROLES.CONTENT_WRITER],
   admin: [ROLES.ADMIN]
 };
 
@@ -65,7 +65,7 @@ const NavAccess = () => {
   const { showSuccessToast, showErrorToast } = useCustomToast();
 
   const [mode, setMode] = useState<Mode>('role');
-  const [surface, setSurface] = useState<Surface>('employee');
+  const [surface, setSurface] = useState<Surface>('Employee');
   const [role, setRole] = useState<string>(ROLES.USER);
   const [userId, setUserId] = useState<string | null>(null);
   const [checked, setChecked] = useState<Set<string>>(new Set());
@@ -268,7 +268,7 @@ const NavAccess = () => {
         <Select
           label='Surface'
           data={[
-            { value: 'employee', label: 'Employee' },
+            { value: 'Employee', label: 'Employee' },
             { value: 'admin', label: 'Admin' }
           ]}
           value={effectiveSurface}
