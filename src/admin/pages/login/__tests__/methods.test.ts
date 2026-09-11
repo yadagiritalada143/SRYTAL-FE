@@ -26,12 +26,11 @@ jest.mock('react-router-dom', () => ({
 }));
 
 jest.mock('@services/common-services', () => ({
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  get login() { return mockLogin as any; }
+  get login() {
+    return mockLogin as any;
+  }
 }));
 const mockLogin = jest.fn();
-const mockShowSuccessToast = jest.fn();
-const mockShowErrorToast = jest.fn();
 jest.requireMock('@services/common-services');
 
 describe('useSubmitAdminLogin', () => {

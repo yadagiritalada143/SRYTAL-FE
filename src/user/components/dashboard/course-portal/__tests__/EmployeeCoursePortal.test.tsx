@@ -3,8 +3,8 @@ import '@testing-library/jest-dom';
 import { BrowserRouter } from 'react-router-dom';
 import { MantineProvider } from '@mantine/core';
 import { RecoilRoot } from 'recoil';
-import EmployeeCoursePortal from './EmployeeCoursePortal';
-import { OPENROUTER_API_KEY_STORAGE } from './OpenRouterSetup';
+import EmployeeCoursePortal from '../EmployeeCoursePortal';
+import { OPENROUTER_API_KEY_STORAGE } from '../OpenRouterSetup';
 
 let mockBackendKey: string | null = null;
 let mockIsKeyLoading = false;

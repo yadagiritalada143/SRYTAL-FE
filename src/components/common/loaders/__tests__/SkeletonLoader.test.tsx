@@ -24,7 +24,7 @@ describe('SkeletonLoader', () => {
   afterEach(cleanup);
 
   it('renders a single skeleton for an unknown type', () => {
-    render(<SkeletonLoader type='weird' as any />);
+    render(<SkeletonLoader type={'weird' as any} />);
     expect(screen.getAllByTestId('skeleton')).toHaveLength(1);
   });
 

@@ -3,7 +3,9 @@ import '@testing-library/jest-dom';
 import { MantineProvider } from '@mantine/core';
 import { RecoilRoot } from 'recoil';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import OpenRouterSetup, { OPENROUTER_API_KEY_STORAGE } from './OpenRouterSetup';
+import OpenRouterSetup, {
+  OPENROUTER_API_KEY_STORAGE
+} from '../OpenRouterSetup';
 
 const mockMutateAsync = jest.fn().mockResolvedValue({ success: true });
 

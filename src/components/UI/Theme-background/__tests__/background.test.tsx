@@ -19,14 +19,16 @@ jest.mock('@hooks/use-app-theme', () => ({
 describe('ThemeBackground', () => {
   it('renders children inside a themed div', () => {
     const { container } = render(<ThemeBackground>hello</ThemeBackground>);
-    const div = container.firstElementChild!;
+    const div = container.firstElementChild as HTMLElement;
     expect(div.tagName).toBe('DIV');
     expect(div.style.backgroundColor).toBe('rgb(240, 240, 240)');
     expect(screen.getByText('hello')).toBeInTheDocument();
   });
 
   it('merges the transition class with a custom className', () => {
-    const { container } = render(<ThemeBackground className='p-4'>x</ThemeBackground>);
+    const { container } = render(
+      <ThemeBackground className='p-4'>x</ThemeBackground>
+    );
     expect(container.firstElementChild!.className).toContain(
       'transition-colors duration-300 ease-in-out'
     );
@@ -37,6 +39,8 @@ describe('ThemeBackground', () => {
     const { container } = render(
       <ThemeBackground style={{ backgroundColor: 'blue' }}>x</ThemeBackground>
     );
-    expect(container.firstElementChild!.style.backgroundColor).toBe('blue');
+    expect(
+      (container.firstElementChild as HTMLElement).style.backgroundColor
+    ).toBe('blue');
   });
 });
