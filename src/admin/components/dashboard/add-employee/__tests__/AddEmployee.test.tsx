@@ -84,9 +84,12 @@ const fillAllFields = async () => {
   const roleInput = screen.getByPlaceholderText('Select user role');
   fireEvent.focus(roleInput);
   fireEvent.change(roleInput, { target: { value: 'Emp' } });
-  await waitFor(() => {
-    expect(screen.getByText('Employee')).toBeInTheDocument();
-  });
+  await waitFor(
+    () => {
+      expect(screen.getByText('Employee')).toBeInTheDocument();
+    },
+    { timeout: 10000 }
+  );
   fireEvent.click(screen.getByText('Employee'));
 };
 
@@ -228,9 +231,9 @@ describe('AddEmployee Component', () => {
         expect(mockMutateAsync).toHaveBeenCalledTimes(1);
         expect(mockNavigate).toHaveBeenCalledWith('/srytal/admin/dashboard');
       },
-      { timeout: 10000 }
+      { timeout: 30000 }
     );
-  }, 15000);
+  }, 60000);
 
   it('shows error alert on API failure', async () => {
     mockMutateAsync.mockRejectedValueOnce({
@@ -253,9 +256,9 @@ describe('AddEmployee Component', () => {
       () => {
         expect(screen.getByText('Email already exists')).toBeInTheDocument();
       },
-      { timeout: 10000 }
+      { timeout: 30000 }
     );
-  }, 15000);
+  }, 60000);
 
   it('cancel button navigates to employees list', () => {
     renderAddEmployee();

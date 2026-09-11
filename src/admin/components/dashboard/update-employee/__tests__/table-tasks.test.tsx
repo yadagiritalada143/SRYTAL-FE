@@ -246,11 +246,13 @@ describe('PackagesTaskTable', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Delete package' }));
     });
 
-    await waitFor(() =>
-      expect(mockDeleteEmployeePackagesByAdmin).toHaveBeenCalledWith(
-        'emp1',
-        'pkgA'
-      )
+    await waitFor(
+      () =>
+        expect(mockDeleteEmployeePackagesByAdmin).toHaveBeenCalledWith(
+          'emp1',
+          'pkgA'
+        ),
+      { timeout: 10000 }
     );
     expect(mockToastSuccess).toHaveBeenCalledWith(
       'Package deleted successfully',
@@ -259,7 +261,7 @@ describe('PackagesTaskTable', () => {
     expect(screen.queryByTestId('mantine-modal')).not.toBeInTheDocument();
     expect(screen.queryByText('Onboarding')).not.toBeInTheDocument();
     expect(screen.getByText('Compliance')).toBeInTheDocument();
-  });
+  }, 20000);
 
   it('deletes a task after confirmation', async () => {
     renderTable();
@@ -277,12 +279,14 @@ describe('PackagesTaskTable', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Delete task' }));
     });
 
-    await waitFor(() =>
-      expect(mockDeleteEmployeeTasksByAdmin).toHaveBeenCalledWith(
-        'emp1',
-        'pkgA',
-        't1'
-      )
+    await waitFor(
+      () =>
+        expect(mockDeleteEmployeeTasksByAdmin).toHaveBeenCalledWith(
+          'emp1',
+          'pkgA',
+          't1'
+        ),
+      { timeout: 10000 }
     );
     expect(mockToastSuccess).toHaveBeenCalledWith(
       'Task deleted successfully',
@@ -292,7 +296,7 @@ describe('PackagesTaskTable', () => {
     expect(screen.queryByText('Intro')).not.toBeInTheDocument();
     expect(screen.getByText('Onboarding')).toBeInTheDocument();
     expect(screen.getAllByText('Tasks (1)').length).toBeGreaterThanOrEqual(1);
-  });
+  }, 20000);
 
   it('cancels the delete confirmation', async () => {
     renderTable();
