@@ -51,7 +51,7 @@ describe('OpenRouterSetup Component', () => {
 
     expect(screen.getByText('OpenRouter API Key Setup')).toBeInTheDocument();
     expect(screen.getByText('Free Models Available')).toBeInTheDocument();
-    expect(screen.getByText('Stored Locally')).toBeInTheDocument();
+    expect(screen.getByText('11 Simple Steps')).toBeInTheDocument();
 
     const openRouterLink = screen.getByRole('link', {
       name: /visit openrouter\.ai/i
@@ -63,21 +63,19 @@ describe('OpenRouterSetup Component', () => {
   it('displays Step 1 by default and allows navigation with Next and Previous buttons', () => {
     renderSetup();
 
-    expect(screen.getByText('Open OpenRouter')).toBeInTheDocument();
+    expect(screen.getByText('Visit OpenRouter')).toBeInTheDocument();
     expect(screen.getByText(/Step 1 of 11/i)).toBeInTheDocument();
 
-    // Click Next Step to move to Step 2
     const nextBtn = screen.getByRole('button', { name: /next step/i });
     fireEvent.click(nextBtn);
 
     expect(screen.getByText('Click on "Get API Key"')).toBeInTheDocument();
     expect(screen.getByText(/Step 2 of 11/i)).toBeInTheDocument();
 
-    // Click Previous Step to return to Step 1
     const prevBtn = screen.getByRole('button', { name: /previous step/i });
     fireEvent.click(prevBtn);
 
-    expect(screen.getByText('Open OpenRouter')).toBeInTheDocument();
+    expect(screen.getByText('Visit OpenRouter')).toBeInTheDocument();
     expect(screen.getByText(/Step 1 of 11/i)).toBeInTheDocument();
   });
 
@@ -89,8 +87,7 @@ describe('OpenRouterSetup Component', () => {
     });
     fireEvent.click(overviewBtn);
 
-    // Verify key steps are rendered
-    expect(screen.getByText('1. Open OpenRouter')).toBeInTheDocument();
+    expect(screen.getByText('1. Visit OpenRouter')).toBeInTheDocument();
     expect(screen.getByText('2. Click on "Get API Key"')).toBeInTheDocument();
     expect(screen.getByText('3. Sign In to OpenRouter')).toBeInTheDocument();
     expect(
@@ -114,7 +111,6 @@ describe('OpenRouterSetup Component', () => {
       screen.getByText('11. OpenRouter Dashboard & "API Keys" Navigation')
     ).toBeInTheDocument();
 
-    // Switch back to Step-by-Step
     const stepperBtn = screen.getByRole('button', { name: /step-by-step/i });
     fireEvent.click(stepperBtn);
 
@@ -125,7 +121,6 @@ describe('OpenRouterSetup Component', () => {
     renderSetup();
 
     const nextBtn = screen.getByRole('button', { name: /next step/i });
-    // Navigate from Step 1 to Step 7 (click 6 times)
     for (let i = 0; i < 6; i++) {
       fireEvent.click(nextBtn);
     }
@@ -135,7 +130,6 @@ describe('OpenRouterSetup Component', () => {
     ).toBeInTheDocument();
     expect(screen.getByText(/Step 7 of 11/i)).toBeInTheDocument();
 
-    // Check sample copy key button
     const copySampleBtn = screen.getByRole('button', {
       name: /copy key/i
     });
@@ -149,7 +143,7 @@ describe('OpenRouterSetup Component', () => {
     renderSetup({ onKeySaved });
 
     const submitBtn = screen.getByRole('button', {
-      name: /verify & unlock courses/i
+      name: /^save$/i
     });
     fireEvent.click(submitBtn);
 
@@ -169,7 +163,7 @@ describe('OpenRouterSetup Component', () => {
     fireEvent.change(input, { target: { value: 'sk-short' } });
 
     const submitBtn = screen.getByRole('button', {
-      name: /verify & unlock courses/i
+      name: /^save$/i
     });
     fireEvent.click(submitBtn);
 
@@ -187,7 +181,7 @@ describe('OpenRouterSetup Component', () => {
     fireEvent.change(input, { target: { value: validKey } });
 
     const submitBtn = screen.getByRole('button', {
-      name: /verify & unlock courses/i
+      name: /^save$/i
     });
     fireEvent.click(submitBtn);
 

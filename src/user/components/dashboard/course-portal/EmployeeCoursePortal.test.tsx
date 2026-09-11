@@ -96,7 +96,7 @@ describe('EmployeeCoursePortal Component - OpenRouter Key Gating & Backend Integ
 
     expect(screen.getByText('OpenRouter API Key Setup')).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: /verify & unlock courses/i })
+      screen.getByText('Connect Your OpenRouter API Key')
     ).toBeInTheDocument();
     expect(
       screen.queryByText('Full-Stack Web Development')
@@ -114,7 +114,7 @@ describe('EmployeeCoursePortal Component - OpenRouter Key Gating & Backend Integ
     // Must show setup guide because BE has no key
     expect(screen.getByText('OpenRouter API Key Setup')).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: /verify & unlock courses/i })
+      screen.getByText('Connect Your OpenRouter API Key')
     ).toBeInTheDocument();
     // Must NOT show courses module
     expect(
