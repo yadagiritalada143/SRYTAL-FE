@@ -29,12 +29,13 @@ import {
 } from '../user-services';
 
 jest.mock('@utils/api-client', () => {
-  const callable = jest.fn().mockResolvedValue({ data: {} });
-  callable.get = jest.fn().mockResolvedValue({ data: {} });
-  callable.post = jest.fn().mockResolvedValue({ data: {} });
-  callable.put = jest.fn().mockResolvedValue({ data: {} });
-  callable.delete = jest.fn().mockResolvedValue({ data: {} });
-  callable.request = jest.fn().mockResolvedValue({ data: {} });
+  const callable = Object.assign(jest.fn().mockResolvedValue({ data: {} }), {
+    get: jest.fn().mockResolvedValue({ data: {} }),
+    post: jest.fn().mockResolvedValue({ data: {} }),
+    put: jest.fn().mockResolvedValue({ data: {} }),
+    delete: jest.fn().mockResolvedValue({ data: {} }),
+    request: jest.fn().mockResolvedValue({ data: {} })
+  });
   const apiClient = callable;
   return { apiClient };
 });
@@ -141,9 +142,9 @@ describe('user-services', () => {
     it('rethrows on failure', async () => {
       mock.post.mockRejectedValue(new Error('fail'));
 
-      await expect(
-        updatePasswordForEmployee({} as any)
-      ).rejects.toThrow('fail');
+      await expect(updatePasswordForEmployee({} as any)).rejects.toThrow(
+        'fail'
+      );
     });
   });
 
@@ -153,10 +154,13 @@ describe('user-services', () => {
 
       const result = await addCommentByRecruiter('co1', 'Great!');
 
-      expect(mock.post).toHaveBeenCalledWith('/recruiter/addCommentByRecruiter', {
-        id: 'co1',
-        comment: 'Great!'
-      });
+      expect(mock.post).toHaveBeenCalledWith(
+        '/recruiter/addCommentByRecruiter',
+        {
+          id: 'co1',
+          comment: 'Great!'
+        }
+      );
       expect(result).toEqual({ ok: 1 });
     });
 
@@ -354,7 +358,9 @@ describe('user-services', () => {
         status: 'draft'
       } as any);
 
-      expect(mock.put.mock.calls[0][0]).toBe('/contentwriter/updatecoursemodule');
+      expect(mock.put.mock.calls[0][0]).toBe(
+        '/contentwriter/updatecoursemodule'
+      );
       const [, formData] = mock.put.mock.calls[0];
       expect(formData.get('id')).toBe('m1');
       expect(formData.get('status')).toBe('draft');

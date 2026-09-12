@@ -53,13 +53,27 @@ jest.mock('@mantine/hooks', () => ({
 }));
 
 jest.mock('@components/common/guided-stepper', () => ({
-  GuidedStepper: ({ steps, activeStep, onStepChange, finishButtonText, onFinish }: any) => (
+  GuidedStepper: ({
+    steps,
+    activeStep,
+    onStepChange,
+    finishButtonText,
+    onFinish
+  }: any) => (
     <div data-testid='guided-stepper'>
       <div>{steps[activeStep]?.title}</div>
       <div>{steps[activeStep]?.details}</div>
-      <span>Step {activeStep + 1} of {steps.length}</span>
-      <button onClick={() => onStepChange(Math.min(activeStep + 1, steps.length - 1))}>Next Step</button>
-      <button onClick={() => onStepChange(Math.max(activeStep - 1, 0))}>Previous Step</button>
+      <span>
+        Step {activeStep + 1} of {steps.length}
+      </span>
+      <button
+        onClick={() => onStepChange(Math.min(activeStep + 1, steps.length - 1))}
+      >
+        Next Step
+      </button>
+      <button onClick={() => onStepChange(Math.max(activeStep - 1, 0))}>
+        Previous Step
+      </button>
       <button onClick={onFinish}>{finishButtonText}</button>
     </div>
   ),
@@ -67,11 +81,11 @@ jest.mock('@components/common/guided-stepper', () => ({
 }));
 
 jest.mock('@tabler/icons-react', () => {
-  const icons: Record<string, any> = {};
+  const icons: Record<PropertyKey, any> = {};
   const handler: ProxyHandler<any> = {
     get(_, name) {
       if (icons[name]) return icons[name];
-      icons[name] = (props: any) => <span data-testid={`icon-${String(name)}`} />;
+      icons[name] = () => <span data-testid={`icon-${String(name)}`} />;
       return icons[name];
     }
   };
@@ -123,8 +137,12 @@ describe('OpenRouterSetup Component', () => {
 
   it('renders Step-by-Step and All Steps Overview toggle buttons', () => {
     renderSetup();
-    expect(screen.getByRole('button', { name: /step-by-step/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /all steps overview/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /step-by-step/i })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /all steps overview/i })
+    ).toBeInTheDocument();
   });
 
   it('displays Step 1 by default', () => {
@@ -146,7 +164,7 @@ describe('OpenRouterSetup Component', () => {
   it('calls onFinish to scroll to key input', () => {
     const mockScrollIntoView = jest.fn();
     const mockFocus = jest.fn();
-    jest.spyOn(document, 'getElementById').mockImplementation((id) => {
+    jest.spyOn(document, 'getElementById').mockImplementation(id => {
       if (id === 'openrouter-api-key-input') {
         return { scrollIntoView: mockScrollIntoView, focus: mockFocus } as any;
       }
@@ -163,8 +181,12 @@ describe('OpenRouterSetup Component', () => {
 
   it('switches to overview mode and back to stepper', () => {
     renderSetup();
-    fireEvent.click(screen.getByRole('button', { name: /all steps overview/i }));
-    expect(screen.getAllByText('1. Visit OpenRouter').length).toBeGreaterThanOrEqual(1);
+    fireEvent.click(
+      screen.getByRole('button', { name: /all steps overview/i })
+    );
+    expect(
+      screen.getAllByText('1. Visit OpenRouter').length
+    ).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('OpenRouter Setup Journey')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /switch to stepper/i }));
@@ -173,13 +195,19 @@ describe('OpenRouterSetup Component', () => {
 
   it('overview mode displays all 11 steps', () => {
     renderSetup();
-    fireEvent.click(screen.getByRole('button', { name: /all steps overview/i }));
+    fireEvent.click(
+      screen.getByRole('button', { name: /all steps overview/i })
+    );
     expect(screen.getByText('1. Visit OpenRouter')).toBeInTheDocument();
     expect(screen.getByText('2. Click on "Get API Key"')).toBeInTheDocument();
     expect(screen.getByText('3. Sign In to OpenRouter')).toBeInTheDocument();
-    expect(screen.getByText('4. Continue With Your Account')).toBeInTheDocument();
+    expect(
+      screen.getByText('4. Continue With Your Account')
+    ).toBeInTheDocument();
     expect(screen.getByText('5. Accept the Legal Terms')).toBeInTheDocument();
-    expect(screen.getByText('6. Select Your Workspace Type')).toBeInTheDocument();
+    expect(
+      screen.getByText('6. Select Your Workspace Type')
+    ).toBeInTheDocument();
     expect(screen.getByText(/7\. Your Workspace is Ready/)).toBeInTheDocument();
     expect(screen.getByText(/8\. Add a Payment Method/)).toBeInTheDocument();
     expect(screen.getByText(/9\. Survey/)).toBeInTheDocument();
@@ -189,9 +217,13 @@ describe('OpenRouterSetup Component', () => {
 
   it('overview mode shows all step titles', () => {
     renderSetup();
-    fireEvent.click(screen.getByRole('button', { name: /all steps overview/i }));
+    fireEvent.click(
+      screen.getByRole('button', { name: /all steps overview/i })
+    );
     expect(screen.getByText('OpenRouter Setup Journey')).toBeInTheDocument();
-    fireEvent.click(screen.getAllByRole('button', { name: /switch to stepper/i })[0]);
+    fireEvent.click(
+      screen.getAllByRole('button', { name: /switch to stepper/i })[0]
+    );
     expect(screen.getByText(/Step 1 of 11/i)).toBeInTheDocument();
   });
 
@@ -206,7 +238,9 @@ describe('OpenRouterSetup Component', () => {
     const copyBtn = screen.getByRole('button', { name: /copy key/i });
     fireEvent.click(copyBtn);
     expect(screen.getByText(/copied!/i)).toBeInTheDocument();
-    expect(mockShowSuccessToast).toHaveBeenCalledWith('Sample key format copied to clipboard!');
+    expect(mockShowSuccessToast).toHaveBeenCalledWith(
+      'Sample key format copied to clipboard!'
+    );
   });
 
   it('validates empty API key input', () => {
@@ -214,8 +248,12 @@ describe('OpenRouterSetup Component', () => {
     const submitBtn = screen.getByRole('button', { name: /^save$/i });
     fireEvent.click(submitBtn);
 
-    expect(screen.getByText('Please enter your OpenRouter API key.')).toBeInTheDocument();
-    expect(mockShowErrorToast).toHaveBeenCalledWith('Please enter your OpenRouter API key.');
+    expect(
+      screen.getByText('Please enter your OpenRouter API key.')
+    ).toBeInTheDocument();
+    expect(mockShowErrorToast).toHaveBeenCalledWith(
+      'Please enter your OpenRouter API key.'
+    );
     expect(props.onKeySaved).not.toHaveBeenCalled();
     expect(mockMutateAsync).not.toHaveBeenCalled();
   });
@@ -236,11 +274,15 @@ describe('OpenRouterSetup Component', () => {
     renderSetup();
     const submitBtn = screen.getByRole('button', { name: /^save$/i });
     fireEvent.click(submitBtn);
-    expect(screen.getByText('Please enter your OpenRouter API key.')).toBeInTheDocument();
+    expect(
+      screen.getByText('Please enter your OpenRouter API key.')
+    ).toBeInTheDocument();
 
     const input = screen.getByLabelText(/openrouter api key/i);
     fireEvent.change(input, { target: { value: 's' } });
-    expect(screen.queryByText('Please enter your OpenRouter API key.')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('Please enter your OpenRouter API key.')
+    ).not.toBeInTheDocument();
   });
 
   it('saves valid API key successfully', async () => {
@@ -263,7 +305,9 @@ describe('OpenRouterSetup Component', () => {
     mockMutateAsync.mockResolvedValueOnce({ success: true });
     renderSetup();
     const validKey = 'sk-or-v1-abcdef1234567890abcdef1234567890';
-    fireEvent.change(screen.getByLabelText(/openrouter api key/i), { target: { value: validKey } });
+    fireEvent.change(screen.getByLabelText(/openrouter api key/i), {
+      target: { value: validKey }
+    });
     fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
 
     await waitFor(() => {
@@ -279,7 +323,9 @@ describe('OpenRouterSetup Component', () => {
     });
     renderSetup();
     const validKey = 'sk-or-v1-abcdef1234567890abcdef1234567890';
-    fireEvent.change(screen.getByLabelText(/openrouter api key/i), { target: { value: validKey } });
+    fireEvent.change(screen.getByLabelText(/openrouter api key/i), {
+      target: { value: validKey }
+    });
     fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
 
     await waitFor(() => {
@@ -292,7 +338,9 @@ describe('OpenRouterSetup Component', () => {
     mockMutateAsync.mockRejectedValueOnce({ message: 'Network error' });
     renderSetup();
     const validKey = 'sk-or-v1-abcdef1234567890abcdef1234567890';
-    fireEvent.change(screen.getByLabelText(/openrouter api key/i), { target: { value: validKey } });
+    fireEvent.change(screen.getByLabelText(/openrouter api key/i), {
+      target: { value: validKey }
+    });
     fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
 
     await waitFor(() => {
@@ -304,7 +352,9 @@ describe('OpenRouterSetup Component', () => {
     mockMutateAsync.mockRejectedValueOnce({});
     renderSetup();
     const validKey = 'sk-or-v1-abcdef1234567890abcdef1234567890';
-    fireEvent.change(screen.getByLabelText(/openrouter api key/i), { target: { value: validKey } });
+    fireEvent.change(screen.getByLabelText(/openrouter api key/i), {
+      target: { value: validKey }
+    });
     fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
 
     await waitFor(() => {
@@ -316,7 +366,7 @@ describe('OpenRouterSetup Component', () => {
 
   it('renders cancel button when onCancel prop is provided', () => {
     const onCancel = jest.fn();
-    const { props } = renderSetup({ onCancel });
+    renderSetup({ onCancel });
     const cancelButtons = screen.getAllByRole('button', {
       name: /cancel|back to courses/i
     });
@@ -327,13 +377,17 @@ describe('OpenRouterSetup Component', () => {
 
   it('renders with currentApiKey prefilled', () => {
     renderSetup({ currentApiKey: 'sk-or-v1-existingkey12345' });
-    const input = screen.getByLabelText(/openrouter api key/i) as HTMLInputElement;
+    const input = screen.getByLabelText(
+      /openrouter api key/i
+    ) as HTMLInputElement;
     expect(input.value).toBe('sk-or-v1-existingkey12345');
   });
 
   it('overview step 9 allows selecting survey options', () => {
     renderSetup();
-    fireEvent.click(screen.getByRole('button', { name: /all steps overview/i }));
+    fireEvent.click(
+      screen.getByRole('button', { name: /all steps overview/i })
+    );
 
     const stepCards = screen.getAllByText(/Step-\d|Milestone \d+\/11/);
     expect(stepCards.length).toBeGreaterThanOrEqual(1);
@@ -341,14 +395,18 @@ describe('OpenRouterSetup Component', () => {
 
   it('renders the Connect API Key section', () => {
     renderSetup();
-    expect(screen.getByText('Connect Your OpenRouter API Key')).toBeInTheDocument();
-    expect(screen.getByText(/Paste the API key you copied in Step 7/)).toBeInTheDocument();
+    expect(
+      screen.getByText('Connect Your OpenRouter API Key')
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Paste the API key you copied in Step 7/)
+    ).toBeInTheDocument();
   });
 
   it('goes to key input after navigating through all steps', () => {
     const mockScrollIntoView = jest.fn();
     const mockFocus = jest.fn();
-    jest.spyOn(document, 'getElementById').mockImplementation((id) => {
+    jest.spyOn(document, 'getElementById').mockImplementation(id => {
       if (id === 'openrouter-api-key-input') {
         return { scrollIntoView: mockScrollIntoView, focus: mockFocus } as any;
       }
@@ -361,7 +419,9 @@ describe('OpenRouterSetup Component', () => {
       fireEvent.click(nextBtn);
     }
 
-    const goToKeyBtn = screen.getAllByRole('button', { name: /go to key input/i })[0];
+    const goToKeyBtn = screen.getAllByRole('button', {
+      name: /go to key input/i
+    })[0];
     fireEvent.click(goToKeyBtn);
     expect(mockScrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth' });
     expect(mockFocus).toHaveBeenCalled();

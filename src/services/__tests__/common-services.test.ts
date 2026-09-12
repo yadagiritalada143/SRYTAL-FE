@@ -14,14 +14,13 @@ import {
 } from '../common-services';
 
 jest.mock('@utils/api-client', () => {
-  const makeApiClient = () => {
-    const callable = jest.fn().mockResolvedValue({ data: {} });
-    callable.get = jest.fn().mockResolvedValue({ data: {} });
-    callable.post = jest.fn().mockResolvedValue({ data: {} });
-    callable.put = jest.fn().mockResolvedValue({ data: {} });
-    callable.delete = jest.fn().mockResolvedValue({ data: {} });
-    return callable;
-  };
+  const makeApiClient = () =>
+    Object.assign(jest.fn().mockResolvedValue({ data: {} }), {
+      get: jest.fn().mockResolvedValue({ data: {} }),
+      post: jest.fn().mockResolvedValue({ data: {} }),
+      put: jest.fn().mockResolvedValue({ data: {} }),
+      delete: jest.fn().mockResolvedValue({ data: {} })
+    });
 
   return {
     apiClient: makeApiClient(),
@@ -61,9 +60,7 @@ const setItem = jest.fn();
 const consoleErrorSpy = jest
   .spyOn(console, 'error')
   .mockImplementation(() => {});
-const consoleWarnSpy = jest
-  .spyOn(console, 'warn')
-  .mockImplementation(() => {});
+const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
 
 describe('common-services', () => {
   let mock: ApiClientMock & jest.Mock;

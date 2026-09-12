@@ -59,11 +59,12 @@ import {
 } from '../admin-services';
 
 jest.mock('@utils/api-client', () => {
-  const callable = jest.fn().mockResolvedValue({ data: {} });
-  callable.get = jest.fn().mockResolvedValue({ data: {} });
-  callable.post = jest.fn().mockResolvedValue({ data: {} });
-  callable.put = jest.fn().mockResolvedValue({ data: {} });
-  callable.delete = jest.fn().mockResolvedValue({ data: {} });
+  const callable = Object.assign(jest.fn().mockResolvedValue({ data: {} }), {
+    get: jest.fn().mockResolvedValue({ data: {} }),
+    post: jest.fn().mockResolvedValue({ data: {} }),
+    put: jest.fn().mockResolvedValue({ data: {} }),
+    delete: jest.fn().mockResolvedValue({ data: {} })
+  });
   const apiClient = callable;
   return { apiClient };
 });
@@ -127,9 +128,9 @@ describe('admin-services', () => {
 
     it('throws when no token is present', async () => {
       getItem.mockReturnValue(null);
-      await expect(
-        registerEmployee({ firstName: 'John' } as any)
-      ).rejects.toBe('Not authorized to access');
+      await expect(registerEmployee({ firstName: 'John' } as any)).rejects.toBe(
+        'Not authorized to access'
+      );
     });
 
     it('rethrows backend errors', async () => {
@@ -193,14 +194,11 @@ describe('admin-services', () => {
       getItem.mockReturnValue('adminToken');
       mock.put.mockResolvedValue({ data: { updated: true } });
 
-      const result = await updatePackageByAdmin(
-        'pkg1',
-        {
-          title: 'New',
-          startDate: '2026-02-01' as any,
-          endDate: '2026-03-01' as any
-        } as any
-      );
+      const result = await updatePackageByAdmin('pkg1', {
+        title: 'New',
+        startDate: '2026-02-01' as any,
+        endDate: '2026-03-01' as any
+      } as any);
 
       expect(mock.put).toHaveBeenCalledWith(
         '/admin/updatePackageByAdmin',
@@ -271,10 +269,13 @@ describe('admin-services', () => {
 
       const result = await deleteTaskByAdmin('task1', false);
 
-      expect(mock.delete).toHaveBeenCalledWith('/admin/deleteTaskByAdmin/task1', {
-        headers: { auth_token: 'Bearer token' },
-        data: { confirmDelete: false }
-      });
+      expect(mock.delete).toHaveBeenCalledWith(
+        '/admin/deleteTaskByAdmin/task1',
+        {
+          headers: { auth_token: 'Bearer token' },
+          data: { confirmDelete: false }
+        }
+      );
       expect(result).toEqual({ ok: true });
     });
   });

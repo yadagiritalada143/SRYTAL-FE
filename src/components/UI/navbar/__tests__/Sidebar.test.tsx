@@ -5,6 +5,7 @@ import { MantineProvider } from '@mantine/core';
 import { BrowserRouter } from 'react-router-dom';
 import { RecoilRoot, MutableSnapshot } from 'recoil';
 import { sidebarCollapsedAtom } from '@atoms/sidebar';
+import SidebarMenu, { type SidebarMenuNode } from '../Sidebar';
 
 jest.mock('@hooks/use-app-theme', () => ({
   useAppTheme: () => ({
@@ -42,7 +43,7 @@ jest.mock('react-router-dom', () => ({
 }));
 
 jest.mock('../iconMap', () => ({
-  resolveIcon: () => (props: any) => <span data-testid='mock-icon' />
+  resolveIcon: () => () => <span data-testid='mock-icon' />
 }));
 
 jest.mock('../../Buttons/buttons', () => ({
@@ -72,8 +73,6 @@ jest.mock('../Sidebar.module.css', () => ({
   desktopOnly: 'desktopOnly'
 }));
 
-const SidebarMenu = require('../Sidebar').default;
-
 const defaultOrgConfig = {
   organization_name: 'srytal',
   organization_theme: { logo: 'logo.png' }
@@ -101,13 +100,27 @@ const menuWithChildren = [
     label: 'Reports',
     icon: 'IconReport',
     children: [
-      { key: 'report1', label: 'Payroll', url: 'reports/payroll', icon: 'IconReportMoney' },
-      { key: 'report2', label: 'Timesheet', url: 'reports/timesheet', icon: 'IconCalendarTime' }
+      {
+        key: 'report1',
+        label: 'Payroll',
+        url: 'reports/payroll',
+        icon: 'IconReportMoney'
+      },
+      {
+        key: 'report2',
+        label: 'Timesheet',
+        url: 'reports/timesheet',
+        icon: 'IconCalendarTime'
+      }
     ]
   }
 ];
 
-const renderSidebar = (menu = defaultMenu, collapsed = false, isLoading = false) => {
+const renderSidebar = (
+  menu: SidebarMenuNode[] = defaultMenu,
+  collapsed = false,
+  isLoading = false
+) => {
   const initializeState = ({ set }: MutableSnapshot) => {
     set(sidebarCollapsedAtom, collapsed);
   };

@@ -114,7 +114,7 @@ describe('api-client', () => {
     it('retries a 403 error with a fresh token', async () => {
       localStorage.setItem('refreshToken', 'refresh-token');
       const error = {
-        config: { url: '/api/data', headers: {} },
+        config: { url: '/api/data', headers: {} } as any,
         response: { status: 403 }
       };
 

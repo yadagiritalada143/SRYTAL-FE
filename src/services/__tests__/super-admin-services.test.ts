@@ -6,11 +6,12 @@ import {
 } from '../super-admin-services';
 
 jest.mock('@utils/api-client', () => {
-  const callable = jest.fn().mockResolvedValue({ data: {} });
-  callable.get = jest.fn().mockResolvedValue({ data: {} });
-  callable.post = jest.fn().mockResolvedValue({ data: {} });
-  callable.put = jest.fn().mockResolvedValue({ data: {} });
-  callable.delete = jest.fn().mockResolvedValue({ data: {} });
+  const callable = Object.assign(jest.fn().mockResolvedValue({ data: {} }), {
+    get: jest.fn().mockResolvedValue({ data: {} }),
+    post: jest.fn().mockResolvedValue({ data: {} }),
+    put: jest.fn().mockResolvedValue({ data: {} }),
+    delete: jest.fn().mockResolvedValue({ data: {} })
+  });
   const apiClient = callable;
   return { apiClient };
 });
@@ -99,9 +100,9 @@ describe('super-admin-services', () => {
     it('rethrows on failure', async () => {
       mock.get.mockRejectedValue(new Error('fail'));
 
-      await expect(
-        getAllEmployeeDetailsBySuperAdmin('org1')
-      ).rejects.toThrow('fail');
+      await expect(getAllEmployeeDetailsBySuperAdmin('org1')).rejects.toThrow(
+        'fail'
+      );
     });
   });
 
@@ -136,9 +137,9 @@ describe('super-admin-services', () => {
     it('rethrows on failure', async () => {
       mock.post.mockRejectedValue(new Error('fail'));
 
-      await expect(
-        GenerateOfferletterBySuperAdmin({} as any)
-      ).rejects.toThrow('fail');
+      await expect(GenerateOfferletterBySuperAdmin({} as any)).rejects.toThrow(
+        'fail'
+      );
     });
   });
 });

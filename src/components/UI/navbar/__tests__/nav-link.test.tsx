@@ -3,6 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { MantineProvider } from '@mantine/core';
 import { BrowserRouter } from 'react-router-dom';
+import type { NavbarLinkProps } from '../types';
 
 jest.mock('@hooks/use-app-theme', () => ({
   useAppTheme: () => ({
@@ -37,7 +38,7 @@ const defaultOrganization = {
   organization_theme: { logo: '' }
 } as any;
 
-const defaultProps = {
+const defaultProps: NavbarLinkProps = {
   icon: MockIcon,
   name: 'Dashboard',
   url: 'dashboard',
@@ -47,7 +48,7 @@ const defaultProps = {
   role: 'Employee'
 };
 
-const renderNavLink = (props: Partial<typeof defaultProps> = {}) => {
+const renderNavLink = (props: Partial<NavbarLinkProps> = {}) => {
   return render(
     <MantineProvider>
       <BrowserRouter>
@@ -75,7 +76,9 @@ describe('NavbarLink', () => {
   it('navigates when clicked (leaf link)', () => {
     renderNavLink();
     fireEvent.click(screen.getByText('Dashboard'));
-    expect(mockNavigate).toHaveBeenCalledWith('/srytal/dashboard', { replace: false });
+    expect(mockNavigate).toHaveBeenCalledWith('/srytal/dashboard', {
+      replace: false
+    });
   });
 
   it('calls setIsDrawerOpen when clicked', () => {
@@ -142,21 +145,19 @@ describe('NavbarLink', () => {
   it('navigates to child URL when child is clicked', () => {
     mockLocation.pathname = '/srytal/other';
     renderNavLink({
-      children: [
-        { name: 'Sub Item 1', url: 'sub1' }
-      ]
+      children: [{ name: 'Sub Item 1', url: 'sub1' }]
     });
     fireEvent.click(screen.getByText('Dashboard'));
     fireEvent.click(screen.getByText('Sub Item 1'));
-    expect(mockNavigate).toHaveBeenCalledWith('/srytal/sub1', { replace: false });
+    expect(mockNavigate).toHaveBeenCalledWith('/srytal/sub1', {
+      replace: false
+    });
   });
 
   it('auto-expands when a child is active', () => {
     mockLocation.pathname = '/srytal/sub1';
     renderNavLink({
-      children: [
-        { name: 'Sub Item 1', url: 'sub1' }
-      ]
+      children: [{ name: 'Sub Item 1', url: 'sub1' }]
     });
     expect(screen.getByText('Sub Item 1')).toBeInTheDocument();
   });
