@@ -81,6 +81,7 @@ export const GeneralEnquiriesForm = () => {
 
         <form
           onSubmit={handleSubmit(onSubmit)}
+          noValidate
           className='relative space-y-3.5'
         >
           <div>

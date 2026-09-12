@@ -442,7 +442,7 @@ export const ApplyLeaveTimesheetModal = React.memo(
               color='green'
               onClick={handleLeaveSubmit}
               loading={isLoading}
-              disabled={!leaveDate || !leaveReason.trim()}
+              disabled={isLoading}
               leftSection={<IconCheck size={16} />}
               size={isMobile ? 'xs' : 'sm'}
             >

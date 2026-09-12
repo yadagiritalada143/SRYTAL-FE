@@ -240,6 +240,7 @@ export const ExpertConsultationSection = () => {
 
             <form
               onSubmit={handleSubmit(onSubmit)}
+              noValidate
               className='space-y-6 sm:space-y-4.5'
             >
               {/* Row 1: Full Name * & Email * */}

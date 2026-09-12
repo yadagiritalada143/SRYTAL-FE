@@ -9,7 +9,9 @@
     "build:prod": "tsc -b && vite build --mode production && node postbuild.cjs",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "jest"
+    "test": "jest",
+    "test:cov": "jest --coverage",
+    "test:coverage:watch": "jest --coverage --watchAll"
   },
   "lint-staged": {
     "*!(*.test).{ts,tsx}": [
