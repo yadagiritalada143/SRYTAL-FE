@@ -273,12 +273,12 @@ describe('useUpdateEmployee', () => {
     expect(result.current.isSubmitting).toBe(false);
   });
 
-  it('deletes the employee and navigates to the employees list', async () => {
+  it('deactivates the employee (soft delete) and navigates to the employees list', async () => {
     const { result } = renderHook(() => useUpdateEmployee(), { wrapper });
     await waitFor(() => expect(mockReset).toHaveBeenCalled());
 
     await act(async () => {
-      await result.current.handleDeleteEmployee();
+      await result.current.handleDeleteEmployee('deactivate');
     });
 
     expect(mockDeleteEmployee).toHaveBeenCalledWith({
@@ -286,7 +286,27 @@ describe('useUpdateEmployee', () => {
       confirmDelete: false
     });
     expect(mockShowSuccessToast).toHaveBeenCalledWith(
-      'Employee deleted successfully!'
+      'Employee deactivated successfully!'
+    );
+    expect(mockNavigate).toHaveBeenCalledWith(
+      '/srytal/admin/dashboard/employees'
+    );
+  });
+
+  it('permanently deletes the employee (hard delete)', async () => {
+    const { result } = renderHook(() => useUpdateEmployee(), { wrapper });
+    await waitFor(() => expect(mockReset).toHaveBeenCalled());
+
+    await act(async () => {
+      await result.current.handleDeleteEmployee('permanent');
+    });
+
+    expect(mockDeleteEmployee).toHaveBeenCalledWith({
+      id: 'emp1',
+      confirmDelete: true
+    });
+    expect(mockShowSuccessToast).toHaveBeenCalledWith(
+      'Employee permanently deleted!'
     );
     expect(mockNavigate).toHaveBeenCalledWith(
       '/srytal/admin/dashboard/employees'

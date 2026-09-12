@@ -53,6 +53,7 @@ const onClose = jest.fn();
 const onConfirm = jest.fn();
 const setAgreeTerms = jest.fn();
 const setConfirmDelete = jest.fn();
+const setDeleteMode = jest.fn();
 
 const renderModal = (props: any) => {
   return render(
@@ -67,8 +68,10 @@ const baseProps = {
   onConfirm,
   setAgreeTerms,
   setConfirmDelete,
+  setDeleteMode,
   agreeTerms: false,
-  confirmDelete: false
+  confirmDelete: false,
+  deleteMode: 'deactivate' as const
 };
 
 describe('DeleteEmployeeModal', () => {
@@ -81,48 +84,75 @@ describe('DeleteEmployeeModal', () => {
     expect(screen.queryByTestId('delete-modal')).not.toBeInTheDocument();
   });
 
-  it('renders the title and warning when opened', () => {
+  it('renders the title and deactivate mode by default', () => {
     renderModal({ ...baseProps, opened: true });
     expect(screen.getByText('Confirm Deletion')).toBeInTheDocument();
-    expect(screen.getByText('Warning')).toBeInTheDocument();
+    expect(screen.getByText('Deactivate')).toBeInTheDocument();
     expect(
-      screen.getByText(/This action cannot be undone/)
+      screen.getByText(/hidden from the employee list/)
     ).toBeInTheDocument();
+    expect(
+      screen.getByRole('radio', { name: /deactivate employee/i })
+    ).toBeChecked();
   });
 
-  it('disables delete until both checkboxes are accepted', () => {
+  it('disables deactivate until the checkbox is accepted', () => {
     renderModal({ ...baseProps, opened: true });
     const deleteButton = screen.getByRole('button', {
-      name: 'Delete Employee'
+      name: 'Deactivate Employee'
     });
     expect(deleteButton).toBeDisabled();
   });
 
-  it('enables delete when both checkboxes are checked and confirms', () => {
-    renderModal({
-      ...baseProps,
-      opened: true,
-      agreeTerms: true,
-      confirmDelete: true
-    });
+  it('enables deactivate when accepted and confirms with the mode', () => {
+    renderModal({ ...baseProps, opened: true, agreeTerms: true });
     const deleteButton = screen.getByRole('button', {
-      name: 'Delete Employee'
+      name: 'Deactivate Employee'
     });
     expect(deleteButton).not.toBeDisabled();
 
     fireEvent.click(deleteButton);
-    expect(onConfirm).toHaveBeenCalledTimes(1);
+    expect(onConfirm).toHaveBeenCalledWith('deactivate');
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('switches to permanent mode with a warning and two confirmations', () => {
+    renderModal({ ...baseProps, opened: true, deleteMode: 'permanent' });
+    expect(screen.getByText('Warning')).toBeInTheDocument();
+    expect(
+      screen.getByText(/This action cannot be undone/)
+    ).toBeInTheDocument();
+
+    const permanentlyDeleteButton = screen.getByRole('button', {
+      name: 'Permanently Delete'
+    });
+    expect(permanentlyDeleteButton).toBeDisabled();
+
+    expect(screen.getAllByRole('checkbox')).toHaveLength(2);
+  });
+
+  it('enables permanent delete only when both checkboxes are checked and confirms', () => {
+    renderModal({
+      ...baseProps,
+      opened: true,
+      deleteMode: 'permanent',
+      agreeTerms: true,
+      confirmDelete: true
+    });
+    const deleteButton = screen.getByRole('button', {
+      name: 'Permanently Delete'
+    });
+    expect(deleteButton).not.toBeDisabled();
+
+    fireEvent.click(deleteButton);
+    expect(onConfirm).toHaveBeenCalledWith('permanent');
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
   it('toggles agreements through their checkboxes', () => {
     renderModal({ ...baseProps, opened: true });
-    const checkboxes = screen.getAllByRole('checkbox');
-    fireEvent.click(checkboxes[0]);
+    fireEvent.click(screen.getByRole('checkbox'));
     expect(setAgreeTerms).toHaveBeenCalled();
-
-    fireEvent.click(checkboxes[1]);
-    expect(setConfirmDelete).toHaveBeenCalled();
   });
 
   it('cancels and closes', () => {

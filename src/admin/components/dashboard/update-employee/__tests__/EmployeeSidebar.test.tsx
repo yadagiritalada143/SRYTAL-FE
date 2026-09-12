@@ -70,25 +70,25 @@ describe('EmployeeSidebar', () => {
   it('renders the delete employee section copy', () => {
     renderSidebar();
     expect(
-      screen.getByText('Delete Employee', { selector: 'p' })
+      screen.getByText('Deactivate / Delete Employee', { selector: 'p' })
     ).toBeInTheDocument();
     expect(
-      screen.getByText('Permanently delete this employee and all associated records.')
+      screen.getByText(
+        'Deactivate this employee to hide their account and keep their data, or permanently delete them and all associated records.'
+      )
     ).toBeInTheDocument();
   });
 
   it('calls the password reset handler', () => {
     renderSidebar();
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Reset Password' })
-    );
+    fireEvent.click(screen.getByRole('button', { name: 'Reset Password' }));
     expect(onPasswordReset).toHaveBeenCalledTimes(1);
   });
 
   it('calls the delete handler', () => {
     renderSidebar();
     fireEvent.click(
-      screen.getAllByRole('button', { name: 'Delete Employee' })[0]
+      screen.getByRole('button', { name: 'Deactivate or Delete' })
     );
     expect(onDelete).toHaveBeenCalledTimes(1);
   });
