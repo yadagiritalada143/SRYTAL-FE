@@ -21,6 +21,8 @@ const mockToastError = jest.fn();
 const mockToastSuccess = jest.fn();
 const mockToastWarning = jest.fn();
 let mockPackagesTaskTableProps: any = {};
+let mockMultiSelectProps: any = {};
+let mockSetSelectedPackagesData: any;
 
 jest.mock('react-hook-form', () => ({
   useForm: () => ({
@@ -49,11 +51,14 @@ jest.mock('@mantine/core', () => {
   const actual = jest.requireActual('@mantine/core');
   return {
     ...actual,
-    MultiSelect: (props: any) => (
-      <div data-testid='multi-select'>
-        <label>{props.label}</label>
-      </div>
-    )
+    MultiSelect: (props: any) => {
+      mockMultiSelectProps = props;
+      return (
+        <div data-testid='multi-select'>
+          <label>{props.label}</label>
+        </div>
+      );
+    }
   };
 });
 
@@ -220,6 +225,8 @@ describe('PackagesFormComponent', () => {
     jest.clearAllMocks();
     mockSelectedPackages = [];
     mockPackagesTaskTableProps = {};
+    mockMultiSelectProps = {};
+    mockSetSelectedPackagesData = undefined;
     mockGetAllPackagesByAdmin.mockResolvedValue([mockPackage]);
     mockGetEmployeePackagesByAdmin.mockResolvedValue(mockUpdatedData);
     mockAddPackageToEmployee.mockResolvedValue({});
@@ -227,7 +234,12 @@ describe('PackagesFormComponent', () => {
       setDetails(mockEmployeeDetails);
       return Promise.resolve();
     });
-    mockLoadEmployeePackages.mockResolvedValue(undefined);
+    mockLoadEmployeePackages.mockImplementation(
+      (_id: string, _reset: any, setSelectedPackagesData: any) => {
+        mockSetSelectedPackagesData = setSelectedPackagesData;
+        return Promise.resolve();
+      }
+    );
     mockFormatSubmitData.mockReturnValue(mockFormattedData);
     mockGetEmployeeInfoItems.mockReturnValue(mockInfoItems);
   });
@@ -258,6 +270,60 @@ describe('PackagesFormComponent', () => {
 
     fireEvent.click(nextButton);
     expect(screen.queryByTestId('standard-modal')).not.toBeInTheDocument();
+  });
+
+  it('shows the title instead of the id for an assigned expired package', async () => {
+    renderAddPackage();
+
+    await screen.findByText('Package Assignment');
+
+    expect(mockSetSelectedPackagesData).toBeDefined();
+
+    act(() =>
+      mockSetSelectedPackagesData({
+        employeeId: 'emp1',
+        packages: [
+          { packageId: 'pkgExpired', title: 'Legacy Training' },
+          { packageId: 'pkg1', title: 'Onboarding' }
+        ]
+      })
+    );
+
+    expect(mockMultiSelectProps.data).toContainEqual({
+      value: 'pkgExpired',
+      label: 'Legacy Training',
+      disabled: true
+    });
+    expect(mockMultiSelectProps.data).toContainEqual({
+      value: 'pkg1',
+      label: 'Onboarding'
+    });
+  });
+
+  it('shows the title for an expired package passed as the raw API array shape', async () => {
+    renderAddPackage();
+
+    await screen.findByText('Package Assignment');
+
+    expect(mockSetSelectedPackagesData).toBeDefined();
+
+    act(() =>
+      mockSetSelectedPackagesData([
+        {
+          packageId: {
+            _id: 'pkgExpired',
+            title: 'March Testing Package'
+          },
+          tasks: []
+        }
+      ])
+    );
+
+    expect(mockMultiSelectProps.data).toContainEqual({
+      value: 'pkgExpired',
+      label: 'March Testing Package',
+      disabled: true
+    });
   });
 
   it('selects tasks and saves the package assignment', async () => {

@@ -48,7 +48,7 @@ const mockUserDetails = {
   id: 'user-1'
 };
 
-const AdminDashboard = require('../AdminDashboard').default;
+import AdminDashboard from '../AdminDashboard';
 
 const renderDashboard = (userDetails = mockUserDetails) => {
   const initializeStateWithUser = ({ set }: MutableSnapshot) => {
@@ -163,6 +163,21 @@ describe('AdminDashboard Component', () => {
       expect(screen.getAllByText('15').length).toBeGreaterThanOrEqual(1);
     });
 
+    it('orders roles as admin, recruiter, employee, then content-writer', () => {
+      renderDashboard();
+      const card = screen
+        .getByText('Workforce by Role')
+        .closest('.mantine-Card-root');
+      expect(card).not.toBeNull();
+      const text = card!.textContent ?? '';
+      expect(text.indexOf('admin')).toBeGreaterThan(-1);
+      expect(text.indexOf('admin')).toBeLessThan(text.indexOf('Recruiter'));
+      expect(text.indexOf('Recruiter')).toBeLessThan(text.indexOf('Employee'));
+      expect(text.indexOf('Employee')).toBeLessThan(
+        text.indexOf('ContentWriter')
+      );
+    });
+
     it('renders Recent Hires table', () => {
       renderDashboard();
       expect(screen.getByText('Recent Hires')).toBeInTheDocument();
@@ -183,7 +198,9 @@ describe('AdminDashboard Component', () => {
     it('renders By Department section', () => {
       renderDashboard();
       expect(screen.getByText('By Department')).toBeInTheDocument();
-      expect(screen.getAllByText('Engineering').length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText('Engineering').length).toBeGreaterThanOrEqual(
+        1
+      );
     });
 
     it('renders Birthdays section', () => {

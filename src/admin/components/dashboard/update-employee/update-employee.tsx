@@ -33,6 +33,8 @@ const UpdateEmployee = () => {
     setConfirmDelete,
     agreeTerms,
     setAgreeTerms,
+    deleteMode,
+    setDeleteMode,
     options,
     handleDeleteEmployee,
     handlePasswordReset,
@@ -160,6 +162,8 @@ const UpdateEmployee = () => {
         setAgreeTerms={setAgreeTerms}
         confirmDelete={confirmDelete}
         setConfirmDelete={setConfirmDelete}
+        deleteMode={deleteMode}
+        setDeleteMode={setDeleteMode}
         onConfirm={handleDeleteEmployee}
       />
     </Container>
