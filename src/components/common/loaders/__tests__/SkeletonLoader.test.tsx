@@ -1,59 +1,50 @@
-import { render, screen, cleanup } from '@testing-library/react';
-import '@testing-library/jest-dom';
+import { render } from '@testing-library/react';
+import { MantineProvider } from '@mantine/core';
+import React from 'react';
 import SkeletonLoader from '../SkeletonLoader';
 
-jest.mock('@mantine/core', () => {
-  const Table = ({ children }: any) => <table>{children}</table>;
-  Table.Thead = ({ children }: any) => <thead>{children}</thead>;
-  Table.Tr = ({ children }: any) => <tr>{children}</tr>;
-  Table.Th = ({ children }: any) => <th>{children}</th>;
-  Table.Tbody = ({ children }: any) => <tbody>{children}</tbody>;
-  Table.Td = ({ children }: any) => <td>{children}</td>;
-
-  return {
-    Skeleton: () => <div data-testid='skeleton' />,
-    Table,
-    Stack: ({ children }: any) => <div data-testid='stack'>{children}</div>,
-    Card: ({ children }: any) => <div data-testid='card'>{children}</div>,
-    SimpleGrid: ({ children }: any) => <div data-testid='grid'>{children}</div>,
-    Group: ({ children }: any) => <div data-testid='group'>{children}</div>
-  };
-});
+const renderLoader = (props: any) =>
+  render(
+    <MantineProvider>
+      <SkeletonLoader {...props} />
+    </MantineProvider>
+  );
 
 describe('SkeletonLoader', () => {
-  afterEach(cleanup);
-
-  it('renders a single skeleton for an unknown type', () => {
-    render(<SkeletonLoader type={'weird' as any} />);
-    expect(screen.getAllByTestId('skeleton')).toHaveLength(1);
+  it('renders a table skeleton with the given rows and columns', () => {
+    const { container } = renderLoader({ type: 'table', rows: 3, columns: 2 });
+    const table = container.querySelector('table');
+    expect(table).not.toBeNull();
+    expect(table?.querySelectorAll('tr').length).toBe(4);
+    expect(container.querySelectorAll('.mantine-Skeleton-root').length).toBe(8);
   });
 
-  it('renders the table skeleton with default rows and columns', () => {
-    render(<SkeletonLoader type='table' />);
-    expect(screen.getAllByRole('columnheader')).toHaveLength(5);
-    expect(screen.getAllByRole('row')).toHaveLength(6);
-    expect(screen.getAllByTestId('skeleton')).toHaveLength(30);
+  it('renders cards skeleton with the given number of cards', () => {
+    const { container } = renderLoader({ type: 'cards', rows: 3 });
+    expect(container.querySelectorAll('.mantine-Card-root').length).toBe(3);
   });
 
-  it('respects custom rows/columns for the table skeleton', () => {
-    render(<SkeletonLoader type='table' rows={2} columns={3} />);
-    expect(screen.getAllByRole('columnheader')).toHaveLength(3);
-    expect(screen.getAllByRole('row')).toHaveLength(3);
-    expect(screen.getAllByTestId('skeleton')).toHaveLength(9);
+  it('renders a list skeleton with the given number of rows', () => {
+    const { container } = renderLoader({ type: 'list', rows: 4 });
+    expect(container.querySelectorAll('.mantine-Skeleton-root').length).toBe(
+      12
+    );
   });
 
-  it('renders one card per row for the cards skeleton', () => {
-    render(<SkeletonLoader type='cards' rows={3} />);
-    expect(screen.getAllByTestId('card')).toHaveLength(3);
+  it('renders a form skeleton with the given number of rows', () => {
+    const { container } = renderLoader({ type: 'form', rows: 2 });
+    expect(container.querySelectorAll('.mantine-Skeleton-root').length).toBe(6);
   });
 
-  it('renders one list group per row for the list skeleton', () => {
-    render(<SkeletonLoader type='list' rows={4} />);
-    expect(screen.getAllByTestId('group')).toHaveLength(4);
+  it('uses default row and column counts when not provided', () => {
+    const { container } = renderLoader({ type: 'table' });
+    const table = container.querySelector('table');
+    expect(table).not.toBeNull();
+    expect(table?.querySelectorAll('tr').length).toBe(6);
   });
 
-  it('renders the form skeleton with two skeletons per row plus footer buttons', () => {
-    render(<SkeletonLoader type='form' rows={2} />);
-    expect(screen.getAllByTestId('skeleton')).toHaveLength(6);
+  it('falls back to a single skeleton for unknown types', () => {
+    const { container } = renderLoader({ type: 'unknown' as any });
+    expect(container.querySelectorAll('.mantine-Skeleton-root').length).toBe(1);
   });
 });

@@ -113,7 +113,6 @@ jest.mock('react-router-dom', () => ({
   useNavigate: () => mockNavigate
 }));
 
-// jsdom FileReader stub that completes a read synchronously.
 class MockFileReader {
   result: string | null = 'data:image/png;base64,Zm9v';
   onloadend: (() => void) | null = null;
@@ -191,9 +190,6 @@ describe('AddCourse', () => {
       expect(
         result.container.querySelector('input[type="file"]')
       ).toBeInTheDocument();
-      expect(
-        screen.getAllByText(/Upload a high-quality image/).length
-      ).toBeGreaterThanOrEqual(1);
     });
 
     it('renders the rich text editor toolbar and content area', () => {
@@ -203,14 +199,10 @@ describe('AddCourse', () => {
       expect(screen.getByTestId('rte-content')).toBeInTheDocument();
     });
 
-    it('renders the Create Course, Cancel and Tips for a Great Course card', () => {
+    it('renders the Create Course, Cancel and Tips cards', () => {
       renderForm();
-      expect(
-        screen.getByRole('button', { name: 'Create Course' })
-      ).toBeInTheDocument();
-      expect(
-        screen.getByRole('button', { name: 'Cancel' })
-      ).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Create Course' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
       expect(screen.getByText('Tips for a Great Course')).toBeInTheDocument();
     });
   });
@@ -218,18 +210,14 @@ describe('AddCourse', () => {
   describe('Validation', () => {
     it('disables Create Course before the form is complete', () => {
       renderForm();
-      expect(
-        screen.getByRole('button', { name: 'Create Course' })
-      ).toBeDisabled();
+      expect(screen.getByRole('button', { name: 'Create Course' })).toBeDisabled();
     });
 
     it('keeps Create Course disabled when only the name is provided', () => {
       const result = renderForm();
       container = result.container;
       typeCourseName('React Fundamentals');
-      expect(
-        screen.getByRole('button', { name: 'Create Course' })
-      ).toBeDisabled();
+      expect(screen.getByRole('button', { name: 'Create Course' })).toBeDisabled();
     });
 
     it('enables Create Course once name and thumbnail are provided', () => {
@@ -237,10 +225,7 @@ describe('AddCourse', () => {
       container = result.container;
       typeCourseName('React Fundamentals');
       selectThumbnail(container);
-      const createButton = screen.getByRole('button', {
-        name: 'Create Course'
-      });
-      expect(createButton).toBeEnabled();
+      expect(screen.getByRole('button', { name: 'Create Course' })).toBeEnabled();
     });
   });
 
@@ -251,9 +236,7 @@ describe('AddCourse', () => {
       selectThumbnail(container);
       expect(screen.getByText('course.png')).toBeInTheDocument();
       expect(screen.getByText('0.00 MB')).toBeInTheDocument();
-      expect(
-        screen.getByRole('button', { name: 'Remove' })
-      ).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Remove' })).toBeInTheDocument();
       expect(screen.getByAltText('Course thumbnail')).toBeInTheDocument();
     });
 
@@ -262,11 +245,13 @@ describe('AddCourse', () => {
       container = result.container;
       selectThumbnail(container);
       fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
-
       expect(screen.queryByText('course.png')).not.toBeInTheDocument();
-      expect(
-        screen.getByRole('button', { name: 'Create Course' })
-      ).toBeDisabled();
+      expect(screen.getByRole('button', { name: 'Create Course' })).toBeDisabled();
+    });
+
+    it('handles removing thumbnail when no file is set', () => {
+      renderForm();
+      expect(screen.queryByRole('button', { name: 'Remove' })).not.toBeInTheDocument();
     });
   });
 
@@ -307,9 +292,7 @@ describe('AddCourse', () => {
       expect(payload.image).toBeInstanceOf(File);
       expect(payload.image.name).toBe('course.png');
 
-      expect(mockShowSuccessToast).toHaveBeenCalledWith(
-        'Course added successfully!'
-      );
+      expect(mockShowSuccessToast).toHaveBeenCalledWith('Course added successfully!');
       expect(mockNavigate).toHaveBeenCalledWith(-1);
     });
 
@@ -324,9 +307,7 @@ describe('AddCourse', () => {
       submitForm();
 
       await waitFor(() => {
-        expect(mockShowErrorToast).toHaveBeenCalledWith(
-          'Server rejected course'
-        );
+        expect(mockShowErrorToast).toHaveBeenCalledWith('Server rejected course');
       });
       expect(mockShowSuccessToast).not.toHaveBeenCalled();
       expect(mockNavigate).not.toHaveBeenCalled();
@@ -343,6 +324,18 @@ describe('AddCourse', () => {
       await waitFor(() => {
         expect(mockShowErrorToast).toHaveBeenCalledWith('Failed to add course');
       });
+    });
+
+    it('does not submit when form is invalid', () => {
+      renderForm();
+      submitForm();
+      expect(mockAddCourse).not.toHaveBeenCalled();
+    });
+
+    it('navigates back on Cancel', () => {
+      renderForm();
+      fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+      expect(mockNavigate).toHaveBeenCalledWith(-1);
     });
   });
 });

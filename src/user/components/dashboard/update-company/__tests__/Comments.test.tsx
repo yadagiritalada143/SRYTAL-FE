@@ -4,7 +4,11 @@ import { MantineProvider } from '@mantine/core';
 
 const PoolCompaniesCommentsTable = require('../comments').default;
 
-const renderCommentsTable = (comments: any[] = [], isMobile = false) =>
+const renderCommentsTable = (
+  comments: any[] = [],
+  isMobile = false,
+  props: Record<string, any> = {}
+) =>
   render(
     <MantineProvider>
       <PoolCompaniesCommentsTable
@@ -16,6 +20,7 @@ const renderCommentsTable = (comments: any[] = [], isMobile = false) =>
         }}
         organizationConfig={{ organization_name: 'srytal' }}
         isMobile={isMobile}
+        {...props}
       />
     </MantineProvider>
   );
@@ -47,13 +52,16 @@ describe('PoolCompaniesCommentsTable', () => {
     expect(screen.getByText('Comments History')).toBeInTheDocument();
   });
 
-  it('displays comment count badge', () => {
+  it('displays singular comment count badge', () => {
     renderCommentsTable([mockComment]);
     expect(screen.getByText('1 comment')).toBeInTheDocument();
   });
 
-  it('displays plural "comments" for multiple', () => {
-    renderCommentsTable([mockComment, { ...mockComment, comment: 'Second' }]);
+  it('displays plural "comments" for multiple entries', () => {
+    renderCommentsTable([
+      mockComment,
+      { ...mockComment, comment: 'Second' }
+    ]);
     expect(screen.getByText('2 comments')).toBeInTheDocument();
   });
 
@@ -64,7 +72,7 @@ describe('PoolCompaniesCommentsTable', () => {
     ).toBeInTheDocument();
   });
 
-  it('displays user name', () => {
+  it('displays user first and last name', () => {
     renderCommentsTable([mockComment]);
     expect(screen.getByText(/Alice/)).toBeInTheDocument();
     expect(screen.getByText(/Manager/)).toBeInTheDocument();
@@ -77,12 +85,16 @@ describe('PoolCompaniesCommentsTable', () => {
 
   it('displays formatted date', () => {
     renderCommentsTable([mockComment]);
-    expect(screen.getByText('January 20th 2024, 2:30 PM')).toBeInTheDocument();
+    expect(
+      screen.getByText('January 20th 2024, 2:30 PM')
+    ).toBeInTheDocument();
   });
 
   it('renders mobile card view', () => {
     renderCommentsTable([mockComment], true);
-    expect(screen.getByText('Great partnership opportunity')).toBeInTheDocument();
+    expect(
+      screen.getByText('Great partnership opportunity')
+    ).toBeInTheDocument();
     expect(screen.getByText('#1')).toBeInTheDocument();
   });
 
@@ -97,10 +109,43 @@ describe('PoolCompaniesCommentsTable', () => {
   it('renders multiple comments', () => {
     const comments = [
       mockComment,
-      { ...mockComment, comment: 'Second comment', userId: { firstName: 'Bob', lastName: 'CEO' } }
+      {
+        ...mockComment,
+        comment: 'Second comment',
+        userId: { firstName: 'Bob', lastName: 'CEO' }
+      }
     ];
     renderCommentsTable(comments);
     expect(screen.getByText('2 comments')).toBeInTheDocument();
     expect(screen.getByText('Second comment')).toBeInTheDocument();
+  });
+
+  it('displays user with missing firstName', () => {
+    renderCommentsTable([
+      { ...mockComment, userId: { firstName: '', lastName: 'Smith' } }
+    ]);
+    expect(screen.getByText(/Smith/)).toBeInTheDocument();
+  });
+
+  it('displays user with missing lastName', () => {
+    renderCommentsTable([
+      { ...mockComment, userId: { firstName: 'Jane', lastName: '' } }
+    ]);
+    expect(screen.getByText(/Jane/)).toBeInTheDocument();
+  });
+
+  it('renders mobile view with multiple comments', () => {
+    const comments = [
+      mockComment,
+      { ...mockComment, comment: 'Second', updateAt: '2024-02-10T09:00:00', userId: { firstName: 'Bob', lastName: 'CEO' } }
+    ];
+    renderCommentsTable(comments, true);
+    expect(screen.getByText('#1')).toBeInTheDocument();
+    expect(screen.getByText('#2')).toBeInTheDocument();
+  });
+
+  it('renders comment with user name in mobile view', () => {
+    renderCommentsTable([mockComment], true);
+    expect(screen.getByText(/Alice/)).toBeInTheDocument();
   });
 });

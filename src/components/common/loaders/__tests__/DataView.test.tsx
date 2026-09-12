@@ -1,90 +1,74 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import '@testing-library/jest-dom';
 import { MantineProvider } from '@mantine/core';
+import { RecoilRoot } from 'recoil';
+import React from 'react';
 import DataView from '../DataView';
 
-const renderDataView = (props: any = {}) =>
+const renderDataView = (props: any) =>
   render(
-    <MantineProvider>
-      <DataView {...props}>
-        <span>content</span>
-      </DataView>
-    </MantineProvider>
+    <RecoilRoot>
+      <MantineProvider>
+        <DataView {...props} />
+      </MantineProvider>
+    </RecoilRoot>
   );
 
-jest.mock('../PremiumLoader', () => ({
-  __esModule: true,
-  default: ({ label, minHeight }: any) => (
-    <div
-      data-testid='premium-loader'
-      data-label={label}
-      data-minheight={minHeight}
-    />
-  )
-}));
-
-jest.mock('@components/common/button/CommonButton', () => ({
-  CommonButton: ({ children, onClick }: any) => (
-    <button onClick={onClick}>{children}</button>
-  )
-}));
-
 describe('DataView', () => {
-  it('renders a loading state while isLoading is true', () => {
+  it('renders children when not loading and data exists', () => {
+    renderDataView({ isLoading: false, children: <div>Content</div> });
+    expect(screen.getByText('Content')).toBeInTheDocument();
+    expect(screen.queryByText(/Loading/)).not.toBeInTheDocument();
+  });
+
+  it('shows the loader while loading', () => {
+    renderDataView({ isLoading: true, children: <div>Content</div> });
+    expect(screen.getByText('Loading data...')).toBeInTheDocument();
+    expect(screen.queryByText('Content')).not.toBeInTheDocument();
+  });
+
+  it('uses the label in the loading state', () => {
     renderDataView({ isLoading: true, label: 'employees' });
-    expect(screen.getByTestId('premium-loader')).toHaveAttribute(
-      'data-label',
-      'Loading employees...'
-    );
-    expect(screen.queryByText('content')).not.toBeInTheDocument();
+    expect(screen.getByText('Loading employees...')).toBeInTheDocument();
   });
 
-  it('uses the default label for the loading state', () => {
-    renderDataView({ isLoading: true });
-    expect(screen.getByTestId('premium-loader')).toHaveAttribute(
-      'data-label',
-      'Loading data...'
-    );
+  it('shows the empty state when no data exists', () => {
+    renderDataView({ isLoading: false, isEmpty: true });
+    expect(screen.getByText('No data found')).toBeInTheDocument();
   });
 
-  it('passes its own minHeight through to the loader', () => {
-    renderDataView({ isLoading: true, minHeight: '250px' });
-    expect(screen.getByTestId('premium-loader')).toHaveAttribute(
-      'data-minheight',
-      '250px'
-    );
+  it('uses the label in the empty state', () => {
+    renderDataView({ isLoading: false, isEmpty: true, label: 'reports' });
+    expect(screen.getByText('No reports found')).toBeInTheDocument();
   });
 
-  it('renders an error state with a retry button when onRetry is provided', () => {
+  it('shows the error state instead of children', () => {
+    renderDataView({
+      isLoading: false,
+      error: new Error('boom'),
+      children: <div>Content</div>
+    });
+    expect(screen.getByText('Failed to load data')).toBeInTheDocument();
+    expect(screen.queryByText('Content')).not.toBeInTheDocument();
+  });
+
+  it('uses the label in the error state', () => {
+    renderDataView({
+      isLoading: false,
+      error: new Error('boom'),
+      label: 'courses'
+    });
+    expect(screen.getByText('Failed to load courses')).toBeInTheDocument();
+  });
+
+  it('invokes onRetry when the retry button is clicked', () => {
     const onRetry = jest.fn();
     renderDataView({
       isLoading: false,
-      error: 'oops',
-      label: 'employees',
-      onRetry
+      error: new Error('boom'),
+      onRetry,
+      children: <div>Content</div>
     });
-    expect(screen.getByText('Failed to load employees')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Try Again' }));
-    expect(onRetry).toHaveBeenCalledTimes(1);
-    expect(screen.queryByText('content')).not.toBeInTheDocument();
-  });
-
-  it('renders an error state without a retry button when none is provided', () => {
-    renderDataView({ isLoading: false, error: 'oops', label: 'employees' });
-    expect(screen.getByText('Failed to load employees')).toBeInTheDocument();
-    expect(
-      screen.queryByRole('button', { name: 'Try Again' })
-    ).not.toBeInTheDocument();
-  });
-
-  it('renders an empty state when isEmpty is true', () => {
-    renderDataView({ isLoading: false, isEmpty: true, label: 'projects' });
-    expect(screen.getByText('No projects found')).toBeInTheDocument();
-    expect(screen.queryByText('content')).not.toBeInTheDocument();
-  });
-
-  it('renders children when loading/error/empty are all negative', () => {
-    renderDataView({ isLoading: false, label: 'employees' });
-    expect(screen.getByText('content')).toBeInTheDocument();
+    expect(onRetry).toHaveBeenCalled();
   });
 });

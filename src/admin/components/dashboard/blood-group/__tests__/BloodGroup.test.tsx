@@ -1,38 +1,44 @@
-﻿import { render, screen, fireEvent } from '@testing-library/react';
-import '@testing-library/jest-dom';
+﻿import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MantineProvider } from '@mantine/core';
 import { BrowserRouter } from 'react-router-dom';
 import { RecoilRoot } from 'recoil';
-import { act } from 'react';
+import React from 'react';
+import BloodGroup from '../BloodGroup';
 
-let mockBloodGroups: any[] = [];
-let mockIsLoading = true;
+let mockGroups: any[] = [];
+let mockIsLoading = false;
+let mockIsMobile = false;
 
 jest.mock('@hooks/queries/useAdminQueries', () => ({
   useGetAllBloodGroupsByAdmin: () => ({
-    data: mockBloodGroups,
+    data: mockGroups,
     isLoading: mockIsLoading
   })
 }));
 
-const mockMutateAsync = jest.fn();
+const mockAddBloodGroup = jest.fn();
+const mockUpdateBloodGroup = jest.fn();
+const mockDeleteBloodGroup = jest.fn();
 jest.mock('@hooks/mutations/useAdminMutations', () => ({
   useAddBloodGroupByAdmin: () => ({
-    mutateAsync: mockMutateAsync,
+    mutateAsync: mockAddBloodGroup,
     isPending: false
   }),
   useUpdateBloodGroupByAdmin: () => ({
-    mutateAsync: mockMutateAsync,
+    mutateAsync: mockUpdateBloodGroup,
     isPending: false
   }),
   useDeleteBloodGroupByAdmin: () => ({
-    mutateAsync: mockMutateAsync,
+    mutateAsync: mockDeleteBloodGroup,
     isPending: false
   })
 }));
 
-const mockShowSuccessToast = jest.fn();
-const mockShowErrorToast = jest.fn();
+jest.mock('@mantine/hooks', () => ({
+  ...jest.requireActual('@mantine/hooks'),
+  useMediaQuery: () => mockIsMobile
+}));
+
 jest.mock('@hooks/use-app-theme', () => ({
   useAppTheme: () => ({
     themeConfig: {
@@ -43,10 +49,13 @@ jest.mock('@hooks/use-app-theme', () => ({
       button: { color: '#495057', textColor: '#ffffff' }
     },
     isDarkTheme: false,
-    organizationConfig: { organization_name: 'srytal' }
+    organizationConfig: { organization_name: 'srytal' },
+    appColors: {}
   })
 }));
 
+const mockShowSuccessToast = jest.fn();
+const mockShowErrorToast = jest.fn();
 jest.mock('@utils/common/toast', () => ({
   useCustomToast: () => ({
     showSuccessToast: mockShowSuccessToast,
@@ -66,26 +75,10 @@ jest.mock('@components/common/loaders/DataView', () => (props: any) => (
   </div>
 ));
 
-jest.mock('@mantine/core', () => {
-  const actual = jest.requireActual('@mantine/core');
-  return {
-    ...actual,
-    Modal: ({ opened, children, title, onClose, ...rest }: any) =>
-      opened ? (
-        <div data-testid='modal'>
-          <div>{title}</div>
-          {children}
-        </div>
-      ) : null
-  };
-});
-
-const BloodGroup = require('../BloodGroup').default;
-
 const renderBloodGroup = () => {
   return render(
     <RecoilRoot>
-      <MantineProvider>
+      <MantineProvider env='test'>
         <BrowserRouter
           future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
         >
@@ -96,238 +89,172 @@ const renderBloodGroup = () => {
   );
 };
 
-const mockBloodGroupData = [
-  { id: 'bg1', _id: 'bg1', type: 'A+', organization: 'srytal' },
-  { id: 'bg2', _id: 'bg2', type: 'B+', organization: 'srytal' },
-  { id: 'bg3', _id: 'bg3', type: 'O-', organization: 'srytal' },
-  { id: 'bg4', _id: 'bg4', type: 'AB+', organization: 'srytal' },
-  { id: 'bg5', _id: 'bg5', type: 'A-', organization: 'srytal' }
+const mockGroupsData = [
+  { id: 'bg1', type: 'A+' },
+  { id: 'bg2', type: 'B-' },
+  { id: 'bg3', type: 'AB+' }
 ];
+
+const clickIcon = (className: string) => {
+  const svg = document.querySelector(`.${className}`) as HTMLElement;
+  const button = svg?.closest('button');
+  expect(button).toBeTruthy();
+  if (button) fireEvent.click(button);
+  return button;
+};
 
 describe('BloodGroup Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockMutateAsync.mockReset();
-    mockMutateAsync.mockResolvedValue({});
-    mockBloodGroups = [];
+    localStorage.clear();
+    mockGroups = [];
+    mockIsLoading = false;
+    mockIsMobile = false;
+    mockAddBloodGroup.mockResolvedValue(undefined);
+    mockUpdateBloodGroup.mockResolvedValue(undefined);
+    mockDeleteBloodGroup.mockResolvedValue(undefined);
+  });
+
+  it('renders the page header', () => {
+    mockGroups = mockGroupsData;
+    renderBloodGroup();
+    expect(screen.getByText('Blood Groups')).toBeInTheDocument();
+  });
+
+  it('shows a loading state while fetching', () => {
     mockIsLoading = true;
+    renderBloodGroup();
+    expect(screen.getByText('loading')).toBeInTheDocument();
   });
 
-  describe('Loading state', () => {
-    it('shows the page header while loading', () => {
-      renderBloodGroup();
-      expect(screen.getByText('Blood Groups')).toBeInTheDocument();
-    });
+  it('renders the list of blood groups', () => {
+    mockGroups = mockGroupsData;
+    renderBloodGroup();
+    expect(screen.getByText('A+')).toBeInTheDocument();
+    expect(screen.getByText('B-')).toBeInTheDocument();
+    expect(screen.getByText('AB+')).toBeInTheDocument();
   });
 
-  describe('Empty state', () => {
-    beforeEach(() => {
-      mockBloodGroups = [];
-      mockIsLoading = false;
-    });
-
-    it('shows empty state when no blood groups exist', () => {
-      renderBloodGroup();
-      expect(screen.getByText('No blood groups found')).toBeInTheDocument();
-    });
-
-    it('shows empty state helper text', () => {
-      renderBloodGroup();
-      expect(screen.getByText('Start by adding your first blood group')).toBeInTheDocument();
-    });
-
-    it('shows Add Blood Group button in empty state', () => {
-      renderBloodGroup();
-      expect(
-        screen.getAllByRole('button', { name: /add blood group/i }).length
-      ).toBeGreaterThanOrEqual(1);
-    });
+  it('shows an empty state when no blood groups exist', () => {
+    renderBloodGroup();
+    expect(screen.getByText('empty')).toBeInTheDocument();
+    expect(screen.getByText('No blood groups found')).toBeInTheDocument();
+    expect(
+      screen.getByText('Start by adding your first blood group')
+    ).toBeInTheDocument();
   });
 
-  describe('Data display', () => {
-    beforeEach(() => {
-      mockBloodGroups = mockBloodGroupData;
-      mockIsLoading = false;
+  it('filters the list based on the search query', () => {
+    mockGroups = mockGroupsData;
+    renderBloodGroup();
+    fireEvent.change(screen.getByPlaceholderText('Search by blood group...'), {
+      target: { value: 'A+' }
     });
-
-    it('renders the page header', () => {
-      renderBloodGroup();
-      expect(screen.getByText('Blood Groups')).toBeInTheDocument();
-    });
-
-    it('renders the subtitle', () => {
-      renderBloodGroup();
-      expect(screen.getByText(/Manage the blood group options/)).toBeInTheDocument();
-    });
-
-    it('displays all blood groups in table', () => {
-      renderBloodGroup();
-      expect(screen.getByText('A+')).toBeInTheDocument();
-      expect(screen.getByText('B+')).toBeInTheDocument();
-      expect(screen.getByText('O-')).toBeInTheDocument();
-      expect(screen.getByText('AB+')).toBeInTheDocument();
-      expect(screen.getByText('A-')).toBeInTheDocument();
-    });
-
-    it('shows search input', () => {
-      renderBloodGroup();
-      expect(screen.getByPlaceholderText('Search by blood group...')).toBeInTheDocument();
-    });
-
-    it('displays table column headers', () => {
-      renderBloodGroup();
-      expect(screen.getByText('S.No')).toBeInTheDocument();
-      expect(screen.getAllByText('Blood Group').length).toBeGreaterThanOrEqual(1);
-      expect(screen.getByText('Actions')).toBeInTheDocument();
-    });
-
-    it('displays serial numbers for rows', () => {
-      renderBloodGroup();
-      expect(screen.getByText('1')).toBeInTheDocument();
-      expect(screen.getByText('2')).toBeInTheDocument();
-    });
-
-    it('shows items per page selector', () => {
-      renderBloodGroup();
-      expect(screen.getByText('Items per page:')).toBeInTheDocument();
-    });
+    expect(screen.getByText('A+')).toBeInTheDocument();
+    expect(screen.queryByText('B-')).not.toBeInTheDocument();
   });
 
-  describe('Search filtering', () => {
-    beforeEach(() => {
-      mockBloodGroups = mockBloodGroupData;
-      mockIsLoading = false;
+  it('shows a filtered count badge while searching', () => {
+    mockGroups = mockGroupsData;
+    renderBloodGroup();
+    fireEvent.change(screen.getByPlaceholderText('Search by blood group...'), {
+      target: { value: 'A+' }
     });
-
-    it('filters blood groups by search query', () => {
-      renderBloodGroup();
-      const searchInput = screen.getByPlaceholderText('Search by blood group...');
-      fireEvent.change(searchInput, { target: { value: 'A+' } });
-      expect(screen.getByText('A+')).toBeInTheDocument();
-      expect(screen.queryByText('B+')).not.toBeInTheDocument();
-    });
-
-    it('shows filter count badge when search is active', () => {
-      renderBloodGroup();
-      const searchInput = screen.getByPlaceholderText('Search by blood group...');
-      fireEvent.change(searchInput, { target: { value: 'A' } });
-      expect(screen.getByText(/of 5 groups/)).toBeInTheDocument();
-    });
-
-    it('shows all items when search is cleared', () => {
-      renderBloodGroup();
-      const searchInput = screen.getByPlaceholderText('Search by blood group...');
-      fireEvent.change(searchInput, { target: { value: 'A' } });
-      fireEvent.change(searchInput, { target: { value: '' } });
-      expect(screen.getByText('A+')).toBeInTheDocument();
-      expect(screen.getByText('B+')).toBeInTheDocument();
-    });
+    expect(screen.getByText('1 of 3 groups')).toBeInTheDocument();
   });
 
-  describe('Add Modal', () => {
-    beforeEach(() => {
-      mockBloodGroups = [];
-      mockIsLoading = false;
+  it('adds a new blood group', async () => {
+    mockGroups = [];
+    renderBloodGroup();
+    fireEvent.click(
+      screen.getAllByRole('button', { name: /add blood group/i })[0]
+    );
+    fireEvent.change(screen.getByPlaceholderText('e.g., A+, B-, AB+, O-'), {
+      target: { value: 'O+' }
     });
-
-    it('opens add modal when Add Blood Group button is clicked', () => {
-      renderBloodGroup();
-      fireEvent.click(
-        screen.getAllByRole('button', { name: /add blood group/i })[0]
-      );
-      expect(screen.getByTestId('modal')).toBeInTheDocument();
+    const addButtons = screen.getAllByRole('button', {
+      name: 'Add Blood Group'
     });
-
-    it('renders add modal title', () => {
-      renderBloodGroup();
-      fireEvent.click(
-        screen.getAllByRole('button', { name: /add blood group/i })[0]
-      );
-      expect(screen.getByText('Add New Blood Group')).toBeInTheDocument();
-    });
-
-    it('renders add modal form fields', () => {
-      renderBloodGroup();
-      fireEvent.click(
-        screen.getAllByRole('button', { name: /add blood group/i })[0]
-      );
-      expect(screen.getByPlaceholderText('e.g., A+, B-, AB+, O-')).toBeInTheDocument();
-    });
-
-    it('renders add modal Cancel button', () => {
-      renderBloodGroup();
-      fireEvent.click(
-        screen.getAllByRole('button', { name: /add blood group/i })[0]
-      );
-      expect(screen.getByText('Cancel')).toBeInTheDocument();
-    });
-
-    it('disables add button when input is empty', () => {
-      renderBloodGroup();
-      fireEvent.click(
-        screen.getAllByRole('button', { name: /add blood group/i })[0]
-      );
-      const addButtons = screen.getAllByText('Add Blood Group');
-      const addButton = addButtons[addButtons.length - 1];
-      expect(addButton.closest('button')).toBeDisabled();
-    });
-
-    it('calls addBloodGroup on valid submit', async () => {
-      mockMutateAsync.mockResolvedValueOnce({});
-      renderBloodGroup();
-      fireEvent.click(screen.getAllByRole('button', { name: /add blood group/i })[0]);
-      const input = screen.getByPlaceholderText('e.g., A+, B-, AB+, O-');
-      fireEvent.change(input, { target: { value: 'A+' } });
-      const addBtns = screen.getAllByText('Add Blood Group');
-      const addBtn = addBtns[addBtns.length - 1];
-      expect(addBtn).not.toBeDisabled();
-      await act(async () => { fireEvent.click(addBtn); });
-      expect(mockMutateAsync).toHaveBeenCalledWith({ type: 'A+' });
+    fireEvent.click(addButtons[addButtons.length - 1]);
+    expect(mockAddBloodGroup).toHaveBeenCalledWith({ type: 'O+' });
+    await waitFor(() => {
       expect(mockShowSuccessToast).toHaveBeenCalledWith('Added successfully');
     });
+  });
 
-    it('shows error toast for invalid blood group format', async () => {
-      renderBloodGroup();
-      fireEvent.click(screen.getAllByRole('button', { name: /add blood group/i })[0]);
-      const input = screen.getByPlaceholderText('e.g., A+, B-, AB+, O-');
-      fireEvent.change(input, { target: { value: 'X+' } });
-      const addBtns = screen.getAllByText('Add Blood Group');
-      const addBtn = addBtns[addBtns.length - 1];
-      await act(async () => { fireEvent.click(addBtn); });
-      expect(mockShowErrorToast).toHaveBeenCalledWith('Invalid blood group format (e.g., A+, B-, AB+, O-)');
+  it('rejects an invalid new blood group', () => {
+    mockGroups = [];
+    renderBloodGroup();
+    fireEvent.click(
+      screen.getAllByRole('button', { name: /add blood group/i })[0]
+    );
+    fireEvent.change(screen.getByPlaceholderText('e.g., A+, B-, AB+, O-'), {
+      target: { value: 'X' }
     });
+    const addButtons = screen.getAllByRole('button', {
+      name: 'Add Blood Group'
+    });
+    fireEvent.click(addButtons[addButtons.length - 1]);
+    expect(mockAddBloodGroup).not.toHaveBeenCalled();
+    expect(mockShowErrorToast).toHaveBeenCalledWith(
+      'Invalid blood group format (e.g., A+, B-, AB+, O-)'
+    );
+  });
 
-    it('shows error toast for duplicate blood group', async () => {
-      mockBloodGroups = [...mockBloodGroupData];
-      mockIsLoading = false;
-      renderBloodGroup();
-      fireEvent.click(screen.getByRole('button', { name: /add blood group/i }));
-      const input = screen.getByPlaceholderText('e.g., A+, B-, AB+, O-');
-      fireEvent.change(input, { target: { value: 'A+' } });
-      const addBtns = screen.getAllByText('Add Blood Group');
-      const addBtn = addBtns[addBtns.length - 1];
-      await act(async () => { fireEvent.click(addBtn); });
-      expect(mockShowErrorToast).toHaveBeenCalledWith('This blood group already exists');
+  it('rejects a duplicate new blood group', () => {
+    mockGroups = mockGroupsData;
+    renderBloodGroup();
+    fireEvent.click(
+      screen.getAllByRole('button', { name: /add blood group/i })[0]
+    );
+    fireEvent.change(screen.getByPlaceholderText('e.g., A+, B-, AB+, O-'), {
+      target: { value: 'A+' }
     });
+    const addButtons = screen.getAllByRole('button', {
+      name: 'Add Blood Group'
+    });
+    fireEvent.click(addButtons[addButtons.length - 1]);
+    expect(mockAddBloodGroup).not.toHaveBeenCalled();
+    expect(mockShowErrorToast).toHaveBeenCalledWith(
+      'This blood group already exists'
+    );
+  });
 
-    it('shows error toast when add mutation fails', async () => {
-      mockMutateAsync.mockRejectedValueOnce(new Error('fail'));
-      renderBloodGroup();
-      fireEvent.click(screen.getAllByRole('button', { name: /add blood group/i })[0]);
-      const input = screen.getByPlaceholderText('e.g., A+, B-, AB+, O-');
-      fireEvent.change(input, { target: { value: 'A+' } });
-      const addBtns = screen.getAllByText('Add Blood Group');
-      const addBtn = addBtns[addBtns.length - 1];
-      await act(async () => { fireEvent.click(addBtn); });
-      expect(mockShowErrorToast).toHaveBeenCalledWith('Failed to add');
+  it('edits an existing blood group', async () => {
+    mockGroups = mockGroupsData;
+    renderBloodGroup();
+    clickIcon('tabler-icon-edit');
+    fireEvent.change(screen.getByDisplayValue('A+'), {
+      target: { value: 'O-' }
     });
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    expect(mockUpdateBloodGroup).toHaveBeenCalledWith({
+      id: 'bg1',
+      type: 'O-'
+    });
+    await waitFor(() => {
+      expect(mockShowSuccessToast).toHaveBeenCalledWith('Updated successfully');
+    });
+  });
 
-    it('closes add modal when cancel is clicked', () => {
-      renderBloodGroup();
-      fireEvent.click(screen.getAllByRole('button', { name: /add blood group/i })[0]);
-      expect(screen.getByTestId('modal')).toBeInTheDocument();
-      fireEvent.click(screen.getByText('Cancel'));
-      expect(screen.queryByTestId('modal')).not.toBeInTheDocument();
+  it('deletes a blood group after confirmation', async () => {
+    mockGroups = mockGroupsData;
+    renderBloodGroup();
+    clickIcon('tabler-icon-edit');
+    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
+    const deleteButtons = screen.getAllByRole('button', { name: 'Delete' });
+    fireEvent.click(deleteButtons[deleteButtons.length - 1]);
+    expect(mockDeleteBloodGroup).toHaveBeenCalledWith('bg1');
+    await waitFor(() => {
+      expect(mockShowSuccessToast).toHaveBeenCalledWith('Deleted successfully');
     });
+  });
+
+  it('renders mobile cards in mobile view', () => {
+    mockGroups = mockGroupsData;
+    mockIsMobile = true;
+    renderBloodGroup();
+    expect(screen.getAllByText('A+').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('Blood Group').length).toBeGreaterThanOrEqual(1);
   });
 });

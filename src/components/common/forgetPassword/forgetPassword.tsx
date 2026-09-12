@@ -22,6 +22,7 @@ const ForgotPassword = ({ closeModal }: ForgotPasswordProps) => {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
     watch
   } = useForm<{ username: string }>();
@@ -171,7 +172,9 @@ const ForgotPassword = ({ closeModal }: ForgotPasswordProps) => {
           leftSection={<IconMail size={16} />}
           error={errors.username?.message}
           onChange={e => {
-            e.target.value = e.target.value.replace(/\s/g, '');
+            const value = e.target.value.replace(/\s/g, '');
+            e.target.value = value;
+            setValue('username', value, { shouldValidate: true });
           }}
         />
 
