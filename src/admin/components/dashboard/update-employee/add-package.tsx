@@ -124,6 +124,36 @@ const PackagesFormComponent = ({ employeeId }: PackagesFormProps) => {
     };
   }, [selectedPackages, selectedTasks, employmentPackagesOptions]);
 
+  const multiSelectData = useMemo(() => {
+    const selectableOptions = (employmentPackagesOptions || []).map(pkg => ({
+      value: pkg._id,
+      label: pkg.title
+    }));
+    const selectableIds = new Set(selectableOptions.map(o => o.value));
+    const rawAssigned = Array.isArray(selectedPackagesData)
+      ? selectedPackagesData
+      : selectedPackagesData?.packages || [];
+
+    const displayOnlyOptions = rawAssigned
+      .map(pkg => {
+        const packageRef = pkg.packageId as
+          | string
+          | { _id: string; title?: string };
+        const value =
+          typeof packageRef === 'object' ? packageRef._id : packageRef;
+        const label =
+          typeof packageRef === 'object' ? packageRef.title : pkg.title;
+        return { value, label };
+      })
+      .filter(
+        (o): o is { value: string; label: string } =>
+          !!o.value && !!o.label && !selectableIds.has(o.value)
+      )
+      .map(o => ({ ...o, disabled: true }));
+
+    return [...selectableOptions, ...displayOnlyOptions];
+  }, [employmentPackagesOptions, selectedPackagesData]);
+
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true);
@@ -524,12 +554,7 @@ const PackagesFormComponent = ({ employeeId }: PackagesFormProps) => {
                   control={control}
                   render={({ field }) => (
                     <MultiSelect
-                      data={
-                        employmentPackagesOptions?.map(pkg => ({
-                          value: pkg._id,
-                          label: pkg.title
-                        })) || []
-                      }
+                      data={multiSelectData}
                       label='Select Packages'
                       placeholder={
                         !selectedPackages.length

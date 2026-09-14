@@ -1,7 +1,17 @@
-import { Alert, Checkbox, Group, Modal, Stack, Text } from '@mantine/core';
-import { IconAlertTriangle, IconTrash } from '@tabler/icons-react';
+import {
+  Alert,
+  Checkbox,
+  Group,
+  Modal,
+  Radio,
+  Stack,
+  Text
+} from '@mantine/core';
+import { IconAlertTriangle, IconTrash, IconUserOff } from '@tabler/icons-react';
 import { useAppTheme } from '@hooks/use-app-theme';
 import { CommonButton } from '@components/common/button/CommonButton';
+
+export type EmployeeDeleteMode = 'deactivate' | 'permanent';
 
 interface DeleteEmployeeModalProps {
   opened: boolean;
@@ -10,7 +20,9 @@ interface DeleteEmployeeModalProps {
   setAgreeTerms: (value: boolean) => void;
   confirmDelete: boolean;
   setConfirmDelete: (value: boolean) => void;
-  onConfirm: () => void;
+  deleteMode: EmployeeDeleteMode;
+  setDeleteMode: (value: EmployeeDeleteMode) => void;
+  onConfirm: (mode: EmployeeDeleteMode) => void;
 }
 
 const DeleteEmployeeModal = ({
@@ -20,9 +32,13 @@ const DeleteEmployeeModal = ({
   setAgreeTerms,
   confirmDelete,
   setConfirmDelete,
+  deleteMode,
+  setDeleteMode,
   onConfirm
 }: DeleteEmployeeModalProps) => {
   const { themeConfig } = useAppTheme();
+  const isPermanent = deleteMode === 'permanent';
+  const canDelete = isPermanent ? agreeTerms && confirmDelete : agreeTerms;
 
   return (
     <Modal
@@ -38,43 +54,87 @@ const DeleteEmployeeModal = ({
       radius='md'
     >
       <Stack gap='md'>
-        <Alert
-          icon={<IconAlertTriangle size={16} />}
-          mt='md'
-          color='red'
-          title='Warning'
-          variant='filled'
+        <Radio.Group
+          mt='xs'
+          value={deleteMode}
+          onChange={value => setDeleteMode(value as EmployeeDeleteMode)}
         >
-          This action cannot be undone. The employee and all associated data
-          will be permanently deleted.
-        </Alert>
+          <Stack gap='xs'>
+            <Radio
+              value='deactivate'
+              label='Deactivate Employee'
+              description='Soft delete — hides the employee from the list but keeps their data intact.'
+            />
+            <Radio
+              value='permanent'
+              label='Permanently Delete'
+              description='Hard delete — permanently removes the employee and all associated data.'
+            />
+          </Stack>
+        </Radio.Group>
 
-        <Checkbox
-          label='I understand that this action is irreversible'
-          checked={agreeTerms}
-          onChange={event => setAgreeTerms(event.currentTarget.checked)}
-        />
+        {isPermanent ? (
+          <>
+            <Alert
+              icon={<IconAlertTriangle size={16} />}
+              mt='md'
+              color='red'
+              title='Warning'
+              variant='filled'
+            >
+              This action cannot be undone. The employee and all associated data
+              will be permanently deleted.
+            </Alert>
 
-        <Checkbox
-          label='Confirm Permanent Deletion'
-          checked={confirmDelete}
-          onChange={event => setConfirmDelete(event.currentTarget.checked)}
-        />
+            <Checkbox
+              label='I understand that this action is irreversible'
+              checked={agreeTerms}
+              onChange={event => setAgreeTerms(event.currentTarget.checked)}
+            />
+
+            <Checkbox
+              label='Confirm Permanent Deletion'
+              checked={confirmDelete}
+              onChange={event => setConfirmDelete(event.currentTarget.checked)}
+            />
+          </>
+        ) : (
+          <>
+            <Alert
+              icon={<IconUserOff size={16} />}
+              mt='md'
+              color='orange'
+              title='Deactivate'
+              variant='light'
+            >
+              The employee account will be deactivated and hidden from the
+              employee list. All associated data will be preserved.
+            </Alert>
+
+            <Checkbox
+              label="I want to deactivate this employee's account"
+              checked={agreeTerms}
+              onChange={event => setAgreeTerms(event.currentTarget.checked)}
+            />
+          </>
+        )}
 
         <Group justify='flex-end' gap='sm'>
           <CommonButton variant='subtle' onClick={onClose}>
             Cancel
           </CommonButton>
           <CommonButton
-            color={themeConfig.dangerColor}
-            disabled={!agreeTerms || !confirmDelete}
+            color={isPermanent ? themeConfig.dangerColor : 'orange'}
+            disabled={!canDelete}
+            leftSection={
+              isPermanent ? <IconTrash size={16} /> : <IconUserOff size={16} />
+            }
             onClick={() => {
-              onConfirm();
+              onConfirm(deleteMode);
               onClose();
             }}
-            leftSection={<IconTrash size={16} />}
           >
-            Delete Employee
+            {isPermanent ? 'Permanently Delete' : 'Deactivate Employee'}
           </CommonButton>
         </Group>
       </Stack>

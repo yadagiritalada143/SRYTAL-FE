@@ -147,6 +147,8 @@ const installHookResult = () => {
     setConfirmDelete: jest.fn(),
     agreeTerms: false,
     setAgreeTerms: jest.fn(),
+    deleteMode: 'deactivate',
+    setDeleteMode: jest.fn(),
     options: {
       bloodGroupOptions: [],
       employmentTypeOptions: [],
@@ -269,6 +271,10 @@ describe('UpdateEmployee', () => {
     expect(mockDeleteModalProps.setConfirmDelete).toBe(
       mockHookResult.setConfirmDelete
     );
+    expect(mockDeleteModalProps.deleteMode).toBe(mockHookResult.deleteMode);
+    expect(mockDeleteModalProps.setDeleteMode).toBe(
+      mockHookResult.setDeleteMode
+    );
   });
 });
 
@@ -281,4 +287,6 @@ const deleteAllMockProps = () => {
   mockDeleteModalProps.setAgreeTerms = undefined;
   mockDeleteModalProps.confirmDelete = undefined;
   mockDeleteModalProps.setConfirmDelete = undefined;
+  mockDeleteModalProps.deleteMode = undefined;
+  mockDeleteModalProps.setDeleteMode = undefined;
 };

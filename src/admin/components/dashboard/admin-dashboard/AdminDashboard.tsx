@@ -49,6 +49,12 @@ const ROLE_COLORS: Record<string, string> = {
   admin: 'orange'
 };
 
+const ROLE_ORDER = ['admin', 'recruiter', 'employee', 'contentwriter'];
+const roleRowPriority = (role: string) => {
+  const index = ROLE_ORDER.indexOf(role.toLowerCase());
+  return index === -1 ? ROLE_ORDER.length : index;
+};
+
 const formatDate = (value?: string | Date) => {
   if (!value) return '—';
   const d = new Date(value);
@@ -71,7 +77,8 @@ const AdminDashboard = () => {
 
   const stats = data?.stats;
   const roleBreakdown: Record<string, number> = data?.roleBreakdown ?? {};
-  const departmentBreakdown: Record<string, number> = data?.departmentBreakdown ?? {};
+  const departmentBreakdown: Record<string, number> =
+    data?.departmentBreakdown ?? {};
   const recentHires: any[] = data?.recentHires ?? [];
   const birthdays: any[] = data?.upcomingBirthdays ?? [];
   const anniversaries: any[] = data?.workAnniversaries ?? [];
@@ -87,9 +94,13 @@ const AdminDashboard = () => {
     organizationConfig?.organization_name || organization || ''
   );
 
-  const roleRows = Object.entries(roleBreakdown).sort((a, b) => b[1] - a[1]);
+  const roleRows = Object.entries(roleBreakdown).sort(
+    (a, b) => roleRowPriority(a[0]) - roleRowPriority(b[0]) || b[1] - a[1]
+  );
   const maxRole = Math.max(1, ...roleRows.map(([, n]) => n));
-  const deptRows = Object.entries(departmentBreakdown).sort((a, b) => b[1] - a[1]);
+  const deptRows = Object.entries(departmentBreakdown).sort(
+    (a, b) => b[1] - a[1]
+  );
   const maxDept = Math.max(1, ...deptRows.map(([, n]) => n));
 
   const statCards = [
@@ -129,10 +140,26 @@ const AdminDashboard = () => {
   ];
 
   const quickActions = [
-    { label: 'Add Employee', icon: <IconUserPlus size={18} />, to: `${adminUrl}/dashboard/addemployee` },
-    { label: 'Packages', icon: <IconFolders size={18} />, to: `${adminUrl}/dashboard/packages` },
-    { label: 'Generate Salary Slip', icon: <IconReportMoney size={18} />, to: `${adminUrl}/dashboard/reports/generate-salary-slip` },
-    { label: 'Settings', icon: <IconSettings size={18} />, to: `${adminUrl}/dashboard/settings` }
+    {
+      label: 'Add Employee',
+      icon: <IconUserPlus size={18} />,
+      to: `${adminUrl}/dashboard/addemployee`
+    },
+    {
+      label: 'Packages',
+      icon: <IconFolders size={18} />,
+      to: `${adminUrl}/dashboard/packages`
+    },
+    {
+      label: 'Generate Salary Slip',
+      icon: <IconReportMoney size={18} />,
+      to: `${adminUrl}/dashboard/reports/generate-salary-slip`
+    },
+    {
+      label: 'Settings',
+      icon: <IconSettings size={18} />,
+      to: `${adminUrl}/dashboard/settings`
+    }
   ];
 
   return (
@@ -153,7 +180,9 @@ const AdminDashboard = () => {
               {greeting},
             </Text>
             <Title order={2} style={{ color: themeConfig.color }}>
-              {user?.firstName ? `${user.firstName} ${user.lastName ?? ''}`.trim() : 'Admin'}
+              {user?.firstName
+                ? `${user.firstName} ${user.lastName ?? ''}`.trim()
+                : 'Admin'}
             </Title>
             <Text size='sm' c='dimmed'>
               Here's what's happening at{' '}
@@ -162,7 +191,12 @@ const AdminDashboard = () => {
               </Text>
             </Text>
           </Stack>
-          <ThemeIcon size={64} radius='xl' variant='light' color={themeConfig.color}>
+          <ThemeIcon
+            size={64}
+            radius='xl'
+            variant='light'
+            color={themeConfig.color}
+          >
             <IconBuildingCommunity size={32} />
           </ThemeIcon>
         </Group>
@@ -171,7 +205,9 @@ const AdminDashboard = () => {
       {/* Stat cards */}
       <SimpleGrid cols={{ base: 2, md: 5 }} spacing='md' mb='xl'>
         {isLoading
-          ? Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} height={92} radius='md' />)
+          ? Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} height={92} radius='md' />
+            ))
           : statCards.map((s, i) => (
               <Card
                 key={i}
@@ -182,7 +218,12 @@ const AdminDashboard = () => {
                 style={{ cursor: s.onClick ? 'pointer' : 'default' }}
               >
                 <Group gap='sm' wrap='nowrap'>
-                  <ThemeIcon size={44} radius='md' variant='light' color={s.color}>
+                  <ThemeIcon
+                    size={44}
+                    radius='md'
+                    variant='light'
+                    color={s.color}
+                  >
                     {s.icon}
                   </ThemeIcon>
                   <Stack gap={2} style={{ minWidth: 0 }}>
@@ -260,7 +301,9 @@ const AdminDashboard = () => {
                     Recent Hires
                   </Text>
                 </Group>
-                <UnstyledButton onClick={() => navigate(`${adminUrl}/dashboard/employees`)}>
+                <UnstyledButton
+                  onClick={() => navigate(`${adminUrl}/dashboard/employees`)}
+                >
                   <Group gap={2}>
                     <Text size='xs' c={themeConfig.color} fw={600}>
                       View all
@@ -353,7 +396,12 @@ const AdminDashboard = () => {
                     }}
                   >
                     <Stack gap={6} align='center'>
-                      <ThemeIcon size={34} radius='md' variant='light' color={themeConfig.color}>
+                      <ThemeIcon
+                        size={34}
+                        radius='md'
+                        variant='light'
+                        color={themeConfig.color}
+                      >
                         {a.icon}
                       </ThemeIcon>
                       <Text size='xs' fw={500} ta='center' lineClamp={2}>
@@ -429,7 +477,12 @@ const AdminDashboard = () => {
                         <Text size='sm' fw={500} lineClamp={1}>
                           {b.name}
                         </Text>
-                        <Badge size='sm' variant='light' color='pink' radius='sm'>
+                        <Badge
+                          size='sm'
+                          variant='light'
+                          color='pink'
+                          radius='sm'
+                        >
                           {monthName.slice(0, 3)} {b.date}
                         </Badge>
                       </Group>
@@ -462,7 +515,12 @@ const AdminDashboard = () => {
                         <Text size='sm' fw={500} lineClamp={1}>
                           {a.name}
                         </Text>
-                        <Badge size='sm' variant='light' color='yellow' radius='sm'>
+                        <Badge
+                          size='sm'
+                          variant='light'
+                          color='yellow'
+                          radius='sm'
+                        >
                           {a.years} {a.years === 1 ? 'yr' : 'yrs'}
                         </Badge>
                       </Group>
@@ -474,39 +532,49 @@ const AdminDashboard = () => {
             </Card>
 
             {/* Action items */}
-            {!isLoading && (stats?.pendingPasswordResets > 0 || stats?.pendingTimesheetApprovals > 0) && (
-              <Card
-                withBorder
-                radius='md'
-                p='lg'
-                style={{ borderColor: 'var(--mantine-color-orange-4)' }}
-              >
-                <Group gap='xs' mb='sm'>
-                  <IconAlertTriangle size={20} color='var(--mantine-color-orange-6)' />
-                  <Text fw={600} size='lg'>
-                    Needs Attention
-                  </Text>
-                </Group>
-                <Stack gap='xs'>
-                  {stats?.pendingTimesheetApprovals > 0 && (
-                    <Text size='sm'>
-                      <Text span fw={700}>
-                        {stats.pendingTimesheetApprovals}
-                      </Text>{' '}
-                      timesheet entr{stats.pendingTimesheetApprovals === 1 ? 'y' : 'ies'} awaiting approval
+            {!isLoading &&
+              (stats?.pendingPasswordResets > 0 ||
+                stats?.pendingTimesheetApprovals > 0) && (
+                <Card
+                  withBorder
+                  radius='md'
+                  p='lg'
+                  style={{ borderColor: 'var(--mantine-color-orange-4)' }}
+                >
+                  <Group gap='xs' mb='sm'>
+                    <IconAlertTriangle
+                      size={20}
+                      color='var(--mantine-color-orange-6)'
+                    />
+                    <Text fw={600} size='lg'>
+                      Needs Attention
                     </Text>
-                  )}
-                  {stats?.pendingPasswordResets > 0 && (
-                    <Text size='sm'>
-                      <Text span fw={700}>
-                        {stats.pendingPasswordResets}
-                      </Text>{' '}
-                      employee{stats.pendingPasswordResets === 1 ? '' : 's'} pending password reset
-                    </Text>
-                  )}
-                </Stack>
-              </Card>
-            )}
+                  </Group>
+                  <Stack gap='xs'>
+                    {stats?.pendingTimesheetApprovals > 0 && (
+                      <Text size='sm'>
+                        <Text span fw={700}>
+                          {stats.pendingTimesheetApprovals}
+                        </Text>{' '}
+                        timesheet entr
+                        {stats.pendingTimesheetApprovals === 1
+                          ? 'y'
+                          : 'ies'}{' '}
+                        awaiting approval
+                      </Text>
+                    )}
+                    {stats?.pendingPasswordResets > 0 && (
+                      <Text size='sm'>
+                        <Text span fw={700}>
+                          {stats.pendingPasswordResets}
+                        </Text>{' '}
+                        employee{stats.pendingPasswordResets === 1 ? '' : 's'}{' '}
+                        pending password reset
+                      </Text>
+                    )}
+                  </Stack>
+                </Card>
+              )}
           </Stack>
         </Grid.Col>
       </Grid>
