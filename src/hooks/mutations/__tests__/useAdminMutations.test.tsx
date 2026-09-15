@@ -12,6 +12,7 @@ jest.mock('@services/admin-services', () => {
   const mockAddDepartmentByAdmin = jest.fn();
   const mockUpdateCourseAssignmentDueDate = jest.fn();
   const mockUnassignCourse = jest.fn();
+  const mockAssignCourseToEmployee = jest.fn();
   return {
     registerEmployee: mockRegisterEmployee,
     registerPackage: mockRegisterPackage,
@@ -21,7 +22,8 @@ jest.mock('@services/admin-services', () => {
     addBloodGroupByAdmin: mockAddBloodGroupByAdmin,
     addDepartmentByAdmin: mockAddDepartmentByAdmin,
     updateCourseAssignmentDueDate: mockUpdateCourseAssignmentDueDate,
-    unassignCourse: mockUnassignCourse
+    unassignCourse: mockUnassignCourse,
+    assignCourseToEmployee: mockAssignCourseToEmployee
   };
 });
 
@@ -59,7 +61,8 @@ import {
   useAddBloodGroupByAdmin,
   useAddDepartmentByAdmin,
   useUpdateCourseAssignmentDueDate,
-  useUnassignCourse
+  useUnassignCourse,
+  useAssignCourseToEmployee
 } from '@hooks/mutations/useAdminMutations';
 
 beforeEach(() => jest.clearAllMocks());
@@ -242,6 +245,52 @@ describe('useUnassignCourse', () => {
       expect(
         queryClient.getQueryCache().findAll({
           queryKey: ['adminCourseAssignmentDetail', 'ca2']
+        })
+      ).toHaveLength(1);
+    });
+  });
+});
+
+describe('useAssignCourseToEmployee', () => {
+  it('calls assignCourseToEmployee and invalidates course/assignment keys', async () => {
+    const { queryClient, wrapper } = createWrapper();
+    getMock('assignCourseToEmployee').mockResolvedValue({ success: true });
+    queryClient.setQueryData(['adminCourses'], ['old']);
+    queryClient.setQueryData(['adminCourseAssignments'], ['old']);
+    queryClient.setQueryData(
+      ['adminAssignedCoursesForEmployee', 'emp1'],
+      ['old']
+    );
+
+    const { result } = renderHook(() => useAssignCourseToEmployee(), {
+      wrapper
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync({
+        employeeId: 'emp1',
+        courseId: 'c1',
+        dueDate: '2026-01-01'
+      });
+    });
+
+    expect(getMock('assignCourseToEmployee')).toHaveBeenCalledWith({
+      employeeId: 'emp1',
+      courseId: 'c1',
+      dueDate: '2026-01-01'
+    });
+    await waitFor(() => {
+      expect(
+        queryClient.getQueryCache().findAll({ queryKey: ['adminCourses'] })
+      ).toHaveLength(1);
+      expect(
+        queryClient
+          .getQueryCache()
+          .findAll({ queryKey: ['adminCourseAssignments'] })
+      ).toHaveLength(1);
+      expect(
+        queryClient.getQueryCache().findAll({
+          queryKey: ['adminAssignedCoursesForEmployee', 'emp1']
         })
       ).toHaveLength(1);
     });

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
@@ -33,12 +33,14 @@ import { getErrorMessage } from '@utils/common/get-error-message';
 import {
   useGetAllEmployeesByAdmin,
   useGetAllCoursesByAdmin,
-  useGetCourseByIdAdmin
+  useGetCourseByIdAdmin,
+  useFetchAssignedCoursesForEmployee
 } from '@hooks/queries/useAdminQueries';
 import { useAssignCourseToEmployee } from '@hooks/mutations/useAdminMutations';
 import { assignCourseSchema, AssignCourseForm } from '@forms/assign-course';
 import { EmployeeInterface } from '@interfaces/employee';
 import { Course } from '@interfaces/contentwriter';
+import { AssignedCourseForEmployee } from '@interfaces/course-assignment';
 import { CommonButton } from '@components/common/button/CommonButton';
 import PageHeader from '@components/common/page-header/PageHeader';
 import DataView from '@components/common/loaders/DataView';
@@ -62,6 +64,7 @@ const CourseAssignments = () => {
     watch,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors, isSubmitting }
   } = useForm<AssignCourseForm>({
     resolver: zodResolver(assignCourseSchema),
@@ -75,6 +78,9 @@ const CourseAssignments = () => {
   const watchedEmployeeId = watch('employeeId');
   const watchedCourseId = watch('courseId');
   const watchedDueDate = watch('dueDate');
+
+  const { data: assignedCourses = [], isLoading: assignedCoursesLoading } =
+    useFetchAssignedCoursesForEmployee(watchedEmployeeId);
 
   const { data: detailedCourse } = useGetCourseByIdAdmin(
     watchedCourseId,
@@ -99,6 +105,27 @@ const CourseAssignments = () => {
       })),
     [courses]
   );
+
+  const assignedCourseIds = useMemo(
+    () =>
+      new Set(
+        (assignedCourses as AssignedCourseForEmployee[]).map(a => a.courseId)
+      ),
+    [assignedCourses]
+  );
+
+  const availableCourseOptions = useMemo(() => {
+    if (!watchedEmployeeId) return courseOptions;
+    if (assignedCourseIds.size === 0) return courseOptions;
+    return courseOptions.filter(c => !assignedCourseIds.has(c.value));
+  }, [courseOptions, assignedCourseIds, watchedEmployeeId]);
+
+  useEffect(() => {
+    if (!watchedEmployeeId || !watchedCourseId) return;
+    if (assignedCourseIds.has(watchedCourseId)) {
+      setValue('courseId', '');
+    }
+  }, [watchedEmployeeId, watchedCourseId, assignedCourseIds, setValue]);
 
   const selectedEmployee = useMemo(
     () =>
@@ -145,7 +172,8 @@ const CourseAssignments = () => {
     }
   };
 
-  const isLoadingData = employeesLoading || coursesLoading;
+  const isLoadingData =
+    employeesLoading || coursesLoading || assignedCoursesLoading;
 
   return (
     <Container
@@ -246,7 +274,7 @@ const CourseAssignments = () => {
                           placeholder='Search courses...'
                           searchable
                           clearable
-                          data={courseOptions}
+                          data={availableCourseOptions}
                           value={field.value}
                           onChange={field.onChange}
                           error={errors.courseId?.message}

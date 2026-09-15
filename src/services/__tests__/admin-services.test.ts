@@ -53,6 +53,7 @@ import {
   getCourseByIdAdmin,
   assignCourseToEmployee,
   getAllCourseAssignments,
+  fetchAssignedCoursesForEmployee,
   getCourseAssignmentDetails,
   updateCourseAssignmentDueDate,
   unassignCourse
@@ -890,6 +891,15 @@ describe('admin-services', () => {
         params: { limit: 100000 }
       });
       expect(result).toEqual(['a1']);
+    });
+
+    it('fetchAssignedCoursesForEmployee returns the assigned course list', async () => {
+      mock.get.mockResolvedValue({ data: { data: ['c1'] } });
+
+      const result = await fetchAssignedCoursesForEmployee('e1');
+
+      expect(mock.get).toHaveBeenCalledWith('/admin/courses/assigned/e1');
+      expect(result).toEqual(['c1']);
     });
 
     it('getCourseAssignmentDetails returns the detail', async () => {
