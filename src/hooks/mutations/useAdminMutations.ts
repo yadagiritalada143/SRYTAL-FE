@@ -248,10 +248,27 @@ export const useDeleteDepartmentByAdmin = createMutationHook(
   [adminQueryKeys.departments]
 );
 
-export const useAssignCourseToEmployee = createMutationHook(
-  assignCourseToEmployee,
-  [adminQueryKeys.courses]
-);
+export const useAssignCourseToEmployee = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (variables: {
+      employeeId: string;
+      courseId: string;
+      dueDate: string;
+    }) => assignCourseToEmployee(variables),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: adminQueryKeys.courses });
+      queryClient.invalidateQueries({
+        queryKey: adminQueryKeys.courseAssignments
+      });
+      queryClient.invalidateQueries({
+        queryKey: adminQueryKeys.assignedCoursesForEmployee(
+          variables.employeeId
+        )
+      });
+    }
+  });
+};
 
 export const useUpdateCourseAssignmentDueDate = () => {
   const queryClient = useQueryClient();

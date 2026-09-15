@@ -18,6 +18,7 @@ import {
   useGetAllCoursesByAdmin,
   useGetCourseByIdAdmin,
   useGetAllCourseAssignments,
+  useFetchAssignedCoursesForEmployee,
   useGetCourseAssignmentDetails
 } from '@hooks/queries/useAdminQueries';
 
@@ -37,11 +38,11 @@ jest.mock('@services/admin-services', () => ({
   getAllCoursesByAdmin: jest.fn(),
   getCourseByIdAdmin: jest.fn(),
   getAllCourseAssignments: jest.fn(),
+  fetchAssignedCoursesForEmployee: jest.fn(),
   getCourseAssignmentDetails: jest.fn()
 }));
 
-const adminService = () =>
-  jest.requireMock('@services/admin-services') as any;
+const adminService = () => jest.requireMock('@services/admin-services') as any;
 
 const createWrapper = () => {
   const queryClient = new QueryClient({
@@ -72,9 +73,7 @@ describe('useAdminQueries', () => {
         'emp1'
       ]);
       expect(adminQueryKeys.bloodGroups).toEqual(['adminBloodGroups']);
-      expect(adminQueryKeys.employmentTypes).toEqual([
-        'adminEmploymentTypes'
-      ]);
+      expect(adminQueryKeys.employmentTypes).toEqual(['adminEmploymentTypes']);
       expect(adminQueryKeys.employeeRoles).toEqual(['adminEmployeeRoles']);
       expect(adminQueryKeys.approvers).toEqual(['adminApprovers']);
       expect(adminQueryKeys.feedbackAttributes).toEqual([
@@ -93,14 +92,15 @@ describe('useAdminQueries', () => {
         'adminEmployee',
         'emp1'
       ]);
-      expect(adminQueryKeys.package('pkg1')).toEqual([
-        'adminPackage',
-        'pkg1'
-      ]);
+      expect(adminQueryKeys.package('pkg1')).toEqual(['adminPackage', 'pkg1']);
       expect(adminQueryKeys.course('crs1')).toEqual(['adminCourse', 'crs1']);
       expect(adminQueryKeys.courseAssignmentDetail('ca1')).toEqual([
         'adminCourseAssignmentDetail',
         'ca1'
+      ]);
+      expect(adminQueryKeys.assignedCoursesForEmployee('emp1')).toEqual([
+        'adminAssignedCoursesForEmployee',
+        'emp1'
       ]);
     });
   });
@@ -173,10 +173,9 @@ describe('useAdminQueries', () => {
     it('does not fetch when the id is an empty string', async () => {
       const { wrapper } = createWrapper();
 
-      const { result } = renderHook(
-        () => useGetEmployeeDetailsByAdmin(''),
-        { wrapper }
-      );
+      const { result } = renderHook(() => useGetEmployeeDetailsByAdmin(''), {
+        wrapper
+      });
 
       expect(adminService().getEmployeeDetailsByAdmin).not.toHaveBeenCalled();
     });
@@ -184,9 +183,7 @@ describe('useAdminQueries', () => {
 
   describe('useGetAllPackagesByAdmin', () => {
     it('fetches all packages', async () => {
-      adminService().getAllPackagesByAdmin.mockResolvedValue([
-        { id: 'pkg1' }
-      ]);
+      adminService().getAllPackagesByAdmin.mockResolvedValue([{ id: 'pkg1' }]);
       const { wrapper } = createWrapper();
 
       const { result } = renderHook(() => useGetAllPackagesByAdmin(), {
@@ -207,10 +204,9 @@ describe('useAdminQueries', () => {
       });
       const { wrapper } = createWrapper();
 
-      const { result } = renderHook(
-        () => useGetPackageDetailsByAdmin('pkg1'),
-        { wrapper }
-      );
+      const { result } = renderHook(() => useGetPackageDetailsByAdmin('pkg1'), {
+        wrapper
+      });
 
       expect(adminService().getPackageDetailsByAdmin).toHaveBeenCalledWith(
         'pkg1'
@@ -232,10 +228,9 @@ describe('useAdminQueries', () => {
     it('does not fetch when the id is an empty string', async () => {
       const { wrapper } = createWrapper();
 
-      const { result } = renderHook(
-        () => useGetPackageDetailsByAdmin(''),
-        { wrapper }
-      );
+      const { result } = renderHook(() => useGetPackageDetailsByAdmin(''), {
+        wrapper
+      });
 
       expect(adminService().getPackageDetailsByAdmin).not.toHaveBeenCalled();
     });
@@ -256,9 +251,7 @@ describe('useAdminQueries', () => {
       expect(adminService().getEmployeePackagesByAdmin).toHaveBeenCalledWith(
         'emp1'
       );
-      await waitFor(() =>
-        expect(result.current.data).toEqual([{ id: 'ep1' }])
-      );
+      await waitFor(() => expect(result.current.data).toEqual([{ id: 'ep1' }]));
     });
 
     it('does not fetch when enabled is false', async () => {
@@ -275,10 +268,9 @@ describe('useAdminQueries', () => {
     it('does not fetch when the id is an empty string', async () => {
       const { wrapper } = createWrapper();
 
-      const { result } = renderHook(
-        () => useGetEmployeePackagesByAdmin(''),
-        { wrapper }
-      );
+      const { result } = renderHook(() => useGetEmployeePackagesByAdmin(''), {
+        wrapper
+      });
 
       expect(adminService().getEmployeePackagesByAdmin).not.toHaveBeenCalled();
     });
@@ -340,9 +332,7 @@ describe('useAdminQueries', () => {
 
   describe('useGetAllApproversByAdmin', () => {
     it('fetches all approvers', async () => {
-      adminService().getAllApproversByAdmin.mockResolvedValue([
-        { id: 'emp2' }
-      ]);
+      adminService().getAllApproversByAdmin.mockResolvedValue([{ id: 'emp2' }]);
       const { wrapper } = createWrapper();
 
       const { result } = renderHook(() => useGetAllApproversByAdmin(), {
@@ -363,9 +353,12 @@ describe('useAdminQueries', () => {
       ]);
       const { wrapper } = createWrapper();
 
-      const { result } = renderHook(() => useGetAllFeedbackAttributesByAdmin(), {
-        wrapper
-      });
+      const { result } = renderHook(
+        () => useGetAllFeedbackAttributesByAdmin(),
+        {
+          wrapper
+        }
+      );
 
       expect(adminService().getallfeedbackattributesbyadmin).toHaveBeenCalled();
       await waitFor(() =>
@@ -445,9 +438,7 @@ describe('useAdminQueries', () => {
 
   describe('useGetAllCourseAssignments', () => {
     it('fetches all course assignments', async () => {
-      adminService().getAllCourseAssignments.mockResolvedValue([
-        { id: 'ca1' }
-      ]);
+      adminService().getAllCourseAssignments.mockResolvedValue([{ id: 'ca1' }]);
       const { wrapper } = createWrapper();
 
       const { result } = renderHook(() => useGetAllCourseAssignments(), {
@@ -455,9 +446,54 @@ describe('useAdminQueries', () => {
       });
 
       expect(adminService().getAllCourseAssignments).toHaveBeenCalled();
-      await waitFor(() =>
-        expect(result.current.data).toEqual([{ id: 'ca1' }])
+      await waitFor(() => expect(result.current.data).toEqual([{ id: 'ca1' }]));
+    });
+  });
+
+  describe('useFetchAssignedCoursesForEmployee', () => {
+    it('fetches the assigned courses for the employee', async () => {
+      adminService().fetchAssignedCoursesForEmployee.mockResolvedValue([
+        { courseId: 'ca1' }
+      ]);
+      const { wrapper } = createWrapper();
+
+      const { result } = renderHook(
+        () => useFetchAssignedCoursesForEmployee('emp1'),
+        { wrapper }
       );
+
+      expect(
+        adminService().fetchAssignedCoursesForEmployee
+      ).toHaveBeenCalledWith('emp1');
+      await waitFor(() =>
+        expect(result.current.data).toEqual([{ courseId: 'ca1' }])
+      );
+    });
+
+    it('does not fetch when enabled is false', async () => {
+      const { wrapper } = createWrapper();
+
+      const { result } = renderHook(
+        () => useFetchAssignedCoursesForEmployee('emp1', false),
+        { wrapper }
+      );
+
+      expect(
+        adminService().fetchAssignedCoursesForEmployee
+      ).not.toHaveBeenCalled();
+    });
+
+    it('does not fetch when the id is an empty string', async () => {
+      const { wrapper } = createWrapper();
+
+      const { result } = renderHook(
+        () => useFetchAssignedCoursesForEmployee(''),
+        { wrapper }
+      );
+
+      expect(
+        adminService().fetchAssignedCoursesForEmployee
+      ).not.toHaveBeenCalled();
     });
   });
 
@@ -493,10 +529,9 @@ describe('useAdminQueries', () => {
     it('does not fetch when the id is an empty string', async () => {
       const { wrapper } = createWrapper();
 
-      const { result } = renderHook(
-        () => useGetCourseAssignmentDetails(''),
-        { wrapper }
-      );
+      const { result } = renderHook(() => useGetCourseAssignmentDetails(''), {
+        wrapper
+      });
 
       expect(adminService().getCourseAssignmentDetails).not.toHaveBeenCalled();
     });

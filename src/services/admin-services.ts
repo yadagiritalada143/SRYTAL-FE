@@ -6,7 +6,8 @@ import moment from 'moment';
 import { apiClient } from '@utils/api-client';
 import {
   AdminAssignment,
-  AdminAssignmentDetail
+  AdminAssignmentDetail,
+  AssignedCourseForEmployee
 } from '@interfaces/course-assignment';
 
 export const registerEmployee = async (employeeDetails: AddEmployeeForm) => {
@@ -881,6 +882,17 @@ export const getAllCourseAssignments = async (): Promise<AdminAssignment[]> => {
     params: { limit: 100000 }
   });
   return response.data.data;
+};
+
+export const fetchAssignedCoursesForEmployee = async (
+  userId: string
+): Promise<AssignedCourseForEmployee[]> => {
+  try {
+    const response = await apiClient.get(`/admin/courses/assigned/${userId}`);
+    return response.data.data;
+  } catch (error) {
+    throw error;
+  }
 };
 
 export const getCourseAssignmentDetails = async (

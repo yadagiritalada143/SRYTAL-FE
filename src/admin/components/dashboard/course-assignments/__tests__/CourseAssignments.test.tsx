@@ -10,6 +10,8 @@ let mockCourses: any[] = [];
 let mockEmployeeLoading = false;
 let mockCoursesLoading = false;
 let mockDetailedCourse: any = null;
+let mockAssignments: any[] = [];
+let mockAssignmentsLoading = false;
 
 jest.mock('@hooks/queries/useAdminQueries', () => ({
   useGetAllEmployeesByAdmin: () => ({
@@ -23,6 +25,10 @@ jest.mock('@hooks/queries/useAdminQueries', () => ({
   useGetCourseByIdAdmin: () => ({
     data: mockDetailedCourse,
     isLoading: false
+  }),
+  useFetchAssignedCoursesForEmployee: () => ({
+    data: mockAssignments,
+    isLoading: mockAssignmentsLoading
   })
 }));
 
@@ -141,12 +147,16 @@ describe('CourseAssignments Component', () => {
     mockEmployeeLoading = false;
     mockCoursesLoading = false;
     mockDetailedCourse = null;
+    mockAssignments = [];
+    mockAssignmentsLoading = false;
   });
 
   describe('Rendering', () => {
     it('renders the page header and subtitle', () => {
       renderAssignCourse();
-      expect(screen.getAllByText('Assign Course').length).toBeGreaterThanOrEqual(1);
+      expect(
+        screen.getAllByText('Assign Course').length
+      ).toBeGreaterThanOrEqual(1);
       expect(
         screen.getByText('Assign a course to an employee')
       ).toBeInTheDocument();
@@ -187,9 +197,15 @@ describe('CourseAssignments Component', () => {
 
     it('renders section descriptions', () => {
       renderAssignCourse();
-      expect(screen.getByText('Choose the employee to assign this course to')).toBeInTheDocument();
-      expect(screen.getByText('Choose the course to assign')).toBeInTheDocument();
-      expect(screen.getByText('Set a deadline for this assignment')).toBeInTheDocument();
+      expect(
+        screen.getByText('Choose the employee to assign this course to')
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText('Choose the course to assign')
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText('Set a deadline for this assignment')
+      ).toBeInTheDocument();
     });
   });
 
@@ -299,6 +315,52 @@ describe('CourseAssignments Component', () => {
       expect(
         screen.getAllByText('Assign Course').length
       ).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  describe('Filtering assigned courses', () => {
+    it('hides courses already assigned to the selected employee', () => {
+      mockAssignments = [{ courseId: 'c1' }];
+      renderAssignCourse();
+
+      const empSelect = screen.getByPlaceholderText('Search by ID or name...');
+      fireEvent.mouseDown(empSelect);
+      fireEvent.click(screen.getByText(/John Doe/));
+
+      const courseSelect = screen.getByPlaceholderText('Search courses...');
+      fireEvent.mouseDown(courseSelect);
+
+      expect(screen.getByText('Node.js Advanced')).toBeInTheDocument();
+      expect(screen.queryByText('React Fundamentals')).not.toBeInTheDocument();
+    });
+
+    it('clears the selected course when it is already assigned to the employee', async () => {
+      mockAssignments = [{ courseId: 'c1' }];
+      renderAssignCourse();
+
+      const courseSelect = screen.getByPlaceholderText('Search courses...');
+      fireEvent.mouseDown(courseSelect);
+      fireEvent.click(screen.getByText('React Fundamentals'));
+
+      expect(courseSelect).toHaveValue('React Fundamentals');
+
+      const empSelect = screen.getByPlaceholderText('Search by ID or name...');
+      fireEvent.mouseDown(empSelect);
+      fireEvent.click(screen.getByText(/John Doe/));
+
+      await act(async () => {
+        fireEvent.change(empSelect);
+      });
+
+      expect(
+        screen.getByRole('button', { name: /assign course/i })
+      ).toBeDisabled();
+    });
+
+    it('shows loading when assignments are loading', () => {
+      mockAssignmentsLoading = true;
+      renderAssignCourse();
+      expect(screen.getByText('loading')).toBeInTheDocument();
     });
   });
 });
