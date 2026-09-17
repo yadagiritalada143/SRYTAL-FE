@@ -404,6 +404,33 @@ describe('EmployeeCourseProgress', () => {
     );
   });
 
+  it('collapses and expands the module tasks with the arrow button', () => {
+    renderComponent();
+    fireEvent.click(screen.getByText('Onboarding Course'));
+
+    const expandButton = screen.getByRole('button', {
+      name: 'Collapse Intro Module'
+    });
+    expect(expandButton).toBeInTheDocument();
+    expect(screen.getByText('Welcome')).toBeInTheDocument();
+    expect(screen.getByText('Assessment')).toBeInTheDocument();
+
+    fireEvent.click(expandButton);
+
+    expect(
+      screen.queryByRole('button', { name: 'Expand Intro Module' })
+    ).toBeInTheDocument();
+    expect(screen.queryByText('Welcome')).not.toBeInTheDocument();
+    expect(screen.queryByText('Assessment')).not.toBeInTheDocument();
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Expand Intro Module' })
+    );
+
+    expect(screen.getByText('Welcome')).toBeInTheDocument();
+    expect(screen.getByText('Assessment')).toBeInTheDocument();
+  });
+
   it('navigates back to the track progress page', () => {
     renderComponent();
     fireEvent.click(screen.getByRole('button', { name: 'Back' }));

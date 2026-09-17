@@ -132,6 +132,21 @@ const EmployeeCourseProgress = () => {
   const [opened, { open, close }] = useDisclosure(false);
   const [sortKey, setSortKey] = useState<SortKey | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>('asc');
+  const [collapsedModules, setCollapsedModules] = useState<Set<string>>(
+    new Set()
+  );
+
+  const toggleModule = (moduleId: string) => {
+    setCollapsedModules(prev => {
+      const next = new Set(prev);
+      if (next.has(moduleId)) {
+        next.delete(moduleId);
+      } else {
+        next.add(moduleId);
+      }
+      return next;
+    });
+  };
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -186,6 +201,7 @@ const EmployeeCourseProgress = () => {
 
   const handleRowClick = (assignmentId: string) => {
     setSelectedAssignmentId(assignmentId);
+    setCollapsedModules(new Set());
     const assignment = assignments.find(
       a => a.courseAssignmentId === assignmentId
     );
@@ -598,86 +614,124 @@ const EmployeeCourseProgress = () => {
                 </Center>
               ) : (
                 <Stack gap='md'>
-                  {detailCourse.modules.map(module => (
-                    <Card key={module._id} withBorder radius='md' p='md'>
-                      <Stack gap='sm'>
-                        <Group justify='space-between' wrap='wrap'>
-                          <Text fw={600} size='sm'>
-                            {module.moduleName}
-                          </Text>
-                          <Badge variant='light' color='gray'>
-                            {module.completedTasks}/{module.totalTasks} tasks
-                          </Badge>
-                        </Group>
-                        <Stack gap={6}>
-                          {module.tasks.map(task => (
+                  {detailCourse.modules.map(module => {
+                    const collapsed = collapsedModules.has(module._id);
+                    return (
+                      <Card key={module._id} withBorder radius='md' p='md'>
+                        <Stack gap='sm'>
+                          <Group justify='space-between' wrap='wrap'>
                             <Group
-                              key={task._id}
-                              gap='sm'
-                              justify='space-between'
-                              p='xs'
-                              style={{
-                                borderRadius: 8,
-                                background:
-                                  'light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-5))',
-                                color:
-                                  'light-dark(var(--mantine-color-dark-9), var(--mantine-color-gray-1))'
-                              }}
+                              gap='xs'
+                              wrap='nowrap'
+                              style={{ minWidth: 0 }}
                             >
-                              <Group gap='sm'>
-                                <ThemeIcon
-                                  size={22}
+                              <Tooltip
+                                label={collapsed ? 'Show tasks' : 'Hide tasks'}
+                                withArrow
+                              >
+                                <ActionIcon
+                                  variant='subtle'
+                                  color={themeConfig.color}
                                   radius='xl'
-                                  color={task.isCompleted ? 'green' : 'gray'}
-                                  variant={
-                                    task.isCompleted ? 'filled' : 'light'
+                                  size='lg'
+                                  aria-label={
+                                    collapsed
+                                      ? `Expand ${module.moduleName}`
+                                      : `Collapse ${module.moduleName}`
                                   }
+                                  onClick={() => toggleModule(module._id)}
                                 >
-                                  {task.isCompleted ? (
-                                    <IconCheck size={13} />
+                                  {collapsed ? (
+                                    <IconChevronRight size={18} />
                                   ) : (
-                                    <IconCircleDot size={13} />
+                                    <IconChevronDown size={18} />
                                   )}
-                                </ThemeIcon>
-                                <Text size='sm'>{task.taskName}</Text>
-                              </Group>
-                              <Group gap='xs'>
-                                <Badge
-                                  size='xs'
-                                  variant='light'
-                                  color={task.isCompleted ? 'green' : 'gray'}
-                                >
-                                  {task.type}
-                                </Badge>
-                                {task.isCompleted ? (
-                                  <Badge
-                                    size='xs'
-                                    color='green'
-                                    variant='light'
-                                  >
-                                    Done
-                                  </Badge>
-                                ) : task.completedAt ? (
-                                  <Tooltip
-                                    label={formatDate(task.completedAt)}
-                                    withArrow
-                                  >
-                                    <Text
-                                      size='xs'
-                                      c='dimmed'
-                                      style={{ cursor: 'default' }}
-                                    >
-                                      {formatDate(task.completedAt)}
-                                    </Text>
-                                  </Tooltip>
-                                ) : null}
-                              </Group>
+                                </ActionIcon>
+                              </Tooltip>
+                              <Text fw={600} size='sm' lineClamp={1}>
+                                {module.moduleName}
+                              </Text>
                             </Group>
-                          ))}
+                            <Badge variant='light' color='gray'>
+                              {module.completedTasks}/{module.totalTasks} tasks
+                            </Badge>
+                          </Group>
+                          {!collapsed && (
+                            <Stack gap={6}>
+                              {module.tasks.map(task => (
+                                <Group
+                                  key={task._id}
+                                  gap='sm'
+                                  justify='space-between'
+                                  p='xs'
+                                  style={{
+                                    borderRadius: 8,
+                                    background:
+                                      'light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-5))',
+                                    color:
+                                      'light-dark(var(--mantine-color-dark-9), var(--mantine-color-gray-1))'
+                                  }}
+                                >
+                                  <Group gap='sm'>
+                                    <ThemeIcon
+                                      size={22}
+                                      radius='xl'
+                                      color={
+                                        task.isCompleted ? 'green' : 'gray'
+                                      }
+                                      variant={
+                                        task.isCompleted ? 'filled' : 'light'
+                                      }
+                                    >
+                                      {task.isCompleted ? (
+                                        <IconCheck size={13} />
+                                      ) : (
+                                        <IconCircleDot size={13} />
+                                      )}
+                                    </ThemeIcon>
+                                    <Text size='sm'>{task.taskName}</Text>
+                                  </Group>
+                                  <Group gap='xs'>
+                                    <Badge
+                                      size='xs'
+                                      variant='light'
+                                      color={
+                                        task.isCompleted ? 'green' : 'gray'
+                                      }
+                                    >
+                                      {task.type}
+                                    </Badge>
+                                    {task.isCompleted ? (
+                                      <Badge
+                                        size='xs'
+                                        color='green'
+                                        variant='light'
+                                      >
+                                        Done
+                                      </Badge>
+                                    ) : task.completedAt ? (
+                                      <Tooltip
+                                        label={formatDate(task.completedAt)}
+                                        withArrow
+                                      >
+                                        <Text
+                                          size='xs'
+                                          c='dimmed'
+                                          style={{ cursor: 'default' }}
+                                        >
+                                          {formatDate(task.completedAt)}
+                                        </Text>
+                                      </Tooltip>
+                                    ) : null}
+                                  </Group>
+                                </Group>
+                              ))}
+                            </Stack>
+                          )}
                         </Stack>
-                      </Stack>
-                    </Card>
-                  ))}
+                      </Card>
+                    );
+                  })}
                 </Stack>
               )}
             </Stack>
