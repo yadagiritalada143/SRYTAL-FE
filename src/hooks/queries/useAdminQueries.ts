@@ -15,7 +15,8 @@ import {
   getAllCoursesByAdmin,
   getCourseByIdAdmin,
   getAllCourseAssignments,
-  getCourseAssignmentDetails
+  getCourseAssignmentDetails,
+  fetchAssignedCoursesForEmployee
 } from '@services/admin-services';
 
 export const adminQueryKeys = {
@@ -35,6 +36,8 @@ export const adminQueryKeys = {
   courses: ['adminCourses'] as const,
   course: (id: string) => ['adminCourse', id] as const,
   courseAssignments: ['adminCourseAssignments'] as const,
+  assignedCoursesForEmployee: (employeeId: string) =>
+    ['adminAssignedCoursesForEmployee', employeeId] as const,
   courseAssignmentDetail: (id: string) =>
     ['adminCourseAssignmentDetail', id] as const
 };
@@ -151,6 +154,17 @@ export const useGetAllCourseAssignments = () => {
   return useQuery({
     queryKey: adminQueryKeys.courseAssignments,
     queryFn: getAllCourseAssignments
+  });
+};
+
+export const useFetchAssignedCoursesForEmployee = (
+  employeeId: string,
+  enabled = true
+) => {
+  return useQuery({
+    queryKey: adminQueryKeys.assignedCoursesForEmployee(employeeId),
+    queryFn: () => fetchAssignedCoursesForEmployee(employeeId),
+    enabled: !!employeeId && enabled
   });
 };
 

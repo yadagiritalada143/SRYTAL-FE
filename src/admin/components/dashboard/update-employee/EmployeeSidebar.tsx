@@ -70,12 +70,13 @@ const EmployeeSidebar = ({
         <Group gap='xs' mb='xs'>
           <IconAlertTriangle size={16} color={themeConfig.dangerColor} />
           <Text fw={600} c={themeConfig.dangerColor}>
-            Delete Employee
+            Deactivate / Delete Employee
           </Text>
         </Group>
 
         <Text size='sm' c='dimmed' mb='sm'>
-          Permanently delete this employee and all associated records.
+          Deactivate this employee to hide their account and keep their data, or
+          permanently delete them and all associated records.
         </Text>
 
         <CommonButton
@@ -84,7 +85,7 @@ const EmployeeSidebar = ({
           leftSection={<IconTrash size={16} />}
           onClick={onDelete}
         >
-          Delete Employee
+          Deactivate or Delete
         </CommonButton>
       </Card>
     </Stack>

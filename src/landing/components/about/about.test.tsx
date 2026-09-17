@@ -4,7 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import About from './about';
 
 describe('About Component', () => {
-  it('renders section title and eyebrow badge', () => {
+  it('renders section title and description', () => {
     render(
       <BrowserRouter
         future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
@@ -15,7 +15,7 @@ describe('About Component', () => {
 
     expect(screen.getByText('About Us')).toBeInTheDocument();
     expect(
-      screen.getByText('Engineering Excellence & Innovation')
+      screen.getByText(/Empowering enterprises through/)
     ).toBeInTheDocument();
   });
 
@@ -53,15 +53,12 @@ describe('About Component', () => {
     expect(flipCard).toBeInTheDocument();
     expect(flipCard).not.toHaveClass('is-flipped');
 
-    // Click to flip
     fireEvent.click(flipCard);
     expect(flipCard).toHaveClass('is-flipped');
 
-    // Click again to flip back
     fireEvent.click(flipCard);
     expect(flipCard).not.toHaveClass('is-flipped');
 
-    // Hover to flip
     fireEvent.mouseEnter(flipCard);
     expect(flipCard).toHaveClass('is-flipped');
 
@@ -69,7 +66,7 @@ describe('About Component', () => {
     expect(flipCard).not.toHaveClass('is-flipped');
   });
 
-  it('renders quick action navigation links', () => {
+  it('renders the flip card showcase with front and back content', () => {
     render(
       <BrowserRouter
         future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
@@ -78,28 +75,13 @@ describe('About Component', () => {
       </BrowserRouter>
     );
 
-    expect(screen.getByText('Consult With Our Team')).toBeInTheDocument();
-    expect(screen.getByText('Explore Capabilities')).toBeInTheDocument();
-  });
-
-  it('renders bottom enterprise milestones metrics strip', () => {
-    render(
-      <BrowserRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-      >
-        <About />
-      </BrowserRouter>
-    );
-
-    expect(screen.getByText('5+')).toBeInTheDocument();
+    expect(screen.getByText('Innovation & Agility')).toBeInTheDocument();
+    expect(screen.getByText('Enterprise Partnership')).toBeInTheDocument();
     expect(
-      screen.getByText('Years Engineering Excellence')
+      screen.getByText('Next-Gen Software Architecture')
     ).toBeInTheDocument();
-    expect(screen.getByText('50+')).toBeInTheDocument();
-    expect(screen.getByText('Enterprise Deliveries')).toBeInTheDocument();
-    expect(screen.getByText('99.9%')).toBeInTheDocument();
-    expect(screen.getByText('Production Reliability')).toBeInTheDocument();
-    expect(screen.getByText('24/7')).toBeInTheDocument();
-    expect(screen.getByText('Dedicated Technical Support')).toBeInTheDocument();
+    expect(
+      screen.getByText('Enduring Strategic Collaboration')
+    ).toBeInTheDocument();
   });
 });

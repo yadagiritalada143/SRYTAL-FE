@@ -98,6 +98,7 @@ const CourseDetail = () => {
                   color='gray'
                   size={isMobile ? 'md' : 'lg'}
                   onClick={() => navigate(-1)}
+                  aria-label='Go back'
                   mt={{ base: 4, sm: 0 }}
                 >
                   <IconArrowLeft size={isMobile ? 18 : 20} />

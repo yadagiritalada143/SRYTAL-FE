@@ -99,6 +99,17 @@ export interface AdminAssignment {
   progress: CourseProgress;
 }
 
+export interface AssignedCourseForEmployee {
+  courseAssignmentId: string;
+  courseId: string;
+  courseName: string;
+  description: string;
+  status: string;
+  assignedDate: string;
+  dueDate: string;
+  assignedBy: string;
+}
+
 export interface AdminAssignmentDetailTask {
   _id: string;
   taskName: string;

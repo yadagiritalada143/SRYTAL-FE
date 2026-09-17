@@ -31,4 +31,15 @@ module.exports = {
   transformIgnorePatterns: [
     "node_modules/(?!(some-esm-package|another-esm-package)/)",
   ],
+  collectCoverageFrom: [
+    "src/**/*.{ts,tsx}",
+    "!src/**/*.d.ts",
+    "!src/**/*.test.{ts,tsx}",
+    "!src/**/*.spec.{ts,tsx}",
+    "!src/**/__tests__/**",
+    "!src/main.tsx",
+    "!src/vite-env.d.ts",
+  ],
+  coverageDirectory: "coverage",
+  coverageReporters: ["text", "text-summary", "html", "lcov"],
 };

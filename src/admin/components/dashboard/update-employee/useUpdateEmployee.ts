@@ -29,6 +29,7 @@ import {
   departmentsAtom
 } from '@atoms/employee-atom';
 import { normalizeDate } from './utils';
+import type { EmployeeDeleteMode } from './DeleteEmployeeModal';
 
 /**
  * All data + behavior for the Update Employee screen: dropdown options,
@@ -48,6 +49,8 @@ export const useUpdateEmployee = () => {
   const [opened, { open, close }] = useDisclosure(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
+  const [deleteMode, setDeleteMode] =
+    useState<EmployeeDeleteMode>('deactivate');
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -193,12 +196,26 @@ export const useUpdateEmployee = () => {
     }
   };
 
-  const handleDeleteEmployee = async () => {
+  const openDeleteModal = () => {
+    setConfirmDelete(false);
+    setAgreeTerms(false);
+    setDeleteMode('deactivate');
+    open();
+  };
+
+  const handleDeleteEmployee = async (mode: EmployeeDeleteMode) => {
     try {
-      const payload = { id: employeeId, confirmDelete: agreeTerms };
+      const payload = {
+        id: employeeId,
+        confirmDelete: mode === 'permanent'
+      };
       await deleteEmployeeMutation(payload);
 
-      showSuccessToast('Employee deleted successfully!');
+      showSuccessToast(
+        mode === 'permanent'
+          ? 'Employee permanently deleted!'
+          : 'Employee deactivated successfully!'
+      );
       navigate(
         `${organizationAdminUrls(organizationConfig.organization_name)}/dashboard/employees`
       );
@@ -234,11 +251,13 @@ export const useUpdateEmployee = () => {
     isSubmitting,
     submitError,
     setSubmitError,
-    deleteModal: { opened, open, close },
+    deleteModal: { opened, open: openDeleteModal, close },
     confirmDelete,
     setConfirmDelete,
     agreeTerms,
     setAgreeTerms,
+    deleteMode,
+    setDeleteMode,
     options: {
       bloodGroupOptions,
       employmentRolesOptions,

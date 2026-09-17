@@ -1,6 +1,12 @@
-module.exports = new Proxy(
-  {},
+const proxy = new Proxy(
+  { __esModule: true },
   {
-    get: (_target, prop) => (typeof prop === 'string' ? prop : ''),
+    get: (target, prop) => {
+      if (prop === '__esModule') return true;
+      if (prop === 'default') return proxy;
+      return typeof prop === 'string' ? prop : '';
+    }
   }
 );
+
+module.exports = proxy;
