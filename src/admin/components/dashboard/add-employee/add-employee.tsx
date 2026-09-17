@@ -32,6 +32,7 @@ import { useState } from 'react';
 import { ThemeBackground } from '@UI/Theme-background/background';
 import { useAppTheme } from '@hooks/use-app-theme';
 import { CommonButton } from '@components/common/button/CommonButton';
+import { BackButton } from '@common/style-components/buttons';
 
 // Constants
 const USER_ROLES = [
@@ -44,11 +45,7 @@ const USER_ROLES = [
 
 const AddEmployee = () => {
   const navigate = useNavigate();
-  const {
-    themeConfig: currentThemeConfig,
-    organizationConfig,
-    isDarkTheme
-  } = useAppTheme();
+  const { themeConfig: currentThemeConfig, organizationConfig } = useAppTheme();
 
   const { mutateAsync: registerEmployeeMutation } = useRegisterEmployee();
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -167,6 +164,7 @@ const AddEmployee = () => {
                   Fill in the details below to create a new employee account
                 </Text>
               </Stack>
+              <BackButton id='' />
             </Group>
 
             {/* Progress Indicator */}

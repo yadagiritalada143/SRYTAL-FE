@@ -122,6 +122,7 @@ describe('AddEmployee Component', () => {
   it('renders action buttons', () => {
     renderAddEmployee();
 
+    expect(screen.getByRole('button', { name: /back/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: /create employee/i })
@@ -259,6 +260,13 @@ describe('AddEmployee Component', () => {
       { timeout: 30000 }
     );
   }, 60000);
+
+  it('back button navigates to the previous page', () => {
+    renderAddEmployee();
+
+    fireEvent.click(screen.getByRole('button', { name: /back/i }));
+    expect(mockNavigate).toHaveBeenCalledWith(-1);
+  });
 
   it('cancel button navigates to employees list', () => {
     renderAddEmployee();

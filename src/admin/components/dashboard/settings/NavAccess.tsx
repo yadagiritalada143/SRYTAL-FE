@@ -70,8 +70,12 @@ const NavAccess = () => {
   const [userId, setUserId] = useState<string | null>(null);
   const [checked, setChecked] = useState<Set<string>>(new Set());
 
-  const { data: catalog = [], isLoading: catalogLoading } = useGetNavCatalog(surface);
-  const { data: roleAccess, isLoading: roleLoading } = useGetNavRoleAccess(role, mode === 'role');
+  const { data: catalog = [], isLoading: catalogLoading } =
+    useGetNavCatalog(surface);
+  const { data: roleAccess, isLoading: roleLoading } = useGetNavRoleAccess(
+    role,
+    mode === 'role'
+  );
   const { data: userAccess, isLoading: userLoading } = useGetNavUserAccess(
     userId || '',
     mode === 'user' && !!userId
@@ -82,12 +86,17 @@ const NavAccess = () => {
   const updateUser = useUpdateNavUserAccess();
 
   const systemKeys = useMemo(
-    () => new Set(catalog.filter((i: CatalogItem) => i.isSystem).map((i: CatalogItem) => i.key)),
+    () =>
+      new Set(
+        catalog
+          .filter((i: CatalogItem) => i.isSystem)
+          .map((i: CatalogItem) => i.key)
+      ),
     [catalog]
   );
   // Baseline = the role grant the selected user inherits (used to label/derive overrides).
   const roleBaseline = useMemo(
-    () => new Set<string>(mode === 'user' ? userAccess?.roleKeys ?? [] : []),
+    () => new Set<string>(mode === 'user' ? (userAccess?.roleKeys ?? []) : []),
     [mode, userAccess]
   );
 
@@ -118,7 +127,11 @@ const NavAccess = () => {
     if (systemKeys.has(key)) return; // locked
     setChecked(prev => {
       const next = new Set(prev);
-      next.has(key) ? next.delete(key) : next.add(key);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
       return next;
     });
   };
@@ -129,7 +142,9 @@ const NavAccess = () => {
         .filter(e => e.userRole !== ROLES.ADMIN)
         .map(e => ({
           value: e.id,
-          label: `${e.firstName ?? ''} ${e.lastName ?? ''}`.trim() + (e.employeeId ? ` · ${e.employeeId}` : '')
+          label:
+            `${e.firstName ?? ''} ${e.lastName ?? ''}`.trim() +
+            (e.employeeId ? ` · ${e.employeeId}` : '')
         })),
     [employees]
   );
@@ -151,7 +166,12 @@ const NavAccess = () => {
 
   // In user mode the catalog must match the user's surface.
   useEffect(() => {
-    if (mode === 'user' && userId && userAccess?.surface && userAccess.surface !== surface) {
+    if (
+      mode === 'user' &&
+      userId &&
+      userAccess?.surface &&
+      userAccess.surface !== surface
+    ) {
       setSurface(userAccess.surface);
     }
   }, [mode, userId, userAccess, surface]);
@@ -163,7 +183,8 @@ const NavAccess = () => {
         { role, navKeys: Array.from(finalSet) },
         {
           onSuccess: () => showSuccessToast('Role menu access updated'),
-          onError: err => showErrorToast(getErrorMessage(err, 'Failed to update role access'))
+          onError: err =>
+            showErrorToast(getErrorMessage(err, 'Failed to update role access'))
         }
       );
     } else {
@@ -176,7 +197,8 @@ const NavAccess = () => {
         { userId, addedKeys, removedKeys },
         {
           onSuccess: () => showSuccessToast('User menu access updated'),
-          onError: err => showErrorToast(getErrorMessage(err, 'Failed to update user access'))
+          onError: err =>
+            showErrorToast(getErrorMessage(err, 'Failed to update user access'))
         }
       );
     }
@@ -200,7 +222,9 @@ const NavAccess = () => {
         style={{
           paddingLeft: indent ? 34 : 12,
           borderRadius: 8,
-          background: checked.has(item.key) ? `${themeConfig.color}0c` : 'transparent'
+          background: checked.has(item.key)
+            ? `${themeConfig.color}0c`
+            : 'transparent'
         }}
       >
         <Checkbox
@@ -208,6 +232,7 @@ const NavAccess = () => {
           disabled={locked}
           onChange={() => toggle(item.key)}
           color={themeConfig.color}
+          autoContrast
           label={
             <Group gap={6} wrap='nowrap'>
               <Text size='sm' fw={indent ? 400 : 500}>
@@ -248,8 +273,8 @@ const NavAccess = () => {
       <Stack gap={2}>
         <Title order={3}>Menu Access</Title>
         <Text size='sm' c='dimmed'>
-          Control which navigation items each role sees, and add or revoke items for individual
-          users. Users can only open pages their menu allows.
+          Control which navigation items each role sees, and add or revoke items
+          for individual users. Users can only open pages their menu allows.
         </Text>
       </Stack>
 
@@ -261,6 +286,7 @@ const NavAccess = () => {
           { value: 'user', label: 'By User' }
         ]}
         color={themeConfig.color}
+        autoContrast
         w={{ base: '100%', sm: 280 }}
       />
 
