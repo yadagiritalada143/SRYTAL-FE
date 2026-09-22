@@ -194,7 +194,7 @@ const Header: React.FC = () => {
             >
               <IconBrandLinkedin size={20} />
             </a>
-            <a
+            {/* <a
               href='https://www.facebook.com'
               target='_blank'
               rel='noopener noreferrer'
@@ -202,7 +202,7 @@ const Header: React.FC = () => {
               className='p-2 rounded-lg text-slate-400 hover:text-violet-300 hover:bg-slate-800/60 transition-colors'
             >
               <IconBrandFacebook size={20} />
-            </a>
+            </a> */}
           </div>
 
           {isLoggedIn ? (
@@ -299,7 +299,7 @@ const Header: React.FC = () => {
             >
               <IconBrandLinkedin size={20} />
             </a>
-            <a
+            {/* <a
               href='https://www.facebook.com'
               target='_blank'
               rel='noopener noreferrer'
@@ -316,7 +316,7 @@ const Header: React.FC = () => {
               className='p-2.5 rounded-xl text-slate-400 hover:text-violet-300 hover:bg-slate-800 transition-colors'
             >
               <IconBrandFacebook size={20} />
-            </a>
+            </a> */}
           </div>
 
           {isLoggedIn ? (
