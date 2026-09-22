@@ -1,1 +1,0 @@
-import{am as o,aQ as r,aR as m}from"./index-DcqYH8CX.js";function i({classNames:t,styles:l,props:e,stylesCtx:s}){const a=o();return{resolvedClassNames:m({theme:a,classNames:t,props:e,stylesCtx:s||void 0}),resolvedStyles:r({theme:a,styles:l,props:e,stylesCtx:s||void 0})}}export{i as u};

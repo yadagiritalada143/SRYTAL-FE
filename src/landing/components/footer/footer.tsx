@@ -15,27 +15,27 @@ const SocialIcons = [
     link: 'https://www.linkedin.com/company/srytal-systems-india-pvt-ltd',
     hoverClass:
       'hover:text-blue-400 hover:border-blue-500/50 hover:bg-blue-500/10'
-  },
-  {
-    name: 'Facebook',
-    icon: IconBrandFacebook,
-    link: 'https://www.facebook.com',
-    hoverClass:
-      'hover:text-blue-500 hover:border-blue-500/50 hover:bg-blue-500/10'
-  },
-  {
-    name: 'X (Twitter)',
-    icon: IconBrandX,
-    link: 'https://twitter.com',
-    hoverClass: 'hover:text-sky-400 hover:border-sky-500/50 hover:bg-sky-500/10'
-  },
-  {
-    name: 'GitHub',
-    icon: IconBrandGithub,
-    link: 'https://github.com',
-    hoverClass:
-      'hover:text-purple-400 hover:border-purple-500/50 hover:bg-purple-500/10'
   }
+  // {
+  //   name: 'Facebook',
+  //   icon: IconBrandFacebook,
+  //   link: 'https://www.facebook.com',
+  //   hoverClass:
+  //     'hover:text-blue-500 hover:border-blue-500/50 hover:bg-blue-500/10'
+  // },
+  // {
+  //   name: 'X (Twitter)',
+  //   icon: IconBrandX,
+  //   link: 'https://twitter.com',
+  //   hoverClass: 'hover:text-sky-400 hover:border-sky-500/50 hover:bg-sky-500/10'
+  // },
+  // {
+  //   name: 'GitHub',
+  //   icon: IconBrandGithub,
+  //   link: 'https://github.com',
+  //   hoverClass:
+  //     'hover:text-purple-400 hover:border-purple-500/50 hover:bg-purple-500/10'
+  // }
 ];
 
 const Footer: React.FC = () => {
