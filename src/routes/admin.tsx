@@ -83,6 +83,9 @@ const FeedbackTable = lazy(
 const DepartmentTable = lazy(
   () => import('@admin/components/dashboard/settings/DepartmentTable')
 );
+const ProgrammingLanguagesTable = lazy(
+  () => import('@admin/components/dashboard/settings/ProgrammingLanguagesTable')
+);
 const DateTableComponent = lazy(
   () => import('@components/common/timesheet/timesheet')
 );
@@ -106,9 +109,7 @@ const TrackProgress = lazy(
 );
 const EmployeeCourseProgress = lazy(
   () =>
-    import(
-      '@admin/components/dashboard/track-progress/EmployeeCourseProgress'
-    )
+    import('@admin/components/dashboard/track-progress/EmployeeCourseProgress')
 );
 // User domain components reused in Admin
 const Companies = lazy(
@@ -592,6 +593,10 @@ const AdminRoutes = () => {
                 <Route path='employment-types' element={<EmploymentTypes />} />
                 <Route path='employment-roles' element={<EmploymentRoles />} />
                 <Route path='departments' element={<DepartmentTable />} />
+                <Route
+                  path='programming-languages'
+                  element={<ProgrammingLanguagesTable />}
+                />
                 <Route path='feedback' element={<FeedbackTable />} />
                 <Route path='menu-access' element={<NavAccess />} />
               </Route>

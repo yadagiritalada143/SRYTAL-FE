@@ -50,6 +50,7 @@ describe('SettingsLayout', () => {
     expect(screen.getByText('Employment Types')).toBeInTheDocument();
     expect(screen.getByText('Employment Roles')).toBeInTheDocument();
     expect(screen.getByText('Departments')).toBeInTheDocument();
+    expect(screen.getByText('Programming Languages')).toBeInTheDocument();
     expect(screen.getByText('Feedback Attributes')).toBeInTheDocument();
     expect(screen.getByText('Menu Access')).toBeInTheDocument();
   });

@@ -11,6 +11,7 @@ import {
   getAllApproversByAdmin,
   getallfeedbackattributesbyadmin,
   getAllDepartmentsByAdmin,
+  getAllProgrammingLanguages,
   getDashboardStatsByAdmin,
   getAllCoursesByAdmin,
   getCourseByIdAdmin,
@@ -32,6 +33,7 @@ export const adminQueryKeys = {
   approvers: ['adminApprovers'] as const,
   feedbackAttributes: ['adminFeedbackAttributes'] as const,
   departments: ['adminDepartments'] as const,
+  programmingLanguages: ['adminProgrammingLanguages'] as const,
   dashboardStats: ['adminDashboardStats'] as const,
   courses: ['adminCourses'] as const,
   course: (id: string) => ['adminCourse', id] as const,
@@ -132,6 +134,13 @@ export const useGetAllDepartmentsByAdmin = () => {
   return useQuery({
     queryKey: adminQueryKeys.departments,
     queryFn: getAllDepartmentsByAdmin
+  });
+};
+
+export const useGetAllProgrammingLanguages = () => {
+  return useQuery({
+    queryKey: adminQueryKeys.programmingLanguages,
+    queryFn: getAllProgrammingLanguages
   });
 };
 

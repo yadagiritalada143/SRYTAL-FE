@@ -9,6 +9,7 @@ import {
   AdminAssignmentDetail,
   AssignedCourseForEmployee
 } from '@interfaces/course-assignment';
+import { ProgrammingLanguage } from '@interfaces/programming-language';
 
 export const registerEmployee = async (employeeDetails: AddEmployeeForm) => {
   const token = localStorage.getItem('token');
@@ -779,6 +780,73 @@ export const deleteDepartmentByAdmin = async (id: string) => {
   try {
     const response = await apiClient.delete(
       `/admin/deletedepartmentbyadmin/${id}`,
+      {
+        headers: { auth_token: token }
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getAllProgrammingLanguages = async (): Promise<
+  ProgrammingLanguage[]
+> => {
+  const token = localStorage.getItem('token');
+  try {
+    if (!token) {
+      throw 'Not authorized to access';
+    }
+
+    const response = await apiClient('/getallprogramminglanguages', {
+      headers: { auth_token: token }
+    });
+
+    return response.data.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const addProgrammingLanguage = async (data: {
+  languageName: string;
+}) => {
+  const token = localStorage.getItem('token');
+  try {
+    const response = await apiClient.post('/addprogramminglanguage', data, {
+      headers: { auth_token: token }
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const updateProgrammingLanguage = async (
+  id: string,
+  languageName: string
+) => {
+  const token = localStorage.getItem('token');
+  try {
+    const response = await apiClient.put(
+      '/updateprogramminglanguage',
+      { id, languageName },
+      {
+        headers: { auth_token: token }
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const deleteProgrammingLanguage = async (id: string) => {
+  const token = localStorage.getItem('token');
+  try {
+    const response = await apiClient.delete(
+      `/deleteprogramminglanguage/${id}`,
       {
         headers: { auth_token: token }
       }

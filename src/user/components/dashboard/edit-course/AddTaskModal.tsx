@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   Modal,
   Stack,
@@ -10,11 +11,19 @@ import {
   Text,
   Loader
 } from '@mantine/core';
-import { IconUpload, IconCheck, IconLink, IconFile } from '@tabler/icons-react';
+import {
+  IconUpload,
+  IconCheck,
+  IconLink,
+  IconFile,
+  IconCode
+} from '@tabler/icons-react';
 import { CommonButton } from '@components/common/button/CommonButton';
 import { useAddCourseTask } from '@hooks/mutations/useUserMutations';
 import { useCustomToast } from '@utils/common/toast';
 import { getErrorMessage } from '@utils/common/get-error-message';
+import { organizationEmployeeUrls } from '@utils/common/constants';
+import { saveTaskPopupState } from './task-popup-state';
 
 interface AddTaskModalProps {
   opened: boolean;
@@ -23,7 +32,7 @@ interface AddTaskModalProps {
   courseId: string;
 }
 
-type ContentMode = 'LINK' | 'FILE';
+type ContentMode = 'LINK' | 'FILE' | 'CODING';
 
 const AddTaskModal = ({
   opened,
@@ -31,6 +40,8 @@ const AddTaskModal = ({
   moduleId,
   courseId
 }: AddTaskModalProps) => {
+  const { organization = '' } = useParams();
+  const navigate = useNavigate();
   const [taskName, setTaskName] = useState('');
   const [taskDescription, setTaskDescription] = useState('');
   const [mode, setMode] = useState<ContentMode>('LINK');
@@ -56,7 +67,15 @@ const AddTaskModal = ({
     onClose();
   };
 
-  const hasContent = mode === 'LINK' ? !!link.trim() : !!file;
+  const handleManageLanguages = () => {
+    saveTaskPopupState({ courseId, moduleId });
+    navigate(
+      `${organizationEmployeeUrls(organization)}/dashboard/content-writer/programming-languages`
+    );
+  };
+
+  const hasContent =
+    mode === 'LINK' ? !!link.trim() : mode === 'FILE' ? !!file : false;
   const isValid = !!taskName.trim() && hasContent;
 
   const handleSubmit = async () => {
@@ -122,6 +141,15 @@ const AddTaskModal = ({
                     <span>File</span>
                   </Group>
                 )
+              },
+              {
+                value: 'CODING',
+                label: (
+                  <Group gap={6} justify='center'>
+                    <IconCode size={16} />
+                    <span>Coding</span>
+                  </Group>
+                )
               }
             ]}
           />
@@ -136,7 +164,7 @@ const AddTaskModal = ({
             onChange={e => setLink(e.target.value)}
             description='YouTube, blog posts, articles, or any public URL'
           />
-        ) : (
+        ) : mode === 'FILE' ? (
           <FileInput
             label='File'
             placeholder='Upload a PDF, Word, or any file'
@@ -147,6 +175,25 @@ const AddTaskModal = ({
             clearable
             description='Any file type is supported'
           />
+        ) : (
+          <Stack gap='xs'>
+            <Text size='sm' fw={500}>
+              Programming Language
+            </Text>
+            <CommonButton
+              variant='light'
+              leftSection={<IconCode size={16} />}
+              onClick={handleManageLanguages}
+              style={{ width: 'fit-content' }}
+            >
+              Add Programming Language
+            </CommonButton>
+            <Text size='xs' c='dimmed'>
+              Opens the programming languages page where you can add, edit or
+              delete languages. When you come back, this popup reopens so you
+              can continue.
+            </Text>
+          </Stack>
         )}
 
         <FileInput

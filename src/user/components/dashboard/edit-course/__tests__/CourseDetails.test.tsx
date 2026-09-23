@@ -3,6 +3,7 @@ import '@testing-library/jest-dom';
 import { MantineProvider } from '@mantine/core';
 import { BrowserRouter } from 'react-router-dom';
 import CourseDetails from '../CourseDetails';
+import { saveTaskPopupState } from '../task-popup-state';
 
 jest.mock('@constants', () => ({
   ROLES: { ADMIN: 'admin' },
@@ -201,6 +202,7 @@ const renderPage = () => {
 describe('CourseDetails', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    sessionStorage.clear();
     mockCourse = makeCourse();
     mockIsLoading = false;
   });
@@ -378,6 +380,28 @@ describe('CourseDetails', () => {
       expect(screen.getByTestId('add-task-modal')).toHaveAttribute(
         'data-module-id',
         'm1'
+      );
+    });
+
+    it('reopens the Add Task modal for the stored module after managing languages', () => {
+      saveTaskPopupState({ courseId: 'c1', moduleId: 'm2' });
+      renderPage();
+      expect(screen.getByTestId('add-task-modal')).toHaveAttribute(
+        'data-opened',
+        'true'
+      );
+      expect(screen.getByTestId('add-task-modal')).toHaveAttribute(
+        'data-module-id',
+        'm2'
+      );
+    });
+
+    it('does not reopen the Add Task modal when the pending course does not match', () => {
+      saveTaskPopupState({ courseId: 'other-course', moduleId: 'm1' });
+      renderPage();
+      expect(screen.getByTestId('add-task-modal')).toHaveAttribute(
+        'data-opened',
+        'false'
       );
     });
 
