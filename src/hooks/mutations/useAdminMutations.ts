@@ -33,6 +33,9 @@ import {
   addDepartmentByAdmin,
   updateDepartmentByAdmin,
   deleteDepartmentByAdmin,
+  addProgrammingLanguage,
+  updateProgrammingLanguage,
+  deleteProgrammingLanguage,
   assignCourseToEmployee,
   updateCourseAssignmentDueDate,
   unassignCourse
@@ -246,6 +249,22 @@ export const useUpdateDepartmentByAdmin = createMutationHook(
 export const useDeleteDepartmentByAdmin = createMutationHook(
   deleteDepartmentByAdmin,
   [adminQueryKeys.departments]
+);
+
+export const useAddProgrammingLanguage = createMutationHook(
+  addProgrammingLanguage,
+  [adminQueryKeys.programmingLanguages]
+);
+
+export const useUpdateProgrammingLanguage = createMutationHook(
+  ({ id, languageName }: { id: string; languageName: string }) =>
+    updateProgrammingLanguage(id, languageName),
+  [adminQueryKeys.programmingLanguages]
+);
+
+export const useDeleteProgrammingLanguage = createMutationHook(
+  deleteProgrammingLanguage,
+  [adminQueryKeys.programmingLanguages]
 );
 
 export const useAssignCourseToEmployee = () => {

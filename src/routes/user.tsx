@@ -62,6 +62,9 @@ const EmployeeCoursePortal = lazy(
 const CoursePlayer = lazy(
   () => import('@user/components/dashboard/course-portal/CoursePlayer')
 );
+const ProgrammingLanguagesTable = lazy(
+  () => import('@admin/components/dashboard/settings/ProgrammingLanguagesTable')
+);
 
 // Common components
 const Dashboard = lazy(() => import('@components/common/dashboard/dashboard'));
@@ -565,6 +568,12 @@ const EmployeeRoutes = () => {
                   element={<div>{<UpdateMenteeTasks />}</div>}
                 />
                 <Route path='content-writer' element={<WriterDashboard />} />
+                <Route element={<ContentWriterProtectedRoutes />}>
+                  <Route
+                    path='content-writer/programming-languages'
+                    element={<ProgrammingLanguagesTable showBackButton />}
+                  />
+                </Route>
                 <Route path='add-course' element={<AddCourse />} />
                 <Route path='course/:id' element={<CourseDetails />} />
                 <Route
@@ -610,6 +619,34 @@ const RecruiterProtectedRoutes = () => {
   }, [navigate, userRole, token, organizationConfig.organization_name]);
 
   if (!userRole || !token || userRole !== ROLES.RECRUITER) {
+    return null;
+  }
+
+  return <Outlet />;
+};
+
+const ContentWriterProtectedRoutes = () => {
+  const token = localStorage.getItem('token');
+  const userRole = localStorage.getItem('userRole');
+
+  const navigate = useNavigate();
+
+  const { organizationConfig } = useAppTheme();
+
+  useEffect(() => {
+    if (!userRole || !token || userRole !== ROLES.CONTENT_WRITER) {
+      toast.error('Not authorized to access');
+      setTimeout(() => {
+        navigate(
+          `${organizationEmployeeUrls(
+            organizationConfig.organization_name
+          )}/login`
+        );
+      }, 500);
+    }
+  }, [navigate, userRole, token, organizationConfig.organization_name]);
+
+  if (!userRole || !token || userRole !== ROLES.CONTENT_WRITER) {
     return null;
   }
 

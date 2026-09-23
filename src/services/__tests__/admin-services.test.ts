@@ -44,6 +44,10 @@ import {
   addDepartmentByAdmin,
   updateDepartmentByAdmin,
   deleteDepartmentByAdmin,
+  getAllProgrammingLanguages,
+  addProgrammingLanguage,
+  updateProgrammingLanguage,
+  deleteProgrammingLanguage,
   getNavCatalogByAdmin,
   getNavRoleAccessByAdmin,
   updateNavRoleAccessByAdmin,
@@ -782,6 +786,59 @@ describe('admin-services', () => {
 
       expect(mock.delete).toHaveBeenCalledWith(
         '/admin/deletedepartmentbyadmin/d1',
+        { headers: { auth_token: 'token' } }
+      );
+    });
+  });
+
+  describe('programming language functions', () => {
+    it('getAllProgrammingLanguages returns languages', async () => {
+      getItem.mockReturnValue('token');
+      mock.mockResolvedValue({
+        data: { data: [{ _id: 'l1', languageName: 'JavaScript' }] }
+      });
+
+      expect(await getAllProgrammingLanguages()).toEqual([
+        { _id: 'l1', languageName: 'JavaScript' }
+      ]);
+    });
+
+    it('addProgrammingLanguage posts', async () => {
+      getItem.mockReturnValue('token');
+      mock.post.mockResolvedValue({ data: { success: true } });
+
+      expect(
+        await addProgrammingLanguage({ languageName: 'JavaScript' })
+      ).toEqual({ success: true });
+
+      expect(mock.post).toHaveBeenCalledWith(
+        '/addprogramminglanguage',
+        { languageName: 'JavaScript' },
+        { headers: { auth_token: 'token' } }
+      );
+    });
+
+    it('updateProgrammingLanguage puts', async () => {
+      getItem.mockReturnValue('token');
+      mock.put.mockResolvedValue({ data: { success: true } });
+
+      await updateProgrammingLanguage('l1', 'JavaScript ES6');
+
+      expect(mock.put).toHaveBeenCalledWith(
+        '/updateprogramminglanguage',
+        { id: 'l1', languageName: 'JavaScript ES6' },
+        { headers: { auth_token: 'token' } }
+      );
+    });
+
+    it('deleteProgrammingLanguage deletes', async () => {
+      getItem.mockReturnValue('token');
+      mock.delete.mockResolvedValue({ data: { ok: 1 } });
+
+      await deleteProgrammingLanguage('l1');
+
+      expect(mock.delete).toHaveBeenCalledWith(
+        '/deleteprogramminglanguage/l1',
         { headers: { auth_token: 'token' } }
       );
     });

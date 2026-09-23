@@ -24,7 +24,7 @@ import {
   IconExternalLink,
   IconEdit
 } from '@tabler/icons-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useMediaQuery } from '@mantine/hooks';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAppTheme } from '@hooks/use-app-theme';
@@ -40,6 +40,7 @@ import EditCourseModal from './EditCourseModal';
 import EditModuleModal from './EditModuleModal';
 import EditTaskModal from './EditTaskModal';
 import CourseThumbnail from '../content-writer/CourseThumbnail';
+import { readTaskPopupState, clearTaskPopupState } from './task-popup-state';
 
 const CourseDetails = () => {
   const { id = '' } = useParams();
@@ -59,6 +60,14 @@ const CourseDetails = () => {
   const [courseEditOpen, setCourseEditOpen] = useState(false);
   const [moduleToEdit, setModuleToEdit] = useState<Module | null>(null);
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
+
+  useEffect(() => {
+    const pending = readTaskPopupState();
+    clearTaskPopupState();
+    if (pending && pending.courseId === id) {
+      setTaskModalModuleId(pending.moduleId);
+    }
+  }, [id]);
 
   const modules: Module[] = course?.modules || [];
   const totalTasks = modules.reduce(

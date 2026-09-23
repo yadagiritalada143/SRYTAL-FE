@@ -2,12 +2,20 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { MantineProvider } from '@mantine/core';
 import AddTaskModal from '../AddTaskModal';
+import { REOPEN_TASK_POPUP_KEY } from '../task-popup-state';
 
 jest.mock('@hooks/mutations/useUserMutations', () => ({
   useAddCourseTask: () => ({
     mutateAsync: mockAddTask,
     isPending: false
   })
+}));
+
+const mockNavigate = jest.fn();
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  useNavigate: () => mockNavigate,
+  useParams: () => ({ organization: 'acme' })
 }));
 
 const mockAddTask = jest.fn();
@@ -19,6 +27,10 @@ jest.mock('@utils/common/toast', () => ({
     showSuccessToast: mockShowSuccessToast,
     showErrorToast: mockShowErrorToast
   })
+}));
+
+jest.mock('@utils/common/constants', () => ({
+  organizationEmployeeUrls: (org: string) => `/${org}/employee`
 }));
 
 jest.mock('@utils/common/get-error-message', () => ({
@@ -54,7 +66,11 @@ jest.mock('@mantine/core', () => {
             aria-pressed={value === d.value}
             onClick={() => onChange(d.value)}
           >
-            {d.value === 'LINK' ? 'Link' : 'File'}
+            {d.value === 'LINK'
+              ? 'Link'
+              : d.value === 'FILE'
+                ? 'File'
+                : 'Coding'}
           </button>
         ))}
       </div>
@@ -92,12 +108,17 @@ const clickFileMode = () => {
   fireEvent.click(screen.getByRole('button', { name: 'File' }));
 };
 
+const clickCodingMode = () => {
+  fireEvent.click(screen.getByRole('button', { name: 'Coding' }));
+};
+
 const getMainFileInput = (container: HTMLElement) =>
   container.querySelectorAll('input[type="file"]')[0] as HTMLInputElement;
 
 describe('AddTaskModal', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    sessionStorage.clear();
     mockAddTask.mockResolvedValue({});
   });
 
@@ -132,6 +153,34 @@ describe('AddTaskModal', () => {
         screen.getByText('Upload a PDF, Word, or any file')
       ).toBeInTheDocument();
       expect(screen.queryByLabelText(/Link URL/)).not.toBeInTheDocument();
+    });
+
+    it('hides the Add Programming Language button for Link and File tasks', () => {
+      renderModal();
+      expect(
+        screen.queryByRole('button', {
+          name: 'Add Programming Language'
+        })
+      ).not.toBeInTheDocument();
+      clickFileMode();
+      expect(
+        screen.queryByRole('button', {
+          name: 'Add Programming Language'
+        })
+      ).not.toBeInTheDocument();
+    });
+
+    it('shows the Add Programming Language button for Coding tasks', () => {
+      renderModal();
+      clickCodingMode();
+      expect(screen.getByText('Programming Language')).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'Add Programming Language' })
+      ).toBeInTheDocument();
+      expect(screen.queryByLabelText(/Link URL/)).not.toBeInTheDocument();
+      expect(
+        screen.queryByText('Upload a PDF, Word, or any file')
+      ).not.toBeInTheDocument();
     });
 
     it('renders the thumbnail file input', () => {
@@ -179,6 +228,33 @@ describe('AddTaskModal', () => {
       expect(
         screen.getByRole('button', { name: 'Add Content' })
       ).not.toBeDisabled();
+    });
+  });
+
+  describe('Coding tasks', () => {
+    it('keeps Add Content disabled in Coding mode', () => {
+      renderModal();
+      typeTitle('FizzBuzz problem');
+      clickCodingMode();
+      expect(
+        screen.getByRole('button', { name: 'Add Content' })
+      ).toBeDisabled();
+    });
+
+    it('opens the programming languages page and remembers the module to reopen', () => {
+      renderModal();
+
+      clickCodingMode();
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Add Programming Language' })
+      );
+
+      expect(mockNavigate).toHaveBeenCalledWith(
+        '/acme/employee/dashboard/content-writer/programming-languages'
+      );
+      expect(
+        JSON.parse(sessionStorage.getItem(REOPEN_TASK_POPUP_KEY) || '{}')
+      ).toEqual({ courseId: 'c1', moduleId: 'm1' });
     });
   });
 
