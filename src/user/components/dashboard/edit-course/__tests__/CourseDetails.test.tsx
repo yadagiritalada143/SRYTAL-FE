@@ -73,6 +73,20 @@ jest.mock('@components/common/loaders/DataView', () => (props: any) => (
   </div>
 ));
 
+jest.mock('@mantine/core', () => {
+  const actual = jest.requireActual('@mantine/core');
+  return {
+    ...actual,
+    Modal: ({ opened, children, title }: any) =>
+      opened ? (
+        <div data-testid='coding-question-modal'>
+          <div>{title}</div>
+          {children}
+        </div>
+      ) : null
+  };
+});
+
 jest.mock('../../content-writer/CourseThumbnail', () => (props: any) => (
   <span data-testid='course-thumbnail' aria-label={props.name} />
 ));
@@ -302,6 +316,36 @@ describe('CourseDetails', () => {
       expect(archivedBadges.length).toBeGreaterThanOrEqual(1);
     });
 
+    it('shows a Coding badge for coding tasks', () => {
+      mockCourse = makeCourse({
+        modules: [
+          {
+            _id: 'm9',
+            moduleName: 'Coding Module',
+            moduleDescription: '',
+            status: 'ACTIVE',
+            tasks: [
+              {
+                _id: 't9',
+                taskName: 'FizzBuzz',
+                taskDescription: '',
+                status: 'ACTIVE',
+                type: 'LINK',
+                content: '',
+                isCoding: true,
+                question: 'Return fizz for multiples of three.',
+                thumbnailUrl: '',
+                thumbnail: ''
+              }
+            ]
+          }
+        ]
+      });
+      renderPage();
+      expect(screen.getByText('FizzBuzz')).toBeInTheDocument();
+      expect(screen.getByText('Coding')).toBeInTheDocument();
+    });
+
     it('shows task descriptions in task rows', () => {
       renderPage();
       expect(screen.getByText('Watch the intro')).toBeInTheDocument();
@@ -434,6 +478,48 @@ describe('CourseDetails', () => {
         '_blank',
         'noopener'
       );
+
+      openSpy.mockRestore();
+    });
+
+    it('shows the coding question in a modal instead of opening a tab', () => {
+      const openSpy = jest.spyOn(window, 'open').mockImplementation(() => null);
+      mockCourse = makeCourse({
+        modules: [
+          {
+            _id: 'm9',
+            moduleName: 'Coding Module',
+            moduleDescription: '',
+            status: 'ACTIVE',
+            tasks: [
+              {
+                _id: 't9',
+                taskName: 'FizzBuzz',
+                taskDescription: '',
+                status: 'ACTIVE',
+                type: 'LINK',
+                content: '',
+                isCoding: true,
+                question: 'Return fizz for multiples of three.',
+                thumbnailUrl: '',
+                thumbnail: ''
+              }
+            ]
+          }
+        ]
+      });
+      renderPage();
+
+      const openButton = screen
+        .getAllByText('Open')[0]!
+        .closest('button') as HTMLButtonElement;
+      fireEvent.click(openButton);
+
+      expect(screen.getByTestId('coding-question-modal')).toBeInTheDocument();
+      expect(
+        screen.getByText('Return fizz for multiples of three.')
+      ).toBeInTheDocument();
+      expect(openSpy).not.toHaveBeenCalled();
 
       openSpy.mockRestore();
     });

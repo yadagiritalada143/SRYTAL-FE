@@ -207,7 +207,7 @@ describe('CoursePlayer', () => {
 
   it('navigates back to the courses list', () => {
     renderPlayer();
-    fireEvent.click(screen.getByLabelText('Back to my courses'));
+    fireEvent.click(screen.getByRole('button', { name: 'Back' }));
 
     expect(mockNavigate).toHaveBeenCalledWith('../course-assignments');
   });

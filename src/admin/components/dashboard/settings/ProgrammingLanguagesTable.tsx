@@ -207,7 +207,7 @@ export default function ProgrammingLanguagesTable({
   useEffect(() => setActivePage(1), [itemsPerPage]);
 
   return (
-    <Container size='lg' pt={{ base: 'xl', sm: 56 }}>
+    <Container size='lg'>
       <Card
         radius='lg'
         p='lg'

@@ -17,6 +17,10 @@ export interface ResolvedTaskContent {
   externalUrl?: string;
 }
 
+export const isCodingTask = (
+  task: Pick<AssignedTask, 'type' | 'link'>
+): boolean => task.type === 'LINK' && !task.link;
+
 const EXTENSION_MIME_TYPES: Record<string, string> = {
   mp4: 'video/mp4',
   webm: 'video/webm',

@@ -14,6 +14,8 @@ import {
   updateCourseModuleContentWriter,
   updateCourseTaskContentWriter,
   updateMyTaskProgress,
+  runCode,
+  submitCode,
   saveUserOpenRouterKey
 } from '@services/user-services';
 import { userQueryKeys } from '../queries/useUserQueries';
@@ -31,7 +33,10 @@ import {
   UpdateModulePayload,
   UpdateTaskPayload
 } from '@interfaces/contentwriter';
-import { UpdateTaskProgressPayload } from '@interfaces/course-assignment';
+import {
+  RunCodePayload,
+  UpdateTaskProgressPayload
+} from '@interfaces/course-assignment';
 
 export const useAddCompany = () => {
   const queryClient = useQueryClient();
@@ -233,5 +238,17 @@ export const useSaveUserOpenRouterKey = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['userOpenRouterKey'] });
     }
+  });
+};
+
+export const useRunCode = () => {
+  return useMutation({
+    mutationFn: (data: RunCodePayload) => runCode(data)
+  });
+};
+
+export const useSubmitCode = () => {
+  return useMutation({
+    mutationFn: (data: RunCodePayload) => submitCode(data)
   });
 };

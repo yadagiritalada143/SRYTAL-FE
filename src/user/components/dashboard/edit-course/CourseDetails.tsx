@@ -13,7 +13,8 @@ import {
   Accordion,
   ThemeIcon,
   Center,
-  Tooltip
+  Tooltip,
+  Modal
 } from '@mantine/core';
 import {
   IconArrowLeft,
@@ -60,6 +61,7 @@ const CourseDetails = () => {
   const [courseEditOpen, setCourseEditOpen] = useState(false);
   const [moduleToEdit, setModuleToEdit] = useState<Module | null>(null);
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
+  const [taskToView, setTaskToView] = useState<Task | null>(null);
 
   useEffect(() => {
     const pending = readTaskPopupState();
@@ -76,8 +78,12 @@ const CourseDetails = () => {
   );
 
   // Opening goes through the backend, which redirects to the link or streams
-  // the uploaded file inline. Always opened in a fresh browser tab.
+  // the uploaded file inline. Always opened in a fresh browser tab. Coding
   const handleViewContent = (task: Task) => {
+    if (task.isCoding) {
+      setTaskToView(task);
+      return;
+    }
     window.open(getCourseTaskContentUrl(task._id), '_blank', 'noopener');
   };
 
@@ -372,6 +378,31 @@ const CourseDetails = () => {
         task={taskToEdit || undefined}
         courseId={id}
       />
+      <Modal
+        opened={!!taskToView}
+        onClose={() => setTaskToView(null)}
+        title='Coding Question'
+        centered
+      >
+        <Stack gap='sm'>
+          <Text fw={600}>{taskToView?.taskName}</Text>
+          <Paper
+            p='md'
+            radius='md'
+            withBorder
+            style={{ borderColor: currentThemeConfig.borderColor }}
+          >
+            <Text size='sm' style={{ whiteSpace: 'pre-wrap' }}>
+              {taskToView?.question || 'No question provided.'}
+            </Text>
+          </Paper>
+          <Group justify='flex-end'>
+            <CommonButton variant='default' onClick={() => setTaskToView(null)}>
+              Close
+            </CommonButton>
+          </Group>
+        </Stack>
+      </Modal>
     </Container>
   );
 };
@@ -399,6 +430,11 @@ const TaskRow = ({ task, onView, onEdit, borderColor }: TaskRowProps) => {
               <Text fw={500} size='sm' lineClamp={1}>
                 {task.taskName}
               </Text>
+              {task.isCoding && (
+                <Badge color='grape' radius='sm' variant='light' size='xs'>
+                  Coding
+                </Badge>
+              )}
               {task.status === 'ARCHIVE' && (
                 <Badge color='gray' radius='sm' variant='light' size='xs'>
                   Archived

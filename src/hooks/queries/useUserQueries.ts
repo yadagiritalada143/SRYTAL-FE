@@ -10,6 +10,7 @@ import {
   getEmployeeDashboard,
   getMyAssignedCourses,
   getMyAssignedCourseById,
+  getCodingQuestion,
   getUserOpenRouterKey
 } from '@services/user-services';
 import { getProfileImage } from '@services/common-services';
@@ -28,7 +29,9 @@ export const userQueryKeys = {
   myCourses: ['myAssignedCourses'] as const,
   myCourse: (courseAssignmentId: string) =>
     ['myAssignedCourse', courseAssignmentId] as const,
-  openRouterKey: (userId: string) => ['userOpenRouterKey', userId] as const
+  openRouterKey: (userId: string) => ['userOpenRouterKey', userId] as const,
+  codingQuestion: (questionId: string, language: string) =>
+    ['codingQuestion', questionId, language] as const
 };
 
 export const useGetCompanyDetails = () => {
@@ -121,5 +124,17 @@ export const useGetUserOpenRouterKey = (userId?: string, enabled = true) => {
     queryFn: getUserOpenRouterKey,
     enabled,
     retry: false
+  });
+};
+
+export const useGetCodingQuestion = (
+  questionId: string,
+  language = '',
+  enabled = true
+) => {
+  return useQuery({
+    queryKey: userQueryKeys.codingQuestion(questionId, language),
+    queryFn: () => getCodingQuestion(questionId, language),
+    enabled: !!questionId && enabled
   });
 };

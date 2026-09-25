@@ -5,9 +5,16 @@ import TaskContentViewer from '../TaskContentViewer';
 import { AssignedTask } from '@interfaces/course-assignment';
 
 let mockResolved: any = null;
+let mockIsCodingTask: jest.Mock;
+const mockNavigate = jest.fn();
+
+jest.mock('react-router-dom', () => ({
+  useNavigate: () => mockNavigate
+}));
 
 jest.mock('../task-content', () => ({
-  resolveTaskContent: () => mockResolved
+  resolveTaskContent: () => mockResolved,
+  isCodingTask: (task: any) => mockIsCodingTask(task)
 }));
 
 jest.mock('@services/user-services', () => ({
@@ -64,6 +71,7 @@ const renderViewer = (task: AssignedTask = makeTask()) => {
 describe('TaskContentViewer', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockIsCodingTask = jest.fn(() => false);
   });
 
   it('renders a video element with the resolved url and controls', () => {
@@ -225,5 +233,34 @@ describe('TaskContentViewer', () => {
     };
     renderViewer(makeTask({ type: 'FILE', contentFileName: undefined }));
     expect(screen.getByText('Attached file')).toBeInTheDocument();
+  });
+
+  it('opens the coding problem on its own page for coding tasks', () => {
+    mockResolved = {
+      kind: 'external',
+      url: '',
+      label: 'Article'
+    };
+    mockIsCodingTask.mockReturnValue(true);
+    renderViewer(makeTask({ type: 'LINK', link: '' }));
+
+    fireEvent.click(screen.getByText('Open coding problem'));
+
+    expect(mockNavigate).toHaveBeenCalledWith('task/t1');
+  });
+
+  it('does not offer the coding problem for a LINK task with a real url', () => {
+    mockResolved = {
+      kind: 'external',
+      url: 'https://blog.example.com/article',
+      label: 'Article',
+      externalUrl: 'https://blog.example.com/article'
+    };
+    renderViewer(
+      makeTask({ type: 'LINK', link: 'https://blog.example.com/article' })
+    );
+
+    expect(screen.queryByText('Open coding problem')).not.toBeInTheDocument();
+    expect(screen.getByText('External resource')).toBeInTheDocument();
   });
 });

@@ -22,6 +22,8 @@ jest.mock('@services/user-services', () => {
   const mockUpdateCourseModuleContentWriter = jest.fn();
   const mockUpdateCourseTaskContentWriter = jest.fn();
   const mockUpdateMyTaskProgress = jest.fn();
+  const mockRunCode = jest.fn();
+  const mockSubmitCode = jest.fn();
   const mockSaveUserOpenRouterKey = jest.fn();
   return {
     addCompanyByRecruiter: mockAddCompanyByRecruiter,
@@ -38,6 +40,8 @@ jest.mock('@services/user-services', () => {
     updateCourseModuleContentWriter: mockUpdateCourseModuleContentWriter,
     updateCourseTaskContentWriter: mockUpdateCourseTaskContentWriter,
     updateMyTaskProgress: mockUpdateMyTaskProgress,
+    runCode: mockRunCode,
+    submitCode: mockSubmitCode,
     saveUserOpenRouterKey: mockSaveUserOpenRouterKey
   };
 });
@@ -82,6 +86,8 @@ import {
   useUpdateCourseModule,
   useUpdateCourseTask,
   useUpdateMyTaskProgress,
+  useRunCode,
+  useSubmitCode,
   useSaveUserOpenRouterKey
 } from '@hooks/mutations/useUserMutations';
 
@@ -568,6 +574,52 @@ describe('useUpdateMyTaskProgress', () => {
       expect(
         queryClient.getQueryCache().findAll({ queryKey: ['myAssignedCourses'] })
       ).toHaveLength(1);
+    });
+  });
+});
+
+describe('useRunCode', () => {
+  it('posts the run payload to the runCode service', async () => {
+    const { wrapper } = createWrapper();
+    getMock('runCode').mockResolvedValue({ score: 80 });
+
+    const { result } = renderHook(() => useRunCode(), { wrapper });
+
+    await act(async () => {
+      await result.current.mutateAsync({
+        questionId: 't1',
+        language: 'Python',
+        code: 'print(1)'
+      });
+    });
+
+    expectCalledWithArgs(getMock('runCode'), {
+      questionId: 't1',
+      language: 'Python',
+      code: 'print(1)'
+    });
+  });
+});
+
+describe('useSubmitCode', () => {
+  it('posts the submit payload to the submitCode service', async () => {
+    const { wrapper } = createWrapper();
+    getMock('submitCode').mockResolvedValue({ score: 95 });
+
+    const { result } = renderHook(() => useSubmitCode(), { wrapper });
+
+    await act(async () => {
+      await result.current.mutateAsync({
+        questionId: 't1',
+        language: 'Python',
+        code: 'print(1)'
+      });
+    });
+
+    expectCalledWithArgs(getMock('submitCode'), {
+      questionId: 't1',
+      language: 'Python',
+      code: 'print(1)'
     });
   });
 });

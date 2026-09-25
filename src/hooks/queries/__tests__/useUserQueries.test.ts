@@ -14,6 +14,7 @@ import {
   useGetEmployeeDashboard,
   useGetMyAssignedCourses,
   useGetMyAssignedCourse,
+  useGetCodingQuestion,
   useGetUserOpenRouterKey
 } from '@hooks/queries/useUserQueries';
 
@@ -28,6 +29,7 @@ jest.mock('@services/user-services', () => ({
   getEmployeeDashboard: jest.fn(),
   getMyAssignedCourses: jest.fn(),
   getMyAssignedCourseById: jest.fn(),
+  getCodingQuestion: jest.fn(),
   getUserOpenRouterKey: jest.fn()
 }));
 
@@ -122,7 +124,9 @@ describe('useUserQueries', () => {
         wrapper
       });
 
-      expect(userService().getCompanyDetailsByIdByRecruiter).not.toHaveBeenCalled();
+      expect(
+        userService().getCompanyDetailsByIdByRecruiter
+      ).not.toHaveBeenCalled();
     });
 
     it('does not fetch when the id is an empty string', async () => {
@@ -130,7 +134,9 @@ describe('useUserQueries', () => {
 
       const { result } = renderHook(() => useGetCompanyById(''), { wrapper });
 
-      expect(userService().getCompanyDetailsByIdByRecruiter).not.toHaveBeenCalled();
+      expect(
+        userService().getCompanyDetailsByIdByRecruiter
+      ).not.toHaveBeenCalled();
     });
   });
 
@@ -146,9 +152,7 @@ describe('useUserQueries', () => {
       });
 
       expect(userService().getAllPoolCandidatesByEmployee).toHaveBeenCalled();
-      await waitFor(() =>
-        expect(result.current.data).toEqual([{ id: 'c1' }])
-      );
+      await waitFor(() => expect(result.current.data).toEqual([{ id: 'c1' }]));
     });
   });
 
@@ -232,7 +236,9 @@ describe('useUserQueries', () => {
 
   describe('useGetCourseById', () => {
     it('fetches the course with the given id', async () => {
-      userService().getCourseByIdContentWriter.mockResolvedValue({ id: 'crs1' });
+      userService().getCourseByIdContentWriter.mockResolvedValue({
+        id: 'crs1'
+      });
       const { wrapper } = createWrapper();
 
       const { result } = renderHook(() => useGetCourseById('crs1'), {
@@ -274,9 +280,7 @@ describe('useUserQueries', () => {
       });
 
       expect(userService().getEmployeeDashboard).toHaveBeenCalled();
-      await waitFor(() =>
-        expect(result.current.data).toEqual({ hours: 120 })
-      );
+      await waitFor(() => expect(result.current.data).toEqual({ hours: 120 }));
     });
   });
 
@@ -290,9 +294,7 @@ describe('useUserQueries', () => {
       });
 
       expect(userService().getMyAssignedCourses).toHaveBeenCalled();
-      await waitFor(() =>
-        expect(result.current.data).toEqual([{ id: 'ca1' }])
-      );
+      await waitFor(() => expect(result.current.data).toEqual([{ id: 'ca1' }]));
     });
   });
 
@@ -301,14 +303,11 @@ describe('useUserQueries', () => {
       userService().getMyAssignedCourseById.mockResolvedValue({ id: 'ca1' });
       const { wrapper } = createWrapper();
 
-      const { result } = renderHook(
-        () => useGetMyAssignedCourse('ca1'),
-        { wrapper }
-      );
+      const { result } = renderHook(() => useGetMyAssignedCourse('ca1'), {
+        wrapper
+      });
 
-      expect(userService().getMyAssignedCourseById).toHaveBeenCalledWith(
-        'ca1'
-      );
+      expect(userService().getMyAssignedCourseById).toHaveBeenCalledWith('ca1');
       await waitFor(() => expect(result.current.data).toEqual({ id: 'ca1' }));
     });
 
@@ -382,10 +381,51 @@ describe('useUserQueries', () => {
       );
 
       const cached = queryClient.getQueryCache().findAll();
-      expect(cached.map((q) => q.queryKey)).toContainEqual([
+      expect(cached.map(q => q.queryKey)).toContainEqual([
         'userOpenRouterKey',
         'current'
       ]);
+    });
+  });
+
+  describe('useGetCodingQuestion', () => {
+    it('fetches the coding question for the task and language', async () => {
+      userService().getCodingQuestion.mockResolvedValue({
+        questionId: 't1',
+        language: 'Python',
+        starterCode: 'def solve():'
+      });
+      const { wrapper } = createWrapper();
+
+      const { result } = renderHook(
+        () => useGetCodingQuestion('t1', 'Python'),
+        {
+          wrapper
+        }
+      );
+
+      await waitFor(() =>
+        expect(result.current.data).toEqual({
+          questionId: 't1',
+          language: 'Python',
+          starterCode: 'def solve():'
+        })
+      );
+      expect(userService().getCodingQuestion).toHaveBeenCalledWith(
+        't1',
+        'Python'
+      );
+    });
+
+    it('defaults to the empty language and stays disabled without a question id', async () => {
+      const { wrapper } = createWrapper();
+
+      const { result } = renderHook(() => useGetCodingQuestion(''), {
+        wrapper
+      });
+
+      expect(userService().getCodingQuestion).not.toHaveBeenCalled();
+      expect(result.current.data).toBeUndefined();
     });
   });
 });

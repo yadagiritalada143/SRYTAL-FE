@@ -62,6 +62,9 @@ const EmployeeCoursePortal = lazy(
 const CoursePlayer = lazy(
   () => import('@user/components/dashboard/course-portal/CoursePlayer')
 );
+const CodingTaskPage = lazy(
+  () => import('@user/components/dashboard/course-portal/CodingTaskPage')
+);
 const ProgrammingLanguagesTable = lazy(
   () => import('@admin/components/dashboard/settings/ProgrammingLanguagesTable')
 );
@@ -583,6 +586,10 @@ const EmployeeRoutes = () => {
                 <Route
                   path='course-assignments/:courseAssignmentId'
                   element={<CoursePlayer />}
+                />
+                <Route
+                  path='course-assignments/:courseAssignmentId/task/:taskId'
+                  element={<CodingTaskPage />}
                 />
                 <Route
                   path='reports/salary-slip'
