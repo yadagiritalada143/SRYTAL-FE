@@ -248,7 +248,13 @@ export const useRunCode = () => {
 };
 
 export const useSubmitCode = () => {
+  const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: RunCodePayload) => submitCode(data)
+    mutationFn: (data: RunCodePayload) => submitCode(data),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ['codingQuestion', variables.questionId]
+      });
+    }
   });
 };

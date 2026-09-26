@@ -54,7 +54,7 @@ const CodingQuestionViewer = ({
   const [code, setCode] = useState('');
   const [result, setResult] = useState<CodeRunResult | null>(null);
   const [runError, setRunError] = useState<string | null>(null);
-  const seededLanguage = useRef<string | null>(null);
+  const seededSources = useRef<Record<string, string>>({});
 
   const questionQuery = useGetCodingQuestion(task._id, language);
   const { mutateAsync: runCodeMutation, isPending: isRunning } = useRunCode();
@@ -64,9 +64,11 @@ const CodingQuestionViewer = ({
   // The starter code always comes from the backend for the selected language,
   // unless the employee already submitted a final answer in that language — then
   // that submitted code is seeded instead. On first load (no explicit language
-  // yet) adopt the backend's default language and seed it. Each language is
-  // seeded exactly once, so later refetches never clobber what the learner is
-  // typing.
+  // yet) adopt the backend's default language and seed it. A later background
+  // refetch (e.g. after the query is invalidated on submit) may bring a
+  // `lastSubmittedCode` that was saved after the first response, so the editor
+  // is re-seeded whenever the server source changes while the learner has not
+  // diverged from what was last seeded.
   useEffect(() => {
     const data = questionQuery.data;
     if (!data) return;
@@ -76,23 +78,27 @@ const CodingQuestionViewer = ({
     if (!language) {
       const defaultLanguage = options[0] || '';
       setLanguage(defaultLanguage);
-      if (seededLanguage.current !== defaultLanguage) {
-        seededLanguage.current = defaultLanguage;
-        setCode(data.lastSubmittedCode?.code || data.starterCode || '');
-      }
+    }
+
+    const target = language || options[0] || '';
+    if (!target || !isSameLanguage(data.language, target)) {
       return;
     }
 
-    if (
-      data.language &&
-      isSameLanguage(data.language, language) &&
-      seededLanguage.current !== language
-    ) {
-      seededLanguage.current = language;
-      setCode(data.lastSubmittedCode?.code || data.starterCode || '');
+    const key = target.toLowerCase();
+    const source = data.lastSubmittedCode?.code || data.starterCode || '';
+    const previous = seededSources.current[key];
+
+    // Seed on first encounter with a language, or re-seed when the server now
+    // returns a different source (the newly submitted code) and the editor
+    // still holds exactly what we seeded (i.e. the learner has not typed).
+    if (previous === undefined || (code === previous && source !== previous)) {
+      seededSources.current[key] = source;
+      setCode(source);
     }
-    // language is intentionally in the deps: switching it drives the refetch.
-  }, [questionQuery.data, language]);
+    // language and code are intentionally in the deps: switching the language
+    // drives the refetch, and re-seeding must respect what the learner types.
+  }, [questionQuery.data, language, code]);
 
   const handleLanguageChange = (next: string | null) => {
     if (!next || next === language) return;

@@ -120,7 +120,7 @@ const CodingTaskPage = () => {
                 <CommonButton
                   variant='default'
                   leftSection={<IconArrowLeft size={16} />}
-                  onClick={() => navigate('../', { relative: 'path' })}
+                  onClick={() => navigate('../..', { relative: 'path' })}
                 >
                   Back
                 </CommonButton>

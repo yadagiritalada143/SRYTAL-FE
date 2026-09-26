@@ -602,9 +602,12 @@ describe('useRunCode', () => {
 });
 
 describe('useSubmitCode', () => {
-  it('posts the submit payload to the submitCode service', async () => {
-    const { wrapper } = createWrapper();
+  it('posts the submit payload and invalidates the coding question', async () => {
+    const { queryClient, wrapper } = createWrapper();
     getMock('submitCode').mockResolvedValue({ score: 95 });
+    queryClient.setQueryData(['codingQuestion', 't1', ''], {
+      questionId: 't1'
+    });
 
     const { result } = renderHook(() => useSubmitCode(), { wrapper });
 
@@ -620,6 +623,11 @@ describe('useSubmitCode', () => {
       questionId: 't1',
       language: 'Python',
       code: 'print(1)'
+    });
+    await waitFor(() => {
+      expect(
+        queryClient.getQueryState(['codingQuestion', 't1', ''])?.isInvalidated
+      ).toBe(true);
     });
   });
 });

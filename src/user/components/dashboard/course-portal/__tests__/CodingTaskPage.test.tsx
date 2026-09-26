@@ -151,6 +151,6 @@ describe('CodingTaskPage', () => {
     renderPage();
     fireEvent.click(screen.getByRole('button', { name: 'Back' }));
 
-    expect(mockNavigate).toHaveBeenCalledWith('../', { relative: 'path' });
+    expect(mockNavigate).toHaveBeenCalledWith('../..', { relative: 'path' });
   });
 });
