@@ -34,6 +34,19 @@ jest.mock('@components/common/button/CommonButton', () => ({
   )
 }));
 
+jest.mock('../DescriptionEditor', () => (props: any) => (
+  <div>
+    <label>{props.label}</label>
+    <input
+      aria-label={props.label}
+      value={props.value}
+      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+        props.onChange(e.target.value)
+      }
+    />
+  </div>
+));
+
 jest.mock('@mantine/core', () => {
   const actual = jest.requireActual('@mantine/core');
   return {
@@ -123,10 +136,9 @@ describe('AddModuleModal', () => {
       fireEvent.change(screen.getByPlaceholderText('Enter module name'), {
         target: { value: 'React Basics' }
       });
-      fireEvent.change(
-        screen.getByPlaceholderText('What does this module cover?'),
-        { target: { value: 'Core concepts' } }
-      );
+      fireEvent.change(screen.getByLabelText('Module Description'), {
+        target: { value: 'Core concepts' }
+      });
 
       fireEvent.click(screen.getByRole('button', { name: 'Add Module' }));
 

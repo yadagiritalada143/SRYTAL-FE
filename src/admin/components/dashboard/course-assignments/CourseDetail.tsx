@@ -191,12 +191,7 @@ const CourseDetail = () => {
             <Card shadow='sm' p='xl' radius='md' withBorder>
               <Center>
                 <Stack align='center' gap='xs'>
-                  <ThemeIcon
-                    size={48}
-                    radius='xl'
-                    variant='light'
-                    color='gray'
-                  >
+                  <ThemeIcon size={48} radius='xl' variant='light' color='gray'>
                     <IconBook size={24} />
                   </ThemeIcon>
                   <Text c='dimmed' ta='center'>
@@ -246,10 +241,7 @@ const CourseDetail = () => {
                               borderColor: currentThemeConfig.borderColor
                             }}
                           >
-                            <Group
-                              justify='space-between'
-                              wrap='nowrap'
-                            >
+                            <Group justify='space-between' wrap='nowrap'>
                               <Group
                                 gap='sm'
                                 wrap='nowrap'

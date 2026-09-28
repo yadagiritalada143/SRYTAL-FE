@@ -27,6 +27,7 @@ import { getErrorMessage } from '@utils/common/get-error-message';
 import { useAppTheme } from '@hooks/use-app-theme';
 import { Task, CourseStatus, COURSE_STATUSES } from '@interfaces/contentwriter';
 import CourseThumbnail from '../content-writer/CourseThumbnail';
+import DescriptionEditor from './DescriptionEditor';
 
 interface EditTaskModalProps {
   opened: boolean;
@@ -111,13 +112,11 @@ const EditTaskModal = ({
           value={taskName}
           onChange={e => setTaskName(e.target.value)}
         />
-        <Textarea
+        <DescriptionEditor
           label='Description'
-          placeholder='Briefly describe this content'
-          autosize
-          minRows={2}
           value={taskDescription}
-          onChange={e => setTaskDescription(e.target.value)}
+          onChange={setTaskDescription}
+          resetKey={seededFor ?? undefined}
         />
 
         {task?.isCoding && (

@@ -24,6 +24,7 @@ import { useCustomToast } from '@utils/common/toast';
 import { getErrorMessage } from '@utils/common/get-error-message';
 import { organizationEmployeeUrls } from '@utils/common/constants';
 import { saveTaskPopupState } from './task-popup-state';
+import DescriptionEditor from './DescriptionEditor';
 
 interface AddTaskModalProps {
   opened: boolean;
@@ -115,13 +116,10 @@ const AddTaskModal = ({
           value={taskName}
           onChange={e => setTaskName(e.target.value)}
         />
-        <Textarea
+        <DescriptionEditor
           label='Description'
-          placeholder='Briefly describe this content'
-          autosize
-          minRows={2}
           value={taskDescription}
-          onChange={e => setTaskDescription(e.target.value)}
+          onChange={setTaskDescription}
         />
 
         <Stack gap='xs'>

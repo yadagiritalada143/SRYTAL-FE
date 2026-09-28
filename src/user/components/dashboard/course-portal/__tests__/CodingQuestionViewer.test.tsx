@@ -35,6 +35,7 @@ jest.mock('@hooks/use-app-theme', () => ({
   useAppTheme: () => ({
     themeConfig: {
       color: '#212529',
+      backgroundColor: '#ffffff',
       borderColor: '#dee2e6',
       mutedTextColor: '#868e96',
       cardBackground: '#ffffff'
@@ -155,6 +156,23 @@ describe('CodingQuestionViewer', () => {
     });
   });
 
+  it('inserts an indent on Tab and removes it on Shift+Tab', () => {
+    renderViewer();
+    const editor = screen.getByLabelText('Code editor') as HTMLTextAreaElement;
+    editor.focus();
+    editor.setSelectionRange(0, 0);
+
+    fireEvent.keyDown(editor, { key: 'Tab' });
+    expect(editor.value).toBe('    function solve() {}');
+
+    editor.setSelectionRange(4, 4);
+    fireEvent.keyDown(editor, {
+      key: 'Tab',
+      shiftKey: true
+    });
+    expect(editor.value).toBe('function solve() {}');
+  });
+
   it('seeds the editor with the submitted code when one exists', () => {
     mockUseGetCodingQuestion.mockImplementation(
       (_id: string, language: string) => ({
@@ -205,6 +223,30 @@ describe('CodingQuestionViewer', () => {
         'Code editor'
       ) as HTMLTextAreaElement;
       expect(editor.value).toBe('def solve():');
+    });
+  });
+
+  it('re-seeds with the target starter when switching back to a previous language', async () => {
+    renderViewer();
+
+    fireEvent.change(screen.getByLabelText('Language'), {
+      target: { value: 'Python' }
+    });
+
+    await waitFor(() => {
+      expect(
+        (screen.getByLabelText('Code editor') as HTMLTextAreaElement).value
+      ).toBe('def solve():');
+    });
+
+    fireEvent.change(screen.getByLabelText('Language'), {
+      target: { value: 'Javascript' }
+    });
+
+    await waitFor(() => {
+      expect(
+        (screen.getByLabelText('Code editor') as HTMLTextAreaElement).value
+      ).toBe('function solve() {}');
     });
   });
 

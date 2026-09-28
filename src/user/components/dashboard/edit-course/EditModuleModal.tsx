@@ -3,7 +3,6 @@ import {
   Modal,
   Stack,
   TextInput,
-  Textarea,
   Select,
   Group,
   Loader,
@@ -24,6 +23,7 @@ import {
   COURSE_STATUSES
 } from '@interfaces/contentwriter';
 import CourseThumbnail from '../content-writer/CourseThumbnail';
+import DescriptionEditor from './DescriptionEditor';
 
 interface EditModuleModalProps {
   opened: boolean;
@@ -106,13 +106,11 @@ const EditModuleModal = ({
           value={moduleName}
           onChange={e => setModuleName(e.target.value)}
         />
-        <Textarea
+        <DescriptionEditor
           label='Module Description'
-          placeholder='What does this module cover?'
-          autosize
-          minRows={3}
           value={moduleDescription}
-          onChange={e => setModuleDescription(e.target.value)}
+          onChange={setModuleDescription}
+          resetKey={seededFor ?? undefined}
         />
 
         <Stack gap={6}>

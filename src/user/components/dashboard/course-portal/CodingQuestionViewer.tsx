@@ -35,6 +35,47 @@ interface CodingQuestionViewerProps {
 const MONO_FONT =
   "'Fira Code', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace";
 
+const TAB_SIZE = 4;
+
+/**
+ * Makes Tab behave like an editor indent key: Tab inserts 4 spaces at the
+ * caret, Shift+Tab removes up to 4 spaces before it. The caret is restored
+ * after React commits the new value.
+ */
+const handleEditorKeyDown = (
+  event: React.KeyboardEvent<HTMLTextAreaElement>,
+  value: string,
+  onChange: (value: string) => void
+) => {
+  if (event.key !== 'Tab') return;
+
+  event.preventDefault();
+
+  const target = event.currentTarget;
+  const { selectionStart, selectionEnd } = target;
+  const before = value.slice(0, selectionStart);
+  const after = value.slice(selectionEnd);
+
+  if (event.shiftKey) {
+    const removed = /[ \t]{1,4}$/.exec(before)?.[0].length ?? 0;
+    const caret = before.length - removed;
+    onChange(`${before.slice(0, caret)}${after}`);
+    requestAnimationFrame(() => {
+      target.selectionStart = caret;
+      target.selectionEnd = caret;
+    });
+    return;
+  }
+
+  const spaces = ' '.repeat(TAB_SIZE);
+  const caret = selectionStart + spaces.length;
+  onChange(`${before}${spaces}${after}`);
+  requestAnimationFrame(() => {
+    target.selectionStart = caret;
+    target.selectionEnd = caret;
+  });
+};
+
 const isSameLanguage = (a: string, b: string) =>
   a.trim().toLowerCase() === b.trim().toLowerCase();
 
@@ -54,6 +95,7 @@ const CodingQuestionViewer = ({
   const [code, setCode] = useState('');
   const [result, setResult] = useState<CodeRunResult | null>(null);
   const [runError, setRunError] = useState<string | null>(null);
+  const seededLanguage = useRef('');
   const seededSources = useRef<Record<string, string>>({});
 
   const questionQuery = useGetCodingQuestion(task._id, language);
@@ -68,7 +110,8 @@ const CodingQuestionViewer = ({
   // refetch (e.g. after the query is invalidated on submit) may bring a
   // `lastSubmittedCode` that was saved after the first response, so the editor
   // is re-seeded whenever the server source changes while the learner has not
-  // diverged from what was last seeded.
+  // diverged from what was last seeded. Switching languages always re-seeds the
+  // new language's source, so going Python -> Javascript restores the JS starter.
   useEffect(() => {
     const data = questionQuery.data;
     if (!data) return;
@@ -89,10 +132,12 @@ const CodingQuestionViewer = ({
     const source = data.lastSubmittedCode?.code || data.starterCode || '';
     const previous = seededSources.current[key];
 
-    // Seed on first encounter with a language, or re-seed when the server now
-    // returns a different source (the newly submitted code) and the editor
-    // still holds exactly what we seeded (i.e. the learner has not typed).
-    if (previous === undefined || (code === previous && source !== previous)) {
+    if (
+      seededLanguage.current !== key ||
+      previous === undefined ||
+      (code === previous && source !== previous)
+    ) {
+      seededLanguage.current = key;
       seededSources.current[key] = source;
       setCode(source);
     }
@@ -259,6 +304,17 @@ const CodingQuestionViewer = ({
               <Textarea
                 value={code}
                 onChange={event => setCode(event.currentTarget.value)}
+                onKeyDown={event => {
+                  if (
+                    (event.ctrlKey || event.metaKey) &&
+                    event.key === 'Enter'
+                  ) {
+                    event.preventDefault();
+                    handleRun();
+                    return;
+                  }
+                  handleEditorKeyDown(event, code, setCode);
+                }}
                 autosize
                 minRows={isMobile ? 26 : 16}
                 maxRows={isMobile ? 34 : 50}
@@ -269,7 +325,10 @@ const CodingQuestionViewer = ({
                     fontFamily: MONO_FONT,
                     fontSize: 13,
                     lineHeight: 1.6,
-                    whiteSpace: 'pre'
+                    whiteSpace: 'pre',
+                    backgroundColor: themeConfig.backgroundColor,
+                    color: themeConfig.color,
+                    borderColor: themeConfig.borderColor
                   }
                 }}
               />
