@@ -148,9 +148,34 @@ describe('EditTaskModal', () => {
       expect(screen.queryByText('Current thumbnail')).not.toBeInTheDocument();
     });
 
+    it('hides the attached content for coding tasks but keeps the thumbnail', () => {
+      renderModal(
+        makeTask({
+          isCoding: true,
+          thumbnailUrl: 'http://example.com/thumb.png',
+          content: 'https://youtube.com/watch?v=abc123'
+        })
+      );
+      expect(screen.getByText('Current thumbnail')).toBeInTheDocument();
+      expect(screen.queryByText('Attached Content')).not.toBeInTheDocument();
+    });
+
     it('renders the status select', () => {
       renderModal(makeTask());
       expect(screen.getByLabelText('Status')).toBeInTheDocument();
+    });
+
+    it('shows the Question textarea only for coding tasks', () => {
+      const first = renderModal(
+        makeTask({ isCoding: true, question: 'Reverse a string.' })
+      );
+      expect(screen.getByLabelText(/Question/)).toHaveValue(
+        'Reverse a string.'
+      );
+      first.unmount();
+
+      renderModal(makeTask({ isCoding: false, question: '' }));
+      expect(screen.queryByLabelText(/Question/)).not.toBeInTheDocument();
     });
   });
 
@@ -236,6 +261,48 @@ describe('EditTaskModal', () => {
       await waitFor(() => {
         expect(mockUpdateTask).toHaveBeenCalledWith(
           expect.objectContaining({ taskName: 'Padded' })
+        );
+      });
+    });
+
+    it('submits the question for coding tasks', async () => {
+      renderModal(
+        makeTask({
+          isCoding: true,
+          question: 'Return fizz for multiples of three.'
+        })
+      );
+
+      fireEvent.change(screen.getByLabelText(/Question/), {
+        target: { value: 'Return buzz for multiples of five.' }
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: 'Save Changes' }));
+
+      await waitFor(() => {
+        expect(mockUpdateTask).toHaveBeenCalledWith({
+          id: 't1',
+          taskName: 'Introduction video',
+          taskDescription: 'Watch this intro',
+          thumbnail: null,
+          status: 'ACTIVE',
+          isCoding: true,
+          question: 'Return buzz for multiples of five.'
+        });
+      });
+    });
+
+    it('does not send question fields for non-coding tasks', async () => {
+      renderModal(makeTask({ isCoding: false, question: '' }));
+
+      fireEvent.click(screen.getByRole('button', { name: 'Save Changes' }));
+
+      await waitFor(() => {
+        expect(mockUpdateTask).toHaveBeenCalledWith(
+          expect.not.objectContaining({ question: expect.anything() })
+        );
+        expect(mockUpdateTask).toHaveBeenCalledWith(
+          expect.not.objectContaining({ isCoding: expect.anything() })
         );
       });
     });

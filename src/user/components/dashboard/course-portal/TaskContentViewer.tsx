@@ -1,5 +1,7 @@
 import { Box, Center, Stack, Text, ThemeIcon } from '@mantine/core';
+import { useNavigate } from 'react-router-dom';
 import {
+  IconCode,
   IconExternalLink,
   IconFileDownload,
   IconLink
@@ -8,7 +10,7 @@ import { useAppTheme } from '@hooks/use-app-theme';
 import { CommonButton } from '@components/common/button/CommonButton';
 import { AssignedTask } from '@interfaces/course-assignment';
 import { getCourseTaskContentUrl } from '@services/user-services';
-import { resolveTaskContent } from './task-content';
+import { resolveTaskContent, isCodingTask } from './task-content';
 
 interface TaskContentViewerProps {
   task: AssignedTask;
@@ -17,6 +19,41 @@ interface TaskContentViewerProps {
 
 const TaskContentViewer = ({ task, onFinished }: TaskContentViewerProps) => {
   const { themeConfig } = useAppTheme();
+  const navigate = useNavigate();
+
+  if (isCodingTask(task)) {
+    return (
+      <Center
+        p='xl'
+        style={{
+          minHeight: 260,
+          borderRadius: 12,
+          border: `1px dashed ${themeConfig.borderColor}`,
+          backgroundColor: themeConfig.cardBackground
+        }}
+      >
+        <Stack align='center' gap='sm' maw={420}>
+          <ThemeIcon size={56} radius='xl' variant='light'>
+            <IconCode size={28} />
+          </ThemeIcon>
+          <Text fw={600} ta='center'>
+            Coding challenge
+          </Text>
+          <Text size='sm' c={themeConfig.mutedTextColor} ta='center'>
+            This problem opens in a dedicated editor where you can solve it and
+            run it against the test cases.
+          </Text>
+          <CommonButton
+            leftSection={<IconExternalLink size={16} />}
+            onClick={() => navigate(`task/${task._id}`)}
+          >
+            Open coding problem
+          </CommonButton>
+        </Stack>
+      </Center>
+    );
+  }
+
   const content = resolveTaskContent(task, getCourseTaskContentUrl(task._id));
 
   const surface = {

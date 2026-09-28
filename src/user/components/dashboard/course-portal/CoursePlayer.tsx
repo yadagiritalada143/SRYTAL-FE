@@ -166,44 +166,42 @@ const CoursePlayer = () => {
           <Card withBorder radius='lg' p={{ base: 'md', sm: 'lg' }}>
             <Stack gap='sm'>
               <Group justify='space-between' align='flex-start' wrap='nowrap'>
-                <Group gap='sm' align='flex-start' style={{ minWidth: 0 }}>
-                  <ActionIcon
-                    variant='subtle'
-                    color='gray'
-                    size='lg'
-                    aria-label='Back to my courses'
+                <Stack gap={4} style={{ minWidth: 0 }}>
+                  <Title order={isMobile ? 4 : 3} lineClamp={2}>
+                    {course?.courseName}
+                  </Title>
+                  <Group gap='xs' wrap='wrap'>
+                    <Badge
+                      variant='light'
+                      color={statusColor(course?.status, course?.isOverdue)}
+                    >
+                      {course?.isOverdue ? 'Overdue' : course?.status}
+                    </Badge>
+                    <Text size='xs' c={themeConfig.mutedTextColor}>
+                      Due {formatDueDate(course?.dueDate)}
+                    </Text>
+                  </Group>
+                </Stack>
+
+                <Group gap='xs' align='center' wrap='nowrap'>
+                  {isMobile && (
+                    <ActionIcon
+                      variant='light'
+                      size='lg'
+                      aria-label='Course content'
+                      onClick={() => setCurriculumOpen(true)}
+                    >
+                      <IconListCheck size={20} />
+                    </ActionIcon>
+                  )}
+                  <CommonButton
+                    variant='default'
+                    leftSection={<IconArrowLeft size={16} />}
                     onClick={() => navigate('../course-assignments')}
                   >
-                    <IconArrowLeft size={20} />
-                  </ActionIcon>
-                  <Stack gap={4} style={{ minWidth: 0 }}>
-                    <Title order={isMobile ? 4 : 3} lineClamp={2}>
-                      {course?.courseName}
-                    </Title>
-                    <Group gap='xs' wrap='wrap'>
-                      <Badge
-                        variant='light'
-                        color={statusColor(course?.status, course?.isOverdue)}
-                      >
-                        {course?.isOverdue ? 'Overdue' : course?.status}
-                      </Badge>
-                      <Text size='xs' c={themeConfig.mutedTextColor}>
-                        Due {formatDueDate(course?.dueDate)}
-                      </Text>
-                    </Group>
-                  </Stack>
+                    Back
+                  </CommonButton>
                 </Group>
-
-                {isMobile && (
-                  <ActionIcon
-                    variant='light'
-                    size='lg'
-                    aria-label='Course content'
-                    onClick={() => setCurriculumOpen(true)}
-                  >
-                    <IconListCheck size={20} />
-                  </ActionIcon>
-                )}
               </Group>
 
               <Stack gap={4}>

@@ -24,6 +24,9 @@ import {
   getMyAssignedCourseById,
   updateMyTaskProgress,
   getEmployeeDashboard,
+  getCodingQuestion,
+  runCode,
+  submitCode,
   saveUserOpenRouterKey,
   getUserOpenRouterKey
 } from '../user-services';
@@ -329,6 +332,27 @@ describe('user-services', () => {
       expect(formData.has('taskFile')).toBe(false);
     });
 
+    it('addCourseTaskContentWriter flags coding tasks and sends the question', async () => {
+      mock.post.mockResolvedValue({ data: { ok: 1 } });
+
+      await addCourseTaskContentWriter({
+        moduleId: 'm1',
+        taskName: 'FizzBuzz',
+        taskDescription: 'desc',
+        isCoding: true,
+        question: 'Return fizz for multiples of three.'
+      } as any);
+
+      const [, formData] = mock.post.mock.calls[0];
+      expect(formData.get('moduleId')).toBe('m1');
+      expect(formData.get('isCoding')).toBe('true');
+      expect(formData.get('question')).toBe(
+        'Return fizz for multiples of three.'
+      );
+      expect(formData.has('link')).toBe(false);
+      expect(formData.has('taskFile')).toBe(false);
+    });
+
     it('updateCourseContentWriter puts the updated course', async () => {
       mock.put.mockResolvedValue({ data: { ok: 1 } });
 
@@ -379,6 +403,27 @@ describe('user-services', () => {
       expect(mock.put.mock.calls[0][0]).toBe('/contentwriter/updatecoursetask');
       const [, formData] = mock.put.mock.calls[0];
       expect(formData.get('taskName')).toBe('New');
+      expect(formData.has('isCoding')).toBe(false);
+      expect(formData.has('question')).toBe(false);
+    });
+
+    it('updateCourseTaskContentWriter sends coding question when flagged', async () => {
+      mock.put.mockResolvedValue({ data: { ok: 1 } });
+
+      await updateCourseTaskContentWriter({
+        id: 't1',
+        taskName: 'FizzBuzz',
+        taskDescription: 'desc',
+        status: 'active',
+        isCoding: true,
+        question: 'Return fizz for multiples of three.'
+      } as any);
+
+      const [, formData] = mock.put.mock.calls[0];
+      expect(formData.get('isCoding')).toBe('true');
+      expect(formData.get('question')).toBe(
+        'Return fizz for multiples of three.'
+      );
     });
   });
 
@@ -419,6 +464,74 @@ describe('user-services', () => {
 
       expect(mock.put).toHaveBeenCalledWith('/updateMyTaskProgress', payload);
       expect(result).toEqual({ progress: 50 });
+    });
+  });
+
+  describe('coding question services', () => {
+    it('getCodingQuestion fetches the default question', async () => {
+      mock.get.mockResolvedValue({
+        data: { success: true, question: { questionId: 't1' } }
+      });
+
+      expect(await getCodingQuestion('t1')).toEqual({ questionId: 't1' });
+      expect(mock.get).toHaveBeenCalledWith('/getCodingQuestion/t1');
+    });
+
+    it('getCodingQuestion passes the language as a query param', async () => {
+      mock.get.mockResolvedValue({
+        data: { success: true, question: { questionId: 't1' } }
+      });
+
+      await getCodingQuestion('t1', 'Python');
+
+      expect(mock.get).toHaveBeenCalledWith('/getCodingQuestion/t1', {
+        params: { language: 'Python' }
+      });
+    });
+
+    it('runCode posts to /runcode and returns the execution result', async () => {
+      mock.post.mockResolvedValue({
+        data: { success: true, message: 'ok', data: { score: 80 } }
+      });
+
+      const result = await runCode({
+        questionId: 't1',
+        language: 'Python',
+        code: 'print(1)'
+      });
+
+      expect(mock.post).toHaveBeenCalledWith('/runcode', {
+        questionId: 't1',
+        language: 'Python',
+        code: 'print(1)'
+      });
+      expect(result).toEqual({ score: 80 });
+    });
+
+    it('submitCode posts to /submitcode and returns the message and execution result', async () => {
+      mock.post.mockResolvedValue({
+        data: {
+          success: true,
+          message: 'Code submitted successfully !',
+          data: { score: 95 }
+        }
+      });
+
+      const result = await submitCode({
+        questionId: 't1',
+        language: 'Python',
+        code: 'print(1)'
+      });
+
+      expect(mock.post).toHaveBeenCalledWith('/submitcode', {
+        questionId: 't1',
+        language: 'Python',
+        code: 'print(1)'
+      });
+      expect(result).toEqual({
+        message: 'Code submitted successfully !',
+        result: { score: 95 }
+      });
     });
   });
 

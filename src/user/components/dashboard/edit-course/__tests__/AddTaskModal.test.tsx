@@ -177,6 +177,9 @@ describe('AddTaskModal', () => {
       expect(
         screen.getByRole('button', { name: 'Add Programming Language' })
       ).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText('Describe the coding problem to solve')
+      ).toBeInTheDocument();
       expect(screen.queryByLabelText(/Link URL/)).not.toBeInTheDocument();
       expect(
         screen.queryByText('Upload a PDF, Word, or any file')
@@ -232,13 +235,21 @@ describe('AddTaskModal', () => {
   });
 
   describe('Coding tasks', () => {
-    it('keeps Add Content disabled in Coding mode', () => {
+    it('keeps Add Content disabled in Coding mode until a question is provided', () => {
       renderModal();
       typeTitle('FizzBuzz problem');
       clickCodingMode();
       expect(
         screen.getByRole('button', { name: 'Add Content' })
       ).toBeDisabled();
+
+      fireEvent.change(
+        screen.getByPlaceholderText('Describe the coding problem to solve'),
+        { target: { value: 'Return fizz for multiples of three.' } }
+      );
+      expect(
+        screen.getByRole('button', { name: 'Add Content' })
+      ).not.toBeDisabled();
     });
 
     it('opens the programming languages page and remembers the module to reopen', () => {
@@ -275,6 +286,8 @@ describe('AddTaskModal', () => {
         moduleId: 'm1',
         taskName: 'YouTube video',
         taskDescription: '',
+        isCoding: false,
+        question: undefined,
         link: 'https://youtube.com/watch?v=abc123',
         file: undefined,
         thumbnail: null
@@ -302,11 +315,46 @@ describe('AddTaskModal', () => {
       await waitFor(() => {
         expect(mockAddTask).toHaveBeenCalledWith(
           expect.objectContaining({
+            isCoding: false,
+            question: undefined,
             link: undefined,
             file
           })
         );
       });
+    });
+
+    it('submits a coding task with isCoding and the question', async () => {
+      renderModal(true, 'm1', 'c1');
+
+      typeTitle('FizzBuzz problem');
+      clickCodingMode();
+      fireEvent.change(
+        screen.getByPlaceholderText('Describe the coding problem to solve'),
+        { target: { value: 'Return fizz for multiples of three.' } }
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: 'Add Content' }));
+
+      await waitFor(() => {
+        expect(mockAddTask).toHaveBeenCalledTimes(1);
+      });
+
+      expect(mockAddTask).toHaveBeenCalledWith({
+        moduleId: 'm1',
+        taskName: 'FizzBuzz problem',
+        taskDescription: '',
+        isCoding: true,
+        question: 'Return fizz for multiples of three.',
+        link: undefined,
+        file: undefined,
+        thumbnail: null
+      });
+
+      expect(mockShowSuccessToast).toHaveBeenCalledWith(
+        'Content added successfully!'
+      );
+      expect(mockOnClose).toHaveBeenCalled();
     });
 
     it('trims the title and link before submitting', async () => {

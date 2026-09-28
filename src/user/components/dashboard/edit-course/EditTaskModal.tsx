@@ -43,6 +43,7 @@ const EditTaskModal = ({
 }: EditTaskModalProps) => {
   const [taskName, setTaskName] = useState('');
   const [taskDescription, setTaskDescription] = useState('');
+  const [question, setQuestion] = useState('');
   const [thumbnail, setThumbnail] = useState<File | null>(null);
   const [thumbPreview, setThumbPreview] = useState<string | null>(null);
   const [status, setStatus] = useState<CourseStatus>('ACTIVE');
@@ -68,6 +69,7 @@ const EditTaskModal = ({
     setSeededFor(task._id);
     setTaskName(task.taskName || '');
     setTaskDescription(task.taskDescription || '');
+    setQuestion(task.question || '');
     setThumbnail(null);
     setStatus((task.status as CourseStatus) || 'ACTIVE');
   } else if (!opened && seededFor !== null) {
@@ -87,7 +89,8 @@ const EditTaskModal = ({
         taskName: taskName.trim(),
         taskDescription: taskDescription.trim(),
         thumbnail,
-        status
+        status,
+        ...(task.isCoding ? { isCoding: true, question: question.trim() } : {})
       });
       showSuccessToast('Content updated successfully!');
       onClose();
@@ -116,6 +119,19 @@ const EditTaskModal = ({
           value={taskDescription}
           onChange={e => setTaskDescription(e.target.value)}
         />
+
+        {task?.isCoding && (
+          <Textarea
+            label='Question'
+            placeholder='Describe the coding problem to solve'
+            required
+            autosize
+            minRows={3}
+            value={question}
+            onChange={e => setQuestion(e.target.value)}
+            description='The problem statement shown to learners.'
+          />
+        )}
 
         <Stack gap={6}>
           <Text size='sm' fw={500}>
@@ -209,39 +225,43 @@ const EditTaskModal = ({
           comboboxProps={{ withinPortal: true }}
         />
 
-        {/* The update endpoint only replaces the thumbnail; the attached
-            file/link is shown for reference but cannot be swapped. */}
-        <Stack gap={6}>
-          <Text size='sm' fw={500}>
-            Attached Content
-          </Text>
-          <Paper
-            p='sm'
-            radius='md'
-            withBorder
-            style={{ borderColor: currentThemeConfig.borderColor }}
-          >
-            <Group gap='sm' wrap='nowrap'>
-              <ThemeIcon
-                variant='light'
+        {!task?.isCoding && (
+          <>
+            {/* The update endpoint only replaces the thumbnail; the attached
+              file/link is shown for reference but cannot be swapped. */}
+            <Stack gap={6}>
+              <Text size='sm' fw={500}>
+                Attached Content
+              </Text>
+              <Paper
+                p='sm'
                 radius='md'
-                color={isLink ? 'blue' : 'grape'}
+                withBorder
+                style={{ borderColor: currentThemeConfig.borderColor }}
               >
-                {isLink ? <IconLink size={18} /> : <IconFile size={18} />}
-              </ThemeIcon>
-              <Stack gap={0} style={{ minWidth: 0 }}>
-                <Text size='sm' lineClamp={1}>
-                  {isLink
-                    ? task?.content || 'External link'
-                    : task?.contentFileName || 'Uploaded file'}
-                </Text>
-                <Text size='xs' c='dimmed'>
-                  {isLink ? 'Link' : 'File'} — replace by adding new content
-                </Text>
-              </Stack>
-            </Group>
-          </Paper>
-        </Stack>
+                <Group gap='sm' wrap='nowrap'>
+                  <ThemeIcon
+                    variant='light'
+                    radius='md'
+                    color={isLink ? 'blue' : 'grape'}
+                  >
+                    {isLink ? <IconLink size={18} /> : <IconFile size={18} />}
+                  </ThemeIcon>
+                  <Stack gap={0} style={{ minWidth: 0 }}>
+                    <Text size='sm' lineClamp={1}>
+                      {isLink
+                        ? task?.content || 'External link'
+                        : task?.contentFileName || 'Uploaded file'}
+                    </Text>
+                    <Text size='xs' c='dimmed'>
+                      {isLink ? 'Link' : 'File'} — replace by adding new content
+                    </Text>
+                  </Stack>
+                </Group>
+              </Paper>
+            </Stack>
+          </>
+        )}
 
         <Group justify='flex-end' mt='sm'>
           <CommonButton variant='default' onClick={handleClose}>

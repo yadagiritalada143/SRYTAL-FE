@@ -19,6 +19,9 @@ import {
 import {
   AssignedCourse,
   AssignedCourseDetail,
+  CodeRunResult,
+  CodingQuestion,
+  RunCodePayload,
   UpdateTaskProgressPayload,
   UpdateTaskProgressResponse
 } from '@interfaces/course-assignment';
@@ -238,11 +241,18 @@ export const addCourseTaskContentWriter = async (data: AddTaskPayload) => {
     formData.append('moduleId', data.moduleId);
     formData.append('taskName', data.taskName);
     formData.append('taskDescription', data.taskDescription);
-    // A task carries either an uploaded file or an external link.
-    if (data.file) {
-      formData.append('taskFile', data.file);
-    } else if (data.link) {
-      formData.append('link', data.link);
+    if (data.isCoding) {
+      formData.append('isCoding', 'true');
+      if (data.question) {
+        formData.append('question', data.question);
+      }
+    } else {
+      // A task carries either an uploaded file or an external link.
+      if (data.file) {
+        formData.append('taskFile', data.file);
+      } else if (data.link) {
+        formData.append('link', data.link);
+      }
     }
     if (data.thumbnail) {
       formData.append('thumbnailFile', data.thumbnail);
@@ -319,6 +329,12 @@ export const updateCourseTaskContentWriter = async (
     formData.append('taskName', data.taskName);
     formData.append('taskDescription', data.taskDescription);
     formData.append('status', data.status);
+    if (data.isCoding !== undefined) {
+      formData.append('isCoding', data.isCoding ? 'true' : 'false');
+    }
+    if (data.question !== undefined) {
+      formData.append('question', data.question);
+    }
     if (data.thumbnail) {
       formData.append('thumbnailFile', data.thumbnail);
     }
@@ -372,6 +388,48 @@ export const updateMyTaskProgress = async (
 ): Promise<UpdateTaskProgressResponse> => {
   const response = await apiClient.put('/updateMyTaskProgress', data);
   return response.data;
+};
+
+/**
+ * Fetches a coding task's statement + allowed languages + starter code for the
+ * given language (omitting `language` returns the default). Only assigned
+ * employees may fetch it, so the payload never leaks authoring data.
+ */
+export const getCodingQuestion = async (
+  questionId: string,
+  language = ''
+): Promise<CodingQuestion> => {
+  const response = language
+    ? await apiClient.get(`/getCodingQuestion/${questionId}`, {
+        params: { language }
+      })
+    : await apiClient.get(`/getCodingQuestion/${questionId}`);
+  // Backend responds with { success, question }.
+  return response.data.question;
+};
+
+/**
+ * Runs the learner's code against the question's test cases (trial run).
+ * The scoring + per-test-case results + AI feedback come back in `data`.
+ */
+export const runCode = async (data: RunCodePayload): Promise<CodeRunResult> => {
+  const response = await apiClient.post('/runcode', data);
+  // Backend responds with { success, message, data: executionResult }.
+  return response.data.data;
+};
+
+/**
+ * Submits the learner's code as their final answer. The backend grades it with
+ * the same engine as Run Code but only accepts when every test case passes,
+ * persisting the attempt as a `type: 'submit'` record. Returns the backend
+ * message (for toasts) alongside the execution result.
+ */
+export const submitCode = async (
+  data: RunCodePayload
+): Promise<{ message: string; result: CodeRunResult }> => {
+  const response = await apiClient.post('/submitcode', data);
+  // Backend responds with { success, message, data: executionResult }.
+  return { message: response.data.message, result: response.data.data };
 };
 
 // ── Employee Dashboard ───────────────────────────────────────────────────────

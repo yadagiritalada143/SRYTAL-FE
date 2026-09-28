@@ -33,6 +33,59 @@ export interface AssignedTask {
   completedAt?: string | null;
 }
 
+export interface CodingQuestion {
+  questionId: string;
+  question: string;
+  allowedLanguages: string[];
+  language: string;
+  starterCode: string;
+  lastSubmittedCode?: { language: string; code: string } | null;
+}
+
+export interface CodeRunTestCaseResult {
+  name: string;
+  input: string;
+  expectedOutput: string;
+  isSample?: boolean;
+  actualOutput: string;
+  passed: boolean;
+  status: string;
+  stderr?: string;
+  compilationError?: string;
+  runtimeError?: string;
+  errorDetails?: string;
+}
+
+export interface CodeQualityEvaluation {
+  score: number;
+  suggestions: string[];
+  failedTests: string[];
+  codingStandards: {
+    readability: string;
+    efficiency: string;
+    errorHandling: string;
+    namingConventions: string;
+  };
+  explanation: string;
+}
+
+export interface CodeRunResult {
+  questionId: string;
+  language: string;
+  totalTestCases: number;
+  passedTestCases: number;
+  failedTestCases: number;
+  score: number;
+  results: CodeRunTestCaseResult[];
+  aiEvaluation: CodeQualityEvaluation | null;
+}
+
+export interface RunCodePayload {
+  questionId: string;
+  language: string;
+  code: string;
+}
+
 export interface AssignedModule {
   _id: string;
   moduleName: string;
