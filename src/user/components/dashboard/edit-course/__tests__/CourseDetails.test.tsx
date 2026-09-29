@@ -526,14 +526,11 @@ describe('CourseDetails', () => {
   });
 
   describe('Navigation', () => {
-    it('navigates back when the back arrow is clicked', () => {
+    it('navigates back when the back button is clicked', () => {
       renderPage();
-      const svg = document.querySelector(
-        '.tabler-icon-arrow-left'
-      ) as HTMLElement;
-      const button = svg?.closest('button');
+      const button = screen.getByRole('button', { name: /back/i });
       expect(button).toBeTruthy();
-      fireEvent.click(button as HTMLButtonElement);
+      fireEvent.click(button);
       expect(mockNavigate).toHaveBeenCalledWith(-1);
     });
   });

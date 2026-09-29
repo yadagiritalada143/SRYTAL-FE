@@ -126,17 +126,17 @@ const CourseDetails = () => {
         <Stack gap='lg'>
           {/* Header */}
           <Stack gap='sm'>
-            <Group justify='space-between' align='flex-start' wrap='wrap'>
-              <Group gap='sm' align='flex-start' style={{ flex: 1 }}>
-                <ActionIcon
-                  variant='subtle'
-                  color='gray'
-                  size={isMobile ? 'md' : 'lg'}
-                  onClick={() => navigate(-1)}
-                  mt={{ base: 4, sm: 0 }}
-                >
-                  <IconArrowLeft size={isMobile ? 18 : 20} />
-                </ActionIcon>
+            <Group
+              justify='space-between'
+              align='flex-start'
+              wrap='wrap'
+              gap='sm'
+            >
+              <Group
+                gap='sm'
+                align='flex-start'
+                style={{ flex: 1, minWidth: 0 }}
+              >
                 {course && (
                   <CourseThumbnail
                     name={course.courseName}
@@ -152,7 +152,7 @@ const CourseDetails = () => {
                   </Text>
                 </Stack>
               </Group>
-              <Group gap='sm' mt={{ base: 'xs', sm: 0 }} wrap='nowrap'>
+              <Group gap='sm' mt={{ base: 'xs', sm: 0 }} wrap='wrap'>
                 <Badge
                   size={isMobile ? 'md' : 'lg'}
                   variant='light'
@@ -160,6 +160,13 @@ const CourseDetails = () => {
                 >
                   {course?.status || 'Draft'}
                 </Badge>
+                <CommonButton
+                  leftSection={<IconArrowLeft size={16} />}
+                  variant='default'
+                  onClick={() => navigate(-1)}
+                >
+                  Back
+                </CommonButton>
                 <CommonButton
                   leftSection={<IconEdit size={16} />}
                   onClick={() => setCourseEditOpen(true)}

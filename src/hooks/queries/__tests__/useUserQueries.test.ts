@@ -413,7 +413,39 @@ describe('useUserQueries', () => {
       );
       expect(userService().getCodingQuestion).toHaveBeenCalledWith(
         't1',
-        'Python'
+        'Python',
+        ''
+      );
+    });
+
+    it('passes the languageId through to the service and query key', async () => {
+      userService().getCodingQuestion.mockResolvedValue({
+        questionId: 't1',
+        language: 'python',
+        languageId: 'lang-123',
+        starterCode: 'def solve():'
+      });
+      const { wrapper } = createWrapper();
+
+      const { result } = renderHook(
+        () => useGetCodingQuestion('t1', 'Python', 'lang-123'),
+        {
+          wrapper
+        }
+      );
+
+      await waitFor(() =>
+        expect(result.current.data).toEqual({
+          questionId: 't1',
+          language: 'python',
+          languageId: 'lang-123',
+          starterCode: 'def solve():'
+        })
+      );
+      expect(userService().getCodingQuestion).toHaveBeenCalledWith(
+        't1',
+        'Python',
+        'lang-123'
       );
     });
 

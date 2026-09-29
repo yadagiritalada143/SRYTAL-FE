@@ -391,23 +391,22 @@ export const updateMyTaskProgress = async (
 };
 
 /**
- * Fetches a coding task's statement + allowed languages + starter code for the
- * given language (omitting `language` returns the default). Only assigned
- * employees may fetch it, so the payload never leaks authoring data.
+ * Fetches a coding question's allowed languages + starter code for the given
+ * language (omitting `language`/`languageId` returns the default). Only
+ * assigned employees may fetch it, so the payload never leaks authoring data.
  */
 export const getCodingQuestion = async (
   questionId: string,
-  language = ''
+  language = '',
+  languageId = ''
 ): Promise<CodingQuestion> => {
-  const response = language
-    ? await apiClient.get(`/getCodingQuestion/${questionId}`, {
-        params: { language }
-      })
-    : await apiClient.get(`/getCodingQuestion/${questionId}`);
-  // Backend responds with { success, question }.
-  return response.data.question;
+  const params = language || languageId ? { language, languageId } : undefined;
+  const response = params
+    ? await apiClient.get(`/getquestion/${questionId}`, { params })
+    : await apiClient.get(`/getquestion/${questionId}`);
+  // Backend responds with the question data at the top level.
+  return response.data;
 };
-
 /**
  * Runs the learner's code against the question's test cases (trial run).
  * The scoring + per-test-case results + AI feedback come back in `data`.

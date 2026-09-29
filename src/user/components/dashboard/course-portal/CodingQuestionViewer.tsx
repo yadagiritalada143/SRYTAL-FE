@@ -4,7 +4,6 @@ import {
   Badge,
   Box,
   Card,
-  Divider,
   Group,
   Select,
   Stack,
@@ -72,6 +71,48 @@ const handleEditorKeyDown = (
 
 const isSameLanguage = (a: string, b: string) =>
   a.trim().toLowerCase() === b.trim().toLowerCase();
+
+interface CodeEditorProps {
+  value: string;
+  onChange: (value: string) => void;
+  onRun: () => void;
+  minRows: number;
+  maxRows: number;
+}
+
+const CodeEditor = ({
+  value,
+  onChange,
+  onRun,
+  minRows,
+  maxRows
+}: CodeEditorProps) => (
+  <Textarea
+    value={value}
+    onChange={event => onChange(event.currentTarget.value)}
+    onKeyDown={event => {
+      if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+        event.preventDefault();
+        onRun();
+        return;
+      }
+      handleEditorKeyDown(event, value, onChange);
+    }}
+    autosize
+    minRows={minRows}
+    maxRows={maxRows}
+    spellCheck={false}
+    aria-label='Code editor'
+    styles={{
+      input: {
+        fontFamily: MONO_FONT,
+        fontSize: 13,
+        lineHeight: 1.6,
+        whiteSpace: 'pre'
+      }
+    }}
+  />
+);
 
 interface TabButtonProps {
   label: string;
@@ -226,10 +267,10 @@ const CodingQuestionViewer = ({
 
   return (
     <Group align='flex-start' gap='md' wrap={isMobile ? 'wrap' : 'nowrap'}>
-      {/* Problem statement — stays pinned while the editor scrolls */}
+      {/* Problem statement — stacks above the editor on mobile */}
       <Box
         style={{
-          flex: 1,
+          flex: isMobile ? '0 0 100%' : 1,
           minWidth: 0,
           width: isMobile ? '100%' : undefined,
           position: isMobile ? undefined : 'sticky',
@@ -293,32 +334,25 @@ const CodingQuestionViewer = ({
               )}
               {questionQuery.data && (
                 <Box>
-                  <Text
-                    size='md'
-                    style={{ whiteSpace: 'pre-wrap' }}
-                    c={themeConfig.color}
-                    lh={1.7}
-                  >
-                    {questionQuery.data.question ||
-                      task.taskDescription ||
-                      'Solve the problem below.'}
-                  </Text>
-                  {task.taskDescription &&
-                    questionQuery.data.question !== task.taskDescription && (
-                      <>
-                        <Divider my='sm' />
-                        <Box
-                          style={{
-                            color: themeConfig.color,
-                            fontSize: 14,
-                            lineHeight: 1.6
-                          }}
-                          dangerouslySetInnerHTML={{
-                            __html: task.taskDescription
-                          }}
-                        />
-                      </>
-                    )}
+                  {task.taskDescription ? (
+                    <Box
+                      style={{
+                        color: themeConfig.color,
+                        fontSize: 14,
+                        lineHeight: 1.6
+                      }}
+                      dangerouslySetInnerHTML={{ __html: task.taskDescription }}
+                    />
+                  ) : (
+                    <Text
+                      size='md'
+                      style={{ whiteSpace: 'pre-wrap' }}
+                      c={themeConfig.color}
+                      lh={1.7}
+                    >
+                      Solve the problem below.
+                    </Text>
+                  )}
                 </Box>
               )}
             </Stack>
@@ -329,7 +363,7 @@ const CodingQuestionViewer = ({
       {/* Editor + run results — the only scrollable region on desktop */}
       <Box
         style={{
-          flex: 1.4,
+          flex: isMobile ? '0 0 100%' : 1.4,
           minWidth: 0,
           width: isMobile ? '100%' : undefined,
           alignSelf: 'flex-start',
@@ -397,33 +431,12 @@ const CodingQuestionViewer = ({
         >
           {activeTab === 'code' && (
             <Box p='sm' style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
-              <Textarea
+              <CodeEditor
                 value={code}
-                onChange={event => setCode(event.currentTarget.value)}
-                onKeyDown={event => {
-                  if (
-                    (event.ctrlKey || event.metaKey) &&
-                    event.key === 'Enter'
-                  ) {
-                    event.preventDefault();
-                    handleRun();
-                    return;
-                  }
-                  handleEditorKeyDown(event, code, setCode);
-                }}
-                autosize
-                minRows={isMobile ? 26 : 16}
-                maxRows={isMobile ? 34 : 50}
-                spellCheck={false}
-                aria-label='Code editor'
-                styles={{
-                  input: {
-                    fontFamily: MONO_FONT,
-                    fontSize: 13,
-                    lineHeight: 1.6,
-                    whiteSpace: 'pre'
-                  }
-                }}
+                onChange={setCode}
+                onRun={handleRun}
+                minRows={isMobile ? 12 : 16}
+                maxRows={isMobile ? 40 : 50}
               />
             </Box>
           )}

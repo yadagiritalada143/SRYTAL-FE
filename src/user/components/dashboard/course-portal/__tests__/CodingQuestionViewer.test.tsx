@@ -6,8 +6,11 @@ import { AssignedTask } from '@interfaces/course-assignment';
 
 const mockUseGetCodingQuestion = jest.fn();
 jest.mock('@hooks/queries/useUserQueries', () => ({
-  useGetCodingQuestion: (questionId: string, language: string) =>
-    mockUseGetCodingQuestion(questionId, language)
+  useGetCodingQuestion: (
+    questionId: string,
+    language: string,
+    languageId = ''
+  ) => mockUseGetCodingQuestion(questionId, language, languageId)
 }));
 
 const mockRunCode = jest.fn();
@@ -95,10 +98,11 @@ const makeTask = (overrides: any = {}): AssignedTask => ({
 // (lowercased), while `allowedLanguages` holds the display names.
 const starterFor = (language: string) => ({
   questionId: 't1',
-  question: 'Write a function that sums two numbers.',
   allowedLanguages: ['Javascript', 'Python'],
   language:
     (language || '').toLowerCase() === 'python' ? 'python' : 'javascript',
+  languageId:
+    (language || '').toLowerCase() === 'python' ? 'lang-python' : 'lang-js',
   starterCode:
     (language || '').toLowerCase() === 'python'
       ? 'def solve():'
@@ -135,9 +139,7 @@ describe('CodingQuestionViewer', () => {
   it('renders the statement, language list and default starter code', () => {
     renderViewer();
 
-    expect(
-      screen.getByText('Write a function that sums two numbers.')
-    ).toBeInTheDocument();
+    expect(screen.getByText('Sum two numbers')).toBeInTheDocument();
     expect(screen.getByLabelText('Language')).toHaveValue('Javascript');
     const editor = screen.getByLabelText('Code editor') as HTMLTextAreaElement;
     expect(editor.value).toBe('function solve() {}');
@@ -151,7 +153,7 @@ describe('CodingQuestionViewer', () => {
     });
 
     await waitFor(() => {
-      expect(mockUseGetCodingQuestion).toHaveBeenCalledWith('t1', 'Python');
+      expect(mockUseGetCodingQuestion).toHaveBeenCalledWith('t1', 'Python', '');
     });
 
     await waitFor(() => {
