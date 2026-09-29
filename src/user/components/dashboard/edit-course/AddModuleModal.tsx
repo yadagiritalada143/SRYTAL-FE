@@ -3,7 +3,6 @@ import {
   Modal,
   Stack,
   TextInput,
-  Textarea,
   FileInput,
   Group,
   Loader
@@ -13,6 +12,7 @@ import { CommonButton } from '@components/common/button/CommonButton';
 import { useAddCourseModule } from '@hooks/mutations/useUserMutations';
 import { useCustomToast } from '@utils/common/toast';
 import { getErrorMessage } from '@utils/common/get-error-message';
+import DescriptionEditor from './DescriptionEditor';
 
 interface AddModuleModalProps {
   opened: boolean;
@@ -66,13 +66,10 @@ const AddModuleModal = ({ opened, onClose, courseId }: AddModuleModalProps) => {
           value={moduleName}
           onChange={e => setModuleName(e.target.value)}
         />
-        <Textarea
+        <DescriptionEditor
           label='Module Description'
-          placeholder='What does this module cover?'
-          autosize
-          minRows={3}
           value={moduleDescription}
-          onChange={e => setModuleDescription(e.target.value)}
+          onChange={setModuleDescription}
         />
         <FileInput
           label='Thumbnail (optional)'
@@ -89,7 +86,11 @@ const AddModuleModal = ({ opened, onClose, courseId }: AddModuleModalProps) => {
           </CommonButton>
           <CommonButton
             leftSection={
-              isPending ? <Loader size='xs' color='white' /> : <IconCheck size={16} />
+              isPending ? (
+                <Loader size='xs' color='white' />
+              ) : (
+                <IconCheck size={16} />
+              )
             }
             disabled={!moduleName.trim() || isPending}
             onClick={handleSubmit}

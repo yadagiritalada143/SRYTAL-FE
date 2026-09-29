@@ -470,22 +470,47 @@ describe('user-services', () => {
   describe('coding question services', () => {
     it('getCodingQuestion fetches the default question', async () => {
       mock.get.mockResolvedValue({
-        data: { success: true, question: { questionId: 't1' } }
+        data: { questionId: 't1', starterCode: 'print(1)' }
       });
 
-      expect(await getCodingQuestion('t1')).toEqual({ questionId: 't1' });
-      expect(mock.get).toHaveBeenCalledWith('/getCodingQuestion/t1');
+      expect(await getCodingQuestion('t1')).toEqual({
+        questionId: 't1',
+        starterCode: 'print(1)'
+      });
+      expect(mock.get).toHaveBeenCalledWith('/getquestion/t1');
     });
 
-    it('getCodingQuestion passes the language as a query param', async () => {
+    it('getCodingQuestion passes language/languageId as query params', async () => {
       mock.get.mockResolvedValue({
-        data: { success: true, question: { questionId: 't1' } }
+        data: { questionId: 't1', starterCode: 'print(1)' }
       });
 
-      await getCodingQuestion('t1', 'Python');
+      await getCodingQuestion('t1', 'Python', 'lang-123');
 
-      expect(mock.get).toHaveBeenCalledWith('/getCodingQuestion/t1', {
-        params: { language: 'Python' }
+      expect(mock.get).toHaveBeenCalledWith('/getquestion/t1', {
+        params: { language: 'Python', languageId: 'lang-123' }
+      });
+    });
+
+    it('getCodingQuestion returns the top-level question data', async () => {
+      mock.get.mockResolvedValue({
+        data: {
+          questionId: 't1',
+          allowedLanguages: ['Python'],
+          language: 'python',
+          languageId: 'lang-123',
+          starterCode: 'print(1)',
+          lastSubmittedCode: null
+        }
+      });
+
+      expect(await getCodingQuestion('t1', 'Python')).toEqual({
+        questionId: 't1',
+        allowedLanguages: ['Python'],
+        language: 'python',
+        languageId: 'lang-123',
+        starterCode: 'print(1)',
+        lastSubmittedCode: null
       });
     });
 

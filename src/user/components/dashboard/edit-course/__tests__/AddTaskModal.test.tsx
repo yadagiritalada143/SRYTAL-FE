@@ -46,6 +46,19 @@ jest.mock('@components/common/button/CommonButton', () => ({
   )
 }));
 
+jest.mock('../DescriptionEditor', () => (props: any) => (
+  <div>
+    <label>{props.label}</label>
+    <input
+      aria-label={props.label}
+      value={props.value}
+      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+        props.onChange(e.target.value)
+      }
+    />
+  </div>
+));
+
 jest.mock('@mantine/core', () => {
   const actual = jest.requireActual('@mantine/core');
   return {

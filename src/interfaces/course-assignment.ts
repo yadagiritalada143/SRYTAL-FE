@@ -35,9 +35,9 @@ export interface AssignedTask {
 
 export interface CodingQuestion {
   questionId: string;
-  question: string;
   allowedLanguages: string[];
   language: string;
+  languageId?: string;
   starterCode: string;
   lastSubmittedCode?: { language: string; code: string } | null;
 }

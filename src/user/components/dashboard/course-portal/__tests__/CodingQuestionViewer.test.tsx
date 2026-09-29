@@ -6,8 +6,11 @@ import { AssignedTask } from '@interfaces/course-assignment';
 
 const mockUseGetCodingQuestion = jest.fn();
 jest.mock('@hooks/queries/useUserQueries', () => ({
-  useGetCodingQuestion: (questionId: string, language: string) =>
-    mockUseGetCodingQuestion(questionId, language)
+  useGetCodingQuestion: (
+    questionId: string,
+    language: string,
+    languageId = ''
+  ) => mockUseGetCodingQuestion(questionId, language, languageId)
 }));
 
 const mockRunCode = jest.fn();
@@ -35,6 +38,7 @@ jest.mock('@hooks/use-app-theme', () => ({
   useAppTheme: () => ({
     themeConfig: {
       color: '#212529',
+      backgroundColor: '#ffffff',
       borderColor: '#dee2e6',
       mutedTextColor: '#868e96',
       cardBackground: '#ffffff'
@@ -44,35 +48,28 @@ jest.mock('@hooks/use-app-theme', () => ({
 }));
 
 jest.mock('@components/common/button/CommonButton', () => ({
-  CommonButton: ({ children, onClick, disabled, loading }: any) => (
-    <button type='button' onClick={onClick} disabled={disabled}>
-      {loading ? 'Running...' : children}
-    </button>
-  )
-}));
-
-jest.mock('@mantine/core', () => {
-  const actual = jest.requireActual('@mantine/core');
-  return {
-    ...actual,
-    Select: ({ label, value, onChange, data }: any) => (
-      <select
-        aria-label={label}
-        value={value ?? ''}
-        onChange={e => onChange(e.target.value)}
+  CommonButton: ({ children, onClick, disabled, loading, ...rest }: any) => {
+    const {
+      'aria-label': ariaLabel,
+      leftSection: _leftSection,
+      rightSection: _rightSection,
+      ...buttonProps
+    } = rest;
+    void _leftSection;
+    void _rightSection;
+    return (
+      <button
+        type='button'
+        onClick={onClick}
+        disabled={disabled}
+        aria-label={ariaLabel}
+        {...buttonProps}
       >
-        {data.map((d: any) => (
-          <option
-            key={typeof d === 'string' ? d : d.value}
-            value={typeof d === 'string' ? d : d.value}
-          >
-            {typeof d === 'string' ? d : d.label}
-          </option>
-        ))}
-      </select>
-    )
-  };
-});
+        {loading ? 'Running...' : children}
+      </button>
+    );
+  }
+}));
 
 const makeTask = (overrides: any = {}): AssignedTask => ({
   _id: 't1',
@@ -88,10 +85,11 @@ const makeTask = (overrides: any = {}): AssignedTask => ({
 // (lowercased), while `allowedLanguages` holds the display names.
 const starterFor = (language: string) => ({
   questionId: 't1',
-  question: 'Write a function that sums two numbers.',
   allowedLanguages: ['Javascript', 'Python'],
   language:
     (language || '').toLowerCase() === 'python' ? 'python' : 'javascript',
+  languageId:
+    (language || '').toLowerCase() === 'python' ? 'lang-python' : 'lang-js',
   starterCode:
     (language || '').toLowerCase() === 'python'
       ? 'def solve():'
@@ -117,6 +115,11 @@ const renderViewer = (
   );
 };
 
+const pickLanguage = (languageName: string) => {
+  fireEvent.click(screen.getByLabelText('Language'));
+  fireEvent.click(screen.getByLabelText(languageName));
+};
+
 describe('CodingQuestionViewer', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -128,10 +131,8 @@ describe('CodingQuestionViewer', () => {
   it('renders the statement, language list and default starter code', () => {
     renderViewer();
 
-    expect(
-      screen.getByText('Write a function that sums two numbers.')
-    ).toBeInTheDocument();
-    expect(screen.getByLabelText('Language')).toHaveValue('Javascript');
+    expect(screen.getByText('Sum two numbers')).toBeInTheDocument();
+    expect(screen.getByLabelText('Language')).toHaveTextContent('Javascript');
     const editor = screen.getByLabelText('Code editor') as HTMLTextAreaElement;
     expect(editor.value).toBe('function solve() {}');
   });
@@ -139,12 +140,10 @@ describe('CodingQuestionViewer', () => {
   it('switches starter code when another language is picked', async () => {
     renderViewer();
 
-    fireEvent.change(screen.getByLabelText('Language'), {
-      target: { value: 'Python' }
-    });
+    pickLanguage('Python');
 
     await waitFor(() => {
-      expect(mockUseGetCodingQuestion).toHaveBeenCalledWith('t1', 'Python');
+      expect(mockUseGetCodingQuestion).toHaveBeenCalledWith('t1', 'Python', '');
     });
 
     await waitFor(() => {
@@ -153,6 +152,23 @@ describe('CodingQuestionViewer', () => {
       ) as HTMLTextAreaElement;
       expect(editor.value).toBe('def solve():');
     });
+  });
+
+  it('inserts an indent on Tab and removes it on Shift+Tab', () => {
+    renderViewer();
+    const editor = screen.getByLabelText('Code editor') as HTMLTextAreaElement;
+    editor.focus();
+    editor.setSelectionRange(0, 0);
+
+    fireEvent.keyDown(editor, { key: 'Tab' });
+    expect(editor.value).toBe('    function solve() {}');
+
+    editor.setSelectionRange(4, 4);
+    fireEvent.keyDown(editor, {
+      key: 'Tab',
+      shiftKey: true
+    });
+    expect(editor.value).toBe('function solve() {}');
   });
 
   it('seeds the editor with the submitted code when one exists', () => {
@@ -196,15 +212,33 @@ describe('CodingQuestionViewer', () => {
       (screen.getByLabelText('Code editor') as HTMLTextAreaElement).value
     ).toBe('function solve() { return 7; }');
 
-    fireEvent.change(screen.getByLabelText('Language'), {
-      target: { value: 'Python' }
-    });
+    pickLanguage('Python');
 
     await waitFor(() => {
       const editor = screen.getByLabelText(
         'Code editor'
       ) as HTMLTextAreaElement;
       expect(editor.value).toBe('def solve():');
+    });
+  });
+
+  it('re-seeds with the target starter when switching back to a previous language', async () => {
+    renderViewer();
+
+    pickLanguage('Python');
+
+    await waitFor(() => {
+      expect(
+        (screen.getByLabelText('Code editor') as HTMLTextAreaElement).value
+      ).toBe('def solve():');
+    });
+
+    pickLanguage('Javascript');
+
+    await waitFor(() => {
+      expect(
+        (screen.getByLabelText('Code editor') as HTMLTextAreaElement).value
+      ).toBe('function solve() {}');
     });
   });
 
@@ -361,5 +395,56 @@ describe('CodingQuestionViewer', () => {
         'All test cases must pass before you can submit your code !'
       )
     ).toBeInTheDocument();
+  });
+
+  it('switches between the Code and Test cases tabs', () => {
+    renderViewer();
+    expect(screen.getByLabelText('Code editor')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('Test cases'));
+    expect(screen.queryByLabelText('Code editor')).not.toBeInTheDocument();
+    expect(
+      screen.getByText('Run the code to see test case results.')
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('Code'));
+    expect(screen.getByLabelText('Code editor')).toBeInTheDocument();
+  });
+
+  it('switches to the Test cases tab automatically after running code', async () => {
+    mockRunCode.mockResolvedValue({
+      questionId: 't1',
+      language: 'Javascript',
+      totalTestCases: 1,
+      passedTestCases: 1,
+      failedTestCases: 0,
+      score: 100,
+      results: [
+        {
+          name: 'Sample 1',
+          input: '1 2',
+          expectedOutput: '3',
+          actualOutput: '3',
+          passed: true,
+          status: 'Passed',
+          isSample: true
+        }
+      ],
+      aiEvaluation: {
+        score: 90,
+        suggestions: [],
+        failedTests: [],
+        codingStandards: {},
+        explanation: ''
+      }
+    });
+
+    renderViewer();
+    fireEvent.click(screen.getByText('Run code'));
+
+    await waitFor(() => {
+      expect(screen.getByText('1 / 1 tests passed')).toBeInTheDocument();
+    });
+    expect(screen.queryByLabelText('Code editor')).not.toBeInTheDocument();
   });
 });

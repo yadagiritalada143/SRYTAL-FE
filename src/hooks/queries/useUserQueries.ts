@@ -30,8 +30,8 @@ export const userQueryKeys = {
   myCourse: (courseAssignmentId: string) =>
     ['myAssignedCourse', courseAssignmentId] as const,
   openRouterKey: (userId: string) => ['userOpenRouterKey', userId] as const,
-  codingQuestion: (questionId: string, language: string) =>
-    ['codingQuestion', questionId, language] as const
+  codingQuestion: (questionId: string, language: string, languageId?: string) =>
+    ['codingQuestion', questionId, language, languageId ?? ''] as const
 };
 
 export const useGetCompanyDetails = () => {
@@ -130,11 +130,12 @@ export const useGetUserOpenRouterKey = (userId?: string, enabled = true) => {
 export const useGetCodingQuestion = (
   questionId: string,
   language = '',
+  languageId = '',
   enabled = true
 ) => {
   return useQuery({
-    queryKey: userQueryKeys.codingQuestion(questionId, language),
-    queryFn: () => getCodingQuestion(questionId, language),
+    queryKey: userQueryKeys.codingQuestion(questionId, language, languageId),
+    queryFn: () => getCodingQuestion(questionId, language, languageId),
     enabled: !!questionId && enabled
   });
 };

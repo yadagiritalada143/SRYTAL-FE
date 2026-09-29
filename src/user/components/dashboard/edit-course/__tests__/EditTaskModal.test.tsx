@@ -50,6 +50,19 @@ jest.mock('../../content-writer/CourseThumbnail', () => (props: any) => (
   <span data-testid='course-thumbnail' aria-label={props.name} />
 ));
 
+jest.mock('../DescriptionEditor', () => (props: any) => (
+  <div>
+    <label>{props.label}</label>
+    <input
+      aria-label={props.label}
+      value={props.value}
+      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+        props.onChange(e.target.value)
+      }
+    />
+  </div>
+));
+
 jest.mock('@mantine/core', () => {
   const actual = jest.requireActual('@mantine/core');
   return {
