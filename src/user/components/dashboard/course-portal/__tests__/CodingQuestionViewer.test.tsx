@@ -48,41 +48,28 @@ jest.mock('@hooks/use-app-theme', () => ({
 }));
 
 jest.mock('@components/common/button/CommonButton', () => ({
-  CommonButton: ({ children, onClick, disabled, loading }: any) => (
-    <button type='button' onClick={onClick} disabled={disabled}>
-      {loading ? 'Running...' : children}
-    </button>
-  )
-}));
-
-jest.mock('@mantine/core', () => {
-  const actual = jest.requireActual('@mantine/core');
-  return {
-    ...actual,
-    Select: ({
+  CommonButton: ({ children, onClick, disabled, loading, ...rest }: any) => {
+    const {
       'aria-label': ariaLabel,
-      label,
-      value,
-      onChange,
-      data
-    }: any) => (
-      <select
-        aria-label={ariaLabel ?? label}
-        value={value ?? ''}
-        onChange={e => onChange(e.target.value)}
+      leftSection: _leftSection,
+      rightSection: _rightSection,
+      ...buttonProps
+    } = rest;
+    void _leftSection;
+    void _rightSection;
+    return (
+      <button
+        type='button'
+        onClick={onClick}
+        disabled={disabled}
+        aria-label={ariaLabel}
+        {...buttonProps}
       >
-        {data.map((d: any) => (
-          <option
-            key={typeof d === 'string' ? d : d.value}
-            value={typeof d === 'string' ? d : d.value}
-          >
-            {typeof d === 'string' ? d : d.label}
-          </option>
-        ))}
-      </select>
-    )
-  };
-});
+        {loading ? 'Running...' : children}
+      </button>
+    );
+  }
+}));
 
 const makeTask = (overrides: any = {}): AssignedTask => ({
   _id: 't1',
@@ -128,6 +115,11 @@ const renderViewer = (
   );
 };
 
+const pickLanguage = (languageName: string) => {
+  fireEvent.click(screen.getByLabelText('Language'));
+  fireEvent.click(screen.getByLabelText(languageName));
+};
+
 describe('CodingQuestionViewer', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -140,7 +132,7 @@ describe('CodingQuestionViewer', () => {
     renderViewer();
 
     expect(screen.getByText('Sum two numbers')).toBeInTheDocument();
-    expect(screen.getByLabelText('Language')).toHaveValue('Javascript');
+    expect(screen.getByLabelText('Language')).toHaveTextContent('Javascript');
     const editor = screen.getByLabelText('Code editor') as HTMLTextAreaElement;
     expect(editor.value).toBe('function solve() {}');
   });
@@ -148,9 +140,7 @@ describe('CodingQuestionViewer', () => {
   it('switches starter code when another language is picked', async () => {
     renderViewer();
 
-    fireEvent.change(screen.getByLabelText('Language'), {
-      target: { value: 'Python' }
-    });
+    pickLanguage('Python');
 
     await waitFor(() => {
       expect(mockUseGetCodingQuestion).toHaveBeenCalledWith('t1', 'Python', '');
@@ -222,9 +212,7 @@ describe('CodingQuestionViewer', () => {
       (screen.getByLabelText('Code editor') as HTMLTextAreaElement).value
     ).toBe('function solve() { return 7; }');
 
-    fireEvent.change(screen.getByLabelText('Language'), {
-      target: { value: 'Python' }
-    });
+    pickLanguage('Python');
 
     await waitFor(() => {
       const editor = screen.getByLabelText(
@@ -237,9 +225,7 @@ describe('CodingQuestionViewer', () => {
   it('re-seeds with the target starter when switching back to a previous language', async () => {
     renderViewer();
 
-    fireEvent.change(screen.getByLabelText('Language'), {
-      target: { value: 'Python' }
-    });
+    pickLanguage('Python');
 
     await waitFor(() => {
       expect(
@@ -247,9 +233,7 @@ describe('CodingQuestionViewer', () => {
       ).toBe('def solve():');
     });
 
-    fireEvent.change(screen.getByLabelText('Language'), {
-      target: { value: 'Javascript' }
-    });
+    pickLanguage('Javascript');
 
     await waitFor(() => {
       expect(

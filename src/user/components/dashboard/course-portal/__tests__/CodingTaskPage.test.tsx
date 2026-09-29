@@ -112,29 +112,16 @@ describe('CodingTaskPage', () => {
     mockViewerProps = undefined;
   });
 
-  it('shows the problem title, its editor and the complete action', () => {
+  it('shows the problem title and its editor', () => {
     renderPage();
 
     expect(screen.getByText('Two Sum')).toBeInTheDocument();
-    expect(screen.getByText('Intro to JavaScript')).toBeInTheDocument();
-    expect(screen.getByText('Coding')).toBeInTheDocument();
     expect(screen.getByTestId('coding-question-viewer')).toHaveAttribute(
       'data-task-id',
       't1'
     );
-    expect(
-      screen.getByRole('button', { name: 'Complete task' })
-    ).toBeInTheDocument();
-  });
-
-  it('marks the task complete', () => {
-    renderPage();
-    fireEvent.click(screen.getByRole('button', { name: 'Complete task' }));
-
-    expect(mockUpdateProgress).toHaveBeenCalledWith(
-      { courseAssignmentId: 'ca1', taskId: 't1', isCompleted: true },
-      expect.objectContaining({ onSuccess: expect.any(Function) })
-    );
+    expect(screen.queryByText('Intro to JavaScript')).not.toBeInTheDocument();
+    expect(screen.queryByText('Coding')).not.toBeInTheDocument();
   });
 
   it('marks the task complete when the submission succeeds', () => {

@@ -5,13 +5,19 @@ import {
   Box,
   Card,
   Group,
-  Select,
   Stack,
   Text,
   Textarea
 } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
-import { IconAlertCircle, IconPlayerPlay, IconSend } from '@tabler/icons-react';
+import {
+  IconAlertCircle,
+  IconChevronDown,
+  IconCode,
+  IconPlayerPlay,
+  IconSend,
+  IconSquareCheck
+} from '@tabler/icons-react';
 import { useAppTheme } from '@hooks/use-app-theme';
 import { useCustomToast } from '@utils/common/toast';
 import { getErrorMessage } from '@utils/common/get-error-message';
@@ -116,12 +122,19 @@ const CodeEditor = ({
 
 interface TabButtonProps {
   label: string;
+  icon?: React.ReactNode;
   active: boolean;
-  themeConfig: { color: string; borderColor: string; linkColor: string };
+  themeConfig: { color: string; borderColor: string; warningColor: string };
   onClick: () => void;
 }
 
-const TabButton = ({ label, active, themeConfig, onClick }: TabButtonProps) => (
+const TabButton = ({
+  label,
+  icon,
+  active,
+  themeConfig,
+  onClick
+}: TabButtonProps) => (
   <Box
     component='button'
     type='button'
@@ -129,23 +142,142 @@ const TabButton = ({ label, active, themeConfig, onClick }: TabButtonProps) => (
     style={{
       background: 'none',
       border: 'none',
-      borderBottom: active ? `2px solid ${themeConfig.linkColor}` : 'none',
-      color: active ? themeConfig.linkColor : themeConfig.color,
+      borderBottom: active ? `2px solid ${themeConfig.warningColor}` : 'none',
+      color: active ? themeConfig.warningColor : themeConfig.color,
       cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      gap: 6,
       fontFamily: 'inherit',
       fontSize: 14,
       fontWeight: active ? 700 : 500,
       padding: '6px 12px'
     }}
   >
+    {icon}
     {label}
   </Box>
 );
 
-/**
- * LeetCode-style problem pane: the statement and any authored description on the
- * left, with a full code editor and test-run results on the right.
- */
+interface LanguagePickerProps {
+  languages: string[];
+  value: string;
+  themeConfig: {
+    color: string;
+    borderColor: string;
+    cardBackground: string;
+    warningColor: string;
+  };
+  onChange: (next: string) => void;
+}
+
+const LanguagePicker = ({
+  languages,
+  value,
+  themeConfig,
+  onChange
+}: LanguagePickerProps) => {
+  const [open, setOpen] = useState(false);
+
+  const pick = (next: string) => {
+    setOpen(false);
+    onChange(next);
+  };
+
+  return (
+    <Box style={{ position: 'relative' }}>
+      <CommonButton
+        variant='default'
+        size='xs'
+        aria-label='Language'
+        leftSection={<IconCode size={14} />}
+        rightSection={<IconChevronDown size={14} />}
+        onClick={() => setOpen(openState => !openState)}
+        disabled={languages.length === 0}
+      >
+        {value || 'Pick a language'}
+      </CommonButton>
+
+      {open && (
+        <>
+          <Box
+            style={{ position: 'fixed', inset: 0, zIndex: 40 }}
+            onClick={() => setOpen(false)}
+          />
+          <Box
+            style={{
+              position: 'absolute',
+              top: 'calc(100% + 4px)',
+              right: 0,
+              zIndex: 41,
+              width: 340,
+              maxHeight: 260,
+              overflowY: 'auto',
+              padding: 8,
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+              gap: 4,
+              backgroundColor: themeConfig.cardBackground,
+              border: `1px solid ${themeConfig.borderColor}`,
+              borderRadius: 10,
+              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)'
+            }}
+          >
+            {languages.map(languageName => {
+              const selected = languageName === value;
+              return (
+                <Box
+                  key={languageName}
+                  component='button'
+                  type='button'
+                  onClick={() => pick(languageName)}
+                  aria-label={languageName}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    minWidth: 0,
+                    padding: '6px 8px',
+                    borderRadius: 6,
+                    border: 'none',
+                    background: 'none',
+                    cursor: 'pointer',
+                    fontFamily: 'inherit',
+                    fontSize: 12,
+                    fontWeight: selected ? 700 : 500,
+                    textAlign: 'left',
+                    color: selected
+                      ? themeConfig.warningColor
+                      : themeConfig.color
+                  }}
+                >
+                  <IconCode
+                    size={13}
+                    style={{
+                      flexShrink: 0,
+                      color: selected ? themeConfig.warningColor : undefined
+                    }}
+                  />
+                  <Text
+                    size='xs'
+                    style={{
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    {languageName}
+                  </Text>
+                </Box>
+              );
+            })}
+          </Box>
+        </>
+      )}
+    </Box>
+  );
+};
+
 const CodingQuestionViewer = ({
   task,
   onSubmitted
@@ -296,6 +428,7 @@ const CodingQuestionViewer = ({
         >
           <Group
             gap='xs'
+            align='center'
             px='md'
             py='xs'
             style={{
@@ -303,10 +436,8 @@ const CodingQuestionViewer = ({
               backgroundColor: themeConfig.cardBackground
             }}
           >
+            <IconCode size={16} color={themeConfig.warningColor} />
             <Text fw={700}>Problem statement</Text>
-            <Badge variant='light' color='blue'>
-              Coding
-            </Badge>
           </Group>
 
           <Box
@@ -384,15 +515,11 @@ const CodingQuestionViewer = ({
             backgroundColor: themeConfig.cardBackground
           }}
         >
-          <Select
-            aria-label='Language'
-            placeholder='Pick a language'
-            data={languages}
-            value={language || null}
+          <LanguagePicker
+            languages={languages}
+            value={language}
+            themeConfig={themeConfig}
             onChange={handleLanguageChange}
-            allowDeselect={false}
-            size='xs'
-            w={150}
           />
         </Group>
 
@@ -407,12 +534,14 @@ const CodingQuestionViewer = ({
         >
           <TabButton
             label='Code'
+            icon={<IconCode size={14} />}
             active={activeTab === 'code'}
             themeConfig={themeConfig}
             onClick={() => setActiveTab('code')}
           />
           <TabButton
             label='Test cases'
+            icon={<IconSquareCheck size={14} />}
             active={activeTab === 'testCases'}
             themeConfig={themeConfig}
             onClick={() => setActiveTab('testCases')}
