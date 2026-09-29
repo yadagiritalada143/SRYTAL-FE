@@ -6,7 +6,6 @@ import {
   Card,
   Divider,
   Group,
-  Kbd,
   Select,
   Stack,
   Text,
@@ -37,11 +36,6 @@ const MONO_FONT =
 
 const TAB_SIZE = 4;
 
-/**
- * Makes Tab behave like an editor indent key: Tab inserts 4 spaces at the
- * caret, Shift+Tab removes up to 4 spaces before it. The caret is restored
- * after React commits the new value.
- */
 const handleEditorKeyDown = (
   event: React.KeyboardEvent<HTMLTextAreaElement>,
   value: string,
@@ -79,6 +73,34 @@ const handleEditorKeyDown = (
 const isSameLanguage = (a: string, b: string) =>
   a.trim().toLowerCase() === b.trim().toLowerCase();
 
+interface TabButtonProps {
+  label: string;
+  active: boolean;
+  themeConfig: { color: string; borderColor: string; linkColor: string };
+  onClick: () => void;
+}
+
+const TabButton = ({ label, active, themeConfig, onClick }: TabButtonProps) => (
+  <Box
+    component='button'
+    type='button'
+    onClick={onClick}
+    style={{
+      background: 'none',
+      border: 'none',
+      borderBottom: active ? `2px solid ${themeConfig.linkColor}` : 'none',
+      color: active ? themeConfig.linkColor : themeConfig.color,
+      cursor: 'pointer',
+      fontFamily: 'inherit',
+      fontSize: 14,
+      fontWeight: active ? 700 : 500,
+      padding: '6px 12px'
+    }}
+  >
+    {label}
+  </Box>
+);
+
 /**
  * LeetCode-style problem pane: the statement and any authored description on the
  * left, with a full code editor and test-run results on the right.
@@ -95,6 +117,7 @@ const CodingQuestionViewer = ({
   const [code, setCode] = useState('');
   const [result, setResult] = useState<CodeRunResult | null>(null);
   const [runError, setRunError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'code' | 'testCases'>('code');
   const seededLanguage = useRef('');
   const seededSources = useRef<Record<string, string>>({});
 
@@ -110,8 +133,7 @@ const CodingQuestionViewer = ({
   // refetch (e.g. after the query is invalidated on submit) may bring a
   // `lastSubmittedCode` that was saved after the first response, so the editor
   // is re-seeded whenever the server source changes while the learner has not
-  // diverged from what was last seeded. Switching languages always re-seeds the
-  // new language's source, so going Python -> Javascript restores the JS starter.
+  // diverged from what was last seeded.
   useEffect(() => {
     const data = questionQuery.data;
     if (!data) return;
@@ -161,6 +183,7 @@ const CodingQuestionViewer = ({
         code
       });
       setResult(executionResult);
+      setActiveTab('testCases');
     } catch (error) {
       setResult(null);
       const message = getErrorMessage(
@@ -168,6 +191,7 @@ const CodingQuestionViewer = ({
         'Something went wrong while running your code.'
       );
       setRunError(message);
+      setActiveTab('testCases');
       showErrorToast(message);
     }
   };
@@ -181,6 +205,7 @@ const CodingQuestionViewer = ({
         code
       });
       setResult(submission.result);
+      setActiveTab('testCases');
       showSuccessToast(submission.message || 'Code submitted successfully');
       onSubmitted?.();
     } catch (error) {
@@ -190,6 +215,7 @@ const CodingQuestionViewer = ({
         'Something went wrong while submitting your code.'
       );
       setRunError(message);
+      setActiveTab('testCases');
       showErrorToast(message);
     }
   };
@@ -209,69 +235,94 @@ const CodingQuestionViewer = ({
           position: isMobile ? undefined : 'sticky',
           top: isMobile ? undefined : 80,
           alignSelf: 'flex-start',
-          maxHeight: isMobile ? undefined : 'calc(100vh - 80px)',
-          overflowY: isMobile ? undefined : 'auto'
+          height: isMobile ? undefined : 'calc(100vh - 80px)',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column'
         }}
       >
-        <Card withBorder radius='lg' p={{ base: 'md', sm: 'lg' }}>
-          <Stack gap='sm'>
-            <Group gap='xs'>
-              <Text fw={700}>Problem statement</Text>
-              <Badge variant='light' color='blue'>
-                Coding
-              </Badge>
-            </Group>
-            <Divider />
+        <Card
+          withBorder
+          radius='lg'
+          p={0}
+          style={{
+            flex: 1,
+            minHeight: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden'
+          }}
+        >
+          <Group
+            gap='xs'
+            px='md'
+            py='xs'
+            style={{
+              borderBottom: `1px solid ${themeConfig.borderColor}`,
+              backgroundColor: themeConfig.cardBackground
+            }}
+          >
+            <Text fw={700}>Problem statement</Text>
+            <Badge variant='light' color='blue'>
+              Coding
+            </Badge>
+          </Group>
 
-            {questionQuery.isLoading && (
-              <Text size='sm' c={themeConfig.mutedTextColor}>
-                Loading question…
-              </Text>
-            )}
-            {questionQuery.isError && (
-              <Alert color='red' icon={<IconAlertCircle size={18} />}>
-                <Text size='sm'>{getErrorMessage(questionQuery.error)}</Text>
-                <CommonButton
-                  mt='xs'
-                  size='xs'
-                  variant='light'
-                  onClick={() => questionQuery.refetch()}
-                >
-                  Try again
-                </CommonButton>
-              </Alert>
-            )}
-            {questionQuery.data && (
-              <Box>
-                <Text
-                  size='md'
-                  style={{ whiteSpace: 'pre-wrap' }}
-                  c={themeConfig.color}
-                  lh={1.7}
-                >
-                  {questionQuery.data.question ||
-                    task.taskDescription ||
-                    'Solve the problem below.'}
+          <Box
+            p={{ base: 'md', sm: 'lg' }}
+            style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}
+          >
+            <Stack gap='sm'>
+              {questionQuery.isLoading && (
+                <Text size='sm' c={themeConfig.mutedTextColor}>
+                  Loading question…
                 </Text>
-                {task.taskDescription &&
-                  questionQuery.data.question !== task.taskDescription && (
-                    <>
-                      <Divider my='sm' />
-                      <Box
-                        style={{
-                          color: themeConfig.color,
-                          fontSize: 14,
-                          lineHeight: 1.6
-                        }}
-                        dangerouslySetInnerHTML={{
-                          __html: task.taskDescription
-                        }}
-                      />
-                    </>
-                  )}
-              </Box>
-            )}
-          </Stack>
+              )}
+              {questionQuery.isError && (
+                <Alert color='red' icon={<IconAlertCircle size={18} />}>
+                  <Text size='sm'>{getErrorMessage(questionQuery.error)}</Text>
+                  <CommonButton
+                    mt='xs'
+                    size='xs'
+                    variant='light'
+                    onClick={() => questionQuery.refetch()}
+                  >
+                    Try again
+                  </CommonButton>
+                </Alert>
+              )}
+              {questionQuery.data && (
+                <Box>
+                  <Text
+                    size='md'
+                    style={{ whiteSpace: 'pre-wrap' }}
+                    c={themeConfig.color}
+                    lh={1.7}
+                  >
+                    {questionQuery.data.question ||
+                      task.taskDescription ||
+                      'Solve the problem below.'}
+                  </Text>
+                  {task.taskDescription &&
+                    questionQuery.data.question !== task.taskDescription && (
+                      <>
+                        <Divider my='sm' />
+                        <Box
+                          style={{
+                            color: themeConfig.color,
+                            fontSize: 14,
+                            lineHeight: 1.6
+                          }}
+                          dangerouslySetInnerHTML={{
+                            __html: task.taskDescription
+                          }}
+                        />
+                      </>
+                    )}
+                </Box>
+              )}
+            </Stack>
+          </Box>
         </Card>
       </Box>
 
@@ -282,25 +333,70 @@ const CodingQuestionViewer = ({
           minWidth: 0,
           width: isMobile ? '100%' : undefined,
           alignSelf: 'flex-start',
-          maxHeight: isMobile ? undefined : 'calc(100vh - 80px)',
-          overflowY: isMobile ? undefined : 'auto'
+          height: isMobile ? undefined : 'calc(100vh - 80px)',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden'
         }}
       >
-        <Stack gap='md'>
-          <Card withBorder radius='lg' p='lg'>
-            <Stack gap='sm'>
-              <Group justify='flex-end' align='flex-end' wrap='wrap' gap='sm'>
-                <Select
-                  label='Language'
-                  placeholder='Pick a language'
-                  data={languages}
-                  value={language || null}
-                  onChange={handleLanguageChange}
-                  allowDeselect={false}
-                  style={{ minWidth: 180, maxWidth: 260 }}
-                />
-              </Group>
+        <Group
+          justify='flex-end'
+          align='center'
+          px='md'
+          py='xs'
+          style={{
+            flexShrink: 0,
+            borderBottom: `1px solid ${themeConfig.borderColor}`,
+            backgroundColor: themeConfig.cardBackground
+          }}
+        >
+          <Select
+            aria-label='Language'
+            placeholder='Pick a language'
+            data={languages}
+            value={language || null}
+            onChange={handleLanguageChange}
+            allowDeselect={false}
+            size='xs'
+            w={150}
+          />
+        </Group>
 
+        <Group
+          gap={4}
+          px='md'
+          style={{
+            flexShrink: 0,
+            borderBottom: `1px solid ${themeConfig.borderColor}`,
+            backgroundColor: themeConfig.cardBackground
+          }}
+        >
+          <TabButton
+            label='Code'
+            active={activeTab === 'code'}
+            themeConfig={themeConfig}
+            onClick={() => setActiveTab('code')}
+          />
+          <TabButton
+            label='Test cases'
+            active={activeTab === 'testCases'}
+            themeConfig={themeConfig}
+            onClick={() => setActiveTab('testCases')}
+          />
+        </Group>
+
+        <Box
+          data-testid='content-panel'
+          style={{
+            flex: 1,
+            minHeight: 0,
+            overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column'
+          }}
+        >
+          {activeTab === 'code' && (
+            <Box p='sm' style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
               <Textarea
                 value={code}
                 onChange={event => setCode(event.currentTarget.value)}
@@ -325,52 +421,58 @@ const CodingQuestionViewer = ({
                     fontFamily: MONO_FONT,
                     fontSize: 13,
                     lineHeight: 1.6,
-                    whiteSpace: 'pre',
-                    backgroundColor: themeConfig.backgroundColor,
-                    color: themeConfig.color,
-                    borderColor: themeConfig.borderColor
+                    whiteSpace: 'pre'
                   }
                 }}
               />
-
-              <Group gap={8}>
-                <Kbd>Ctrl</Kbd>+<Kbd>Enter</Kbd>
-                <Text size='xs' c={themeConfig.mutedTextColor}>
-                  to run your code
-                </Text>
-              </Group>
-            </Stack>
-          </Card>
-
-          {runError && (
-            <Alert color='red' icon={<IconAlertCircle size={18} />}>
-              <Text size='sm' style={{ whiteSpace: 'pre-wrap' }}>
-                {runError}
-              </Text>
-            </Alert>
+            </Box>
           )}
 
-          {result && <RunResults result={result} themeConfig={themeConfig} />}
+          {activeTab === 'testCases' && (
+            <Box p='sm' style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+              {runError && (
+                <Alert color='red' icon={<IconAlertCircle size={18} />}>
+                  <Text size='sm' style={{ whiteSpace: 'pre-wrap' }}>
+                    {runError}
+                  </Text>
+                </Alert>
+              )}
+              {result ? (
+                <RunResults result={result} themeConfig={themeConfig} />
+              ) : (
+                !runError && (
+                  <Text size='sm' c={themeConfig.mutedTextColor}>
+                    Run the code to see test case results.
+                  </Text>
+                )
+              )}
+            </Box>
+          )}
+        </Box>
 
-          <Group gap='xs' justify='flex-end' wrap='wrap'>
-            <CommonButton
-              leftSection={<IconPlayerPlay size={16} />}
-              onClick={handleRun}
-              loading={isRunning}
-              disabled={isRunning || isSubmitting || !language}
-            >
-              Run code
-            </CommonButton>
-            <CommonButton
-              leftSection={<IconSend size={16} />}
-              onClick={handleSubmit}
-              loading={isSubmitting}
-              disabled={isSubmitting || isRunning || !language}
-            >
-              Submit code
-            </CommonButton>
-          </Group>
-        </Stack>
+        <Group
+          gap='xs'
+          justify='flex-end'
+          wrap='wrap'
+          style={{ flexShrink: 0, padding: 'md' }}
+        >
+          <CommonButton
+            leftSection={<IconPlayerPlay size={16} />}
+            onClick={handleRun}
+            loading={isRunning}
+            disabled={isRunning || isSubmitting || !language}
+          >
+            Run code
+          </CommonButton>
+          <CommonButton
+            leftSection={<IconSend size={16} />}
+            onClick={handleSubmit}
+            loading={isSubmitting}
+            disabled={isSubmitting || isRunning || !language}
+          >
+            Submit code
+          </CommonButton>
+        </Group>
       </Box>
     </Group>
   );

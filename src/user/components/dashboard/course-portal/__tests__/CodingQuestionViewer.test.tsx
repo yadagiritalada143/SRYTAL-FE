@@ -56,9 +56,15 @@ jest.mock('@mantine/core', () => {
   const actual = jest.requireActual('@mantine/core');
   return {
     ...actual,
-    Select: ({ label, value, onChange, data }: any) => (
+    Select: ({
+      'aria-label': ariaLabel,
+      label,
+      value,
+      onChange,
+      data
+    }: any) => (
       <select
-        aria-label={label}
+        aria-label={ariaLabel ?? label}
         value={value ?? ''}
         onChange={e => onChange(e.target.value)}
       >
@@ -403,5 +409,56 @@ describe('CodingQuestionViewer', () => {
         'All test cases must pass before you can submit your code !'
       )
     ).toBeInTheDocument();
+  });
+
+  it('switches between the Code and Test cases tabs', () => {
+    renderViewer();
+    expect(screen.getByLabelText('Code editor')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('Test cases'));
+    expect(screen.queryByLabelText('Code editor')).not.toBeInTheDocument();
+    expect(
+      screen.getByText('Run the code to see test case results.')
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('Code'));
+    expect(screen.getByLabelText('Code editor')).toBeInTheDocument();
+  });
+
+  it('switches to the Test cases tab automatically after running code', async () => {
+    mockRunCode.mockResolvedValue({
+      questionId: 't1',
+      language: 'Javascript',
+      totalTestCases: 1,
+      passedTestCases: 1,
+      failedTestCases: 0,
+      score: 100,
+      results: [
+        {
+          name: 'Sample 1',
+          input: '1 2',
+          expectedOutput: '3',
+          actualOutput: '3',
+          passed: true,
+          status: 'Passed',
+          isSample: true
+        }
+      ],
+      aiEvaluation: {
+        score: 90,
+        suggestions: [],
+        failedTests: [],
+        codingStandards: {},
+        explanation: ''
+      }
+    });
+
+    renderViewer();
+    fireEvent.click(screen.getByText('Run code'));
+
+    await waitFor(() => {
+      expect(screen.getByText('1 / 1 tests passed')).toBeInTheDocument();
+    });
+    expect(screen.queryByLabelText('Code editor')).not.toBeInTheDocument();
   });
 });
