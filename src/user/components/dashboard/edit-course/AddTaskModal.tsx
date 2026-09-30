@@ -16,7 +16,9 @@ import {
   IconCheck,
   IconLink,
   IconFile,
-  IconCode
+  IconCode,
+  IconPlus,
+  IconX
 } from '@tabler/icons-react';
 import { CommonButton } from '@components/common/button/CommonButton';
 import { useAddCourseTask } from '@hooks/mutations/useUserMutations';
@@ -48,7 +50,7 @@ const AddTaskModal = ({
   const [mode, setMode] = useState<ContentMode>('LINK');
   const [link, setLink] = useState('');
   const [file, setFile] = useState<File | null>(null);
-  const [question, setQuestion] = useState('');
+  const [codingQuestions, setCodingQuestions] = useState<string[]>(['']);
   const [thumbnail, setThumbnail] = useState<File | null>(null);
 
   const { mutateAsync: addTask, isPending } = useAddCourseTask(courseId);
@@ -60,8 +62,22 @@ const AddTaskModal = ({
     setMode('LINK');
     setLink('');
     setFile(null);
-    setQuestion('');
+    setCodingQuestions(['']);
     setThumbnail(null);
+  };
+
+  const handleQuestionChange = (index: number, value: string) => {
+    setCodingQuestions(prev =>
+      prev.map((question, i) => (i === index ? value : question))
+    );
+  };
+
+  const addQuestion = () => {
+    setCodingQuestions(prev => [...prev, '']);
+  };
+
+  const removeQuestion = (index: number) => {
+    setCodingQuestions(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleClose = () => {
@@ -82,18 +98,23 @@ const AddTaskModal = ({
       ? !!link.trim()
       : mode === 'FILE'
         ? !!file
-        : !!question.trim();
+        : codingQuestions.some(question => question.trim());
   const isValid = !!taskName.trim() && hasContent;
 
   const handleSubmit = async () => {
     try {
       const isCoding = mode === 'CODING';
+      const questions = codingQuestions
+        .map(question => question.trim())
+        .filter(Boolean)
+        .map(question => ({ question }));
       await addTask({
         moduleId,
         taskName: taskName.trim(),
         taskDescription: taskDescription.trim(),
         isCoding,
-        question: isCoding ? question.trim() : undefined,
+        question: isCoding ? questions[0]?.question : undefined,
+        questions: isCoding ? questions : undefined,
         link: !isCoding && mode === 'LINK' ? link.trim() : undefined,
         file: !isCoding && mode === 'FILE' ? file : undefined,
         thumbnail
@@ -184,16 +205,49 @@ const AddTaskModal = ({
           />
         ) : (
           <Stack gap='xs'>
-            <Textarea
-              label='Question'
-              placeholder='Describe the coding problem to solve'
-              required
-              autosize
-              minRows={3}
-              value={question}
-              onChange={e => setQuestion(e.target.value)}
-              description='Every coding task needs a problem statement.'
-            />
+            {codingQuestions.map((question, index) => (
+              <Group key={index} align='flex-start' gap='xs' wrap='nowrap'>
+                <Textarea
+                  label={index === 0 ? 'Question' : `Question ${index + 1}`}
+                  placeholder='Describe the coding problem to solve'
+                  required
+                  autosize
+                  minRows={3}
+                  value={question}
+                  onChange={e =>
+                    handleQuestionChange(index, e.currentTarget.value)
+                  }
+                  description={
+                    index === 0
+                      ? 'Every coding task needs a problem statement.'
+                      : undefined
+                  }
+                  style={{ flex: 1, minWidth: 0 }}
+                />
+                {codingQuestions.length > 1 && (
+                  <CommonButton
+                    variant='subtle'
+                    color='red'
+                    size='xs'
+                    aria-label={`Remove Question ${index + 1}`}
+                    leftSection={<IconX size={14} />}
+                    onClick={() => removeQuestion(index)}
+                    style={{ marginTop: 28, flexShrink: 0 }}
+                  >
+                    Remove
+                  </CommonButton>
+                )}
+              </Group>
+            ))}
+            <CommonButton
+              variant='light'
+              size='xs'
+              leftSection={<IconPlus size={14} />}
+              onClick={addQuestion}
+              style={{ width: 'fit-content' }}
+            >
+              Add Question
+            </CommonButton>
             <Text size='sm' fw={500}>
               Programming Language
             </Text>

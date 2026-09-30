@@ -388,21 +388,32 @@ const CourseDetails = () => {
       <Modal
         opened={!!taskToView}
         onClose={() => setTaskToView(null)}
-        title='Coding Question'
+        title={
+          taskToView?.questions?.length ? 'Coding Questions' : 'Coding Question'
+        }
         centered
       >
         <Stack gap='sm'>
           <Text fw={600}>{taskToView?.taskName}</Text>
-          <Paper
-            p='md'
-            radius='md'
-            withBorder
-            style={{ borderColor: currentThemeConfig.borderColor }}
-          >
-            <Text size='sm' style={{ whiteSpace: 'pre-wrap' }}>
-              {taskToView?.question || 'No question provided.'}
-            </Text>
-          </Paper>
+          {(taskToView?.questions?.length
+            ? taskToView.questions
+            : [{ questionId: null, question: taskToView?.question || '' }]
+          ).map((entry, index) => (
+            <Paper
+              key={entry.questionId ?? index}
+              p='md'
+              radius='md'
+              withBorder
+              style={{ borderColor: currentThemeConfig.borderColor }}
+            >
+              <Text size='xs' c='dimmed' mb={4}>
+                Question {index + 1}
+              </Text>
+              <Text size='sm' style={{ whiteSpace: 'pre-wrap' }}>
+                {entry.question || 'No question provided.'}
+              </Text>
+            </Paper>
+          ))}
           <Group justify='flex-end'>
             <CommonButton variant='default' onClick={() => setTaskToView(null)}>
               Close

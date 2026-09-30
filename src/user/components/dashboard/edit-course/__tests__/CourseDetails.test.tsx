@@ -523,6 +523,58 @@ describe('CourseDetails', () => {
 
       openSpy.mockRestore();
     });
+
+    it('shows every coding question in the modal when there are multiple', () => {
+      mockCourse = makeCourse({
+        modules: [
+          {
+            _id: 'm9',
+            moduleName: 'Coding Module',
+            moduleDescription: '',
+            status: 'ACTIVE',
+            tasks: [
+              {
+                _id: 't9',
+                taskName: 'FizzBuzz',
+                taskDescription: '',
+                status: 'ACTIVE',
+                type: 'LINK',
+                content: '',
+                isCoding: true,
+                questions: [
+                  {
+                    questionId: 'q1',
+                    question: 'Return fizz for multiples of three.',
+                    status: 'ACTIVE'
+                  },
+                  {
+                    questionId: 'q2',
+                    question: 'Return buzz for multiples of five.',
+                    status: 'ACTIVE'
+                  }
+                ],
+                thumbnailUrl: '',
+                thumbnail: ''
+              }
+            ]
+          }
+        ]
+      });
+      renderPage();
+
+      const openButton = screen
+        .getAllByText('Open')[0]!
+        .closest('button') as HTMLButtonElement;
+      fireEvent.click(openButton);
+
+      expect(screen.getByTestId('coding-question-modal')).toBeInTheDocument();
+      expect(
+        screen.getByText('Return fizz for multiples of three.')
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText('Return buzz for multiples of five.')
+      ).toBeInTheDocument();
+    });
   });
 
   describe('Navigation', () => {

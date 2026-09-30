@@ -39,11 +39,34 @@ jest.mock('@utils/common/get-error-message', () => ({
 }));
 
 jest.mock('@components/common/button/CommonButton', () => ({
-  CommonButton: ({ children, onClick, disabled, type, loading }: any) => (
-    <button type={type ?? 'button'} onClick={onClick} disabled={disabled}>
-      {loading ? 'Loading...' : children}
-    </button>
-  )
+  CommonButton: ({
+    children,
+    onClick,
+    disabled,
+    type,
+    loading,
+    ...rest
+  }: any) => {
+    const {
+      'aria-label': ariaLabel,
+      leftSection: _leftSection,
+      rightSection: _rightSection,
+      ...buttonProps
+    } = rest;
+    void _leftSection;
+    void _rightSection;
+    return (
+      <button
+        type={type ?? 'button'}
+        onClick={onClick}
+        disabled={disabled}
+        aria-label={ariaLabel}
+        {...buttonProps}
+      >
+        {loading ? 'Loading...' : children}
+      </button>
+    );
+  }
 }));
 
 jest.mock('../DescriptionEditor', () => (props: any) => (
@@ -280,6 +303,62 @@ describe('AddTaskModal', () => {
         JSON.parse(sessionStorage.getItem(REOPEN_TASK_POPUP_KEY) || '{}')
       ).toEqual({ courseId: 'c1', moduleId: 'm1' });
     });
+
+    it('submits multiple coding questions', async () => {
+      renderModal(true, 'm1', 'c1');
+
+      typeTitle('FizzBuzz problem');
+      clickCodingMode();
+      fireEvent.change(
+        screen.getByPlaceholderText('Describe the coding problem to solve'),
+        { target: { value: 'Return fizz for multiples of three.' } }
+      );
+      fireEvent.click(screen.getByRole('button', { name: 'Add Question' }));
+      fireEvent.change(
+        screen.getAllByPlaceholderText(
+          'Describe the coding problem to solve'
+        )[1],
+        { target: { value: 'Return buzz for multiples of five.' } }
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: 'Add Content' }));
+
+      await waitFor(() => {
+        expect(mockAddTask).toHaveBeenCalledTimes(1);
+      });
+
+      expect(mockAddTask).toHaveBeenCalledWith({
+        moduleId: 'm1',
+        taskName: 'FizzBuzz problem',
+        taskDescription: '',
+        isCoding: true,
+        question: 'Return fizz for multiples of three.',
+        questions: [
+          { question: 'Return fizz for multiples of three.' },
+          { question: 'Return buzz for multiples of five.' }
+        ],
+        link: undefined,
+        file: undefined,
+        thumbnail: null
+      });
+    });
+
+    it('removes an added coding question', () => {
+      renderModal();
+      clickCodingMode();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Add Question' }));
+      expect(
+        screen.getAllByPlaceholderText('Describe the coding problem to solve')
+      ).toHaveLength(2);
+
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Remove Question 2' })
+      );
+      expect(
+        screen.getAllByPlaceholderText('Describe the coding problem to solve')
+      ).toHaveLength(1);
+    });
   });
 
   describe('Submit', () => {
@@ -359,6 +438,7 @@ describe('AddTaskModal', () => {
         taskDescription: '',
         isCoding: true,
         question: 'Return fizz for multiples of three.',
+        questions: [{ question: 'Return fizz for multiples of three.' }],
         link: undefined,
         file: undefined,
         thumbnail: null

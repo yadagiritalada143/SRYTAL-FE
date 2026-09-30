@@ -85,6 +85,12 @@ describe('useUserQueries', () => {
         'userOpenRouterKey',
         'u1'
       ]);
+      expect(userQueryKeys.codingQuestion('t1', 'Python', 'lang')).toEqual([
+        'codingQuestion',
+        't1',
+        'Python',
+        'lang'
+      ]);
     });
   });
 
@@ -458,6 +464,33 @@ describe('useUserQueries', () => {
 
       expect(userService().getCodingQuestion).not.toHaveBeenCalled();
       expect(result.current.data).toBeUndefined();
+    });
+
+    it('passes the language through to the service and query key', async () => {
+      userService().getCodingQuestion.mockResolvedValue({
+        questionId: 't1',
+        language: 'Python',
+        starterCode: 'def solve():'
+      });
+      const { wrapper } = createWrapper();
+
+      const { result } = renderHook(
+        () => useGetCodingQuestion('t1', 'Python', ''),
+        { wrapper }
+      );
+
+      await waitFor(() =>
+        expect(result.current.data).toEqual({
+          questionId: 't1',
+          language: 'Python',
+          starterCode: 'def solve():'
+        })
+      );
+      expect(userService().getCodingQuestion).toHaveBeenCalledWith(
+        't1',
+        'Python',
+        ''
+      );
     });
   });
 });

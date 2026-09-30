@@ -10,9 +10,12 @@ export { logoutUser } from '@utils/api-client';
 import { apiClient } from '@utils/api-client';
 import { BASE_URL } from '@constants';
 import {
+  AddCourseTaskQuestionPayload,
   AddModulePayload,
   AddTaskPayload,
+  CourseTaskQuestionsResponse,
   UpdateCoursePayload,
+  UpdateCourseTaskQuestionPayload,
   UpdateModulePayload,
   UpdateTaskPayload
 } from '@interfaces/contentwriter';
@@ -243,6 +246,9 @@ export const addCourseTaskContentWriter = async (data: AddTaskPayload) => {
     formData.append('taskDescription', data.taskDescription);
     if (data.isCoding) {
       formData.append('isCoding', 'true');
+      if (data.questions?.length) {
+        formData.append('questions', JSON.stringify(data.questions));
+      }
       if (data.question) {
         formData.append('question', data.question);
       }
@@ -400,11 +406,56 @@ export const getCodingQuestion = async (
   language = '',
   languageId = ''
 ): Promise<CodingQuestion> => {
-  const params = language || languageId ? { language, languageId } : undefined;
+  const params =
+    language || languageId
+      ? {
+          language,
+          languageId
+        }
+      : undefined;
   const response = params
     ? await apiClient.get(`/getquestion/${questionId}`, { params })
     : await apiClient.get(`/getquestion/${questionId}`);
   // Backend responds with the question data at the top level.
+  return response.data;
+};
+
+export const getCourseTaskQuestions = async (
+  taskId: string
+): Promise<CourseTaskQuestionsResponse> => {
+  const response = await apiClient.get(
+    `/contentwriter/getCourseTaskQuestions/${taskId}`
+  );
+  return response.data;
+};
+
+export const addCourseTaskQuestion = async (
+  data: AddCourseTaskQuestionPayload
+): Promise<{ taskId: string; questionId: string; questionCount: number }> => {
+  const response = await apiClient.post(
+    '/contentwriter/addCourseTaskQuestion',
+    data
+  );
+  return response.data;
+};
+
+export const updateCourseTaskQuestion = async (
+  data: UpdateCourseTaskQuestionPayload
+): Promise<{ taskId: string; questionId: string }> => {
+  const response = await apiClient.put(
+    '/contentwriter/updateCourseTaskQuestion',
+    data
+  );
+  return response.data;
+};
+
+export const deleteCourseTaskQuestion = async (
+  taskId: string,
+  questionId: string
+): Promise<{ taskId: string; questionId: string; questionCount: number }> => {
+  const response = await apiClient.delete(
+    `/contentwriter/deleteCourseTaskQuestion/${taskId}/${questionId}`
+  );
   return response.data;
 };
 /**

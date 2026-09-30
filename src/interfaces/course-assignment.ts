@@ -31,10 +31,15 @@ export interface AssignedTask {
   contentFileName?: string;
   isCompleted: boolean;
   completedAt?: string | null;
+  questionCount?: number;
+  completedQuestionCount?: number;
 }
 
 export interface CodingQuestion {
-  questionId: string;
+  taskId: string;
+  questionId: string | null;
+  taskName: string;
+  question: string;
   allowedLanguages: string[];
   language: string;
   languageId?: string;
@@ -81,7 +86,8 @@ export interface CodeRunResult {
 }
 
 export interface RunCodePayload {
-  questionId: string;
+  taskId: string;
+  questionId?: string;
   language: string;
   code: string;
 }

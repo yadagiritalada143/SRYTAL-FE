@@ -32,7 +32,10 @@ import {
 
 interface CodingQuestionViewerProps {
   task: AssignedTask;
-  /** Called after a successful submission (used to mark the task complete). */
+  questionId: string | null;
+  questionCount?: number;
+  activeQuestionIndex?: number;
+  onSelectQuestion?: (index: number) => void;
   onSubmitted?: () => void;
 }
 
@@ -280,6 +283,10 @@ const LanguagePicker = ({
 
 const CodingQuestionViewer = ({
   task,
+  questionId,
+  questionCount = 1,
+  activeQuestionIndex = 0,
+  onSelectQuestion,
   onSubmitted
 }: CodingQuestionViewerProps) => {
   const { themeConfig } = useAppTheme();
@@ -294,7 +301,8 @@ const CodingQuestionViewer = ({
   const seededLanguage = useRef('');
   const seededSources = useRef<Record<string, string>>({});
 
-  const questionQuery = useGetCodingQuestion(task._id, language);
+  const resolvedQuestionId = questionId || task._id;
+  const questionQuery = useGetCodingQuestion(resolvedQuestionId, language, '');
   const { mutateAsync: runCodeMutation, isPending: isRunning } = useRunCode();
   const { mutateAsync: submitCodeMutation, isPending: isSubmitting } =
     useSubmitCode();
@@ -351,7 +359,8 @@ const CodingQuestionViewer = ({
     setRunError(null);
     try {
       const executionResult = await runCodeMutation({
-        questionId: task._id,
+        taskId: task._id,
+        questionId: questionId || '',
         language,
         code
       });
@@ -373,7 +382,8 @@ const CodingQuestionViewer = ({
     setRunError(null);
     try {
       const submission = await submitCodeMutation({
-        questionId: task._id,
+        taskId: task._id,
+        questionId: questionId || '',
         language,
         code
       });
@@ -436,8 +446,43 @@ const CodingQuestionViewer = ({
               backgroundColor: themeConfig.cardBackground
             }}
           >
-            <IconCode size={16} color={themeConfig.warningColor} />
-            <Text fw={700}>Problem statement</Text>
+            {questionCount > 1 ? (
+              <Group gap={8} wrap='wrap' style={{ minWidth: 0 }}>
+                {Array.from({ length: questionCount }, (_, index) => {
+                  const isActive = index === activeQuestionIndex;
+                  return (
+                    <CommonButton
+                      key={index}
+                      size='xs'
+                      r='sm'
+                      aria-label={`Question ${index + 1}`}
+                      aria-current={isActive}
+                      onClick={() => onSelectQuestion?.(index)}
+                      style={{
+                        fontWeight: 600,
+                        lineClamp: 1,
+                        color: isActive ? '#ffffff' : themeConfig.warningColor,
+                        backgroundColor: isActive
+                          ? themeConfig.successColor
+                          : 'transparent',
+                        border: `1px solid ${
+                          isActive
+                            ? themeConfig.successColor
+                            : themeConfig.warningColor
+                        }`
+                      }}
+                    >
+                      Question {index + 1}
+                    </CommonButton>
+                  );
+                })}
+              </Group>
+            ) : (
+              <>
+                <IconCode size={16} color={themeConfig.warningColor} />
+                <Text fw={700}>Problem statement</Text>
+              </>
+            )}
           </Group>
 
           <Box
@@ -465,15 +510,15 @@ const CodingQuestionViewer = ({
               )}
               {questionQuery.data && (
                 <Box>
-                  {task.taskDescription ? (
-                    <Box
-                      style={{
-                        color: themeConfig.color,
-                        fontSize: 14,
-                        lineHeight: 1.6
-                      }}
-                      dangerouslySetInnerHTML={{ __html: task.taskDescription }}
-                    />
+                  {questionQuery.data.question ? (
+                    <Text
+                      size='md'
+                      style={{ whiteSpace: 'pre-wrap' }}
+                      c={themeConfig.color}
+                      lh={1.7}
+                    >
+                      {questionQuery.data.question}
+                    </Text>
                   ) : (
                     <Text
                       size='md'

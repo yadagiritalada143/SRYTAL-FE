@@ -11,6 +11,7 @@ import {
   getMyAssignedCourses,
   getMyAssignedCourseById,
   getCodingQuestion,
+  getCourseTaskQuestions,
   getUserOpenRouterKey
 } from '@services/user-services';
 import { getProfileImage } from '@services/common-services';
@@ -30,6 +31,8 @@ export const userQueryKeys = {
   myCourse: (courseAssignmentId: string) =>
     ['myAssignedCourse', courseAssignmentId] as const,
   openRouterKey: (userId: string) => ['userOpenRouterKey', userId] as const,
+  courseTaskQuestions: (taskId: string) =>
+    ['courseTaskQuestions', taskId] as const,
   codingQuestion: (questionId: string, language: string, languageId?: string) =>
     ['codingQuestion', questionId, language, languageId ?? ''] as const
 };
@@ -137,5 +140,13 @@ export const useGetCodingQuestion = (
     queryKey: userQueryKeys.codingQuestion(questionId, language, languageId),
     queryFn: () => getCodingQuestion(questionId, language, languageId),
     enabled: !!questionId && enabled
+  });
+};
+
+export const useGetCourseTaskQuestions = (taskId: string, enabled = true) => {
+  return useQuery({
+    queryKey: userQueryKeys.courseTaskQuestions(taskId),
+    queryFn: () => getCourseTaskQuestions(taskId),
+    enabled: !!taskId && enabled
   });
 };

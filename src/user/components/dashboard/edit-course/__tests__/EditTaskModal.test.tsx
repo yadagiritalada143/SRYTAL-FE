@@ -7,10 +7,25 @@ jest.mock('@hooks/mutations/useUserMutations', () => ({
   useUpdateCourseTask: () => ({
     mutateAsync: mockUpdateTask,
     isPending: false
+  }),
+  useAddCourseTaskQuestion: () => ({
+    mutateAsync: mockAddQuestion,
+    isPending: false
+  }),
+  useUpdateCourseTaskQuestion: () => ({
+    mutateAsync: mockUpdateQuestion,
+    isPending: false
+  }),
+  useDeleteCourseTaskQuestion: () => ({
+    mutateAsync: mockDeleteQuestion,
+    isPending: false
   })
 }));
 
 const mockUpdateTask = jest.fn();
+const mockAddQuestion = jest.fn();
+const mockUpdateQuestion = jest.fn();
+const mockDeleteQuestion = jest.fn();
 
 const mockShowSuccessToast = jest.fn();
 const mockShowErrorToast = jest.fn();
@@ -128,6 +143,9 @@ describe('EditTaskModal', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockUpdateTask.mockResolvedValue({});
+    mockAddQuestion.mockResolvedValue({});
+    mockUpdateQuestion.mockResolvedValue({});
+    mockDeleteQuestion.mockResolvedValue({});
   });
 
   describe('Rendering', () => {
@@ -182,13 +200,15 @@ describe('EditTaskModal', () => {
       const first = renderModal(
         makeTask({ isCoding: true, question: 'Reverse a string.' })
       );
-      expect(screen.getByLabelText(/Question/)).toHaveValue(
-        'Reverse a string.'
-      );
+      expect(
+        screen.getByPlaceholderText('Describe the coding problem to solve')
+      ).toHaveValue('Reverse a string.');
       first.unmount();
 
       renderModal(makeTask({ isCoding: false, question: '' }));
-      expect(screen.queryByLabelText(/Question/)).not.toBeInTheDocument();
+      expect(
+        screen.queryByPlaceholderText('Describe the coding problem to solve')
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -278,7 +298,7 @@ describe('EditTaskModal', () => {
       });
     });
 
-    it('submits the question for coding tasks', async () => {
+    it('submits the legacy question and adds a new question for a legacy task', async () => {
       renderModal(
         makeTask({
           isCoding: true,
@@ -286,9 +306,12 @@ describe('EditTaskModal', () => {
         })
       );
 
-      fireEvent.change(screen.getByLabelText(/Question/), {
-        target: { value: 'Return buzz for multiples of five.' }
-      });
+      fireEvent.change(
+        screen.getByPlaceholderText('Describe the coding problem to solve'),
+        {
+          target: { value: 'Return buzz for multiples of five.' }
+        }
+      );
 
       fireEvent.click(screen.getByRole('button', { name: 'Save Changes' }));
 
@@ -303,6 +326,70 @@ describe('EditTaskModal', () => {
           question: 'Return buzz for multiples of five.'
         });
       });
+
+      // A legacy task has no persisted questions — the draft goes through the
+      // dedicated add-question endpoint (the task update never writes arrays).
+      await waitFor(() => {
+        expect(mockAddQuestion).toHaveBeenCalledWith({
+          taskId: 't1',
+          question: 'Return buzz for multiples of five.'
+        });
+      });
+    });
+
+    it('updates and deletes persisted questions via the per-question endpoints', async () => {
+      renderModal(
+        makeTask({
+          isCoding: true,
+          question: 'First question',
+          questions: [
+            {
+              questionId: 'q1',
+              question: 'First question',
+              status: 'ACTIVE'
+            },
+            {
+              questionId: 'q2',
+              question: 'Second question',
+              status: 'ACTIVE'
+            }
+          ]
+        })
+      );
+
+      fireEvent.change(
+        screen.getAllByPlaceholderText(
+          'Describe the coding problem to solve'
+        )[0],
+        { target: { value: 'First question (edited)' } }
+      );
+
+      fireEvent.click(screen.getAllByRole('button', { name: 'Remove' })[1]);
+
+      fireEvent.click(screen.getByRole('button', { name: 'Save Changes' }));
+
+      await waitFor(() => {
+        expect(mockUpdateQuestion).toHaveBeenCalledWith({
+          taskId: 't1',
+          questionId: 'q1',
+          question: 'First question (edited)'
+        });
+      });
+
+      await waitFor(() => {
+        expect(mockDeleteQuestion).toHaveBeenCalledWith({
+          taskId: 't1',
+          questionId: 'q2'
+        });
+      });
+
+      // The remaining question is the task's legacy `question`.
+      expect(mockUpdateTask).toHaveBeenCalledWith(
+        expect.objectContaining({
+          isCoding: true,
+          question: 'First question (edited)'
+        })
+      );
     });
 
     it('does not send question fields for non-coding tasks', async () => {

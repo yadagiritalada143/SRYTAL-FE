@@ -353,6 +353,33 @@ describe('user-services', () => {
       expect(formData.has('taskFile')).toBe(false);
     });
 
+    it('addCourseTaskContentWriter sends the questions array as JSON', async () => {
+      mock.post.mockResolvedValue({ data: { ok: 1 } });
+
+      await addCourseTaskContentWriter({
+        moduleId: 'm1',
+        taskName: 'FizzBuzz',
+        taskDescription: 'desc',
+        isCoding: true,
+        question: 'Return fizz for multiples of three.',
+        questions: [
+          { question: 'Return fizz for multiples of three.' },
+          { question: 'Return buzz for multiples of five.' }
+        ]
+      } as any);
+
+      const [, formData] = mock.post.mock.calls[0];
+      expect(formData.get('questions')).toBe(
+        JSON.stringify([
+          { question: 'Return fizz for multiples of three.' },
+          { question: 'Return buzz for multiples of five.' }
+        ])
+      );
+      expect(formData.get('question')).toBe(
+        'Return fizz for multiples of three.'
+      );
+    });
+
     it('updateCourseContentWriter puts the updated course', async () => {
       mock.put.mockResolvedValue({ data: { ok: 1 } });
 
@@ -407,7 +434,7 @@ describe('user-services', () => {
       expect(formData.has('question')).toBe(false);
     });
 
-    it('updateCourseTaskContentWriter sends coding question when flagged', async () => {
+    it('updateCourseTaskContentWriter sends the legacy question but not the array', async () => {
       mock.put.mockResolvedValue({ data: { ok: 1 } });
 
       await updateCourseTaskContentWriter({
@@ -424,6 +451,10 @@ describe('user-services', () => {
       expect(formData.get('question')).toBe(
         'Return fizz for multiples of three.'
       );
+      // The multi-question array is NOT sent on the task update — per-question
+      // edits go through the dedicated question endpoints.
+      expect(formData.has('questions')).toBe(false);
+      expect(formData.has('codingQuestions')).toBe(false);
     });
   });
 
@@ -520,13 +551,15 @@ describe('user-services', () => {
       });
 
       const result = await runCode({
-        questionId: 't1',
+        taskId: 't1',
+        questionId: 'q1',
         language: 'Python',
         code: 'print(1)'
       });
 
       expect(mock.post).toHaveBeenCalledWith('/runcode', {
-        questionId: 't1',
+        taskId: 't1',
+        questionId: 'q1',
         language: 'Python',
         code: 'print(1)'
       });
@@ -543,13 +576,15 @@ describe('user-services', () => {
       });
 
       const result = await submitCode({
-        questionId: 't1',
+        taskId: 't1',
+        questionId: 'q1',
         language: 'Python',
         code: 'print(1)'
       });
 
       expect(mock.post).toHaveBeenCalledWith('/submitcode', {
-        questionId: 't1',
+        taskId: 't1',
+        questionId: 'q1',
         language: 'Python',
         code: 'print(1)'
       });

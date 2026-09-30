@@ -1,11 +1,14 @@
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Box, Card, Group, Stack, Text, Title } from '@mantine/core';
 import { IconArrowLeft } from '@tabler/icons-react';
 import { useAppTheme } from '@hooks/use-app-theme';
 import { useCustomToast } from '@utils/common/toast';
 import { getErrorMessage } from '@utils/common/get-error-message';
-import { useGetMyAssignedCourse } from '@hooks/queries/useUserQueries';
-import { useUpdateMyTaskProgress } from '@hooks/mutations/useUserMutations';
+import {
+  useGetMyAssignedCourse,
+  useGetCourseTaskQuestions
+} from '@hooks/queries/useUserQueries';
 import { CommonButton } from '@components/common/button/CommonButton';
 import DataView from '@components/common/loaders/DataView';
 import CodingQuestionViewer from './CodingQuestionViewer';
@@ -27,33 +30,50 @@ const CodingTaskPage = () => {
     error,
     refetch
   } = useGetMyAssignedCourse(courseAssignmentId);
-  const { mutate: updateProgress } = useUpdateMyTaskProgress();
+  const {
+    data: questionsData,
+    isLoading: questionsLoading,
+    refetch: refetchQuestions
+  } = useGetCourseTaskQuestions(taskId, !!taskId);
 
   const task = course?.modules
     ?.flatMap(module => module.tasks)
     .find(candidate => candidate._id === taskId);
 
+  const activeQuestions = (questionsData?.questions || []).filter(
+    question => question.status !== 'ARCHIVE'
+  );
+  const questionCount = activeQuestions.length > 0 ? activeQuestions.length : 1;
+  const [activeQuestion, setActiveQuestion] = useState(0);
+
+  useEffect(() => {
+    setActiveQuestion(0);
+  }, [taskId]);
+
+  const activeQuestionId =
+    activeQuestions.length > 0
+      ? (activeQuestions[activeQuestion]?.questionId ?? null)
+      : null;
+
   const handleTaskSubmitted = () => {
-    if (!task) return;
-    updateProgress(
-      { courseAssignmentId, taskId: task._id, isCompleted: true },
-      {
-        onError: caughtError =>
-          showErrorToast(
-            getErrorMessage(caughtError, 'Could not update your progress')
-          )
-      }
+    refetch().catch(caughtError =>
+      showErrorToast(
+        getErrorMessage(caughtError, 'Could not refresh your progress')
+      )
     );
   };
 
   return (
     <Box p={{ base: 'xs', sm: 'md' }}>
       <DataView
-        isLoading={isLoading}
+        isLoading={isLoading || (questionsLoading && !!task)}
         error={error}
         isEmpty={!course}
         label='course'
-        onRetry={refetch}
+        onRetry={() => {
+          refetch();
+          if (questionsLoading) refetchQuestions();
+        }}
       >
         <Stack gap='md'>
           <Card
@@ -94,8 +114,12 @@ const CodingTaskPage = () => {
             </Card>
           ) : (
             <CodingQuestionViewer
-              key={task._id}
+              key={`${task._id}:${activeQuestionId ?? task._id}`}
               task={task}
+              questionId={activeQuestionId}
+              questionCount={questionCount}
+              activeQuestionIndex={activeQuestion}
+              onSelectQuestion={setActiveQuestion}
               onSubmitted={handleTaskSubmitted}
             />
           )}

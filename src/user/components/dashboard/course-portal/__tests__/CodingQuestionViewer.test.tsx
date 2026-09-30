@@ -41,7 +41,9 @@ jest.mock('@hooks/use-app-theme', () => ({
       backgroundColor: '#ffffff',
       borderColor: '#dee2e6',
       mutedTextColor: '#868e96',
-      cardBackground: '#ffffff'
+      cardBackground: '#ffffff',
+      successColor: '#2f9e44',
+      warningColor: '#f08c00'
     },
     isDarkTheme: false
   })
@@ -106,11 +108,16 @@ const simpleQueryResult = (language: string) => ({
 
 const renderViewer = (
   task: AssignedTask = makeTask(),
-  onSubmitted?: () => void
+  onSubmitted?: () => void,
+  questionId: string | null = null
 ) => {
   return render(
     <MantineProvider>
-      <CodingQuestionViewer task={task} onSubmitted={onSubmitted} />
+      <CodingQuestionViewer
+        task={task}
+        questionId={questionId}
+        onSubmitted={onSubmitted}
+      />
     </MantineProvider>
   );
 };
@@ -131,7 +138,7 @@ describe('CodingQuestionViewer', () => {
   it('renders the statement, language list and default starter code', () => {
     renderViewer();
 
-    expect(screen.getByText('Sum two numbers')).toBeInTheDocument();
+    expect(screen.getByText('Problem statement')).toBeInTheDocument();
     expect(screen.getByLabelText('Language')).toHaveTextContent('Javascript');
     const editor = screen.getByLabelText('Code editor') as HTMLTextAreaElement;
     expect(editor.value).toBe('function solve() {}');
@@ -288,7 +295,8 @@ describe('CodingQuestionViewer', () => {
 
     await waitFor(() => {
       expect(mockRunCode).toHaveBeenCalledWith({
-        questionId: 't1',
+        taskId: 't1',
+        questionId: '',
         language: 'Javascript',
         code: 'function solve() {}'
       });
@@ -359,7 +367,8 @@ describe('CodingQuestionViewer', () => {
 
     await waitFor(() => {
       expect(mockSubmitCode).toHaveBeenCalledWith({
-        questionId: 't1',
+        taskId: 't1',
+        questionId: '',
         language: 'Javascript',
         code: 'function solve() {}'
       });
@@ -446,5 +455,133 @@ describe('CodingQuestionViewer', () => {
       expect(screen.getByText('1 / 1 tests passed')).toBeInTheDocument();
     });
     expect(screen.queryByLabelText('Code editor')).not.toBeInTheDocument();
+  });
+
+  it('uses the per-question statement when the new contract provides one', async () => {
+    mockUseGetCodingQuestion.mockImplementation(
+      (_id: string, language: string) => ({
+        ...simpleQueryResult(language),
+        data: {
+          ...starterFor(language),
+          question: 'Second question prompt'
+        }
+      })
+    );
+
+    renderViewer(makeTask(), undefined, 'q2');
+
+    await waitFor(() => {
+      expect(screen.getByText('Second question prompt')).toBeInTheDocument();
+    });
+  });
+
+  it('falls back to a prompt when the statement is absent', () => {
+    renderViewer(makeTask({ taskDescription: 'Sum two numbers' }));
+
+    expect(screen.getByText('Solve the problem below.')).toBeInTheDocument();
+  });
+
+  it('replaces the statement header with colored question chips when there are several questions', () => {
+    const onSelectQuestion = jest.fn();
+    render(
+      <MantineProvider>
+        <CodingQuestionViewer
+          task={makeTask()}
+          questionId='q1'
+          questionCount={2}
+          activeQuestionIndex={0}
+          onSelectQuestion={onSelectQuestion}
+        />
+      </MantineProvider>
+    );
+
+    expect(screen.queryByText('Problem statement')).not.toBeInTheDocument();
+    // The task name is no longer repeated above the statement.
+    expect(screen.queryByText('Two Sum')).not.toBeInTheDocument();
+
+    const question1 = screen.getByRole('button', { name: 'Question 1' });
+    const question2 = screen.getByRole('button', { name: 'Question 2' });
+    // Current question uses the organization success (green) color, the others
+    // the warning (orange) one.
+    expect(question1).toHaveStyle({ backgroundColor: '#2f9e44' });
+    expect(question2).toHaveStyle({ backgroundColor: 'transparent' });
+
+    fireEvent.click(question2);
+    expect(onSelectQuestion).toHaveBeenCalledWith(1);
+  });
+
+  it('keeps the plain statement header for a single-question task', () => {
+    renderViewer(makeTask());
+
+    expect(screen.getByText('Problem statement')).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Question 1' })
+    ).not.toBeInTheDocument();
+  });
+
+  it('sends the question id and task id with run and submit payloads', async () => {
+    mockRunCode.mockResolvedValue({
+      totalTestCases: 0,
+      passedTestCases: 0,
+      failedTestCases: 0,
+      score: 0,
+      results: [],
+      aiEvaluation: null
+    });
+    mockSubmitCode.mockResolvedValue({
+      message: 'ok',
+      result: {
+        totalTestCases: 0,
+        passedTestCases: 0,
+        failedTestCases: 0,
+        score: 0,
+        results: [],
+        aiEvaluation: null
+      }
+    });
+
+    renderViewer(makeTask(), undefined, 'q2');
+    fireEvent.click(screen.getByText('Run code'));
+    await waitFor(() => {
+      expect(mockRunCode).toHaveBeenCalledWith({
+        taskId: 't1',
+        questionId: 'q2',
+        language: 'Javascript',
+        code: 'function solve() {}'
+      });
+    });
+
+    fireEvent.click(screen.getByText('Submit code'));
+    await waitFor(() => {
+      expect(mockSubmitCode).toHaveBeenCalledWith({
+        taskId: 't1',
+        questionId: 'q2',
+        language: 'Javascript',
+        code: 'function solve() {}'
+      });
+    });
+  });
+
+  it('calls onSubmitted after every successful submission', async () => {
+    const mockOnSubmitted = jest.fn();
+    mockSubmitCode.mockResolvedValue({
+      message: 'ok',
+      result: {
+        totalTestCases: 0,
+        passedTestCases: 0,
+        failedTestCases: 0,
+        score: 0,
+        results: [],
+        aiEvaluation: null
+      }
+    });
+
+    renderViewer(makeTask(), mockOnSubmitted, 'q2');
+
+    fireEvent.click(screen.getByText('Submit code'));
+    await waitFor(() => {
+      expect(mockSubmitCode).toHaveBeenCalled();
+    });
+    expect(mockOnSubmitted).toHaveBeenCalled();
   });
 });

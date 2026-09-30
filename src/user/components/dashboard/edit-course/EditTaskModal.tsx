@@ -18,10 +18,16 @@ import {
   IconLink,
   IconFile,
   IconUpload,
-  IconX
+  IconX,
+  IconPlus
 } from '@tabler/icons-react';
 import { CommonButton } from '@components/common/button/CommonButton';
-import { useUpdateCourseTask } from '@hooks/mutations/useUserMutations';
+import {
+  useUpdateCourseTask,
+  useAddCourseTaskQuestion,
+  useUpdateCourseTaskQuestion,
+  useDeleteCourseTaskQuestion
+} from '@hooks/mutations/useUserMutations';
 import { useCustomToast } from '@utils/common/toast';
 import { getErrorMessage } from '@utils/common/get-error-message';
 import { useAppTheme } from '@hooks/use-app-theme';
@@ -36,6 +42,11 @@ interface EditTaskModalProps {
   courseId: string;
 }
 
+type QuestionDraft = {
+  questionId: string | null;
+  question: string;
+};
+
 const EditTaskModal = ({
   opened,
   onClose,
@@ -44,12 +55,16 @@ const EditTaskModal = ({
 }: EditTaskModalProps) => {
   const [taskName, setTaskName] = useState('');
   const [taskDescription, setTaskDescription] = useState('');
-  const [question, setQuestion] = useState('');
+  const [questionDrafts, setQuestionDrafts] = useState<QuestionDraft[]>([]);
+  const [removedQuestionIds, setRemovedQuestionIds] = useState<string[]>([]);
   const [thumbnail, setThumbnail] = useState<File | null>(null);
   const [thumbPreview, setThumbPreview] = useState<string | null>(null);
   const [status, setStatus] = useState<CourseStatus>('ACTIVE');
 
   const { mutateAsync: updateTask, isPending } = useUpdateCourseTask(courseId);
+  const { mutateAsync: addQuestion } = useAddCourseTaskQuestion(courseId);
+  const { mutateAsync: updateQuestion } = useUpdateCourseTaskQuestion(courseId);
+  const { mutateAsync: deleteQuestion } = useDeleteCourseTaskQuestion(courseId);
   const { showSuccessToast, showErrorToast } = useCustomToast();
   const { themeConfig: currentThemeConfig } = useAppTheme();
 
@@ -70,12 +85,41 @@ const EditTaskModal = ({
     setSeededFor(task._id);
     setTaskName(task.taskName || '');
     setTaskDescription(task.taskDescription || '');
-    setQuestion(task.question || '');
+    setQuestionDrafts(
+      (task.questions && task.questions.length
+        ? task.questions.filter(question => question.status !== 'ARCHIVE')
+        : [{ questionId: null, question: task.question || '' }]
+      ).map(question => ({
+        questionId: question.questionId ?? null,
+        question: question.question
+      }))
+    );
+    setRemovedQuestionIds([]);
     setThumbnail(null);
     setStatus((task.status as CourseStatus) || 'ACTIVE');
   } else if (!opened && seededFor !== null) {
     setSeededFor(null);
   }
+
+  const handleQuestionChange = (index: number, value: string) => {
+    setQuestionDrafts(prev =>
+      prev.map((entry, i) =>
+        i === index ? { ...entry, question: value } : entry
+      )
+    );
+  };
+
+  const addQuestionRow = () => {
+    setQuestionDrafts(prev => [...prev, { questionId: null, question: '' }]);
+  };
+
+  const removeQuestionRow = (index: number) => {
+    const entry = questionDrafts[index];
+    if (entry?.questionId) {
+      setRemovedQuestionIds(prev => [...prev, entry.questionId!]);
+    }
+    setQuestionDrafts(prev => prev.filter((_, i) => i !== index));
+  };
 
   const handleClose = () => {
     if (isPending) return;
@@ -85,14 +129,44 @@ const EditTaskModal = ({
   const handleSubmit = async () => {
     if (!task) return;
     try {
+      const drafts = questionDrafts.map(entry => ({
+        ...entry,
+        question: entry.question.trim()
+      }));
       await updateTask({
         id: task._id,
         taskName: taskName.trim(),
         taskDescription: taskDescription.trim(),
         thumbnail,
         status,
-        ...(task.isCoding ? { isCoding: true, question: question.trim() } : {})
+        ...(task.isCoding
+          ? {
+              isCoding: true,
+              question: drafts.find(entry => entry.question)?.question
+            }
+          : {})
       });
+
+      if (task.isCoding) {
+        for (const entry of drafts) {
+          if (entry.questionId) {
+            await updateQuestion({
+              taskId: task._id,
+              questionId: entry.questionId,
+              question: entry.question
+            });
+          } else if (entry.question) {
+            await addQuestion({
+              taskId: task._id,
+              question: entry.question
+            });
+          }
+        }
+        for (const questionId of removedQuestionIds) {
+          await deleteQuestion({ taskId: task._id, questionId });
+        }
+      }
+
       showSuccessToast('Content updated successfully!');
       onClose();
     } catch (error) {
@@ -120,16 +194,56 @@ const EditTaskModal = ({
         />
 
         {task?.isCoding && (
-          <Textarea
-            label='Question'
-            placeholder='Describe the coding problem to solve'
-            required
-            autosize
-            minRows={3}
-            value={question}
-            onChange={e => setQuestion(e.target.value)}
-            description='The problem statement shown to learners.'
-          />
+          <Stack gap='xs'>
+            {questionDrafts.map((entry, index) => (
+              <Group
+                key={entry.questionId ?? `new-${index}`}
+                align='flex-start'
+                gap='xs'
+                wrap='nowrap'
+              >
+                <Textarea
+                  label={index === 0 ? 'Question' : `Question ${index + 1}`}
+                  placeholder='Describe the coding problem to solve'
+                  required
+                  autosize
+                  minRows={3}
+                  value={entry.question}
+                  onChange={e =>
+                    handleQuestionChange(index, e.currentTarget.value)
+                  }
+                  description={
+                    index === 0
+                      ? 'The problem statement shown to learners.'
+                      : undefined
+                  }
+                  style={{ flex: 1, minWidth: 0 }}
+                />
+                {questionDrafts.length > 1 && (
+                  <CommonButton
+                    variant='subtle'
+                    color='red'
+                    size='xs'
+                    aria-label={`Remove Question ${index + 1}`}
+                    leftSection={<IconX size={14} />}
+                    onClick={() => removeQuestionRow(index)}
+                    style={{ marginTop: 28, flexShrink: 0 }}
+                  >
+                    Remove
+                  </CommonButton>
+                )}
+              </Group>
+            ))}
+            <CommonButton
+              variant='light'
+              size='xs'
+              leftSection={<IconPlus size={14} />}
+              onClick={addQuestionRow}
+              style={{ width: 'fit-content' }}
+            >
+              Add Question
+            </CommonButton>
+          </Stack>
         )}
 
         <Stack gap={6}>

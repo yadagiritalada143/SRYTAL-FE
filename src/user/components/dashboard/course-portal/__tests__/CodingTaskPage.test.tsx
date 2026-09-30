@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { MantineProvider } from '@mantine/core';
 import CodingTaskPage from '../CodingTaskPage';
@@ -18,6 +18,7 @@ jest.mock('@hooks/mutations/useUserMutations', () => ({
   })
 }));
 
+const mockRefetchCourse = jest.fn(() => Promise.resolve());
 jest.mock('@hooks/queries/useUserQueries', () => ({
   useGetMyAssignedCourse: (courseAssignmentId: string) => ({
     data: {
@@ -37,7 +38,8 @@ jest.mock('@hooks/queries/useUserQueries', () => ({
               taskDescription: '<p>Sum two numbers.</p>',
               type: 'LINK',
               link: '',
-              isCompleted: false
+              isCompleted: false,
+              questionCount: 2
             }
           ],
           totalTasks: 1,
@@ -45,6 +47,35 @@ jest.mock('@hooks/queries/useUserQueries', () => ({
         }
       ],
       progress: { totalTasks: 1, completedTasks: 0, percentComplete: 0 }
+    },
+    isLoading: false,
+    error: null,
+    refetch: mockRefetchCourse
+  }),
+  useGetCourseTaskQuestions: () => ({
+    data: {
+      success: true,
+      taskId: 't1',
+      taskName: 'Two Sum',
+      isCoding: true,
+      questionCount: 2,
+      activeQuestionCount: 2,
+      questions: [
+        {
+          questionId: 'q1',
+          question: 'First question',
+          description: '',
+          status: 'ACTIVE',
+          order: 1
+        },
+        {
+          questionId: 'q2',
+          question: 'Second question',
+          description: '',
+          status: 'ACTIVE',
+          order: 2
+        }
+      ]
     },
     isLoading: false,
     error: null,
@@ -84,15 +115,17 @@ jest.mock('@hooks/use-app-theme', () => ({
       color: '#212529',
       borderColor: '#dee2e6',
       mutedTextColor: '#868e96',
-      cardBackground: '#ffffff'
+      cardBackground: '#ffffff',
+      successColor: '#2f9e44',
+      warningColor: '#f08c00'
     },
     isDarkTheme: false
   })
 }));
 
 jest.mock('@components/common/button/CommonButton', () => ({
-  CommonButton: ({ children, onClick, disabled, loading }: any) => (
-    <button type='button' onClick={onClick} disabled={disabled}>
+  CommonButton: ({ children, onClick, disabled, loading, style }: any) => (
+    <button type='button' onClick={onClick} disabled={disabled} style={style}>
       {loading ? 'Saving...' : children}
     </button>
   )
@@ -124,14 +157,12 @@ describe('CodingTaskPage', () => {
     expect(screen.queryByText('Coding')).not.toBeInTheDocument();
   });
 
-  it('marks the task complete when the submission succeeds', () => {
+  it('refreshes the course when a submission succeeds', () => {
     renderPage();
     mockViewerProps.onSubmitted();
 
-    expect(mockUpdateProgress).toHaveBeenCalledWith(
-      { courseAssignmentId: 'ca1', taskId: 't1', isCompleted: true },
-      expect.objectContaining({ onError: expect.any(Function) })
-    );
+    expect(mockRefetchCourse).toHaveBeenCalled();
+    expect(mockUpdateProgress).not.toHaveBeenCalled();
   });
 
   it('navigates back to the course player', () => {
@@ -139,5 +170,19 @@ describe('CodingTaskPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Back' }));
 
     expect(mockNavigate).toHaveBeenCalledWith('../..', { relative: 'path' });
+  });
+
+  it('hands the question picker state to the viewer and tracks the active question', () => {
+    renderPage();
+
+    expect(mockViewerProps.questionId).toBe('q1');
+    expect(mockViewerProps.questionCount).toBe(2);
+    expect(mockViewerProps.activeQuestionIndex).toBe(0);
+
+    // The viewer renders the chips; switching one remounts it per question.
+    act(() => mockViewerProps.onSelectQuestion(1));
+
+    expect(mockViewerProps.questionId).toBe('q2');
+    expect(mockViewerProps.activeQuestionIndex).toBe(1);
   });
 });

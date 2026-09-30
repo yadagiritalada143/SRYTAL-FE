@@ -6,6 +6,19 @@ export type CourseStatus = 'ACTIVE' | 'ARCHIVE';
 
 export const COURSE_STATUSES: CourseStatus[] = ['ACTIVE', 'ARCHIVE'];
 
+export interface TaskCodingQuestionStarterCode {
+  languageName: string;
+  code: string;
+}
+
+export interface TaskCodingQuestion {
+  questionId?: string | null;
+  question: string;
+  status?: string;
+  order?: number;
+  starterCode?: TaskCodingQuestionStarterCode[];
+}
+
 export interface Task {
   _id: string;
   moduleId?: string;
@@ -20,8 +33,31 @@ export interface Task {
   contentFileName?: string;
   isCoding?: boolean;
   question?: string;
+  questions?: TaskCodingQuestion[];
   thumbnailUrl?: string;
   updatedAt?: string;
+}
+
+export interface CourseTaskQuestionsResponse {
+  success: boolean;
+  taskId: string;
+  taskName: string;
+  isCoding: boolean;
+  questionCount: number;
+  activeQuestionCount: number;
+  questions?: TaskCodingQuestion[];
+}
+
+export interface AddCourseTaskQuestionPayload {
+  taskId: string;
+  question: string;
+}
+
+export interface UpdateCourseTaskQuestionPayload {
+  taskId: string;
+  questionId: string;
+  question?: string;
+  status?: string;
 }
 
 export interface Module {
@@ -79,12 +115,13 @@ export interface AddTaskPayload {
   moduleId: string;
   taskName: string;
   taskDescription: string;
-  // Provide exactly one of `file` or `link`, or `isCoding` + `question` for a
-  // coding question.
+  // Provide exactly one of `file` or `link`, or `isCoding` + `questions` for a
+  // coding task.
   file?: File | null;
   link?: string;
   isCoding?: boolean;
   question?: string;
+  questions?: { question: string }[];
   // Optional task thumbnail image (multer field `thumbnailFile`).
   thumbnail?: File | null;
 }

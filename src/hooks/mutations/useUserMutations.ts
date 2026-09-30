@@ -13,6 +13,9 @@ import {
   updateCourseContentWriter,
   updateCourseModuleContentWriter,
   updateCourseTaskContentWriter,
+  addCourseTaskQuestion,
+  updateCourseTaskQuestion,
+  deleteCourseTaskQuestion,
   updateMyTaskProgress,
   runCode,
   submitCode,
@@ -27,9 +30,11 @@ import {
   UpdateCandidateSchema
 } from '@forms/add-candidate';
 import {
+  AddCourseTaskQuestionPayload,
   AddModulePayload,
   AddTaskPayload,
   UpdateCoursePayload,
+  UpdateCourseTaskQuestionPayload,
   UpdateModulePayload,
   UpdateTaskPayload
 } from '@interfaces/contentwriter';
@@ -252,9 +257,75 @@ export const useSubmitCode = () => {
   return useMutation({
     mutationFn: (data: RunCodePayload) => submitCode(data),
     onSuccess: (_data, variables) => {
+      if (variables.questionId) {
+        queryClient.invalidateQueries({
+          queryKey: ['codingQuestion', variables.questionId]
+        });
+      }
       queryClient.invalidateQueries({
-        queryKey: ['codingQuestion', variables.questionId]
+        queryKey: ['codingQuestion', variables.taskId]
       });
+    }
+  });
+};
+
+export const useAddCourseTaskQuestion = (courseId?: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: AddCourseTaskQuestionPayload) =>
+      addCourseTaskQuestion(data),
+    onSuccess: (_data, variables) => {
+      if (courseId) {
+        queryClient.invalidateQueries({
+          queryKey: userQueryKeys.course(courseId)
+        });
+      }
+      queryClient.invalidateQueries({
+        queryKey: userQueryKeys.courseTaskQuestions(variables.taskId)
+      });
+      queryClient.invalidateQueries({ queryKey: userQueryKeys.courses });
+    }
+  });
+};
+
+export const useUpdateCourseTaskQuestion = (courseId?: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: UpdateCourseTaskQuestionPayload) =>
+      updateCourseTaskQuestion(data),
+    onSuccess: (_data, variables) => {
+      if (courseId) {
+        queryClient.invalidateQueries({
+          queryKey: userQueryKeys.course(courseId)
+        });
+      }
+      queryClient.invalidateQueries({
+        queryKey: userQueryKeys.courseTaskQuestions(variables.taskId)
+      });
+    }
+  });
+};
+
+export const useDeleteCourseTaskQuestion = (courseId?: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      taskId,
+      questionId
+    }: {
+      taskId: string;
+      questionId: string;
+    }) => deleteCourseTaskQuestion(taskId, questionId),
+    onSuccess: (_data, variables) => {
+      if (courseId) {
+        queryClient.invalidateQueries({
+          queryKey: userQueryKeys.course(courseId)
+        });
+      }
+      queryClient.invalidateQueries({
+        queryKey: userQueryKeys.courseTaskQuestions(variables.taskId)
+      });
+      queryClient.invalidateQueries({ queryKey: userQueryKeys.courses });
     }
   });
 };
