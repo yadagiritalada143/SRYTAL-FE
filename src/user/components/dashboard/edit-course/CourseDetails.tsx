@@ -63,6 +63,12 @@ const resolveTaskQuestions = (task?: Task): TaskCodingQuestion[] => {
   return legacyQuestion ? [{ questionId: null, question: legacyQuestion }] : [];
 };
 
+// Questions live in their own collection now, so the task document no longer
+// carries an `isCoding` flag - the presence of questions is what makes a task a
+// coding task. `isCoding` is still honoured for documents written before that.
+const isCodingTask = (task?: Task): boolean =>
+  Boolean(task?.isCoding) || resolveTaskQuestions(task).length > 0;
+
 const CourseDetails = () => {
   const { id = '' } = useParams();
   const navigate = useNavigate();
@@ -102,7 +108,7 @@ const CourseDetails = () => {
   // Opening goes through the backend, which redirects to the link or streams
   // the uploaded file inline. Always opened in a fresh browser tab. Coding
   const handleViewContent = (task: Task) => {
-    if (task.isCoding) {
+    if (isCodingTask(task)) {
       setTaskToView(task);
       return;
     }
@@ -351,6 +357,7 @@ const CourseDetails = () => {
                           <TaskRow
                             key={task._id}
                             task={task}
+                            isCoding={isCodingTask(task)}
                             onView={() => handleViewContent(task)}
                             onEdit={() => setTaskToEdit(task)}
                             borderColor={currentThemeConfig.borderColor}
@@ -417,6 +424,11 @@ const CourseDetails = () => {
       >
         <Stack gap='sm'>
           <Text fw={600}>{taskToView?.taskName}</Text>
+          {questionsToView.length === 0 && (
+            <Text size='sm' c='dimmed'>
+              This coding task has no questions yet.
+            </Text>
+          )}
           {questionsToView.map((entry, index) => (
             <Paper
               key={entry.questionId ?? index}
@@ -428,19 +440,19 @@ const CourseDetails = () => {
               <Text size='xs' c='dimmed' mb={4}>
                 Question {index + 1}
               </Text>
-              <Text size='sm' style={{ whiteSpace: 'pre-wrap' }}>
-                {entry.question || 'No question provided.'}
-              </Text>
               {entry.description?.trim() && (
                 <Text
                   size='sm'
                   c='dimmed'
-                  mt={4}
+                  mb={entry.question ? 8 : 0}
                   style={{ whiteSpace: 'pre-wrap' }}
                 >
                   {entry.description}
                 </Text>
               )}
+              <Text size='sm' style={{ whiteSpace: 'pre-wrap' }}>
+                {entry.question || 'No question provided.'}
+              </Text>
             </Paper>
           ))}
           <Group justify='flex-end'>
@@ -456,12 +468,19 @@ const CourseDetails = () => {
 
 interface TaskRowProps {
   task: Task;
+  isCoding: boolean;
   onView: () => void;
   onEdit: () => void;
   borderColor: string;
 }
 
-const TaskRow = ({ task, onView, onEdit, borderColor }: TaskRowProps) => {
+const TaskRow = ({
+  task,
+  isCoding,
+  onView,
+  onEdit,
+  borderColor
+}: TaskRowProps) => {
   return (
     <Paper p='sm' radius='md' withBorder style={{ borderColor }}>
       <Group justify='space-between' wrap='nowrap'>
@@ -477,7 +496,7 @@ const TaskRow = ({ task, onView, onEdit, borderColor }: TaskRowProps) => {
               <Text fw={500} size='sm' lineClamp={1}>
                 {task.taskName}
               </Text>
-              {task.isCoding && (
+              {isCoding && (
                 <Badge color='grape' radius='sm' variant='light' size='xs'>
                   Coding
                 </Badge>

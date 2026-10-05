@@ -100,6 +100,12 @@ const EditTaskModal = ({
     reader.readAsDataURL(thumbnail);
   }, [thumbnail]);
 
+  // Questions now live in their own collection, so the task document no longer
+  // carries an `isCoding` flag. The presence of questions is what marks a task
+  // as coding; `isCoding` is still honoured for documents written before that.
+  const isCoding =
+    Boolean(task?.isCoding) || resolveTaskQuestions(task).length > 0;
+
   // Seeded during render so the form always reflects the task just opened.
   const [seededFor, setSeededFor] = useState<string | null>(null);
   if (opened && task && seededFor !== task._id) {
@@ -172,7 +178,7 @@ const EditTaskModal = ({
         taskDescription: taskDescription.trim(),
         thumbnail,
         status,
-        ...(task.isCoding
+        ...(isCoding
           ? {
               isCoding: true,
               question: drafts.find(entry => entry.question)?.question
@@ -180,7 +186,7 @@ const EditTaskModal = ({
           : {})
       });
 
-      if (task.isCoding) {
+      if (isCoding) {
         for (const entry of drafts) {
           if (!entry.question) continue;
           if (entry.questionId) {
@@ -229,7 +235,7 @@ const EditTaskModal = ({
           resetKey={seededFor ?? undefined}
         />
 
-        {task?.isCoding && (
+        {isCoding && (
           <Stack gap='xs'>
             {questionDrafts.map((entry, index) => (
               <Stack
@@ -239,26 +245,6 @@ const EditTaskModal = ({
               >
                 <Textarea
                   label={index === 0 ? 'Question' : `Question ${index + 1}`}
-                  placeholder='Describe the coding problem to solve'
-                  required
-                  autosize
-                  minRows={3}
-                  value={entry.question}
-                  onChange={e =>
-                    handleQuestionChange(index, e.currentTarget.value)
-                  }
-                  description={
-                    index === 0
-                      ? 'The problem statement shown to learners.'
-                      : undefined
-                  }
-                />
-                <Textarea
-                  label={
-                    index === 0
-                      ? 'Question description'
-                      : `Question ${index + 1} description`
-                  }
                   placeholder='e.g. Constraints, examples and any extra context'
                   autosize
                   minRows={2}
@@ -272,6 +258,26 @@ const EditTaskModal = ({
                   description={
                     index === 0
                       ? 'Optional. Shown alongside the question to learners.'
+                      : undefined
+                  }
+                />
+                <Textarea
+                  label={
+                    index === 0
+                      ? 'Question Description'
+                      : `Question ${index + 1} Description`
+                  }
+                  placeholder='Describe the coding problem to solve'
+                  required
+                  autosize
+                  minRows={3}
+                  value={entry.question}
+                  onChange={e =>
+                    handleQuestionChange(index, e.currentTarget.value)
+                  }
+                  description={
+                    index === 0
+                      ? 'The problem statement shown to learners.'
                       : undefined
                   }
                 />
@@ -394,7 +400,7 @@ const EditTaskModal = ({
           comboboxProps={{ withinPortal: true }}
         />
 
-        {!task?.isCoding && (
+        {!isCoding && (
           <>
             {/* The update endpoint only replaces the thumbnail; the attached
               file/link is shown for reference but cannot be swapped. */}
