@@ -210,6 +210,150 @@ describe('EditTaskModal', () => {
         screen.queryByPlaceholderText('Describe the coding problem to solve')
       ).not.toBeInTheDocument();
     });
+
+    it('skips stored questions that carry no text', () => {
+      renderModal(
+        makeTask({
+          isCoding: true,
+          questions: [
+            {
+              questionId: 'q1',
+              question: 'Find the largest element.',
+              order: 0
+            },
+            { questionId: 'q2', question: '', order: 1 },
+            { questionId: 'q3', question: '   ', order: 2 },
+            { questionId: 'q4', question: 'Count the vowels.', order: 3 }
+          ]
+        })
+      );
+
+      const fields = screen.getAllByPlaceholderText(
+        'Describe the coding problem to solve'
+      );
+      expect(fields).toHaveLength(2);
+      expect(fields[0]).toHaveValue('Find the largest element.');
+      expect(fields[1]).toHaveValue('Count the vowels.');
+    });
+
+    it('orders the questions by their order field', () => {
+      renderModal(
+        makeTask({
+          isCoding: true,
+          questions: [
+            { questionId: 'q1', question: 'Third.', order: 2 },
+            { questionId: 'q2', question: 'First.', order: 0 },
+            { questionId: 'q3', question: 'Second.', order: 1 }
+          ]
+        })
+      );
+
+      const fields = screen.getAllByPlaceholderText(
+        'Describe the coding problem to solve'
+      );
+      expect(fields.map(field => (field as HTMLTextAreaElement).value)).toEqual(
+        ['First.', 'Second.', 'Third.']
+      );
+    });
+
+    it('does not write back a question the writer emptied', async () => {
+      renderModal(
+        makeTask({
+          isCoding: true,
+          questions: [
+            { questionId: 'q1', question: 'Keep me.', status: 'ACTIVE' },
+            { questionId: 'q2', question: 'Erase me.', status: 'ACTIVE' }
+          ]
+        })
+      );
+
+      fireEvent.change(
+        screen.getAllByPlaceholderText(
+          'Describe the coding problem to solve'
+        )[1],
+        { target: { value: '' } }
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: 'Save Changes' }));
+
+      await waitFor(() => {
+        expect(mockUpdateTask).toHaveBeenCalled();
+      });
+
+      expect(mockUpdateQuestion).toHaveBeenCalledTimes(1);
+      expect(mockUpdateQuestion).toHaveBeenCalledWith({
+        taskId: 't1',
+        questionId: 'q1',
+        description: '',
+        question: 'Keep me.'
+      });
+      expect(mockAddQuestion).not.toHaveBeenCalled();
+    });
+
+    it('seeds the question description and saves it with the question', async () => {
+      renderModal(
+        makeTask({
+          isCoding: true,
+          questions: [
+            {
+              questionId: 'q1',
+              description: 'Largest element',
+              question: 'Return the largest element.',
+              status: 'ACTIVE'
+            }
+          ]
+        })
+      );
+
+      const descriptionField = screen.getByPlaceholderText(
+        'e.g. Constraints, examples and any extra context'
+      );
+      expect(descriptionField).toHaveValue('Largest element');
+
+      fireEvent.change(descriptionField, {
+        target: { value: '  Biggest number  ' }
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: 'Save Changes' }));
+
+      await waitFor(() => {
+        expect(mockUpdateQuestion).toHaveBeenCalledWith({
+          taskId: 't1',
+          questionId: 'q1',
+          description: 'Biggest number',
+          question: 'Return the largest element.'
+        });
+      });
+    });
+
+    it('sends the description of a newly added question', async () => {
+      renderModal(makeTask({ isCoding: true, question: 'First statement.' }));
+
+      fireEvent.click(screen.getByRole('button', { name: 'Add Question' }));
+
+      fireEvent.change(
+        screen.getAllByPlaceholderText(
+          'Describe the coding problem to solve'
+        )[1],
+        { target: { value: 'Second statement.' } }
+      );
+      fireEvent.change(
+        screen.getAllByPlaceholderText(
+          'e.g. Constraints, examples and any extra context'
+        )[1],
+        { target: { value: 'Second challenge' } }
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: 'Save Changes' }));
+
+      await waitFor(() => {
+        expect(mockAddQuestion).toHaveBeenCalledWith({
+          taskId: 't1',
+          description: 'Second challenge',
+          question: 'Second statement.'
+        });
+      });
+    });
   });
 
   describe('Attached content display', () => {
@@ -332,6 +476,7 @@ describe('EditTaskModal', () => {
       await waitFor(() => {
         expect(mockAddQuestion).toHaveBeenCalledWith({
           taskId: 't1',
+          description: '',
           question: 'Return buzz for multiples of five.'
         });
       });
@@ -372,6 +517,7 @@ describe('EditTaskModal', () => {
         expect(mockUpdateQuestion).toHaveBeenCalledWith({
           taskId: 't1',
           questionId: 'q1',
+          description: '',
           question: 'First question (edited)'
         });
       });

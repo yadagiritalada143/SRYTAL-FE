@@ -55,6 +55,9 @@ const CodingTaskPage = () => {
       ? (activeQuestions[activeQuestion]?.questionId ?? null)
       : null;
 
+  const activeQuestionDescription =
+    activeQuestions[activeQuestion]?.description?.trim() || '';
+
   const handleTaskSubmitted = () => {
     refetch().catch(caughtError =>
       showErrorToast(
@@ -86,13 +89,25 @@ const CodingTaskPage = () => {
             }}
           >
             <Group justify='space-between' align='center' wrap='wrap' gap='sm'>
-              <Title
-                order={4}
-                lineClamp={2}
-                style={{ color: themeConfig.color, minWidth: 0 }}
-              >
-                {task?.taskName || 'Coding challenge'}
-              </Title>
+              <Stack gap={2} style={{ minWidth: 0 }}>
+                <Title
+                  order={4}
+                  lineClamp={2}
+                  style={{ color: themeConfig.color, minWidth: 0 }}
+                >
+                  {task?.taskName || 'Coding challenge'}
+                </Title>
+                {activeQuestionDescription && (
+                  <Text
+                    size='sm'
+                    c={themeConfig.mutedTextColor}
+                    lineClamp={2}
+                    style={{ minWidth: 0 }}
+                  >
+                    {activeQuestionDescription}
+                  </Text>
+                )}
+              </Stack>
 
               <Group gap='xs' align='center' wrap='nowrap'>
                 <CommonButton

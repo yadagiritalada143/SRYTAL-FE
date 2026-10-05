@@ -13,6 +13,7 @@ export interface TaskCodingQuestionStarterCode {
 
 export interface TaskCodingQuestion {
   questionId?: string | null;
+  description?: string;
   question: string;
   status?: string;
   order?: number;
@@ -50,12 +51,14 @@ export interface CourseTaskQuestionsResponse {
 
 export interface AddCourseTaskQuestionPayload {
   taskId: string;
+  description?: string;
   question: string;
 }
 
 export interface UpdateCourseTaskQuestionPayload {
   taskId: string;
   questionId: string;
+  description?: string;
   question?: string;
   status?: string;
 }
@@ -121,7 +124,7 @@ export interface AddTaskPayload {
   link?: string;
   isCoding?: boolean;
   question?: string;
-  questions?: { question: string }[];
+  questions?: { description?: string; question: string }[];
   // Optional task thumbnail image (multer field `thumbnailFile`).
   thumbnail?: File | null;
 }

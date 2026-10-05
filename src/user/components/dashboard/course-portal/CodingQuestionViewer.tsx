@@ -509,27 +509,26 @@ const CodingQuestionViewer = ({
                 </Alert>
               )}
               {questionQuery.data && (
-                <Box>
-                  {questionQuery.data.question ? (
+                <Stack gap='sm'>
+                  <Text
+                    size='md'
+                    style={{ whiteSpace: 'pre-wrap' }}
+                    c={themeConfig.color}
+                    lh={1.7}
+                  >
+                    {questionQuery.data.question || 'Solve the problem below.'}
+                  </Text>
+                  {questionQuery.data.description?.trim() && (
                     <Text
-                      size='md'
+                      size='sm'
                       style={{ whiteSpace: 'pre-wrap' }}
-                      c={themeConfig.color}
+                      c={themeConfig.mutedTextColor}
                       lh={1.7}
                     >
-                      {questionQuery.data.question}
-                    </Text>
-                  ) : (
-                    <Text
-                      size='md'
-                      style={{ whiteSpace: 'pre-wrap' }}
-                      c={themeConfig.color}
-                      lh={1.7}
-                    >
-                      Solve the problem below.
+                      {questionQuery.data.description}
                     </Text>
                   )}
-                </Box>
+                </Stack>
               )}
             </Stack>
           </Box>

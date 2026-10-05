@@ -37,6 +37,11 @@ interface AddTaskModalProps {
 
 type ContentMode = 'LINK' | 'FILE' | 'CODING';
 
+type CodingQuestionDraft = {
+  description: string;
+  question: string;
+};
+
 const AddTaskModal = ({
   opened,
   onClose,
@@ -50,7 +55,9 @@ const AddTaskModal = ({
   const [mode, setMode] = useState<ContentMode>('LINK');
   const [link, setLink] = useState('');
   const [file, setFile] = useState<File | null>(null);
-  const [codingQuestions, setCodingQuestions] = useState<string[]>(['']);
+  const [codingQuestions, setCodingQuestions] = useState<CodingQuestionDraft[]>(
+    [{ description: '', question: '' }]
+  );
   const [thumbnail, setThumbnail] = useState<File | null>(null);
 
   const { mutateAsync: addTask, isPending } = useAddCourseTask(courseId);
@@ -62,18 +69,28 @@ const AddTaskModal = ({
     setMode('LINK');
     setLink('');
     setFile(null);
-    setCodingQuestions(['']);
+    setCodingQuestions([{ description: '', question: '' }]);
     setThumbnail(null);
   };
 
   const handleQuestionChange = (index: number, value: string) => {
     setCodingQuestions(prev =>
-      prev.map((question, i) => (i === index ? value : question))
+      prev.map((entry, i) =>
+        i === index ? { ...entry, question: value } : entry
+      )
+    );
+  };
+
+  const handleQuestionDescriptionChange = (index: number, value: string) => {
+    setCodingQuestions(prev =>
+      prev.map((entry, i) =>
+        i === index ? { ...entry, description: value } : entry
+      )
     );
   };
 
   const addQuestion = () => {
-    setCodingQuestions(prev => [...prev, '']);
+    setCodingQuestions(prev => [...prev, { description: '', question: '' }]);
   };
 
   const removeQuestion = (index: number) => {
@@ -98,16 +115,18 @@ const AddTaskModal = ({
       ? !!link.trim()
       : mode === 'FILE'
         ? !!file
-        : codingQuestions.some(question => question.trim());
+        : codingQuestions.some(entry => entry.question.trim());
   const isValid = !!taskName.trim() && hasContent;
 
   const handleSubmit = async () => {
     try {
       const isCoding = mode === 'CODING';
       const questions = codingQuestions
-        .map(question => question.trim())
-        .filter(Boolean)
-        .map(question => ({ question }));
+        .map(entry => ({
+          description: entry.description.trim(),
+          question: entry.question.trim()
+        }))
+        .filter(entry => entry.question);
       await addTask({
         moduleId,
         taskName: taskName.trim(),
@@ -205,15 +224,15 @@ const AddTaskModal = ({
           />
         ) : (
           <Stack gap='xs'>
-            {codingQuestions.map((question, index) => (
-              <Group key={index} align='flex-start' gap='xs' wrap='nowrap'>
+            {codingQuestions.map((entry, index) => (
+              <Stack key={index} gap='xs' style={{ minWidth: 0 }}>
                 <Textarea
                   label={index === 0 ? 'Question' : `Question ${index + 1}`}
                   placeholder='Describe the coding problem to solve'
                   required
                   autosize
                   minRows={3}
-                  value={question}
+                  value={entry.question}
                   onChange={e =>
                     handleQuestionChange(index, e.currentTarget.value)
                   }
@@ -222,7 +241,28 @@ const AddTaskModal = ({
                       ? 'Every coding task needs a problem statement.'
                       : undefined
                   }
-                  style={{ flex: 1, minWidth: 0 }}
+                />
+                <Textarea
+                  label={
+                    index === 0
+                      ? 'Question description'
+                      : `Question ${index + 1} description`
+                  }
+                  placeholder='e.g. Constraints, examples and any extra context'
+                  autosize
+                  minRows={2}
+                  value={entry.description}
+                  onChange={e =>
+                    handleQuestionDescriptionChange(
+                      index,
+                      e.currentTarget.value
+                    )
+                  }
+                  description={
+                    index === 0
+                      ? 'Optional. Shown alongside the question to learners.'
+                      : undefined
+                  }
                 />
                 {codingQuestions.length > 1 && (
                   <CommonButton
@@ -232,12 +272,12 @@ const AddTaskModal = ({
                     aria-label={`Remove Question ${index + 1}`}
                     leftSection={<IconX size={14} />}
                     onClick={() => removeQuestion(index)}
-                    style={{ marginTop: 28, flexShrink: 0 }}
+                    style={{ width: 'fit-content' }}
                   >
                     Remove
                   </CommonButton>
                 )}
-              </Group>
+              </Stack>
             ))}
             <CommonButton
               variant='light'

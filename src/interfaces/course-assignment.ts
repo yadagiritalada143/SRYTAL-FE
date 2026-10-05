@@ -39,6 +39,7 @@ export interface CodingQuestion {
   taskId: string;
   questionId: string | null;
   taskName: string;
+  description?: string;
   question: string;
   allowedLanguages: string[];
   language: string;

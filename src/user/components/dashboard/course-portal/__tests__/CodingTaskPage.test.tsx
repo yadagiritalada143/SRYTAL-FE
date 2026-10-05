@@ -64,14 +64,14 @@ jest.mock('@hooks/queries/useUserQueries', () => ({
         {
           questionId: 'q1',
           question: 'First question',
-          description: '',
+          description: 'Find the pair',
           status: 'ACTIVE',
           order: 1
         },
         {
           questionId: 'q2',
           question: 'Second question',
-          description: '',
+          description: 'Find the missing number',
           status: 'ACTIVE',
           order: 2
         }
@@ -184,5 +184,20 @@ describe('CodingTaskPage', () => {
 
     expect(mockViewerProps.questionId).toBe('q2');
     expect(mockViewerProps.activeQuestionIndex).toBe(1);
+  });
+
+  it('shows the active question title under the task name and updates it on switch', () => {
+    renderPage();
+
+    expect(screen.getByText('Find the pair')).toBeInTheDocument();
+
+    act(() => mockViewerProps.onSelectQuestion(1));
+
+    expect(screen.queryByText('Find the pair')).not.toBeInTheDocument();
+    expect(screen.getByText('Find the missing number')).toBeInTheDocument();
+
+    act(() => mockViewerProps.onSelectQuestion(0));
+
+    expect(screen.getByText('Find the pair')).toBeInTheDocument();
   });
 });

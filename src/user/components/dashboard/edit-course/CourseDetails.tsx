@@ -34,7 +34,12 @@ import { getCourseTaskContentUrl } from '@services/user-services';
 import { CommonButton } from '@components/common/button/CommonButton';
 import PremiumLoader from '@components/common/loaders/PremiumLoader';
 import DataView from '@components/common/loaders/DataView';
-import { Course, Module, Task } from '@interfaces/contentwriter';
+import {
+  Course,
+  Module,
+  Task,
+  TaskCodingQuestion
+} from '@interfaces/contentwriter';
 import AddModuleModal from './AddModuleModal';
 import AddTaskModal from './AddTaskModal';
 import EditCourseModal from './EditCourseModal';
@@ -42,6 +47,21 @@ import EditModuleModal from './EditModuleModal';
 import EditTaskModal from './EditTaskModal';
 import CourseThumbnail from '../content-writer/CourseThumbnail';
 import { readTaskPopupState, clearTaskPopupState } from './task-popup-state';
+
+const resolveTaskQuestions = (task?: Task): TaskCodingQuestion[] => {
+  const authored = Array.isArray(task?.questions) ? task.questions : [];
+
+  const withText = authored
+    .filter(question => (question?.question || '').trim())
+    .sort((a, b) => (a.order || 0) - (b.order || 0));
+
+  if (authored.length > 0) {
+    return withText;
+  }
+
+  const legacyQuestion = (task?.question || '').trim();
+  return legacyQuestion ? [{ questionId: null, question: legacyQuestion }] : [];
+};
 
 const CourseDetails = () => {
   const { id = '' } = useParams();
@@ -76,6 +96,8 @@ const CourseDetails = () => {
     (sum, m) => sum + (m.tasks?.length || 0),
     0
   );
+
+  const questionsToView = resolveTaskQuestions(taskToView || undefined);
 
   // Opening goes through the backend, which redirects to the link or streams
   // the uploaded file inline. Always opened in a fresh browser tab. Coding
@@ -389,16 +411,13 @@ const CourseDetails = () => {
         opened={!!taskToView}
         onClose={() => setTaskToView(null)}
         title={
-          taskToView?.questions?.length ? 'Coding Questions' : 'Coding Question'
+          questionsToView.length > 1 ? 'Coding Questions' : 'Coding Question'
         }
         centered
       >
         <Stack gap='sm'>
           <Text fw={600}>{taskToView?.taskName}</Text>
-          {(taskToView?.questions?.length
-            ? taskToView.questions
-            : [{ questionId: null, question: taskToView?.question || '' }]
-          ).map((entry, index) => (
+          {questionsToView.map((entry, index) => (
             <Paper
               key={entry.questionId ?? index}
               p='md'
@@ -412,6 +431,16 @@ const CourseDetails = () => {
               <Text size='sm' style={{ whiteSpace: 'pre-wrap' }}>
                 {entry.question || 'No question provided.'}
               </Text>
+              {entry.description?.trim() && (
+                <Text
+                  size='sm'
+                  c='dimmed'
+                  mt={4}
+                  style={{ whiteSpace: 'pre-wrap' }}
+                >
+                  {entry.description}
+                </Text>
+              )}
             </Paper>
           ))}
           <Group justify='flex-end'>

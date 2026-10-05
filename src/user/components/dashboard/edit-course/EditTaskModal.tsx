@@ -31,7 +31,12 @@ import {
 import { useCustomToast } from '@utils/common/toast';
 import { getErrorMessage } from '@utils/common/get-error-message';
 import { useAppTheme } from '@hooks/use-app-theme';
-import { Task, CourseStatus, COURSE_STATUSES } from '@interfaces/contentwriter';
+import {
+  Task,
+  CourseStatus,
+  COURSE_STATUSES,
+  TaskCodingQuestion
+} from '@interfaces/contentwriter';
 import CourseThumbnail from '../content-writer/CourseThumbnail';
 import DescriptionEditor from './DescriptionEditor';
 
@@ -44,7 +49,23 @@ interface EditTaskModalProps {
 
 type QuestionDraft = {
   questionId: string | null;
+  description: string;
   question: string;
+};
+
+const resolveTaskQuestions = (task?: Task): TaskCodingQuestion[] => {
+  const authored = Array.isArray(task?.questions) ? task.questions : [];
+
+  const withText = authored
+    .filter(question => (question?.question || '').trim())
+    .sort((a, b) => (a.order || 0) - (b.order || 0));
+
+  if (authored.length > 0) {
+    return withText;
+  }
+
+  const legacyQuestion = (task?.question || '').trim();
+  return legacyQuestion ? [{ questionId: null, question: legacyQuestion }] : [];
 };
 
 const EditTaskModal = ({
@@ -86,13 +107,13 @@ const EditTaskModal = ({
     setTaskName(task.taskName || '');
     setTaskDescription(task.taskDescription || '');
     setQuestionDrafts(
-      (task.questions && task.questions.length
-        ? task.questions.filter(question => question.status !== 'ARCHIVE')
-        : [{ questionId: null, question: task.question || '' }]
-      ).map(question => ({
-        questionId: question.questionId ?? null,
-        question: question.question
-      }))
+      resolveTaskQuestions(task)
+        .filter(question => question.status !== 'ARCHIVE')
+        .map(question => ({
+          questionId: question.questionId ?? null,
+          description: question.description || '',
+          question: question.question
+        }))
     );
     setRemovedQuestionIds([]);
     setThumbnail(null);
@@ -109,8 +130,19 @@ const EditTaskModal = ({
     );
   };
 
+  const handleQuestionDescriptionChange = (index: number, value: string) => {
+    setQuestionDrafts(prev =>
+      prev.map((entry, i) =>
+        i === index ? { ...entry, description: value } : entry
+      )
+    );
+  };
+
   const addQuestionRow = () => {
-    setQuestionDrafts(prev => [...prev, { questionId: null, question: '' }]);
+    setQuestionDrafts(prev => [
+      ...prev,
+      { questionId: null, description: '', question: '' }
+    ]);
   };
 
   const removeQuestionRow = (index: number) => {
@@ -131,6 +163,7 @@ const EditTaskModal = ({
     try {
       const drafts = questionDrafts.map(entry => ({
         ...entry,
+        description: entry.description.trim(),
         question: entry.question.trim()
       }));
       await updateTask({
@@ -149,15 +182,18 @@ const EditTaskModal = ({
 
       if (task.isCoding) {
         for (const entry of drafts) {
+          if (!entry.question) continue;
           if (entry.questionId) {
             await updateQuestion({
               taskId: task._id,
               questionId: entry.questionId,
+              description: entry.description,
               question: entry.question
             });
-          } else if (entry.question) {
+          } else {
             await addQuestion({
               taskId: task._id,
+              description: entry.description,
               question: entry.question
             });
           }
@@ -196,11 +232,10 @@ const EditTaskModal = ({
         {task?.isCoding && (
           <Stack gap='xs'>
             {questionDrafts.map((entry, index) => (
-              <Group
+              <Stack
                 key={entry.questionId ?? `new-${index}`}
-                align='flex-start'
                 gap='xs'
-                wrap='nowrap'
+                style={{ minWidth: 0 }}
               >
                 <Textarea
                   label={index === 0 ? 'Question' : `Question ${index + 1}`}
@@ -217,7 +252,28 @@ const EditTaskModal = ({
                       ? 'The problem statement shown to learners.'
                       : undefined
                   }
-                  style={{ flex: 1, minWidth: 0 }}
+                />
+                <Textarea
+                  label={
+                    index === 0
+                      ? 'Question description'
+                      : `Question ${index + 1} description`
+                  }
+                  placeholder='e.g. Constraints, examples and any extra context'
+                  autosize
+                  minRows={2}
+                  value={entry.description}
+                  onChange={e =>
+                    handleQuestionDescriptionChange(
+                      index,
+                      e.currentTarget.value
+                    )
+                  }
+                  description={
+                    index === 0
+                      ? 'Optional. Shown alongside the question to learners.'
+                      : undefined
+                  }
                 />
                 {questionDrafts.length > 1 && (
                   <CommonButton
@@ -227,12 +283,12 @@ const EditTaskModal = ({
                     aria-label={`Remove Question ${index + 1}`}
                     leftSection={<IconX size={14} />}
                     onClick={() => removeQuestionRow(index)}
-                    style={{ marginTop: 28, flexShrink: 0 }}
+                    style={{ width: 'fit-content' }}
                   >
                     Remove
                   </CommonButton>
                 )}
-              </Group>
+              </Stack>
             ))}
             <CommonButton
               variant='light'

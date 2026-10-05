@@ -310,10 +310,22 @@ describe('AddTaskModal', () => {
       typeTitle('FizzBuzz problem');
       clickCodingMode();
       fireEvent.change(
+        screen.getAllByPlaceholderText(
+          'e.g. Constraints, examples and any extra context'
+        )[0],
+        { target: { value: 'FizzBuzz' } }
+      );
+      fireEvent.change(
         screen.getByPlaceholderText('Describe the coding problem to solve'),
         { target: { value: 'Return fizz for multiples of three.' } }
       );
       fireEvent.click(screen.getByRole('button', { name: 'Add Question' }));
+      fireEvent.change(
+        screen.getAllByPlaceholderText(
+          'e.g. Constraints, examples and any extra context'
+        )[1],
+        { target: { value: 'BuzzBuzz' } }
+      );
       fireEvent.change(
         screen.getAllByPlaceholderText(
           'Describe the coding problem to solve'
@@ -334,8 +346,14 @@ describe('AddTaskModal', () => {
         isCoding: true,
         question: 'Return fizz for multiples of three.',
         questions: [
-          { question: 'Return fizz for multiples of three.' },
-          { question: 'Return buzz for multiples of five.' }
+          {
+            description: 'FizzBuzz',
+            question: 'Return fizz for multiples of three.'
+          },
+          {
+            description: 'BuzzBuzz',
+            question: 'Return buzz for multiples of five.'
+          }
         ],
         link: undefined,
         file: undefined,
@@ -438,7 +456,12 @@ describe('AddTaskModal', () => {
         taskDescription: '',
         isCoding: true,
         question: 'Return fizz for multiples of three.',
-        questions: [{ question: 'Return fizz for multiples of three.' }],
+        questions: [
+          {
+            description: '',
+            question: 'Return fizz for multiples of three.'
+          }
+        ],
         link: undefined,
         file: undefined,
         thumbnail: null
