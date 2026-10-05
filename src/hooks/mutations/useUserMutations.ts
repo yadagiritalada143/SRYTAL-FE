@@ -257,11 +257,6 @@ export const useSubmitCode = () => {
   return useMutation({
     mutationFn: (data: RunCodePayload) => submitCode(data),
     onSuccess: (_data, variables) => {
-      if (variables.questionId) {
-        queryClient.invalidateQueries({
-          queryKey: ['codingQuestion', variables.questionId]
-        });
-      }
       queryClient.invalidateQueries({
         queryKey: ['codingQuestion', variables.taskId]
       });

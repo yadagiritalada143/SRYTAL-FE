@@ -35,15 +35,22 @@ export interface AssignedTask {
   completedQuestionCount?: number;
 }
 
+export interface CodingLanguage {
+  languageId: string;
+  languageName: string;
+  canonicalKey?: string;
+  displayOrder?: number;
+}
+
 export interface CodingQuestion {
   taskId: string;
   questionId: string | null;
   taskName: string;
   description?: string;
   question: string;
-  allowedLanguages: string[];
+  allowedLanguages: CodingLanguage[];
   language: string;
-  languageId?: string;
+  languageId: string;
   starterCode: string;
   lastSubmittedCode?: { language: string; code: string } | null;
 }

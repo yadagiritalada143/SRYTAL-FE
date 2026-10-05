@@ -15,6 +15,7 @@ import {
   useGetMyAssignedCourses,
   useGetMyAssignedCourse,
   useGetCodingQuestion,
+  useGetProgrammingLanguages,
   useGetUserOpenRouterKey
 } from '@hooks/queries/useUserQueries';
 
@@ -30,6 +31,7 @@ jest.mock('@services/user-services', () => ({
   getMyAssignedCourses: jest.fn(),
   getMyAssignedCourseById: jest.fn(),
   getCodingQuestion: jest.fn(),
+  getProgrammingLanguages: jest.fn(),
   getUserOpenRouterKey: jest.fn()
 }));
 
@@ -85,11 +87,14 @@ describe('useUserQueries', () => {
         'userOpenRouterKey',
         'u1'
       ]);
-      expect(userQueryKeys.codingQuestion('t1', 'Python', 'lang')).toEqual([
+      expect(userQueryKeys.codingQuestion('t1', 'q1', 'lang-123')).toEqual([
         'codingQuestion',
         't1',
-        'Python',
-        'lang'
+        'q1',
+        'lang-123'
+      ]);
+      expect(userQueryKeys.programmingLanguages).toEqual([
+        'userProgrammingLanguages'
       ]);
     });
   });
@@ -395,38 +400,9 @@ describe('useUserQueries', () => {
   });
 
   describe('useGetCodingQuestion', () => {
-    it('fetches the coding question for the task and language', async () => {
+    it('fetches the coding question for the task, question and language', async () => {
       userService().getCodingQuestion.mockResolvedValue({
-        questionId: 't1',
-        language: 'Python',
-        starterCode: 'def solve():'
-      });
-      const { wrapper } = createWrapper();
-
-      const { result } = renderHook(
-        () => useGetCodingQuestion('t1', 'Python'),
-        {
-          wrapper
-        }
-      );
-
-      await waitFor(() =>
-        expect(result.current.data).toEqual({
-          questionId: 't1',
-          language: 'Python',
-          starterCode: 'def solve():'
-        })
-      );
-      expect(userService().getCodingQuestion).toHaveBeenCalledWith(
-        't1',
-        'Python',
-        ''
-      );
-    });
-
-    it('passes the languageId through to the service and query key', async () => {
-      userService().getCodingQuestion.mockResolvedValue({
-        questionId: 't1',
+        questionId: 'q1',
         language: 'python',
         languageId: 'lang-123',
         starterCode: 'def solve():'
@@ -434,7 +410,7 @@ describe('useUserQueries', () => {
       const { wrapper } = createWrapper();
 
       const { result } = renderHook(
-        () => useGetCodingQuestion('t1', 'Python', 'lang-123'),
+        () => useGetCodingQuestion('t1', 'q1', 'lang-123'),
         {
           wrapper
         }
@@ -442,7 +418,7 @@ describe('useUserQueries', () => {
 
       await waitFor(() =>
         expect(result.current.data).toEqual({
-          questionId: 't1',
+          questionId: 'q1',
           language: 'python',
           languageId: 'lang-123',
           starterCode: 'def solve():'
@@ -450,15 +426,55 @@ describe('useUserQueries', () => {
       );
       expect(userService().getCodingQuestion).toHaveBeenCalledWith(
         't1',
-        'Python',
+        'q1',
         'lang-123'
       );
     });
 
-    it('defaults to the empty language and stays disabled without a question id', async () => {
+    it('keys the cache per language so switching languages refetches', async () => {
+      userService().getCodingQuestion.mockImplementation(
+        (_taskId: string, _questionId: string, languageId: string) =>
+          Promise.resolve({
+            questionId: 'q1',
+            languageId,
+            starterCode: `# ${languageId}`
+          })
+      );
+      const { wrapper, queryClient } = createWrapper();
+
+      const { rerender } = renderHook(
+        ({ languageId }: { languageId: string }) =>
+          useGetCodingQuestion('t1', 'q1', languageId),
+        { wrapper, initialProps: { languageId: 'lang-python' } }
+      );
+
+      await waitFor(() =>
+        expect(
+          queryClient.getQueryData(['codingQuestion', 't1', 'q1', 'lang-python'])
+        ).toEqual({
+          questionId: 'q1',
+          languageId: 'lang-python',
+          starterCode: '# lang-python'
+        })
+      );
+
+      rerender({ languageId: 'lang-js' });
+
+      await waitFor(() =>
+        expect(
+          queryClient.getQueryData(['codingQuestion', 't1', 'q1', 'lang-js'])
+        ).toEqual({
+          questionId: 'q1',
+          languageId: 'lang-js',
+          starterCode: '# lang-js'
+        })
+      );
+    });
+
+    it('stays disabled until the task, question and language ids are known', async () => {
       const { wrapper } = createWrapper();
 
-      const { result } = renderHook(() => useGetCodingQuestion(''), {
+      const { result } = renderHook(() => useGetCodingQuestion('', '', ''), {
         wrapper
       });
 
@@ -466,31 +482,42 @@ describe('useUserQueries', () => {
       expect(result.current.data).toBeUndefined();
     });
 
-    it('passes the language through to the service and query key', async () => {
-      userService().getCodingQuestion.mockResolvedValue({
-        questionId: 't1',
-        language: 'Python',
-        starterCode: 'def solve():'
-      });
+    it('stays disabled while a language has not been picked yet', async () => {
       const { wrapper } = createWrapper();
 
-      const { result } = renderHook(
-        () => useGetCodingQuestion('t1', 'Python', ''),
-        { wrapper }
-      );
+      renderHook(() => useGetCodingQuestion('t1', 'q1', ''), { wrapper });
+
+      expect(userService().getCodingQuestion).not.toHaveBeenCalled();
+    });
+
+    it('honours the enabled flag', async () => {
+      const { wrapper } = createWrapper();
+
+      renderHook(() => useGetCodingQuestion('t1', 'q1', 'lang-123', false), {
+        wrapper
+      });
+
+      expect(userService().getCodingQuestion).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('useGetProgrammingLanguages', () => {
+    it('fetches the language catalogue', async () => {
+      userService().getProgrammingLanguages.mockResolvedValue([
+        { languageId: 'lang-js', languageName: 'Javascript' }
+      ]);
+      const { wrapper } = createWrapper();
+
+      const { result } = renderHook(() => useGetProgrammingLanguages(), {
+        wrapper
+      });
 
       await waitFor(() =>
-        expect(result.current.data).toEqual({
-          questionId: 't1',
-          language: 'Python',
-          starterCode: 'def solve():'
-        })
+        expect(result.current.data).toEqual([
+          { languageId: 'lang-js', languageName: 'Javascript' }
+        ])
       );
-      expect(userService().getCodingQuestion).toHaveBeenCalledWith(
-        't1',
-        'Python',
-        ''
-      );
+      expect(userService().getProgrammingLanguages).toHaveBeenCalled();
     });
   });
 });

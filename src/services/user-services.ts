@@ -23,11 +23,13 @@ import {
   AssignedCourse,
   AssignedCourseDetail,
   CodeRunResult,
+  CodingLanguage,
   CodingQuestion,
   RunCodePayload,
   UpdateTaskProgressPayload,
   UpdateTaskProgressResponse
 } from '@interfaces/course-assignment';
+import { ProgrammingLanguage } from '@interfaces/programming-language';
 
 export const getCompanyDetails = async () => {
   try {
@@ -402,22 +404,27 @@ export const updateMyTaskProgress = async (
  * assigned employees may fetch it, so the payload never leaks authoring data.
  */
 export const getCodingQuestion = async (
+  taskId: string,
   questionId: string,
-  language = '',
-  languageId = ''
+  languageId: string
 ): Promise<CodingQuestion> => {
-  const params =
-    language || languageId
-      ? {
-          language,
-          languageId
-        }
-      : undefined;
-  const response = params
-    ? await apiClient.get(`/getquestion/${questionId}`, { params })
-    : await apiClient.get(`/getquestion/${questionId}`);
-  // Backend responds with the question data at the top level.
-  return response.data;
+  const response = await apiClient.get(
+    `/getquestion/${taskId}/${questionId}/${languageId}`
+  );
+  return response.data.data;
+};
+
+export const getProgrammingLanguages = async (): Promise<CodingLanguage[]> => {
+  const response = await apiClient.get('/getallprogramminglanguages');
+
+  return (response.data.data || [])
+    .filter((language: ProgrammingLanguage) => language.isActive !== false)
+    .map((language: ProgrammingLanguage) => ({
+      languageId: String(language._id),
+      languageName: language.languageName,
+      canonicalKey: language.canonicalKey,
+      displayOrder: language.displayOrder
+    }));
 };
 
 export const getCourseTaskQuestions = async (

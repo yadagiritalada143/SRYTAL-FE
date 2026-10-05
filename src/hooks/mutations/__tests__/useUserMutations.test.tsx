@@ -604,11 +604,11 @@ describe('useRunCode', () => {
 });
 
 describe('useSubmitCode', () => {
-  it('posts the submit payload and invalidates the coding question', async () => {
+  it('posts the submit payload and invalidates every language variant of the task question', async () => {
     const { queryClient, wrapper } = createWrapper();
     getMock('submitCode').mockResolvedValue({ score: 95 });
-    queryClient.setQueryData(['codingQuestion', 't1', 'Python'], {
-      questionId: 't1'
+    queryClient.setQueryData(['codingQuestion', 'crs', 'q1', 'lang-python'], {
+      questionId: 'q1'
     });
 
     const { result } = renderHook(() => useSubmitCode(), { wrapper });
@@ -616,7 +616,7 @@ describe('useSubmitCode', () => {
     await act(async () => {
       await result.current.mutateAsync({
         taskId: 'crs',
-        questionId: 't1',
+        questionId: 'q1',
         language: 'Python',
         code: 'print(1)'
       });
@@ -624,14 +624,18 @@ describe('useSubmitCode', () => {
 
     expectCalledWithArgs(getMock('submitCode'), {
       taskId: 'crs',
-      questionId: 't1',
+      questionId: 'q1',
       language: 'Python',
       code: 'print(1)'
     });
     await waitFor(() => {
       expect(
-        queryClient.getQueryState(['codingQuestion', 't1', 'Python'])
-          ?.isInvalidated
+        queryClient.getQueryState([
+          'codingQuestion',
+          'crs',
+          'q1',
+          'lang-python'
+        ])?.isInvalidated
       ).toBe(true);
     });
   });

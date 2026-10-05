@@ -25,6 +25,7 @@ import {
   updateMyTaskProgress,
   getEmployeeDashboard,
   getCodingQuestion,
+  getProgrammingLanguages,
   runCode,
   submitCode,
   saveUserOpenRouterKey,
@@ -499,50 +500,92 @@ describe('user-services', () => {
   });
 
   describe('coding question services', () => {
-    it('getCodingQuestion fetches the default question', async () => {
-      mock.get.mockResolvedValue({
-        data: { questionId: 't1', starterCode: 'print(1)' }
-      });
-
-      expect(await getCodingQuestion('t1')).toEqual({
-        questionId: 't1',
-        starterCode: 'print(1)'
-      });
-      expect(mock.get).toHaveBeenCalledWith('/getquestion/t1');
-    });
-
-    it('getCodingQuestion passes language/languageId as query params', async () => {
-      mock.get.mockResolvedValue({
-        data: { questionId: 't1', starterCode: 'print(1)' }
-      });
-
-      await getCodingQuestion('t1', 'Python', 'lang-123');
-
-      expect(mock.get).toHaveBeenCalledWith('/getquestion/t1', {
-        params: { language: 'Python', languageId: 'lang-123' }
-      });
-    });
-
-    it('getCodingQuestion returns the top-level question data', async () => {
+    it('getCodingQuestion requests the task, question and language path', async () => {
       mock.get.mockResolvedValue({
         data: {
-          questionId: 't1',
-          allowedLanguages: ['Python'],
-          language: 'python',
-          languageId: 'lang-123',
-          starterCode: 'print(1)',
-          lastSubmittedCode: null
+          success: true,
+          message: 'ok',
+          data: { questionId: 'q1', starterCode: 'print(1)' }
         }
       });
 
-      expect(await getCodingQuestion('t1', 'Python')).toEqual({
-        questionId: 't1',
-        allowedLanguages: ['Python'],
+      expect(await getCodingQuestion('t1', 'q1', 'lang-123')).toEqual({
+        questionId: 'q1',
+        starterCode: 'print(1)'
+      });
+      expect(mock.get).toHaveBeenCalledWith('/getquestion/t1/q1/lang-123');
+    });
+
+    it('getCodingQuestion unwraps the data envelope', async () => {
+      mock.get.mockResolvedValue({
+        data: {
+          success: true,
+          message: 'ok',
+          data: {
+            taskId: 't1',
+            questionId: 'q1',
+            question: 'Sum two numbers',
+            allowedLanguages: [
+              { languageId: 'lang-123', languageName: 'Python' }
+            ],
+            language: 'python',
+            languageId: 'lang-123',
+            starterCode: 'print(1)',
+            lastSubmittedCode: null
+          }
+        }
+      });
+
+      expect(await getCodingQuestion('t1', 'q1', 'lang-123')).toEqual({
+        taskId: 't1',
+        questionId: 'q1',
+        question: 'Sum two numbers',
+        allowedLanguages: [{ languageId: 'lang-123', languageName: 'Python' }],
         language: 'python',
         languageId: 'lang-123',
         starterCode: 'print(1)',
         lastSubmittedCode: null
       });
+    });
+
+    it('getProgrammingLanguages maps the catalogue to selectable languages', async () => {
+      mock.get.mockResolvedValue({
+        data: {
+          success: true,
+          message: 'ok',
+          data: [
+            {
+              _id: 'lang-123',
+              languageName: 'Python',
+              canonicalKey: 'python',
+              displayOrder: 1,
+              isActive: true
+            },
+            {
+              _id: 'lang-456',
+              languageName: 'Retired',
+              displayOrder: 2,
+              isActive: false
+            }
+          ]
+        }
+      });
+
+      expect(await getProgrammingLanguages()).toEqual([
+        {
+          languageId: 'lang-123',
+          languageName: 'Python',
+          canonicalKey: 'python',
+          displayOrder: 1
+        }
+      ]);
+      expect(mock.get).toHaveBeenCalledWith('/getallprogramminglanguages');
+    });
+
+    it('getProgrammingLanguages falls back to an empty list without data', async () => {
+      mock.get.mockResolvedValue({ data: { success: true, data: null } });
+
+      expect(await getProgrammingLanguages()).toEqual([]);
     });
 
     it('runCode posts to /runcode and returns the execution result', async () => {

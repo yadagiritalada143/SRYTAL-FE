@@ -129,7 +129,7 @@ const CodingTaskPage = () => {
             </Card>
           ) : (
             <CodingQuestionViewer
-              key={`${task._id}:${activeQuestionId ?? task._id}`}
+              key={`${task._id}:${activeQuestionId ?? 'none'}`}
               task={task}
               questionId={activeQuestionId}
               questionCount={questionCount}

@@ -5,12 +5,36 @@ import CodingQuestionViewer from '../CodingQuestionViewer';
 import { AssignedTask } from '@interfaces/course-assignment';
 
 const mockUseGetCodingQuestion = jest.fn();
+const mockLanguageRefetch = jest.fn();
+// Mirrors `GET /getallprogramminglanguages`: the catalogue the viewer uses to
+// pick a `languageId` before the question can be requested.
+const mockLanguageCatalogue = [
+  {
+    languageId: 'lang-js',
+    languageName: 'Javascript',
+    canonicalKey: 'javascript',
+    displayOrder: 1
+  },
+  {
+    languageId: 'lang-python',
+    languageName: 'Python',
+    canonicalKey: 'python',
+    displayOrder: 2
+  }
+];
 jest.mock('@hooks/queries/useUserQueries', () => ({
   useGetCodingQuestion: (
+    taskId: string,
     questionId: string,
-    language: string,
-    languageId = ''
-  ) => mockUseGetCodingQuestion(questionId, language, languageId)
+    languageId: string
+  ) => mockUseGetCodingQuestion(taskId, questionId, languageId),
+  useGetProgrammingLanguages: () => ({
+    data: mockLanguageCatalogue,
+    isPending: false,
+    isError: false,
+    error: null,
+    refetch: mockLanguageRefetch
+  })
 }));
 
 const mockRunCode = jest.fn();
@@ -84,23 +108,25 @@ const makeTask = (overrides: any = {}): AssignedTask => ({
 });
 
 // Mirrors the backend response: `language` is the canonical runtime name
-// (lowercased), while `allowedLanguages` holds the display names.
-const starterFor = (language: string) => ({
-  questionId: 't1',
-  allowedLanguages: ['Javascript', 'Python'],
-  language:
-    (language || '').toLowerCase() === 'python' ? 'python' : 'javascript',
-  languageId:
-    (language || '').toLowerCase() === 'python' ? 'lang-python' : 'lang-js',
-  starterCode:
-    (language || '').toLowerCase() === 'python'
-      ? 'def solve():'
-      : 'function solve() {}'
-});
+// (lowercased), `allowedLanguages` carries the selectable ids + display names,
+// and `languageId` echoes the language the request was made for.
+const starterFor = (languageId: string) => {
+  const isPython = languageId === 'lang-python';
+  return {
+    taskId: 't1',
+    questionId: 'q1',
+    taskName: 'Two Sum',
+    allowedLanguages: mockLanguageCatalogue,
+    language: isPython ? 'python' : 'javascript',
+    languageId: languageId || 'lang-js',
+    starterCode: isPython ? 'def solve():' : 'function solve() {}'
+  };
+};
 
-const simpleQueryResult = (language: string) => ({
-  data: starterFor(language),
+const simpleQueryResult = (languageId: string) => ({
+  data: starterFor(languageId),
   isLoading: false,
+  isPending: false,
   isError: false,
   error: null,
   refetch: jest.fn()
@@ -109,7 +135,7 @@ const simpleQueryResult = (language: string) => ({
 const renderViewer = (
   task: AssignedTask = makeTask(),
   onSubmitted?: () => void,
-  questionId: string | null = null
+  questionId: string | null = 'q1'
 ) => {
   return render(
     <MantineProvider>
@@ -131,7 +157,20 @@ describe('CodingQuestionViewer', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockUseGetCodingQuestion.mockImplementation(
-      (_id: string, language: string) => simpleQueryResult(language)
+      (_taskId: string, _questionId: string, languageId: string) =>
+        simpleQueryResult(languageId)
+    );
+  });
+
+  it('requests the question with the task, question and selected language ids', () => {
+    renderViewer();
+
+    // The first catalogue language is selected on mount, and the request
+    // carries all three required path ids.
+    expect(mockUseGetCodingQuestion).toHaveBeenLastCalledWith(
+      't1',
+      'q1',
+      'lang-js'
     );
   });
 
@@ -144,13 +183,37 @@ describe('CodingQuestionViewer', () => {
     expect(editor.value).toBe('function solve() {}');
   });
 
+  it('asks for nothing when the task has no question yet', () => {
+    renderViewer(makeTask(), undefined, null);
+
+    // The hook still runs, but with an empty question id the query stays off.
+    expect(mockUseGetCodingQuestion).toHaveBeenLastCalledWith(
+      't1',
+      '',
+      'lang-js'
+    );
+    expect(
+      mockUseGetCodingQuestion.mock.calls.every(
+        ([, questionId]) => questionId === ''
+      )
+    ).toBe(true);
+    expect(
+      screen.getByText('This coding problem has no questions yet.')
+    ).toBeInTheDocument();
+    expect(screen.queryByLabelText('Code editor')).not.toBeInTheDocument();
+  });
+
   it('switches starter code when another language is picked', async () => {
     renderViewer();
 
     pickLanguage('Python');
 
     await waitFor(() => {
-      expect(mockUseGetCodingQuestion).toHaveBeenCalledWith('t1', 'Python', '');
+      expect(mockUseGetCodingQuestion).toHaveBeenCalledWith(
+        't1',
+        'q1',
+        'lang-python'
+      );
     });
 
     await waitFor(() => {
@@ -180,10 +243,10 @@ describe('CodingQuestionViewer', () => {
 
   it('seeds the editor with the submitted code when one exists', () => {
     mockUseGetCodingQuestion.mockImplementation(
-      (_id: string, language: string) => ({
-        ...simpleQueryResult(language),
+      (_taskId: string, _questionId: string, languageId: string) => ({
+        ...simpleQueryResult(languageId),
         data: {
-          ...starterFor(language),
+          ...starterFor(languageId),
           lastSubmittedCode: {
             language: 'javascript',
             code: 'function solve() { return 4; }'
@@ -199,12 +262,12 @@ describe('CodingQuestionViewer', () => {
 
   it('shows the starter when the picked language has no submission', async () => {
     mockUseGetCodingQuestion.mockImplementation(
-      (_id: string, language: string) => ({
-        ...simpleQueryResult(language),
+      (_taskId: string, _questionId: string, languageId: string) => ({
+        ...simpleQueryResult(languageId),
         data: {
-          ...starterFor(language),
+          ...starterFor(languageId),
           lastSubmittedCode:
-            (language || '').toLowerCase() === 'python'
+            languageId === 'lang-python'
               ? null
               : {
                   language: 'javascript',
@@ -296,7 +359,7 @@ describe('CodingQuestionViewer', () => {
     await waitFor(() => {
       expect(mockRunCode).toHaveBeenCalledWith({
         taskId: 't1',
-        questionId: '',
+        questionId: 'q1',
         language: 'Javascript',
         code: 'function solve() {}'
       });
@@ -368,7 +431,7 @@ describe('CodingQuestionViewer', () => {
     await waitFor(() => {
       expect(mockSubmitCode).toHaveBeenCalledWith({
         taskId: 't1',
-        questionId: '',
+        questionId: 'q1',
         language: 'Javascript',
         code: 'function solve() {}'
       });
@@ -459,10 +522,10 @@ describe('CodingQuestionViewer', () => {
 
   it('uses the per-question statement when the new contract provides one', async () => {
     mockUseGetCodingQuestion.mockImplementation(
-      (_id: string, language: string) => ({
-        ...simpleQueryResult(language),
+      (_taskId: string, _questionId: string, languageId: string) => ({
+        ...simpleQueryResult(languageId),
         data: {
-          ...starterFor(language),
+          ...starterFor(languageId),
           question: 'Second question prompt'
         }
       })

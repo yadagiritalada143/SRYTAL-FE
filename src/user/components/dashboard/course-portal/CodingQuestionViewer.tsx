@@ -21,13 +21,17 @@ import {
 import { useAppTheme } from '@hooks/use-app-theme';
 import { useCustomToast } from '@utils/common/toast';
 import { getErrorMessage } from '@utils/common/get-error-message';
-import { useGetCodingQuestion } from '@hooks/queries/useUserQueries';
+import {
+  useGetCodingQuestion,
+  useGetProgrammingLanguages
+} from '@hooks/queries/useUserQueries';
 import { useRunCode, useSubmitCode } from '@hooks/mutations/useUserMutations';
 import { CommonButton } from '@components/common/button/CommonButton';
 import {
   AssignedTask,
   CodeRunResult,
-  CodeRunTestCaseResult
+  CodeRunTestCaseResult,
+  CodingLanguage
 } from '@interfaces/course-assignment';
 
 interface CodingQuestionViewerProps {
@@ -77,9 +81,6 @@ const handleEditorKeyDown = (
     target.selectionEnd = caret;
   });
 };
-
-const isSameLanguage = (a: string, b: string) =>
-  a.trim().toLowerCase() === b.trim().toLowerCase();
 
 interface CodeEditorProps {
   value: string;
@@ -163,28 +164,30 @@ const TabButton = ({
 );
 
 interface LanguagePickerProps {
-  languages: string[];
-  value: string;
+  languages: CodingLanguage[];
+  valueId: string;
   themeConfig: {
     color: string;
     borderColor: string;
     cardBackground: string;
     warningColor: string;
   };
-  onChange: (next: string) => void;
+  onChange: (languageId: string, languageName: string) => void;
 }
 
 const LanguagePicker = ({
   languages,
-  value,
+  valueId,
   themeConfig,
   onChange
 }: LanguagePickerProps) => {
   const [open, setOpen] = useState(false);
 
-  const pick = (next: string) => {
+  const selected = languages.find(language => language.languageId === valueId);
+
+  const pick = (language: CodingLanguage) => {
     setOpen(false);
-    onChange(next);
+    onChange(language.languageId, language.languageName);
   };
 
   return (
@@ -198,7 +201,7 @@ const LanguagePicker = ({
         onClick={() => setOpen(openState => !openState)}
         disabled={languages.length === 0}
       >
-        {value || 'Pick a language'}
+        {selected?.languageName || 'Pick a language'}
       </CommonButton>
 
       {open && (
@@ -226,15 +229,15 @@ const LanguagePicker = ({
               boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)'
             }}
           >
-            {languages.map(languageName => {
-              const selected = languageName === value;
+            {languages.map(language => {
+              const isSelected = language.languageId === valueId;
               return (
                 <Box
-                  key={languageName}
+                  key={language.languageId || language.languageName}
                   component='button'
                   type='button'
-                  onClick={() => pick(languageName)}
-                  aria-label={languageName}
+                  onClick={() => pick(language)}
+                  aria-label={language.languageName}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -247,9 +250,9 @@ const LanguagePicker = ({
                     cursor: 'pointer',
                     fontFamily: 'inherit',
                     fontSize: 12,
-                    fontWeight: selected ? 700 : 500,
+                    fontWeight: isSelected ? 700 : 500,
                     textAlign: 'left',
-                    color: selected
+                    color: isSelected
                       ? themeConfig.warningColor
                       : themeConfig.color
                   }}
@@ -258,7 +261,7 @@ const LanguagePicker = ({
                     size={13}
                     style={{
                       flexShrink: 0,
-                      color: selected ? themeConfig.warningColor : undefined
+                      color: isSelected ? themeConfig.warningColor : undefined
                     }}
                   />
                   <Text
@@ -269,7 +272,7 @@ const LanguagePicker = ({
                       whiteSpace: 'nowrap'
                     }}
                   >
-                    {languageName}
+                    {language.languageName}
                   </Text>
                 </Box>
               );
@@ -293,6 +296,7 @@ const CodingQuestionViewer = ({
   const { showSuccessToast, showErrorToast } = useCustomToast();
   const isMobile = useMediaQuery('(max-width: 768px)');
 
+  const [languageId, setLanguageId] = useState('');
   const [language, setLanguage] = useState('');
   const [code, setCode] = useState('');
   const [result, setResult] = useState<CodeRunResult | null>(null);
@@ -301,11 +305,23 @@ const CodingQuestionViewer = ({
   const seededLanguage = useRef('');
   const seededSources = useRef<Record<string, string>>({});
 
-  const resolvedQuestionId = questionId || task._id;
-  const questionQuery = useGetCodingQuestion(resolvedQuestionId, language, '');
+  const languagesQuery = useGetProgrammingLanguages();
+  const questionQuery = useGetCodingQuestion(
+    task._id,
+    questionId || '',
+    languageId
+  );
   const { mutateAsync: runCodeMutation, isPending: isRunning } = useRunCode();
   const { mutateAsync: submitCodeMutation, isPending: isSubmitting } =
     useSubmitCode();
+
+  useEffect(() => {
+    if (languageId) return;
+    const first = (languagesQuery.data || [])[0];
+    if (!first?.languageId) return;
+    setLanguageId(first.languageId);
+    setLanguage(first.languageName);
+  }, [languagesQuery.data, languageId]);
 
   // The starter code always comes from the backend for the selected language,
   // unless the employee already submitted a final answer in that language — then
@@ -317,42 +333,32 @@ const CodingQuestionViewer = ({
   // diverged from what was last seeded.
   useEffect(() => {
     const data = questionQuery.data;
-    if (!data) return;
+    if (!data || !languageId) return;
 
-    const options = Array.from(new Set(data.allowedLanguages || []));
+    if (data.languageId && data.languageId !== languageId) return;
 
-    if (!language) {
-      const defaultLanguage = options[0] || '';
-      setLanguage(defaultLanguage);
-    }
-
-    const target = language || options[0] || '';
-    if (!target || !isSameLanguage(data.language, target)) {
-      return;
-    }
-
-    const key = target.toLowerCase();
     const source = data.lastSubmittedCode?.code || data.starterCode || '';
-    const previous = seededSources.current[key];
+    const previous = seededSources.current[languageId];
 
     if (
-      seededLanguage.current !== key ||
+      seededLanguage.current !== languageId ||
       previous === undefined ||
       (code === previous && source !== previous)
     ) {
-      seededLanguage.current = key;
-      seededSources.current[key] = source;
+      seededLanguage.current = languageId;
+      seededSources.current[languageId] = source;
       setCode(source);
     }
-    // language and code are intentionally in the deps: switching the language
+    // languageId and code are intentionally in the deps: switching the language
     // drives the refetch, and re-seeding must respect what the learner types.
-  }, [questionQuery.data, language, code]);
+  }, [questionQuery.data, languageId, code]);
 
-  const handleLanguageChange = (next: string | null) => {
-    if (!next || next === language) return;
+  const handleLanguageChange = (nextLanguageId: string, nextName: string) => {
+    if (!nextLanguageId || nextLanguageId === languageId) return;
     setResult(null);
     setRunError(null);
-    setLanguage(next);
+    setLanguageId(nextLanguageId);
+    setLanguage(nextName);
   };
 
   const handleRun = async () => {
@@ -403,9 +409,19 @@ const CodingQuestionViewer = ({
     }
   };
 
-  const languages = Array.from(
-    new Set(questionQuery.data?.allowedLanguages || [])
-  );
+  const languages = questionQuery.data?.allowedLanguages?.length
+    ? questionQuery.data.allowedLanguages
+    : languagesQuery.data || [];
+
+  if (!questionId) {
+    return (
+      <Card withBorder radius='lg' p='xl'>
+        <Text ta='center' c={themeConfig.mutedTextColor}>
+          This coding problem has no questions yet.
+        </Text>
+      </Card>
+    );
+  }
 
   return (
     <Group align='flex-start' gap='md' wrap={isMobile ? 'wrap' : 'nowrap'}>
@@ -490,19 +506,27 @@ const CodingQuestionViewer = ({
             style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}
           >
             <Stack gap='sm'>
-              {questionQuery.isLoading && (
+              {(languagesQuery.isPending || questionQuery.isPending) && (
                 <Text size='sm' c={themeConfig.mutedTextColor}>
                   Loading question…
                 </Text>
               )}
-              {questionQuery.isError && (
+              {(languagesQuery.isError || questionQuery.isError) && (
                 <Alert color='red' icon={<IconAlertCircle size={18} />}>
-                  <Text size='sm'>{getErrorMessage(questionQuery.error)}</Text>
+                  <Text size='sm'>
+                    {getErrorMessage(
+                      languagesQuery.error || questionQuery.error,
+                      'We could not load this coding problem.'
+                    )}
+                  </Text>
                   <CommonButton
                     mt='xs'
                     size='xs'
                     variant='light'
-                    onClick={() => questionQuery.refetch()}
+                    onClick={() => {
+                      languagesQuery.refetch();
+                      questionQuery.refetch();
+                    }}
                   >
                     Try again
                   </CommonButton>
@@ -561,7 +585,7 @@ const CodingQuestionViewer = ({
         >
           <LanguagePicker
             languages={languages}
-            value={language}
+            valueId={languageId}
             themeConfig={themeConfig}
             onChange={handleLanguageChange}
           />
@@ -646,7 +670,7 @@ const CodingQuestionViewer = ({
             leftSection={<IconPlayerPlay size={16} />}
             onClick={handleRun}
             loading={isRunning}
-            disabled={isRunning || isSubmitting || !language}
+            disabled={isRunning || isSubmitting || !languageId}
           >
             Run code
           </CommonButton>
@@ -654,7 +678,7 @@ const CodingQuestionViewer = ({
             leftSection={<IconSend size={16} />}
             onClick={handleSubmit}
             loading={isSubmitting}
-            disabled={isSubmitting || isRunning || !language}
+            disabled={isSubmitting || isRunning || !languageId}
           >
             Submit code
           </CommonButton>
