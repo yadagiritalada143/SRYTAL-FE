@@ -452,8 +452,6 @@ describe('user-services', () => {
       expect(formData.get('question')).toBe(
         'Return fizz for multiples of three.'
       );
-      // The multi-question array is NOT sent on the task update — per-question
-      // edits go through the dedicated question endpoints.
       expect(formData.has('questions')).toBe(false);
       expect(formData.has('codingQuestions')).toBe(false);
     });

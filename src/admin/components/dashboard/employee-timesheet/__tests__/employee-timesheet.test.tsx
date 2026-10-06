@@ -9,9 +9,6 @@ import moment from 'moment';
 import { formatData } from '@common/timesheet/helper';
 import { EmployeeTimesheetAdminView as EmployeeTimesheet } from '../employee-timesheet';
 
-// The view seeds its date filter with the current month and drops anything
-// outside it, so fixtures have to be anchored to that month. A hard-coded date
-// here only passes during the month it was written for.
 const MONTH_START = moment().startOf('month');
 const inRangeDate = (dayOffset = 0) =>
   MONTH_START.clone().add(dayOffset, 'days').format('YYYY-MM-DD');
@@ -191,8 +188,6 @@ jest.mock('@common/timesheet/helper', () => ({
   prepareSubmitData: jest.fn().mockReturnValue([])
 }));
 
-// `formatData` is module-mocked above, so reach it through a typed handle to
-// keep per-test return values without casting at every call site.
 const mockFormatData = formatData as unknown as jest.Mock;
 
 const mockNavigate = jest.fn();

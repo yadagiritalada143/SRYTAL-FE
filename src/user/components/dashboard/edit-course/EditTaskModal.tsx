@@ -100,9 +100,6 @@ const EditTaskModal = ({
     reader.readAsDataURL(thumbnail);
   }, [thumbnail]);
 
-  // Questions now live in their own collection, so the task document no longer
-  // carries an `isCoding` flag. The presence of questions is what marks a task
-  // as coding; `isCoding` is still honoured for documents written before that.
   const isCoding =
     Boolean(task?.isCoding) || resolveTaskQuestions(task).length > 0;
 

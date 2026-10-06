@@ -6,8 +6,6 @@ import { AssignedTask } from '@interfaces/course-assignment';
 
 const mockUseGetCodingQuestion = jest.fn();
 const mockLanguageRefetch = jest.fn();
-// Mirrors `GET /getallprogramminglanguages`: the catalogue the viewer uses to
-// pick a `languageId` before the question can be requested.
 const mockLanguageCatalogue = [
   {
     languageId: 'lang-js',
@@ -107,9 +105,6 @@ const makeTask = (overrides: any = {}): AssignedTask => ({
   ...overrides
 });
 
-// Mirrors the backend response: `language` is the canonical runtime name
-// (lowercased), `allowedLanguages` carries the selectable ids + display names,
-// and `languageId` echoes the language the request was made for.
 const starterFor = (languageId: string) => {
   const isPython = languageId === 'lang-python';
   return {
@@ -165,8 +160,6 @@ describe('CodingQuestionViewer', () => {
   it('requests the question with the task, question and selected language ids', () => {
     renderViewer();
 
-    // The first catalogue language is selected on mount, and the request
-    // carries all three required path ids.
     expect(mockUseGetCodingQuestion).toHaveBeenLastCalledWith(
       't1',
       'q1',
@@ -186,7 +179,6 @@ describe('CodingQuestionViewer', () => {
   it('asks for nothing when the task has no question yet', () => {
     renderViewer(makeTask(), undefined, null);
 
-    // The hook still runs, but with an empty question id the query stays off.
     expect(mockUseGetCodingQuestion).toHaveBeenLastCalledWith(
       't1',
       '',
@@ -559,13 +551,10 @@ describe('CodingQuestionViewer', () => {
     );
 
     expect(screen.queryByText('Problem statement')).not.toBeInTheDocument();
-    // The task name is no longer repeated above the statement.
     expect(screen.queryByText('Two Sum')).not.toBeInTheDocument();
 
     const question1 = screen.getByRole('button', { name: 'Question 1' });
     const question2 = screen.getByRole('button', { name: 'Question 2' });
-    // Current question uses the organization success (green) color, the others
-    // the warning (orange) one.
     expect(question1).toHaveStyle({ backgroundColor: '#2f9e44' });
     expect(question2).toHaveStyle({ backgroundColor: 'transparent' });
 

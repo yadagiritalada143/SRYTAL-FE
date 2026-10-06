@@ -63,9 +63,6 @@ const resolveTaskQuestions = (task?: Task): TaskCodingQuestion[] => {
   return legacyQuestion ? [{ questionId: null, question: legacyQuestion }] : [];
 };
 
-// Questions live in their own collection now, so the task document no longer
-// carries an `isCoding` flag - the presence of questions is what makes a task a
-// coding task. `isCoding` is still honoured for documents written before that.
 const isCodingTask = (task?: Task): boolean =>
   Boolean(task?.isCoding) || resolveTaskQuestions(task).length > 0;
 

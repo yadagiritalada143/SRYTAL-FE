@@ -471,8 +471,6 @@ describe('EditTaskModal', () => {
         });
       });
 
-      // A legacy task has no persisted questions — the draft goes through the
-      // dedicated add-question endpoint (the task update never writes arrays).
       await waitFor(() => {
         expect(mockAddQuestion).toHaveBeenCalledWith({
           taskId: 't1',
@@ -529,7 +527,6 @@ describe('EditTaskModal', () => {
         });
       });
 
-      // The remaining question is the task's legacy `question`.
       expect(mockUpdateTask).toHaveBeenCalledWith(
         expect.objectContaining({
           isCoding: true,
