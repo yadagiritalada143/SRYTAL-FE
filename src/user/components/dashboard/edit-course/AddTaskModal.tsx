@@ -4,7 +4,6 @@ import {
   Modal,
   Stack,
   TextInput,
-  Textarea,
   FileInput,
   SegmentedControl,
   Group,
@@ -48,7 +47,6 @@ const AddTaskModal = ({
   const [mode, setMode] = useState<ContentMode>('LINK');
   const [link, setLink] = useState('');
   const [file, setFile] = useState<File | null>(null);
-  const [question, setQuestion] = useState('');
   const [thumbnail, setThumbnail] = useState<File | null>(null);
 
   const { mutateAsync: addTask, isPending } = useAddCourseTask(courseId);
@@ -60,7 +58,6 @@ const AddTaskModal = ({
     setMode('LINK');
     setLink('');
     setFile(null);
-    setQuestion('');
     setThumbnail(null);
   };
 
@@ -78,24 +75,18 @@ const AddTaskModal = ({
   };
 
   const hasContent =
-    mode === 'LINK'
-      ? !!link.trim()
-      : mode === 'FILE'
-        ? !!file
-        : !!question.trim();
+    mode === 'LINK' ? !!link.trim() : mode === 'FILE' ? !!file : true;
   const isValid = !!taskName.trim() && hasContent;
 
   const handleSubmit = async () => {
     try {
-      const isCoding = mode === 'CODING';
       await addTask({
         moduleId,
         taskName: taskName.trim(),
         taskDescription: taskDescription.trim(),
-        isCoding,
-        question: isCoding ? question.trim() : undefined,
-        link: !isCoding && mode === 'LINK' ? link.trim() : undefined,
-        file: !isCoding && mode === 'FILE' ? file : undefined,
+        type: mode === 'CODING' ? 'CODE' : mode,
+        link: mode === 'LINK' ? link.trim() : undefined,
+        file: mode === 'FILE' ? file : undefined,
         thumbnail
       });
       showSuccessToast('Content added successfully!');
@@ -184,18 +175,9 @@ const AddTaskModal = ({
           />
         ) : (
           <Stack gap='xs'>
-            <Textarea
-              label='Question'
-              placeholder='Describe the coding problem to solve'
-              required
-              autosize
-              minRows={3}
-              value={question}
-              onChange={e => setQuestion(e.target.value)}
-              description='Every coding task needs a problem statement.'
-            />
-            <Text size='sm' fw={500}>
-              Programming Language
+            <Text size='xs' c='dimmed'>
+              The title above becomes the coding question and the description
+              becomes the problem statement learners solve.
             </Text>
             <CommonButton
               variant='light'
@@ -205,10 +187,6 @@ const AddTaskModal = ({
             >
               Add Programming Language
             </CommonButton>
-            <Text size='xs' c='dimmed'>
-              Manage the languages authors can pick from. This popup reopens
-              when you come back so you can finish adding the task.
-            </Text>
           </Stack>
         )}
 

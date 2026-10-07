@@ -43,6 +43,12 @@ import EditTaskModal from './EditTaskModal';
 import CourseThumbnail from '../content-writer/CourseThumbnail';
 import { readTaskPopupState, clearTaskPopupState } from './task-popup-state';
 
+const stripHtml = (html?: string): string =>
+  (html || '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
 const CourseDetails = () => {
   const { id = '' } = useParams();
   const navigate = useNavigate();
@@ -80,7 +86,7 @@ const CourseDetails = () => {
   // Opening goes through the backend, which redirects to the link or streams
   // the uploaded file inline. Always opened in a fresh browser tab. Coding
   const handleViewContent = (task: Task) => {
-    if (task.isCoding) {
+    if (task.isCoding || task.type === 'CODE') {
       setTaskToView(task);
       return;
     }
@@ -290,9 +296,9 @@ const CourseDetails = () => {
                             <Text fw={600} lineClamp={1}>
                               {module.moduleName}
                             </Text>
-                            {module.moduleDescription && (
+                            {stripHtml(module.moduleDescription) && (
                               <Text size='xs' c='dimmed' lineClamp={1}>
-                                {module.moduleDescription}
+                                {stripHtml(module.moduleDescription)}
                               </Text>
                             )}
                           </Stack>
@@ -400,7 +406,7 @@ const CourseDetails = () => {
             style={{ borderColor: currentThemeConfig.borderColor }}
           >
             <Text size='sm' style={{ whiteSpace: 'pre-wrap' }}>
-              {taskToView?.question || 'No question provided.'}
+              {taskToView?.question || taskToView?.taskName || 'No question provided.'}
             </Text>
           </Paper>
           <Group justify='flex-end'>
@@ -448,9 +454,9 @@ const TaskRow = ({ task, onView, onEdit, borderColor }: TaskRowProps) => {
                 </Badge>
               )}
             </Group>
-            {task.taskDescription && (
+            {stripHtml(task.taskDescription) && (
               <Text size='xs' c='dimmed' lineClamp={1}>
-                {task.taskDescription}
+                {stripHtml(task.taskDescription)}
               </Text>
             )}
           </Stack>

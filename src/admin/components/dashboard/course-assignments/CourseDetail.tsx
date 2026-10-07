@@ -32,6 +32,12 @@ import PremiumLoader from '@components/common/loaders/PremiumLoader';
 import DataView from '@components/common/loaders/DataView';
 import { Course, Module, Task } from '@interfaces/contentwriter';
 
+const stripHtml = (html?: string): string =>
+  (html || '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
 const CourseDetail = () => {
   const { id = '' } = useParams();
   const navigate = useNavigate();
@@ -210,9 +216,9 @@ const CourseDetail = () => {
                         <Text fw={600} lineClamp={1}>
                           {module.moduleName}
                         </Text>
-                        {module.moduleDescription && (
+                        {stripHtml(module.moduleDescription) && (
                           <Text size='xs' c='dimmed' lineClamp={1}>
-                            {module.moduleDescription}
+                            {stripHtml(module.moduleDescription)}
                           </Text>
                         )}
                       </Stack>
@@ -276,9 +282,9 @@ const CourseDetail = () => {
                                       </Badge>
                                     )}
                                   </Group>
-                                  {task.taskDescription && (
+                                  {stripHtml(task.taskDescription) && (
                                     <Text size='xs' c='dimmed' lineClamp={1}>
-                                      {task.taskDescription}
+                                      {stripHtml(task.taskDescription)}
                                     </Text>
                                   )}
                                 </Stack>

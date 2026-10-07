@@ -7,10 +7,16 @@ import { AssignedTask } from '@interfaces/course-assignment';
 const mockUseGetCodingQuestion = jest.fn();
 jest.mock('@hooks/queries/useUserQueries', () => ({
   useGetCodingQuestion: (
+    taskId: string,
     questionId: string,
-    language: string,
-    languageId = ''
-  ) => mockUseGetCodingQuestion(questionId, language, languageId)
+    languageId: string,
+    enabled: boolean = true
+  ) => mockUseGetCodingQuestion(taskId, questionId, languageId, enabled)
+}));
+
+const mockUseGetAllProgrammingLanguages = jest.fn();
+jest.mock('@hooks/queries/useAdminQueries', () => ({
+  useGetAllProgrammingLanguages: () => mockUseGetAllProgrammingLanguages()
 }));
 
 const mockRunCode = jest.fn();
@@ -82,22 +88,32 @@ const makeTask = (overrides: any = {}): AssignedTask => ({
 });
 
 // Mirrors the backend response: `language` is the canonical runtime name
-// (lowercased), while `allowedLanguages` holds the display names.
-const starterFor = (language: string) => ({
-  questionId: 't1',
-  allowedLanguages: ['Javascript', 'Python'],
-  language:
-    (language || '').toLowerCase() === 'python' ? 'python' : 'javascript',
-  languageId:
-    (language || '').toLowerCase() === 'python' ? 'lang-python' : 'lang-js',
-  starterCode:
-    (language || '').toLowerCase() === 'python'
-      ? 'def solve():'
-      : 'function solve() {}'
-});
+// (lowercased), while `allowedLanguages` holds the available languages.
+const starterFor = (languageId: string) => {
+  const isPython = languageId === 'lang-python';
+  return {
+    taskId: 't1',
+    questionId: 't1',
+    allowedLanguages: [
+      {
+        languageId: 'lang-js',
+        languageName: 'Javascript',
+        canonicalKey: 'javascript'
+      },
+      {
+        languageId: 'lang-python',
+        languageName: 'Python',
+        canonicalKey: 'python'
+      }
+    ],
+    language: isPython ? 'python' : 'javascript',
+    languageId,
+    starterCode: isPython ? 'def solve():' : 'function solve() {}'
+  };
+};
 
-const simpleQueryResult = (language: string) => ({
-  data: starterFor(language),
+const simpleQueryResult = (languageId: string) => ({
+  data: languageId ? starterFor(languageId) : undefined,
   isLoading: false,
   isError: false,
   error: null,
@@ -123,8 +139,15 @@ const pickLanguage = (languageName: string) => {
 describe('CodingQuestionViewer', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockUseGetAllProgrammingLanguages.mockReturnValue({
+      data: [
+        { _id: 'lang-js', languageName: 'Javascript' },
+        { _id: 'lang-python', languageName: 'Python' }
+      ]
+    });
     mockUseGetCodingQuestion.mockImplementation(
-      (_id: string, language: string) => simpleQueryResult(language)
+      (_taskId: string, _questionId: string, languageId: string) =>
+        simpleQueryResult(languageId)
     );
   });
 
@@ -143,7 +166,12 @@ describe('CodingQuestionViewer', () => {
     pickLanguage('Python');
 
     await waitFor(() => {
-      expect(mockUseGetCodingQuestion).toHaveBeenCalledWith('t1', 'Python', '');
+      expect(mockUseGetCodingQuestion).toHaveBeenCalledWith(
+        't1',
+        't1',
+        'lang-python',
+        true
+      );
     });
 
     await waitFor(() => {
@@ -173,10 +201,10 @@ describe('CodingQuestionViewer', () => {
 
   it('seeds the editor with the submitted code when one exists', () => {
     mockUseGetCodingQuestion.mockImplementation(
-      (_id: string, language: string) => ({
-        ...simpleQueryResult(language),
+      (_taskId: string, _questionId: string, languageId: string) => ({
+        ...simpleQueryResult(languageId),
         data: {
-          ...starterFor(language),
+          ...starterFor(languageId),
           lastSubmittedCode: {
             language: 'javascript',
             code: 'function solve() { return 4; }'
@@ -192,12 +220,12 @@ describe('CodingQuestionViewer', () => {
 
   it('shows the starter when the picked language has no submission', async () => {
     mockUseGetCodingQuestion.mockImplementation(
-      (_id: string, language: string) => ({
-        ...simpleQueryResult(language),
+      (_taskId: string, _questionId: string, languageId: string) => ({
+        ...simpleQueryResult(languageId),
         data: {
-          ...starterFor(language),
+          ...starterFor(languageId),
           lastSubmittedCode:
-            (language || '').toLowerCase() === 'python'
+            languageId === 'lang-python'
               ? null
               : {
                   language: 'javascript',

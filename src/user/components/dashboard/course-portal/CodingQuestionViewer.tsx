@@ -22,6 +22,7 @@ import { useAppTheme } from '@hooks/use-app-theme';
 import { useCustomToast } from '@utils/common/toast';
 import { getErrorMessage } from '@utils/common/get-error-message';
 import { useGetCodingQuestion } from '@hooks/queries/useUserQueries';
+import { useGetAllProgrammingLanguages } from '@hooks/queries/useAdminQueries';
 import { useRunCode, useSubmitCode } from '@hooks/mutations/useUserMutations';
 import { CommonButton } from '@components/common/button/CommonButton';
 import {
@@ -74,9 +75,6 @@ const handleEditorKeyDown = (
     target.selectionEnd = caret;
   });
 };
-
-const isSameLanguage = (a: string, b: string) =>
-  a.trim().toLowerCase() === b.trim().toLowerCase();
 
 interface CodeEditorProps {
   value: string;
@@ -287,6 +285,7 @@ const CodingQuestionViewer = ({
   const isMobile = useMediaQuery('(max-width: 768px)');
 
   const [language, setLanguage] = useState('');
+  const [languageId, setLanguageId] = useState('');
   const [code, setCode] = useState('');
   const [result, setResult] = useState<CodeRunResult | null>(null);
   const [runError, setRunError] = useState<string | null>(null);
@@ -294,7 +293,21 @@ const CodingQuestionViewer = ({
   const seededLanguage = useRef('');
   const seededSources = useRef<Record<string, string>>({});
 
-  const questionQuery = useGetCodingQuestion(task._id, language);
+  const { data: languageCatalogue = [] } = useGetAllProgrammingLanguages();
+
+  useEffect(() => {
+    if (languageId || languageCatalogue.length === 0) return;
+    const first = languageCatalogue[0];
+    setLanguage(first.languageName || '');
+    setLanguageId(String(first._id || ''));
+  }, [languageCatalogue, languageId]);
+
+  const questionQuery = useGetCodingQuestion(
+    task._id,
+    task._id,
+    languageId,
+    Boolean(languageId)
+  );
   const { mutateAsync: runCodeMutation, isPending: isRunning } = useRunCode();
   const { mutateAsync: submitCodeMutation, isPending: isSubmitting } =
     useSubmitCode();
@@ -311,17 +324,10 @@ const CodingQuestionViewer = ({
     const data = questionQuery.data;
     if (!data) return;
 
-    const options = Array.from(new Set(data.allowedLanguages || []));
+    if (data.languageId !== languageId) return;
 
-    if (!language) {
-      const defaultLanguage = options[0] || '';
-      setLanguage(defaultLanguage);
-    }
-
-    const target = language || options[0] || '';
-    if (!target || !isSameLanguage(data.language, target)) {
-      return;
-    }
+    const target = data.language || language || '';
+    if (!target) return;
 
     const key = target.toLowerCase();
     const source = data.lastSubmittedCode?.code || data.starterCode || '';
@@ -338,13 +344,15 @@ const CodingQuestionViewer = ({
     }
     // language and code are intentionally in the deps: switching the language
     // drives the refetch, and re-seeding must respect what the learner types.
-  }, [questionQuery.data, language, code]);
+  }, [questionQuery.data, language, languageId, code]);
 
-  const handleLanguageChange = (next: string | null) => {
+  const handleLanguageChange = (next: string) => {
     if (!next || next === language) return;
+    const match = languageCatalogue.find(item => item.languageName === next);
     setResult(null);
     setRunError(null);
     setLanguage(next);
+    setLanguageId(match ? String(match._id) : '');
   };
 
   const handleRun = async () => {
@@ -394,7 +402,7 @@ const CodingQuestionViewer = ({
   };
 
   const languages = Array.from(
-    new Set(questionQuery.data?.allowedLanguages || [])
+    new Set(languageCatalogue.map(item => item.languageName).filter(Boolean))
   );
 
   return (
@@ -465,6 +473,15 @@ const CodingQuestionViewer = ({
               )}
               {questionQuery.data && (
                 <Box>
+                  <Text
+                    fw={700}
+                    size='lg'
+                    c={themeConfig.color}
+                    lh={1.4}
+                    mb='xs'
+                  >
+                    {task.taskName}
+                  </Text>
                   {task.taskDescription ? (
                     <Box
                       style={{

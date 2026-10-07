@@ -33,11 +33,21 @@ export interface AssignedTask {
   completedAt?: string | null;
 }
 
+export interface CodingLanguageOption {
+  languageId: string;
+  languageName: string;
+  canonicalKey: string;
+}
+
 export interface CodingQuestion {
+  taskId?: string;
   questionId: string;
-  allowedLanguages: string[];
+  taskName?: string;
+  question?: string;
+  description?: string;
+  allowedLanguages: CodingLanguageOption[];
   language: string;
-  languageId?: string;
+  languageId: string;
   starterCode: string;
   lastSubmittedCode?: { language: string; code: string } | null;
 }

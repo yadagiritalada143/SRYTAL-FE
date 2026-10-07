@@ -3,7 +3,6 @@ import {
   Modal,
   Stack,
   TextInput,
-  Textarea,
   Select,
   Group,
   Loader,
@@ -44,7 +43,6 @@ const EditTaskModal = ({
 }: EditTaskModalProps) => {
   const [taskName, setTaskName] = useState('');
   const [taskDescription, setTaskDescription] = useState('');
-  const [question, setQuestion] = useState('');
   const [thumbnail, setThumbnail] = useState<File | null>(null);
   const [thumbPreview, setThumbPreview] = useState<string | null>(null);
   const [status, setStatus] = useState<CourseStatus>('ACTIVE');
@@ -70,7 +68,6 @@ const EditTaskModal = ({
     setSeededFor(task._id);
     setTaskName(task.taskName || '');
     setTaskDescription(task.taskDescription || '');
-    setQuestion(task.question || '');
     setThumbnail(null);
     setStatus((task.status as CourseStatus) || 'ACTIVE');
   } else if (!opened && seededFor !== null) {
@@ -90,8 +87,7 @@ const EditTaskModal = ({
         taskName: taskName.trim(),
         taskDescription: taskDescription.trim(),
         thumbnail,
-        status,
-        ...(task.isCoding ? { isCoding: true, question: question.trim() } : {})
+        status
       });
       showSuccessToast('Content updated successfully!');
       onClose();
@@ -99,6 +95,8 @@ const EditTaskModal = ({
       showErrorToast(getErrorMessage(error, 'Failed to update content'));
     }
   };
+
+  const isCoding = task?.isCoding || task?.type === 'CODE';
 
   const isLink = task?.type === 'LINK';
 
@@ -118,19 +116,6 @@ const EditTaskModal = ({
           onChange={setTaskDescription}
           resetKey={seededFor ?? undefined}
         />
-
-        {task?.isCoding && (
-          <Textarea
-            label='Question'
-            placeholder='Describe the coding problem to solve'
-            required
-            autosize
-            minRows={3}
-            value={question}
-            onChange={e => setQuestion(e.target.value)}
-            description='The problem statement shown to learners.'
-          />
-        )}
 
         <Stack gap={6}>
           <Text size='sm' fw={500}>
@@ -224,7 +209,7 @@ const EditTaskModal = ({
           comboboxProps={{ withinPortal: true }}
         />
 
-        {!task?.isCoding && (
+        {!isCoding && (
           <>
             {/* The update endpoint only replaces the thumbnail; the attached
               file/link is shown for reference but cannot be swapped. */}

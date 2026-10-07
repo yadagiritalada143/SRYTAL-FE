@@ -191,8 +191,10 @@ describe('AddTaskModal', () => {
         screen.getByRole('button', { name: 'Add Programming Language' })
       ).toBeInTheDocument();
       expect(
-        screen.getByPlaceholderText('Describe the coding problem to solve')
-      ).toBeInTheDocument();
+        screen.queryByPlaceholderText(
+          'Describe the coding problem to solve'
+        )
+      ).not.toBeInTheDocument();
       expect(screen.queryByLabelText(/Link URL/)).not.toBeInTheDocument();
       expect(
         screen.queryByText('Upload a PDF, Word, or any file')
@@ -248,18 +250,11 @@ describe('AddTaskModal', () => {
   });
 
   describe('Coding tasks', () => {
-    it('keeps Add Content disabled in Coding mode until a question is provided', () => {
+    it('enables Add Content with just a title in Coding mode', () => {
       renderModal();
       typeTitle('FizzBuzz problem');
       clickCodingMode();
-      expect(
-        screen.getByRole('button', { name: 'Add Content' })
-      ).toBeDisabled();
-
-      fireEvent.change(
-        screen.getByPlaceholderText('Describe the coding problem to solve'),
-        { target: { value: 'Return fizz for multiples of three.' } }
-      );
+      // Coding tasks need no separate content: the title is the question.
       expect(
         screen.getByRole('button', { name: 'Add Content' })
       ).not.toBeDisabled();
@@ -299,8 +294,7 @@ describe('AddTaskModal', () => {
         moduleId: 'm1',
         taskName: 'YouTube video',
         taskDescription: '',
-        isCoding: false,
-        question: undefined,
+        type: 'LINK',
         link: 'https://youtube.com/watch?v=abc123',
         file: undefined,
         thumbnail: null
@@ -328,8 +322,7 @@ describe('AddTaskModal', () => {
       await waitFor(() => {
         expect(mockAddTask).toHaveBeenCalledWith(
           expect.objectContaining({
-            isCoding: false,
-            question: undefined,
+            type: 'FILE',
             link: undefined,
             file
           })
@@ -337,15 +330,11 @@ describe('AddTaskModal', () => {
       });
     });
 
-    it('submits a coding task with isCoding and the question', async () => {
+    it('submits a coding task with its type', async () => {
       renderModal(true, 'm1', 'c1');
 
       typeTitle('FizzBuzz problem');
       clickCodingMode();
-      fireEvent.change(
-        screen.getByPlaceholderText('Describe the coding problem to solve'),
-        { target: { value: 'Return fizz for multiples of three.' } }
-      );
 
       fireEvent.click(screen.getByRole('button', { name: 'Add Content' }));
 
@@ -353,12 +342,12 @@ describe('AddTaskModal', () => {
         expect(mockAddTask).toHaveBeenCalledTimes(1);
       });
 
+      // The title is the question; no separate question field is sent.
       expect(mockAddTask).toHaveBeenCalledWith({
         moduleId: 'm1',
         taskName: 'FizzBuzz problem',
         taskDescription: '',
-        isCoding: true,
-        question: 'Return fizz for multiples of three.',
+        type: 'CODE',
         link: undefined,
         file: undefined,
         thumbnail: null

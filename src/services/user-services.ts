@@ -241,18 +241,12 @@ export const addCourseTaskContentWriter = async (data: AddTaskPayload) => {
     formData.append('moduleId', data.moduleId);
     formData.append('taskName', data.taskName);
     formData.append('taskDescription', data.taskDescription);
-    if (data.isCoding) {
-      formData.append('isCoding', 'true');
-      if (data.question) {
-        formData.append('question', data.question);
-      }
-    } else {
-      // A task carries either an uploaded file or an external link.
-      if (data.file) {
-        formData.append('taskFile', data.file);
-      } else if (data.link) {
-        formData.append('link', data.link);
-      }
+    formData.append('type', data.type || 'LINK');
+    // A task carries either an uploaded file or an external link.
+    if (data.file) {
+      formData.append('taskFile', data.file);
+    } else if (data.link) {
+      formData.append('link', data.link);
     }
     if (data.thumbnail) {
       formData.append('thumbnailFile', data.thumbnail);
@@ -329,12 +323,6 @@ export const updateCourseTaskContentWriter = async (
     formData.append('taskName', data.taskName);
     formData.append('taskDescription', data.taskDescription);
     formData.append('status', data.status);
-    if (data.isCoding !== undefined) {
-      formData.append('isCoding', data.isCoding ? 'true' : 'false');
-    }
-    if (data.question !== undefined) {
-      formData.append('question', data.question);
-    }
     if (data.thumbnail) {
       formData.append('thumbnailFile', data.thumbnail);
     }
@@ -396,16 +384,15 @@ export const updateMyTaskProgress = async (
  * assigned employees may fetch it, so the payload never leaks authoring data.
  */
 export const getCodingQuestion = async (
+  taskId: string,
   questionId: string,
-  language = '',
-  languageId = ''
+  languageId: string
 ): Promise<CodingQuestion> => {
-  const params = language || languageId ? { language, languageId } : undefined;
-  const response = params
-    ? await apiClient.get(`/getquestion/${questionId}`, { params })
-    : await apiClient.get(`/getquestion/${questionId}`);
-  // Backend responds with the question data at the top level.
-  return response.data;
+  const response = await apiClient.get(
+    `/getquestion/${taskId}/${questionId}/${languageId}`
+  );
+  // Backend responds with { success, message, data }.
+  return response.data.data;
 };
 /**
  * Runs the learner's code against the question's test cases (trial run).
