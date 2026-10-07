@@ -132,14 +132,14 @@ describe('CourseDetail', () => {
     expect(screen.getByText('About this course')).toBeInTheDocument();
   });
 
-  it('renders the stats cards (Modules, Content Items, Status)', () => {
+  it('renders the stats cards (Modules, Task Items, Status)', () => {
     mockUseGetCourseByIdAdmin.mockReturnValue({
       data: mockCourseData,
       isLoading: false
     });
     renderCourseDetail();
     expect(screen.getAllByText('Modules').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText('Content Items')).toBeInTheDocument();
+    expect(screen.getByText('Task Items')).toBeInTheDocument();
     expect(screen.getByText('Status')).toBeInTheDocument();
   });
 

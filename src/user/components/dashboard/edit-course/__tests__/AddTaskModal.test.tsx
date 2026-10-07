@@ -30,12 +30,29 @@ jest.mock('@utils/common/toast', () => ({
 }));
 
 jest.mock('@utils/common/constants', () => ({
-  organizationEmployeeUrls: (org: string) => `/${org}/employee`
+  commonUrls: (org: string) => `/${org}/employee`
 }));
 
 jest.mock('@utils/common/get-error-message', () => ({
   getErrorMessage: (error: any, fallback: string) =>
     error?.response?.data?.message || error?.message || fallback
+}));
+
+jest.mock('@hooks/use-app-theme', () => ({
+  useAppTheme: () => ({
+    themeConfig: {
+      color: '#212529',
+      backgroundColor: '#ffffff',
+      cardBackground: '#ffffff',
+      borderColor: '#dee2e6',
+      accentColor: '#1c7ed6',
+      iconColor: '#228be6',
+      successColor: '#2f9e44',
+      dangerColor: '#c92a2a',
+      mutedTextColor: '#6c757d'
+    },
+    isDarkTheme: false
+  })
 }));
 
 jest.mock('@components/common/button/CommonButton', () => ({
@@ -141,14 +158,14 @@ describe('AddTaskModal', () => {
       expect(screen.queryByTestId('modal')).not.toBeInTheDocument();
     });
 
-    it('renders the dialog with Add Content title when opened', () => {
+    it('renders the dialog with Add Task title when opened', () => {
       renderModal();
       expect(
-        screen.getByRole('heading', { name: 'Add Content' })
+        screen.getByRole('heading', { name: 'Add Task' })
       ).toBeInTheDocument();
       expect(screen.getByText('Title')).toBeInTheDocument();
       expect(screen.getByText('Description')).toBeInTheDocument();
-      expect(screen.getByText('Content Type')).toBeInTheDocument();
+      expect(screen.getByText('Task Type')).toBeInTheDocument();
     });
 
     it('defaults to Link mode with a link URL input', () => {
@@ -186,7 +203,9 @@ describe('AddTaskModal', () => {
     it('shows the Add Programming Language button for Coding tasks', () => {
       renderModal();
       clickCodingMode();
-      expect(screen.getByText('Programming Language')).toBeInTheDocument();
+      expect(
+        screen.getByText('Add Programming Language')
+      ).toBeInTheDocument();
       expect(
         screen.getByRole('button', { name: 'Add Programming Language' })
       ).toBeInTheDocument();
@@ -208,31 +227,31 @@ describe('AddTaskModal', () => {
   });
 
   describe('Validation', () => {
-    it('disables Add Content when the form is empty', () => {
+    it('disables Add Task when the form is empty', () => {
       renderModal();
       expect(
-        screen.getByRole('button', { name: 'Add Content' })
+        screen.getByRole('button', { name: 'Add Task' })
       ).toBeDisabled();
     });
 
-    it('keeps Add Content disabled when only the title is provided', () => {
+    it('keeps Add Task disabled when only the title is provided', () => {
       renderModal();
       typeTitle('Intro video');
       expect(
-        screen.getByRole('button', { name: 'Add Content' })
+        screen.getByRole('button', { name: 'Add Task' })
       ).toBeDisabled();
     });
 
-    it('enables Add Content when title and link are provided', () => {
+    it('enables Add Task when title and link are provided', () => {
       renderModal();
       typeTitle('Intro video');
       typeLink('https://youtube.com/watch?v=abc123');
       expect(
-        screen.getByRole('button', { name: 'Add Content' })
+        screen.getByRole('button', { name: 'Add Task' })
       ).not.toBeDisabled();
     });
 
-    it('enables Add Content when title and file are provided in File mode', () => {
+    it('enables Add Task when title and file are provided in File mode', () => {
       const { container } = renderModal();
       typeTitle('Reading material');
       clickFileMode();
@@ -244,19 +263,19 @@ describe('AddTaskModal', () => {
       });
 
       expect(
-        screen.getByRole('button', { name: 'Add Content' })
+        screen.getByRole('button', { name: 'Add Task' })
       ).not.toBeDisabled();
     });
   });
 
   describe('Coding tasks', () => {
-    it('enables Add Content with just a title in Coding mode', () => {
+    it('enables Add Task with just a title in Coding mode', () => {
       renderModal();
       typeTitle('FizzBuzz problem');
       clickCodingMode();
       // Coding tasks need no separate content: the title is the question.
       expect(
-        screen.getByRole('button', { name: 'Add Content' })
+        screen.getByRole('button', { name: 'Add Task' })
       ).not.toBeDisabled();
     });
 
@@ -284,7 +303,7 @@ describe('AddTaskModal', () => {
       typeTitle('YouTube video');
       typeLink('https://youtube.com/watch?v=abc123');
 
-      fireEvent.click(screen.getByRole('button', { name: 'Add Content' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Add Task' }));
 
       await waitFor(() => {
         expect(mockAddTask).toHaveBeenCalledTimes(1);
@@ -301,7 +320,7 @@ describe('AddTaskModal', () => {
       });
 
       expect(mockShowSuccessToast).toHaveBeenCalledWith(
-        'Content added successfully!'
+        'Task added successfully!'
       );
       expect(mockOnClose).toHaveBeenCalled();
     });
@@ -317,7 +336,7 @@ describe('AddTaskModal', () => {
         target: { files: [file] }
       });
 
-      fireEvent.click(screen.getByRole('button', { name: 'Add Content' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Add Task' }));
 
       await waitFor(() => {
         expect(mockAddTask).toHaveBeenCalledWith(
@@ -336,7 +355,7 @@ describe('AddTaskModal', () => {
       typeTitle('FizzBuzz problem');
       clickCodingMode();
 
-      fireEvent.click(screen.getByRole('button', { name: 'Add Content' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Add Task' }));
 
       await waitFor(() => {
         expect(mockAddTask).toHaveBeenCalledTimes(1);
@@ -354,7 +373,7 @@ describe('AddTaskModal', () => {
       });
 
       expect(mockShowSuccessToast).toHaveBeenCalledWith(
-        'Content added successfully!'
+        'Task added successfully!'
       );
       expect(mockOnClose).toHaveBeenCalled();
     });
@@ -365,7 +384,7 @@ describe('AddTaskModal', () => {
       typeTitle('  Trimmed Title  ');
       typeLink('  https://youtube.com/watch?v=def456  ');
 
-      fireEvent.click(screen.getByRole('button', { name: 'Add Content' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Add Task' }));
 
       await waitFor(() => {
         expect(mockAddTask).toHaveBeenCalledWith(
@@ -386,7 +405,7 @@ describe('AddTaskModal', () => {
       typeTitle('Intro video');
       typeLink('https://youtube.com/watch?v=abc123');
 
-      fireEvent.click(screen.getByRole('button', { name: 'Add Content' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Add Task' }));
 
       await waitFor(() => {
         expect(mockShowErrorToast).toHaveBeenCalledWith('File too large');
@@ -402,11 +421,11 @@ describe('AddTaskModal', () => {
       typeTitle('Intro video');
       typeLink('https://youtube.com/watch?v=abc123');
 
-      fireEvent.click(screen.getByRole('button', { name: 'Add Content' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Add Task' }));
 
       await waitFor(() => {
         expect(mockShowErrorToast).toHaveBeenCalledWith(
-          'Failed to add content'
+          'Failed to add task'
         );
       });
     });

@@ -19,7 +19,7 @@ jest.mock('../task-content', () => ({
 
 jest.mock('@services/user-services', () => ({
   getCourseTaskContentUrl: (taskId: string) =>
-    `http://localhost:3000/contentwriter/getCourseTaskContent/${taskId}?auth_token=fake`
+    `http://localhost:3000/getCourseTaskContent/${taskId}?auth_token=fake`
 }));
 
 jest.mock('@hooks/use-app-theme', () => ({
@@ -77,7 +77,7 @@ describe('TaskContentViewer', () => {
   it('renders a video element with the resolved url and controls', () => {
     mockResolved = {
       kind: 'video',
-      url: 'http://localhost:3000/contentwriter/getCourseTaskContent/t1?auth_token=fake',
+      url: 'http://localhost:3000/getCourseTaskContent/t1?auth_token=fake',
       label: 'Video'
     };
     const { container } = renderViewer(makeTask({ type: 'FILE' }));
@@ -85,7 +85,7 @@ describe('TaskContentViewer', () => {
     expect(video).toBeInTheDocument();
     expect(video).toHaveAttribute(
       'src',
-      'http://localhost:3000/contentwriter/getCourseTaskContent/t1?auth_token=fake'
+      'http://localhost:3000/getCourseTaskContent/t1?auth_token=fake'
     );
     expect(video).toHaveAttribute('controls');
     expect(video).toHaveAttribute('controlslist', 'nodownload');
@@ -94,7 +94,7 @@ describe('TaskContentViewer', () => {
   it('calls onFinished when a video ends', () => {
     mockResolved = {
       kind: 'video',
-      url: 'http://localhost:3000/contentwriter/getCourseTaskContent/t1?auth_token=fake',
+      url: 'http://localhost:3000/getCourseTaskContent/t1?auth_token=fake',
       label: 'Video'
     };
     const { container } = renderViewer();
@@ -106,7 +106,7 @@ describe('TaskContentViewer', () => {
   it('renders an audio element and calls onFinished when it ends', () => {
     mockResolved = {
       kind: 'audio',
-      url: 'http://localhost:3000/contentwriter/getCourseTaskContent/t1?auth_token=fake',
+      url: 'http://localhost:3000/getCourseTaskContent/t1?auth_token=fake',
       label: 'Audio'
     };
     const { container } = renderViewer();
@@ -138,7 +138,7 @@ describe('TaskContentViewer', () => {
   it('renders an image with the task name as alt text', () => {
     mockResolved = {
       kind: 'image',
-      url: 'http://localhost:3000/contentwriter/getCourseTaskContent/t1?auth_token=fake',
+      url: 'http://localhost:3000/getCourseTaskContent/t1?auth_token=fake',
       label: 'Image'
     };
     renderViewer();
@@ -146,27 +146,27 @@ describe('TaskContentViewer', () => {
     expect(img).toBeInTheDocument();
     expect(img).toHaveAttribute(
       'src',
-      'http://localhost:3000/contentwriter/getCourseTaskContent/t1?auth_token=fake'
+      'http://localhost:3000/getCourseTaskContent/t1?auth_token=fake'
     );
   });
 
   it('renders a pdf in an iframe', () => {
     mockResolved = {
       kind: 'pdf',
-      url: 'http://localhost:3000/contentwriter/getCourseTaskContent/t1?auth_token=fake',
+      url: 'http://localhost:3000/getCourseTaskContent/t1?auth_token=fake',
       label: 'PDF'
     };
     renderViewer();
     expect(screen.getByTitle('Intro video')).toHaveAttribute(
       'src',
-      'http://localhost:3000/contentwriter/getCourseTaskContent/t1?auth_token=fake'
+      'http://localhost:3000/getCourseTaskContent/t1?auth_token=fake'
     );
   });
 
   it('renders a text document in an iframe', () => {
     mockResolved = {
       kind: 'text',
-      url: 'http://localhost:3000/contentwriter/getCourseTaskContent/t1?auth_token=fake',
+      url: 'http://localhost:3000/getCourseTaskContent/t1?auth_token=fake',
       label: 'Document'
     };
     renderViewer();
@@ -204,7 +204,7 @@ describe('TaskContentViewer', () => {
     const openSpy = jest.spyOn(window, 'open').mockImplementation(() => null);
     mockResolved = {
       kind: 'download',
-      url: 'http://localhost:3000/contentwriter/getCourseTaskContent/t1?auth_token=fake',
+      url: 'http://localhost:3000/getCourseTaskContent/t1?auth_token=fake',
       label: 'File'
     };
     renderViewer(makeTask({ type: 'FILE', contentFileName: 'notes.pdf' }));
@@ -218,7 +218,7 @@ describe('TaskContentViewer', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Open file' }));
 
     expect(openSpy).toHaveBeenCalledWith(
-      'http://localhost:3000/contentwriter/getCourseTaskContent/t1?auth_token=fake',
+      'http://localhost:3000/getCourseTaskContent/t1?auth_token=fake',
       '_blank',
       'noopener'
     );
@@ -228,7 +228,7 @@ describe('TaskContentViewer', () => {
   it('falls back to "Attached file" when a download task has no file name', () => {
     mockResolved = {
       kind: 'download',
-      url: 'http://localhost:3000/contentwriter/getCourseTaskContent/t1?auth_token=fake',
+      url: 'http://localhost:3000/getCourseTaskContent/t1?auth_token=fake',
       label: 'File'
     };
     renderViewer(makeTask({ type: 'FILE', contentFileName: undefined }));

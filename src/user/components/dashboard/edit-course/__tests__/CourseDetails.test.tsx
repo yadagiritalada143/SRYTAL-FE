@@ -28,7 +28,7 @@ jest.mock('@hooks/queries/useUserQueries', () => ({
 
 jest.mock('@services/user-services', () => ({
   getCourseTaskContentUrl: (taskId: string) =>
-    `http://localhost:3000/contentwriter/getCourseTaskContent/${taskId}?auth_token=fake`
+    `http://localhost:3000/getCourseTaskContent/${taskId}?auth_token=fake`
 }));
 
 jest.mock('@hooks/use-app-theme', () => ({
@@ -262,11 +262,11 @@ describe('CourseDetails', () => {
   });
 
   describe('Stats', () => {
-    it('shows module count, content item count and status', () => {
+    it('shows module count, task item count and status', () => {
       renderPage();
       expect(screen.getAllByText('Modules').length).toBeGreaterThanOrEqual(1);
       expect(screen.getByText('2')).toBeInTheDocument();
-      expect(screen.getByText('Content Items')).toBeInTheDocument();
+      expect(screen.getByText('Task Items')).toBeInTheDocument();
       expect(screen.getByText('3')).toBeInTheDocument();
       expect(screen.getByText('Status')).toBeInTheDocument();
     });
@@ -358,7 +358,7 @@ describe('CourseDetails', () => {
       expect(screen.getByText(/No modules yet/)).toBeInTheDocument();
     });
 
-    it('shows "No content in this module yet." for empty modules', () => {
+    it('shows "No tasks in this module yet." for empty modules', () => {
       mockCourse = makeCourse({
         modules: [
           {
@@ -372,7 +372,7 @@ describe('CourseDetails', () => {
       });
       renderPage();
       expect(
-        screen.getByText('No content in this module yet.')
+        screen.getByText('No tasks in this module yet.')
       ).toBeInTheDocument();
     });
   });
@@ -413,9 +413,9 @@ describe('CourseDetails', () => {
       );
     });
 
-    it('opens the Add Task modal with the correct module id when Add Content is clicked', () => {
+    it('opens the Add Task modal with the correct module id when Add Task is clicked', () => {
       renderPage();
-      const addContentButtons = screen.getAllByText('Add Content');
+      const addContentButtons = screen.getAllByText('Add Task');
       fireEvent.click(addContentButtons[0]);
       expect(screen.getByTestId('add-task-modal')).toHaveAttribute(
         'data-opened',
@@ -474,7 +474,7 @@ describe('CourseDetails', () => {
       fireEvent.click(openButton);
 
       expect(openSpy).toHaveBeenCalledWith(
-        'http://localhost:3000/contentwriter/getCourseTaskContent/t1?auth_token=fake',
+        'http://localhost:3000/getCourseTaskContent/t1?auth_token=fake',
         '_blank',
         'noopener'
       );

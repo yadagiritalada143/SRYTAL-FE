@@ -89,10 +89,10 @@ const EditTaskModal = ({
         thumbnail,
         status
       });
-      showSuccessToast('Content updated successfully!');
+      showSuccessToast('Task updated successfully!');
       onClose();
     } catch (error) {
-      showErrorToast(getErrorMessage(error, 'Failed to update content'));
+      showErrorToast(getErrorMessage(error, 'Failed to update task'));
     }
   };
 
@@ -101,7 +101,7 @@ const EditTaskModal = ({
   const isLink = task?.type === 'LINK';
 
   return (
-    <Modal opened={opened} onClose={handleClose} title='Edit Content' centered>
+    <Modal opened={opened} onClose={handleClose} title='Edit Task' centered>
       <Stack gap='md'>
         <TextInput
           label='Title'
@@ -147,7 +147,7 @@ const EditTaskModal = ({
                   />
                 ) : (
                   <CourseThumbnail
-                    name={task?.taskName || 'Content'}
+                    name={task?.taskName || 'Task'}
                     src={task?.thumbnailUrl || task?.thumbnail}
                     size={64}
                     height={48}
@@ -215,7 +215,7 @@ const EditTaskModal = ({
               file/link is shown for reference but cannot be swapped. */}
             <Stack gap={6}>
               <Text size='sm' fw={500}>
-                Attached Content
+                Attached File
               </Text>
               <Paper
                 p='sm'

@@ -30,8 +30,15 @@ jest.mock('@hooks/use-app-theme', () => ({
   useAppTheme: () => ({
     themeConfig: {
       color: '#212529',
+      backgroundColor: '#ffffff',
+      cardBackground: '#ffffff',
       headerBackgroundColor: '#ffffff',
       borderColor: '#dee2e6',
+      accentColor: '#1c7ed6',
+      iconColor: '#228be6',
+      successColor: '#2f9e44',
+      dangerColor: '#c92a2a',
+      mutedTextColor: '#6c757d',
       button: { color: '#495057', textColor: '#ffffff' }
     },
     isDarkTheme: false
@@ -131,9 +138,9 @@ describe('EditTaskModal', () => {
   });
 
   describe('Rendering', () => {
-    it('renders the dialog with Edit Content title', () => {
+    it('renders the dialog with Edit Task title', () => {
       renderModal(makeTask());
-      expect(screen.getByText('Edit Content')).toBeInTheDocument();
+      expect(screen.getByText('Edit Task')).toBeInTheDocument();
     });
 
     it('seeds the title field from the task prop', () => {
@@ -170,7 +177,7 @@ describe('EditTaskModal', () => {
         })
       );
       expect(screen.getByText('Current thumbnail')).toBeInTheDocument();
-      expect(screen.queryByText('Attached Content')).not.toBeInTheDocument();
+      expect(screen.queryByText('Attached File')).not.toBeInTheDocument();
     });
 
     it('renders the status select', () => {
@@ -184,7 +191,7 @@ describe('EditTaskModal', () => {
       );
       // The title is the question, so no Question field is editable.
       expect(screen.queryByLabelText(/Question/)).not.toBeInTheDocument();
-      expect(screen.queryByText('Attached Content')).not.toBeInTheDocument();
+      expect(screen.queryByText('Attached File')).not.toBeInTheDocument();
     });
   });
 
@@ -253,7 +260,7 @@ describe('EditTaskModal', () => {
       });
 
       expect(mockShowSuccessToast).toHaveBeenCalledWith(
-        'Content updated successfully!'
+        'Task updated successfully!'
       );
       expect(mockOnClose).toHaveBeenCalled();
     });
@@ -342,7 +349,7 @@ describe('EditTaskModal', () => {
 
       await waitFor(() => {
         expect(mockShowErrorToast).toHaveBeenCalledWith(
-          'Failed to update content'
+          'Failed to update task'
         );
       });
     });

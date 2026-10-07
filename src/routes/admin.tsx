@@ -111,6 +111,15 @@ const EmployeeCourseProgress = lazy(
   () =>
     import('@admin/components/dashboard/track-progress/EmployeeCourseProgress')
 );
+const WriterDashboard = lazy(
+  () => import('@user/components/dashboard/content-writer/WriterDashboard')
+);
+const AddCourse = lazy(
+  () => import('@user/components/dashboard/add-course/AddCourse')
+);
+const CourseDetails = lazy(
+  () => import('@user/components/dashboard/edit-course/CourseDetails')
+);
 // User domain components reused in Admin
 const Companies = lazy(
   () => import('@user/components/dashboard/companies/companies')
@@ -587,6 +596,13 @@ const AdminRoutes = () => {
                 path='track-progress/:employeeId'
                 element={<EmployeeCourseProgress />}
               />
+              <Route path='content-writer' element={<WriterDashboard />} />
+              <Route
+                path='content-writer/programming-languages'
+                element={<ProgrammingLanguagesTable showBackButton />}
+              />
+              <Route path='add-course' element={<AddCourse />} />
+              <Route path='course/:id' element={<CourseDetails />} />
               <Route path='settings' element={<SettingsLayout />}>
                 <Route index element={<Navigate to='blood-groups' replace />} />
                 <Route path='blood-groups' element={<BloodGroupTable />} />

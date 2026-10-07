@@ -913,7 +913,7 @@ export const updateNavUserAccessByAdmin = async (
 
 export const getAllCoursesByAdmin = async () => {
   try {
-    const response = await apiClient.get('/contentwriter/getAllCourses');
+    const response = await apiClient.get('/getAllCourses');
     return response.data.courses;
   } catch (error) {
     throw error;
@@ -922,7 +922,7 @@ export const getAllCoursesByAdmin = async () => {
 
 export const getCourseByIdAdmin = async (id: string) => {
   try {
-    const response = await apiClient.get(`/contentwriter/getCourseById/${id}`);
+    const response = await apiClient.get(`/getCourseById/${id}`);
     return response.data.coursedata;
   } catch (error) {
     throw error;

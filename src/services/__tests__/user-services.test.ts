@@ -265,7 +265,7 @@ describe('user-services', () => {
 
       expect(mock.post).toHaveBeenCalled();
       const [url, formData, config] = mock.post.mock.calls[0];
-      expect(url).toBe('/contentwriter/addCourse');
+      expect(url).toBe('/addCourse');
       expect(formData.get('courseName')).toBe('Course');
       expect(formData.get('courseDescription')).toBe('Desc');
       expect(formData.get('coursethumbnail')).toBe(file);
@@ -293,7 +293,7 @@ describe('user-services', () => {
       } as any);
 
       const [, formData] = mock.post.mock.calls[0];
-      expect(mock.post.mock.calls[0][0]).toBe('/contentwriter/addCourseModule');
+      expect(mock.post.mock.calls[0][0]).toBe('/addCourseModule');
       expect(formData.get('courseId')).toBe('c1');
       expect(formData.get('moduleName')).toBe('M1');
       expect(formData.get('coursemodulethumbnail')).toBe(thumb);
@@ -363,7 +363,7 @@ describe('user-services', () => {
 
       expect(mock.put).toHaveBeenCalled();
       const [url, formData, config] = mock.put.mock.calls[0];
-      expect(url).toBe('/contentwriter/updatecourse');
+      expect(url).toBe('/updatecourse');
       expect(formData.get('id')).toBe('c1');
       expect(formData.get('courseName')).toBe('New');
       expect(formData.get('status')).toBe('active');
@@ -381,7 +381,7 @@ describe('user-services', () => {
       } as any);
 
       expect(mock.put.mock.calls[0][0]).toBe(
-        '/contentwriter/updatecoursemodule'
+        '/updatecoursemodule'
       );
       const [, formData] = mock.put.mock.calls[0];
       expect(formData.get('id')).toBe('m1');
@@ -398,7 +398,7 @@ describe('user-services', () => {
         status: 'active'
       } as any);
 
-      expect(mock.put.mock.calls[0][0]).toBe('/contentwriter/updatecoursetask');
+      expect(mock.put.mock.calls[0][0]).toBe('/updatecoursetask');
       const [, formData] = mock.put.mock.calls[0];
       expect(formData.get('taskName')).toBe('New');
       expect(formData.has('isCoding')).toBe(false);
@@ -431,7 +431,7 @@ describe('user-services', () => {
       const url = getCourseTaskContentUrl('task1');
 
       expect(url).toBe(
-        'http://localhost:3000/contentwriter/getCourseTaskContent/task1?auth_token=tok123'
+        'http://localhost:3000/getCourseTaskContent/task1?auth_token=tok123'
       );
     });
   });
