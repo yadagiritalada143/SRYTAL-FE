@@ -4,12 +4,13 @@ import {
   Modal,
   Stack,
   TextInput,
-  Textarea,
   FileInput,
   SegmentedControl,
   Group,
   Text,
-  Loader
+  Loader,
+  Paper,
+  ThemeIcon
 } from '@mantine/core';
 import {
   IconUpload,
@@ -22,7 +23,7 @@ import { CommonButton } from '@components/common/button/CommonButton';
 import { useAddCourseTask } from '@hooks/mutations/useUserMutations';
 import { useCustomToast } from '@utils/common/toast';
 import { getErrorMessage } from '@utils/common/get-error-message';
-import { organizationEmployeeUrls } from '@utils/common/constants';
+import { commonUrls } from '@utils/common/constants';
 import { saveTaskPopupState } from './task-popup-state';
 import DescriptionEditor from './DescriptionEditor';
 
@@ -48,7 +49,6 @@ const AddTaskModal = ({
   const [mode, setMode] = useState<ContentMode>('LINK');
   const [link, setLink] = useState('');
   const [file, setFile] = useState<File | null>(null);
-  const [question, setQuestion] = useState('');
   const [thumbnail, setThumbnail] = useState<File | null>(null);
 
   const { mutateAsync: addTask, isPending } = useAddCourseTask(courseId);
@@ -60,7 +60,6 @@ const AddTaskModal = ({
     setMode('LINK');
     setLink('');
     setFile(null);
-    setQuestion('');
     setThumbnail(null);
   };
 
@@ -73,41 +72,35 @@ const AddTaskModal = ({
   const handleManageLanguages = () => {
     saveTaskPopupState({ courseId, moduleId });
     navigate(
-      `${organizationEmployeeUrls(organization)}/dashboard/content-writer/programming-languages`
+      `${commonUrls(organization)}/dashboard/content-writer/programming-languages`
     );
   };
 
   const hasContent =
-    mode === 'LINK'
-      ? !!link.trim()
-      : mode === 'FILE'
-        ? !!file
-        : !!question.trim();
+    mode === 'LINK' ? !!link.trim() : mode === 'FILE' ? !!file : true;
   const isValid = !!taskName.trim() && hasContent;
 
   const handleSubmit = async () => {
     try {
-      const isCoding = mode === 'CODING';
       await addTask({
         moduleId,
         taskName: taskName.trim(),
         taskDescription: taskDescription.trim(),
-        isCoding,
-        question: isCoding ? question.trim() : undefined,
-        link: !isCoding && mode === 'LINK' ? link.trim() : undefined,
-        file: !isCoding && mode === 'FILE' ? file : undefined,
+        type: mode === 'CODING' ? 'CODE' : mode,
+        link: mode === 'LINK' ? link.trim() : undefined,
+        file: mode === 'FILE' ? file : undefined,
         thumbnail
       });
-      showSuccessToast('Content added successfully!');
+      showSuccessToast('Task added successfully!');
       reset();
       onClose();
     } catch (error) {
-      showErrorToast(getErrorMessage(error, 'Failed to add content'));
+      showErrorToast(getErrorMessage(error, 'Failed to add task'));
     }
   };
 
   return (
-    <Modal opened={opened} onClose={handleClose} title='Add Content' centered>
+    <Modal opened={opened} onClose={handleClose} title='Add Task' centered>
       <Stack gap='md'>
         <TextInput
           label='Title'
@@ -123,8 +116,8 @@ const AddTaskModal = ({
         />
 
         <Stack gap='xs'>
-          <Text size='sm' fw={500}>
-            Content Type
+          <Text size='sm' fw={600}>
+            Task Type
           </Text>
           <SegmentedControl
             fullWidth
@@ -167,6 +160,7 @@ const AddTaskModal = ({
             label='Link URL'
             placeholder='https://youtube.com/... or any blog/article URL'
             required
+            leftSection={<IconLink size={16} />}
             value={link}
             onChange={e => setLink(e.target.value)}
             description='YouTube, blog posts, articles, or any public URL'
@@ -184,19 +178,17 @@ const AddTaskModal = ({
           />
         ) : (
           <Stack gap='xs'>
-            <Textarea
-              label='Question'
-              placeholder='Describe the coding problem to solve'
-              required
-              autosize
-              minRows={3}
-              value={question}
-              onChange={e => setQuestion(e.target.value)}
-              description='Every coding task needs a problem statement.'
-            />
-            <Text size='sm' fw={500}>
-              Programming Language
-            </Text>
+            <Paper p='xs' radius='md' withBorder>
+              <Group gap='xs' wrap='nowrap' align='flex-start'>
+                <ThemeIcon size={24} radius='md' variant='light'>
+                  <IconCode size={14} />
+                </ThemeIcon>
+                <Text size='xs' c='dimmed'>
+                  The title above becomes the coding question and the description
+                  becomes the problem statement learners solve.
+                </Text>
+              </Group>
+            </Paper>
             <CommonButton
               variant='light'
               leftSection={<IconCode size={16} />}
@@ -205,10 +197,6 @@ const AddTaskModal = ({
             >
               Add Programming Language
             </CommonButton>
-            <Text size='xs' c='dimmed'>
-              Manage the languages authors can pick from. This popup reopens
-              when you come back so you can finish adding the task.
-            </Text>
           </Stack>
         )}
 
@@ -216,7 +204,7 @@ const AddTaskModal = ({
           label='Thumbnail (optional)'
           placeholder='Upload a thumbnail image'
           accept='image/*'
-          leftSection={<IconUpload size={16} />}
+          leftSection={<IconUpload size={16} color='gray' />}
           value={thumbnail}
           onChange={setThumbnail}
           clearable
@@ -237,7 +225,7 @@ const AddTaskModal = ({
             disabled={!isValid || isPending}
             onClick={handleSubmit}
           >
-            {isPending ? 'Adding...' : 'Add Content'}
+            {isPending ? 'Adding...' : 'Add Task'}
           </CommonButton>
         </Group>
       </Stack>

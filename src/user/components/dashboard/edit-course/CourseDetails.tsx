@@ -43,6 +43,20 @@ import EditTaskModal from './EditTaskModal';
 import CourseThumbnail from '../content-writer/CourseThumbnail';
 import { readTaskPopupState, clearTaskPopupState } from './task-popup-state';
 
+const stripHtml = (html?: string): string =>
+  (html || '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&#160;/gi, ' ')
+    .replace(/\u00A0/g, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/\s+/g, ' ')
+    .trim();
+
 const CourseDetails = () => {
   const { id = '' } = useParams();
   const navigate = useNavigate();
@@ -80,7 +94,7 @@ const CourseDetails = () => {
   // Opening goes through the backend, which redirects to the link or streams
   // the uploaded file inline. Always opened in a fresh browser tab. Coding
   const handleViewContent = (task: Task) => {
-    if (task.isCoding) {
+    if (task.isCoding || task.type === 'CODE') {
       setTaskToView(task);
       return;
     }
@@ -104,7 +118,7 @@ const CourseDetails = () => {
     },
     {
       icon: <IconListCheck size={20} />,
-      label: 'Content Items',
+      label: 'Task Items',
       value: totalTasks,
       color: 'pink'
     },
@@ -290,9 +304,9 @@ const CourseDetails = () => {
                             <Text fw={600} lineClamp={1}>
                               {module.moduleName}
                             </Text>
-                            {module.moduleDescription && (
+                            {stripHtml(module.moduleDescription) && (
                               <Text size='xs' c='dimmed' lineClamp={1}>
-                                {module.moduleDescription}
+                                {stripHtml(module.moduleDescription)}
                               </Text>
                             )}
                           </Stack>
@@ -336,7 +350,7 @@ const CourseDetails = () => {
                         ))
                       ) : (
                         <Text size='sm' c='dimmed'>
-                          No content in this module yet.
+                          No tasks in this module yet.
                         </Text>
                       )}
                       <CommonButton
@@ -346,7 +360,7 @@ const CourseDetails = () => {
                         onClick={() => setTaskModalModuleId(module._id)}
                         style={{ width: 'fit-content' }}
                       >
-                        Add Content
+                        Add Task
                       </CommonButton>
                     </Stack>
                   </Accordion.Panel>
@@ -400,7 +414,9 @@ const CourseDetails = () => {
             style={{ borderColor: currentThemeConfig.borderColor }}
           >
             <Text size='sm' style={{ whiteSpace: 'pre-wrap' }}>
-              {taskToView?.question || 'No question provided.'}
+              {taskToView?.question ||
+                taskToView?.taskName ||
+                'No question provided.'}
             </Text>
           </Paper>
           <Group justify='flex-end'>
@@ -448,9 +464,9 @@ const TaskRow = ({ task, onView, onEdit, borderColor }: TaskRowProps) => {
                 </Badge>
               )}
             </Group>
-            {task.taskDescription && (
+            {stripHtml(task.taskDescription) && (
               <Text size='xs' c='dimmed' lineClamp={1}>
-                {task.taskDescription}
+                {stripHtml(task.taskDescription)}
               </Text>
             )}
           </Stack>
@@ -464,7 +480,7 @@ const TaskRow = ({ task, onView, onEdit, borderColor }: TaskRowProps) => {
           >
             Open
           </CommonButton>
-          <Tooltip label='Edit content' withArrow>
+          <Tooltip label='Edit task' withArrow>
             <ActionIcon
               variant='subtle'
               color='gray'

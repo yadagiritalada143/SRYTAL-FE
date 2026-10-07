@@ -120,7 +120,7 @@ describe('useUserQueries', () => {
     it('does not fetch when enabled is false', async () => {
       const { wrapper } = createWrapper();
 
-      const { result } = renderHook(() => useGetCompanyById('co1', false), {
+      renderHook(() => useGetCompanyById('co1', false), {
         wrapper
       });
 
@@ -132,7 +132,7 @@ describe('useUserQueries', () => {
     it('does not fetch when the id is an empty string', async () => {
       const { wrapper } = createWrapper();
 
-      const { result } = renderHook(() => useGetCompanyById(''), { wrapper });
+      renderHook(() => useGetCompanyById(''), { wrapper });
 
       expect(
         userService().getCompanyDetailsByIdByRecruiter
@@ -174,7 +174,7 @@ describe('useUserQueries', () => {
     it('does not fetch when enabled is false', async () => {
       const { wrapper } = createWrapper();
 
-      const { result } = renderHook(
+      renderHook(
         () => useGetPoolCandidateById('c1', false),
         { wrapper }
       );
@@ -185,7 +185,7 @@ describe('useUserQueries', () => {
     it('does not fetch when the id is an empty string', async () => {
       const { wrapper } = createWrapper();
 
-      const { result } = renderHook(() => useGetPoolCandidateById(''), {
+      renderHook(() => useGetPoolCandidateById(''), {
         wrapper
       });
 
@@ -254,7 +254,7 @@ describe('useUserQueries', () => {
     it('does not fetch when enabled is false', async () => {
       const { wrapper } = createWrapper();
 
-      const { result } = renderHook(() => useGetCourseById('crs1', false), {
+      renderHook(() => useGetCourseById('crs1', false), {
         wrapper
       });
 
@@ -264,7 +264,7 @@ describe('useUserQueries', () => {
     it('does not fetch when the id is an empty string', async () => {
       const { wrapper } = createWrapper();
 
-      const { result } = renderHook(() => useGetCourseById(''), { wrapper });
+      renderHook(() => useGetCourseById(''), { wrapper });
 
       expect(userService().getCourseByIdContentWriter).not.toHaveBeenCalled();
     });
@@ -314,7 +314,7 @@ describe('useUserQueries', () => {
     it('does not fetch when enabled is false', async () => {
       const { wrapper } = createWrapper();
 
-      const { result } = renderHook(
+      renderHook(
         () => useGetMyAssignedCourse('ca1', false),
         { wrapper }
       );
@@ -325,7 +325,7 @@ describe('useUserQueries', () => {
     it('does not fetch when the id is an empty string', async () => {
       const { wrapper } = createWrapper();
 
-      const { result } = renderHook(() => useGetMyAssignedCourse(''), {
+      renderHook(() => useGetMyAssignedCourse(''), {
         wrapper
       });
 
@@ -354,7 +354,7 @@ describe('useUserQueries', () => {
     it('does not fetch when enabled is false', async () => {
       const { wrapper } = createWrapper();
 
-      const { result } = renderHook(
+      renderHook(
         () => useGetUserOpenRouterKey('u1', false),
         { wrapper }
       );
@@ -391,36 +391,7 @@ describe('useUserQueries', () => {
   describe('useGetCodingQuestion', () => {
     it('fetches the coding question for the task and language', async () => {
       userService().getCodingQuestion.mockResolvedValue({
-        questionId: 't1',
-        language: 'Python',
-        starterCode: 'def solve():'
-      });
-      const { wrapper } = createWrapper();
-
-      const { result } = renderHook(
-        () => useGetCodingQuestion('t1', 'Python'),
-        {
-          wrapper
-        }
-      );
-
-      await waitFor(() =>
-        expect(result.current.data).toEqual({
-          questionId: 't1',
-          language: 'Python',
-          starterCode: 'def solve():'
-        })
-      );
-      expect(userService().getCodingQuestion).toHaveBeenCalledWith(
-        't1',
-        'Python',
-        ''
-      );
-    });
-
-    it('passes the languageId through to the service and query key', async () => {
-      userService().getCodingQuestion.mockResolvedValue({
-        questionId: 't1',
+        questionId: 'q1',
         language: 'python',
         languageId: 'lang-123',
         starterCode: 'def solve():'
@@ -428,7 +399,7 @@ describe('useUserQueries', () => {
       const { wrapper } = createWrapper();
 
       const { result } = renderHook(
-        () => useGetCodingQuestion('t1', 'Python', 'lang-123'),
+        () => useGetCodingQuestion('t1', 'q1', 'lang-123'),
         {
           wrapper
         }
@@ -436,7 +407,7 @@ describe('useUserQueries', () => {
 
       await waitFor(() =>
         expect(result.current.data).toEqual({
-          questionId: 't1',
+          questionId: 'q1',
           language: 'python',
           languageId: 'lang-123',
           starterCode: 'def solve():'
@@ -444,17 +415,38 @@ describe('useUserQueries', () => {
       );
       expect(userService().getCodingQuestion).toHaveBeenCalledWith(
         't1',
-        'Python',
+        'q1',
         'lang-123'
       );
     });
 
-    it('defaults to the empty language and stays disabled without a question id', async () => {
-      const { wrapper } = createWrapper();
+    it('drives the query key off taskId, questionId and languageId', async () => {
+      const { queryClient, wrapper } = createWrapper();
+      userService().getCodingQuestion.mockResolvedValue({
+        questionId: 'q1',
+        language: 'python',
+        languageId: 'lang-123',
+        starterCode: 'def solve():'
+      });
 
-      const { result } = renderHook(() => useGetCodingQuestion(''), {
+      renderHook(() => useGetCodingQuestion('t1', 'q1', 'lang-123'), {
         wrapper
       });
+
+      await waitFor(() =>
+        expect(
+          queryClient.getQueryState(['codingQuestion', 't1', 'q1', 'lang-123'])
+        ).toBeDefined()
+      );
+    });
+
+    it('stays disabled until a task and a language are available', async () => {
+      const { wrapper } = createWrapper();
+
+      const { result } = renderHook(
+        () => useGetCodingQuestion('', '', ''),
+        { wrapper }
+      );
 
       expect(userService().getCodingQuestion).not.toHaveBeenCalled();
       expect(result.current.data).toBeUndefined();

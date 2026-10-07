@@ -32,6 +32,20 @@ import PremiumLoader from '@components/common/loaders/PremiumLoader';
 import DataView from '@components/common/loaders/DataView';
 import { Course, Module, Task } from '@interfaces/contentwriter';
 
+const stripHtml = (html?: string): string =>
+  (html || '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&#160;/gi, ' ')
+    .replace(/\u00A0/g, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/\s+/g, ' ')
+    .trim();
+
 const CourseDetail = () => {
   const { id = '' } = useParams();
   const navigate = useNavigate();
@@ -70,7 +84,7 @@ const CourseDetail = () => {
     },
     {
       icon: <IconListCheck size={20} />,
-      label: 'Content Items',
+      label: 'Task Items',
       value: totalTasks,
       color: 'pink'
     },
@@ -210,9 +224,9 @@ const CourseDetail = () => {
                         <Text fw={600} lineClamp={1}>
                           {module.moduleName}
                         </Text>
-                        {module.moduleDescription && (
+                        {stripHtml(module.moduleDescription) && (
                           <Text size='xs' c='dimmed' lineClamp={1}>
-                            {module.moduleDescription}
+                            {stripHtml(module.moduleDescription)}
                           </Text>
                         )}
                       </Stack>
@@ -276,9 +290,9 @@ const CourseDetail = () => {
                                       </Badge>
                                     )}
                                   </Group>
-                                  {task.taskDescription && (
+                                  {stripHtml(task.taskDescription) && (
                                     <Text size='xs' c='dimmed' lineClamp={1}>
-                                      {task.taskDescription}
+                                      {stripHtml(task.taskDescription)}
                                     </Text>
                                   )}
                                 </Stack>

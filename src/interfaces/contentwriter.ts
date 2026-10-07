@@ -1,4 +1,4 @@
-export type TaskContentType = 'FILE' | 'LINK';
+export type TaskContentType = 'FILE' | 'LINK' | 'CODE';
 
 // Mirrors the backend `validStatusValues` whitelist. The update endpoints
 // reject anything else with a 400.
@@ -71,20 +71,15 @@ export interface UpdateTaskPayload {
   // `thumbnailFile`). When omitted, the stored thumbnail is kept as-is.
   thumbnail?: File | null;
   status: CourseStatus;
-  isCoding?: boolean;
-  question?: string;
 }
 
 export interface AddTaskPayload {
   moduleId: string;
   taskName: string;
   taskDescription: string;
-  // Provide exactly one of `file` or `link`, or `isCoding` + `question` for a
-  // coding question.
+  type?: TaskContentType;
   file?: File | null;
   link?: string;
-  isCoding?: boolean;
-  question?: string;
   // Optional task thumbnail image (multer field `thumbnailFile`).
   thumbnail?: File | null;
 }

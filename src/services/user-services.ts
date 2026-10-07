@@ -175,7 +175,7 @@ export const getUserDetails = async () => {
 export const getAllCoursesByUser = async () => {
   // The apiClient interceptor already attaches the auth_token header.
   try {
-    const response = await apiClient.get('/contentwriter/getAllCourses');
+    const response = await apiClient.get('/getAllCourses');
     return response.data.courses;
   } catch (error) {
     throw error;
@@ -184,7 +184,7 @@ export const getAllCoursesByUser = async () => {
 
 export const getCourseByIdContentWriter = async (id: string) => {
   try {
-    const response = await apiClient.get(`/contentwriter/getCourseById/${id}`);
+    const response = await apiClient.get(`/getCourseById/${id}`);
     // Backend responds with { success, coursedata }.
     return response.data.coursedata;
   } catch (error) {
@@ -205,7 +205,7 @@ export const addCourseContentWriter = async (
       formData.append('coursethumbnail', image);
     }
     const response = await apiClient.post(
-      '/contentwriter/addCourse',
+      '/addCourse',
       formData,
       { headers: { 'Content-Type': 'multipart/form-data' } }
     );
@@ -225,7 +225,7 @@ export const addCourseModuleContentWriter = async (data: AddModulePayload) => {
       formData.append('coursemodulethumbnail', data.thumbnail);
     }
     const response = await apiClient.post(
-      '/contentwriter/addCourseModule',
+      '/addCourseModule',
       formData,
       { headers: { 'Content-Type': 'multipart/form-data' } }
     );
@@ -241,24 +241,18 @@ export const addCourseTaskContentWriter = async (data: AddTaskPayload) => {
     formData.append('moduleId', data.moduleId);
     formData.append('taskName', data.taskName);
     formData.append('taskDescription', data.taskDescription);
-    if (data.isCoding) {
-      formData.append('isCoding', 'true');
-      if (data.question) {
-        formData.append('question', data.question);
-      }
-    } else {
-      // A task carries either an uploaded file or an external link.
-      if (data.file) {
-        formData.append('taskFile', data.file);
-      } else if (data.link) {
-        formData.append('link', data.link);
-      }
+    formData.append('type', data.type || 'LINK');
+    // A task carries either an uploaded file or an external link.
+    if (data.file) {
+      formData.append('taskFile', data.file);
+    } else if (data.link) {
+      formData.append('link', data.link);
     }
     if (data.thumbnail) {
       formData.append('thumbnailFile', data.thumbnail);
     }
     const response = await apiClient.post(
-      '/contentwriter/addCourseTask',
+      '/addcoursetask',
       formData,
       { headers: { 'Content-Type': 'multipart/form-data' } }
     );
@@ -282,7 +276,7 @@ export const updateCourseContentWriter = async (data: UpdateCoursePayload) => {
       formData.append('thumbnail', data.thumbnail);
     }
     const response = await apiClient.put(
-      '/contentwriter/updatecourse',
+      '/updatecourse',
       formData,
       { headers: { 'Content-Type': 'multipart/form-data' } }
     );
@@ -307,7 +301,7 @@ export const updateCourseModuleContentWriter = async (
       formData.append('thumbnail', data.thumbnail);
     }
     const response = await apiClient.put(
-      '/contentwriter/updatecoursemodule',
+      '/updatecoursemodule',
       formData,
       { headers: { 'Content-Type': 'multipart/form-data' } }
     );
@@ -329,17 +323,11 @@ export const updateCourseTaskContentWriter = async (
     formData.append('taskName', data.taskName);
     formData.append('taskDescription', data.taskDescription);
     formData.append('status', data.status);
-    if (data.isCoding !== undefined) {
-      formData.append('isCoding', data.isCoding ? 'true' : 'false');
-    }
-    if (data.question !== undefined) {
-      formData.append('question', data.question);
-    }
     if (data.thumbnail) {
       formData.append('thumbnailFile', data.thumbnail);
     }
     const response = await apiClient.put(
-      '/contentwriter/updatecoursetask',
+      '/updatecoursetask',
       formData,
       { headers: { 'Content-Type': 'multipart/form-data' } }
     );
@@ -357,7 +345,7 @@ export const updateCourseTaskContentWriter = async (
 export const getCourseTaskContentUrl = (taskId: string) => {
   const token = localStorage.getItem('token');
   const base = (BASE_URL || '').replace(/\/+$/, '');
-  return `${base}/contentwriter/getCourseTaskContent/${taskId}?auth_token=${token}`;
+  return `${base}/getCourseTaskContent/${taskId}?auth_token=${token}`;
 };
 
 // ── My Courses (assigned to the logged-in employee) ──────────────────────────
@@ -396,16 +384,15 @@ export const updateMyTaskProgress = async (
  * assigned employees may fetch it, so the payload never leaks authoring data.
  */
 export const getCodingQuestion = async (
+  taskId: string,
   questionId: string,
-  language = '',
-  languageId = ''
+  languageId: string
 ): Promise<CodingQuestion> => {
-  const params = language || languageId ? { language, languageId } : undefined;
-  const response = params
-    ? await apiClient.get(`/getquestion/${questionId}`, { params })
-    : await apiClient.get(`/getquestion/${questionId}`);
-  // Backend responds with the question data at the top level.
-  return response.data;
+  const response = await apiClient.get(
+    `/getquestion/${taskId}/${questionId}/${languageId}`
+  );
+  // Backend responds with { success, message, data }.
+  return response.data.data;
 };
 /**
  * Runs the learner's code against the question's test cases (trial run).

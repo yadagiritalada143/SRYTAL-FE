@@ -31,7 +31,7 @@ import {
 } from '@tabler/icons-react';
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { organizationEmployeeUrls } from '@utils/common/constants';
+import { commonUrls } from '@utils/common/constants';
 import { useAppTheme } from '@hooks/use-app-theme';
 import { useGetAllCoursesByUser } from '@hooks/queries/useUserQueries';
 import { useUpdateCourse } from '@hooks/mutations/useUserMutations';
@@ -143,13 +143,13 @@ const WriterDashboard = () => {
 
   const handleAddCourse = () => {
     navigate(
-      `${organizationEmployeeUrls(organizationConfig.organization_name)}/dashboard/add-course`
+      `${commonUrls(organizationConfig.organization_name)}/dashboard/add-course`
     );
   };
 
   const goToCourse = (courseId: string) =>
     navigate(
-      `${organizationEmployeeUrls(organizationConfig.organization_name)}/dashboard/course/${courseId}`
+      `${commonUrls(organizationConfig.organization_name)}/dashboard/course/${courseId}`
     );
 
   const statCards = [

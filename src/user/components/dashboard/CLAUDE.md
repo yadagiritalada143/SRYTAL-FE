@@ -63,7 +63,7 @@ file or link cannot be swapped from the edit modal.
 ## How "view content" works
 
 `getCourseTaskContentUrl(taskId)` builds
-`${BASE_URL}/contentwriter/getCourseTaskContent/:id?auth_token=<token>` and we
+`${BASE_URL}/getCourseTaskContent/:id?auth_token=<token>` and we
 `window.open(...)` it. Everything is proxied through the backend — the frontend
 never holds the raw file/link; the backend decides whether to redirect (links)
 or stream (files). The token is in the query string because a new tab cannot
@@ -123,7 +123,7 @@ Data layer:
 | `PUT /updateMyTaskProgress` | JSON `{ courseAssignmentId, taskId, isCompleted }`. Upserts the progress row and returns the recomputed `{ courseStatus, progress }`. |
 
 Task content still goes through the content-writer proxy:
-`GET /contentwriter/getCourseTaskContent/:id` (see `getCourseTaskContentUrl`).
+`GET /getCourseTaskContent/:id` (see `getCourseTaskContentUrl`).
 
 ## Rules that matter here
 

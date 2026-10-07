@@ -14,10 +14,24 @@ import {
   IconTrash
 } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom';
-import { organizationEmployeeUrls } from '@utils/common/constants';
+import { commonUrls } from '@utils/common/constants';
 import { useAppTheme } from '@hooks/use-app-theme';
 import { Course } from '@interfaces/contentwriter';
 import CourseThumbnail from './CourseThumbnail';
+
+const stripHtml = (html?: string): string =>
+  (html || '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&#160;/gi, ' ')
+    .replace(/\u00A0/g, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/\s+/g, ' ')
+    .trim();
 
 interface CourseCardProps {
   course: Course;
@@ -37,14 +51,12 @@ const CourseCard = ({
 
   const goToCourse = () =>
     navigate(
-      `${organizationEmployeeUrls(organizationConfig.organization_name)}/dashboard/course/${course._id}`
+      `${commonUrls(organizationConfig.organization_name)}/dashboard/course/${course._id}`
     );
 
   const stop = (e: React.MouseEvent) => e.stopPropagation();
   const hasMenu = onEdit || onArchive || onDelete;
-  const description = course.courseDescription
-    ? course.courseDescription.replace(/<[^>]*>/g, '').trim()
-    : '';
+  const description = stripHtml(course.courseDescription);
 
   return (
     <Card

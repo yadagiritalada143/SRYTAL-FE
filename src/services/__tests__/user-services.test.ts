@@ -265,7 +265,7 @@ describe('user-services', () => {
 
       expect(mock.post).toHaveBeenCalled();
       const [url, formData, config] = mock.post.mock.calls[0];
-      expect(url).toBe('/contentwriter/addCourse');
+      expect(url).toBe('/addCourse');
       expect(formData.get('courseName')).toBe('Course');
       expect(formData.get('courseDescription')).toBe('Desc');
       expect(formData.get('coursethumbnail')).toBe(file);
@@ -293,7 +293,7 @@ describe('user-services', () => {
       } as any);
 
       const [, formData] = mock.post.mock.calls[0];
-      expect(mock.post.mock.calls[0][0]).toBe('/contentwriter/addCourseModule');
+      expect(mock.post.mock.calls[0][0]).toBe('/addCourseModule');
       expect(formData.get('courseId')).toBe('c1');
       expect(formData.get('moduleName')).toBe('M1');
       expect(formData.get('coursemodulethumbnail')).toBe(thumb);
@@ -332,23 +332,21 @@ describe('user-services', () => {
       expect(formData.has('taskFile')).toBe(false);
     });
 
-    it('addCourseTaskContentWriter flags coding tasks and sends the question', async () => {
+    it('addCourseTaskContentWriter sends the type for coding tasks only', async () => {
       mock.post.mockResolvedValue({ data: { ok: 1 } });
 
       await addCourseTaskContentWriter({
         moduleId: 'm1',
         taskName: 'FizzBuzz',
         taskDescription: 'desc',
-        isCoding: true,
-        question: 'Return fizz for multiples of three.'
+        type: 'CODE'
       } as any);
 
       const [, formData] = mock.post.mock.calls[0];
       expect(formData.get('moduleId')).toBe('m1');
-      expect(formData.get('isCoding')).toBe('true');
-      expect(formData.get('question')).toBe(
-        'Return fizz for multiples of three.'
-      );
+      expect(formData.get('type')).toBe('CODE');
+      expect(formData.has('isCoding')).toBe(false);
+      expect(formData.has('question')).toBe(false);
       expect(formData.has('link')).toBe(false);
       expect(formData.has('taskFile')).toBe(false);
     });
@@ -365,7 +363,7 @@ describe('user-services', () => {
 
       expect(mock.put).toHaveBeenCalled();
       const [url, formData, config] = mock.put.mock.calls[0];
-      expect(url).toBe('/contentwriter/updatecourse');
+      expect(url).toBe('/updatecourse');
       expect(formData.get('id')).toBe('c1');
       expect(formData.get('courseName')).toBe('New');
       expect(formData.get('status')).toBe('active');
@@ -383,7 +381,7 @@ describe('user-services', () => {
       } as any);
 
       expect(mock.put.mock.calls[0][0]).toBe(
-        '/contentwriter/updatecoursemodule'
+        '/updatecoursemodule'
       );
       const [, formData] = mock.put.mock.calls[0];
       expect(formData.get('id')).toBe('m1');
@@ -400,14 +398,14 @@ describe('user-services', () => {
         status: 'active'
       } as any);
 
-      expect(mock.put.mock.calls[0][0]).toBe('/contentwriter/updatecoursetask');
+      expect(mock.put.mock.calls[0][0]).toBe('/updatecoursetask');
       const [, formData] = mock.put.mock.calls[0];
       expect(formData.get('taskName')).toBe('New');
       expect(formData.has('isCoding')).toBe(false);
       expect(formData.has('question')).toBe(false);
     });
 
-    it('updateCourseTaskContentWriter sends coding question when flagged', async () => {
+    it('updateCourseTaskContentWriter never sends question or isCoding', async () => {
       mock.put.mockResolvedValue({ data: { ok: 1 } });
 
       await updateCourseTaskContentWriter({
@@ -420,10 +418,9 @@ describe('user-services', () => {
       } as any);
 
       const [, formData] = mock.put.mock.calls[0];
-      expect(formData.get('isCoding')).toBe('true');
-      expect(formData.get('question')).toBe(
-        'Return fizz for multiples of three.'
-      );
+      expect(formData.get('taskName')).toBe('FizzBuzz');
+      expect(formData.has('isCoding')).toBe(false);
+      expect(formData.has('question')).toBe(false);
     });
   });
 
@@ -434,7 +431,7 @@ describe('user-services', () => {
       const url = getCourseTaskContentUrl('task1');
 
       expect(url).toBe(
-        'http://localhost:3000/contentwriter/getCourseTaskContent/task1?auth_token=tok123'
+        'http://localhost:3000/getCourseTaskContent/task1?auth_token=tok123'
       );
     });
   });
@@ -468,45 +465,55 @@ describe('user-services', () => {
   });
 
   describe('coding question services', () => {
-    it('getCodingQuestion fetches the default question', async () => {
-      mock.get.mockResolvedValue({
-        data: { questionId: 't1', starterCode: 'print(1)' }
-      });
-
-      expect(await getCodingQuestion('t1')).toEqual({
-        questionId: 't1',
-        starterCode: 'print(1)'
-      });
-      expect(mock.get).toHaveBeenCalledWith('/getquestion/t1');
-    });
-
-    it('getCodingQuestion passes language/languageId as query params', async () => {
-      mock.get.mockResolvedValue({
-        data: { questionId: 't1', starterCode: 'print(1)' }
-      });
-
-      await getCodingQuestion('t1', 'Python', 'lang-123');
-
-      expect(mock.get).toHaveBeenCalledWith('/getquestion/t1', {
-        params: { language: 'Python', languageId: 'lang-123' }
-      });
-    });
-
-    it('getCodingQuestion returns the top-level question data', async () => {
+    it('getCodingQuestion fetches via the 3-param route', async () => {
       mock.get.mockResolvedValue({
         data: {
-          questionId: 't1',
-          allowedLanguages: ['Python'],
-          language: 'python',
-          languageId: 'lang-123',
-          starterCode: 'print(1)',
-          lastSubmittedCode: null
+          success: true,
+          message: 'ok',
+          data: { questionId: 'q1', starterCode: 'print(1)' }
         }
       });
 
-      expect(await getCodingQuestion('t1', 'Python')).toEqual({
-        questionId: 't1',
-        allowedLanguages: ['Python'],
+      expect(await getCodingQuestion('t1', 'q1', 'lang-123')).toEqual({
+        questionId: 'q1',
+        starterCode: 'print(1)'
+      });
+      expect(mock.get).toHaveBeenCalledWith('/getquestion/t1/q1/lang-123');
+    });
+
+    it('getCodingQuestion unwraps the response envelope', async () => {
+      mock.get.mockResolvedValue({
+        data: {
+          success: true,
+          message: 'ok',
+          data: {
+            taskId: 't1',
+            questionId: 'q1',
+            allowedLanguages: [
+              {
+                languageId: 'lang-123',
+                languageName: 'Python',
+                canonicalKey: 'python'
+              }
+            ],
+            language: 'python',
+            languageId: 'lang-123',
+            starterCode: 'print(1)',
+            lastSubmittedCode: null
+          }
+        }
+      });
+
+      expect(await getCodingQuestion('t1', 'q1', 'lang-123')).toEqual({
+        taskId: 't1',
+        questionId: 'q1',
+        allowedLanguages: [
+          {
+            languageId: 'lang-123',
+            languageName: 'Python',
+            canonicalKey: 'python'
+          }
+        ],
         language: 'python',
         languageId: 'lang-123',
         starterCode: 'print(1)',
