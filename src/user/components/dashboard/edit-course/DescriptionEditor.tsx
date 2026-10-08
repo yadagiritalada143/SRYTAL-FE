@@ -20,7 +20,7 @@ interface DescriptionEditorProps {
    * Change this to push `value` back into the editor — used when a modal
    * reopens on a different record and the editor instance is reused.
    */
-  resetKey?: string;
+  resetKey?: string | number;
   required?: boolean;
 }
 

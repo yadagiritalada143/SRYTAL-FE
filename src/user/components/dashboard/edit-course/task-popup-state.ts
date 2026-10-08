@@ -23,3 +23,26 @@ export const readTaskPopupState = (): TaskPopupState | null => {
 export const clearTaskPopupState = (): void => {
   sessionStorage.removeItem(REOPEN_TASK_POPUP_KEY);
 };
+
+export type AddTaskContentMode = 'LINK' | 'FILE' | 'CODING';
+
+export interface AddTaskDraft extends TaskPopupState {
+  taskName: string;
+  taskDescription: string;
+  mode: AddTaskContentMode;
+  link: string;
+  file: File | null;
+  thumbnail: File | null;
+}
+
+let taskDraft: AddTaskDraft | null = null;
+
+export const saveTaskDraft = (draft: AddTaskDraft): void => {
+  taskDraft = draft;
+};
+
+export const readTaskDraft = (): AddTaskDraft | null => taskDraft;
+
+export const clearTaskDraft = (): void => {
+  taskDraft = null;
+};

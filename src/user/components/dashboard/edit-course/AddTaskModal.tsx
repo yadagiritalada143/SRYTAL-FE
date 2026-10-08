@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
+  Box,
   Modal,
   Stack,
   TextInput,
@@ -24,7 +25,13 @@ import { useAddCourseTask } from '@hooks/mutations/useUserMutations';
 import { useCustomToast } from '@utils/common/toast';
 import { getErrorMessage } from '@utils/common/get-error-message';
 import { commonUrls } from '@utils/common/constants';
-import { saveTaskPopupState } from './task-popup-state';
+import {
+  saveTaskPopupState,
+  saveTaskDraft,
+  readTaskDraft,
+  clearTaskDraft,
+  AddTaskContentMode
+} from './task-popup-state';
 import DescriptionEditor from './DescriptionEditor';
 
 interface AddTaskModalProps {
@@ -34,7 +41,33 @@ interface AddTaskModalProps {
   courseId: string;
 }
 
-type ContentMode = 'LINK' | 'FILE' | 'CODING';
+type ContentMode = AddTaskContentMode;
+type TaskField = 'taskName' | 'link' | 'file' | 'taskDescription' | 'thumbnail';
+
+const VALIDATION_MESSAGES = {
+  taskName: 'Task name is required.',
+  link: 'A valid HTTP or HTTPS link is required for LINK tasks.',
+  file: 'A file is required for FILE tasks.',
+  taskDescription: 'Task description is required for coding tasks.',
+  thumbnail: 'Thumbnail must be a JPG, PNG, or WEBP image.'
+} as const;
+
+const THUMBNAIL_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+
+const isHttpUrl = (value: string): boolean => {
+  try {
+    const url = new URL(value.trim());
+    return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch {
+    return false;
+  }
+};
+
+const hasVisibleText = (html: string): boolean =>
+  html
+    .replace(/<[^>]*>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .trim().length > 0;
 
 const AddTaskModal = ({
   opened,
@@ -50,17 +83,51 @@ const AddTaskModal = ({
   const [link, setLink] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [thumbnail, setThumbnail] = useState<File | null>(null);
+  const [touched, setTouched] = useState<Record<TaskField, boolean>>({
+    taskName: false,
+    link: false,
+    file: false,
+    taskDescription: false,
+    thumbnail: false
+  });
+  const [draftResetKey, setDraftResetKey] = useState(0);
 
   const { mutateAsync: addTask, isPending } = useAddCourseTask(courseId);
   const { showSuccessToast, showErrorToast } = useCustomToast();
 
+  const touch = (field: TaskField) =>
+    setTouched(prev => ({ ...prev, [field]: true }));
+
+  useEffect(() => {
+    const draft = readTaskDraft();
+    if (!draft || draft.courseId !== courseId || draft.moduleId !== moduleId) {
+      return;
+    }
+    clearTaskDraft();
+    setTaskName(draft.taskName);
+    setTaskDescription(draft.taskDescription);
+    setMode(draft.mode);
+    setLink(draft.link);
+    setFile(draft.file);
+    setThumbnail(draft.thumbnail);
+    setDraftResetKey(key => key + 1);
+  }, [courseId, moduleId]);
+
   const reset = () => {
+    clearTaskDraft();
     setTaskName('');
     setTaskDescription('');
     setMode('LINK');
     setLink('');
     setFile(null);
     setThumbnail(null);
+    setTouched({
+      taskName: false,
+      link: false,
+      file: false,
+      taskDescription: false,
+      thumbnail: false
+    });
   };
 
   const handleClose = () => {
@@ -70,19 +137,44 @@ const AddTaskModal = ({
   };
 
   const handleManageLanguages = () => {
+    saveTaskDraft({
+      courseId,
+      moduleId,
+      taskName,
+      taskDescription,
+      mode,
+      link,
+      file,
+      thumbnail
+    });
     saveTaskPopupState({ courseId, moduleId });
     navigate(
       `${commonUrls(organization)}/dashboard/content-writer/programming-languages`
     );
   };
 
-  const hasContent =
-    mode === 'LINK' ? !!link.trim() : mode === 'FILE' ? !!file : true;
-  const isValid = !!taskName.trim() && hasContent;
+  const errors: Partial<Record<TaskField, string>> = {};
+  if (!taskName.trim()) errors.taskName = VALIDATION_MESSAGES.taskName;
+  if (mode === 'LINK') {
+    if (!link.trim() || !isHttpUrl(link))
+      errors.link = VALIDATION_MESSAGES.link;
+  } else if (mode === 'FILE') {
+    if (!file) errors.file = VALIDATION_MESSAGES.file;
+  } else if (!hasVisibleText(taskDescription)) {
+    errors.taskDescription = VALIDATION_MESSAGES.taskDescription;
+  }
+  if (thumbnail && !THUMBNAIL_MIME_TYPES.includes(thumbnail.type)) {
+    errors.thumbnail = VALIDATION_MESSAGES.thumbnail;
+  }
+
+  const isValid = Object.keys(errors).length === 0;
+  const fieldError = (field: TaskField) =>
+    touched[field] ? errors[field] : undefined;
 
   const handleSubmit = async () => {
+    if (!isValid) return;
     try {
-      await addTask({
+      const response = await addTask({
         moduleId,
         taskName: taskName.trim(),
         taskDescription: taskDescription.trim(),
@@ -91,7 +183,7 @@ const AddTaskModal = ({
         file: mode === 'FILE' ? file : undefined,
         thumbnail
       });
-      showSuccessToast('Task added successfully!');
+      showSuccessToast(response?.message || 'Task added successfully!');
       reset();
       onClose();
     } catch (error) {
@@ -108,12 +200,23 @@ const AddTaskModal = ({
           required
           value={taskName}
           onChange={e => setTaskName(e.target.value)}
+          onBlur={() => touch('taskName')}
+          error={fieldError('taskName')}
         />
-        <DescriptionEditor
-          label='Description'
-          value={taskDescription}
-          onChange={setTaskDescription}
-        />
+        <Box onBlur={() => touch('taskDescription')}>
+          <DescriptionEditor
+            label='Description'
+            value={taskDescription}
+            onChange={setTaskDescription}
+            resetKey={draftResetKey}
+            required={mode === 'CODING'}
+          />
+        </Box>
+        {mode === 'CODING' && fieldError('taskDescription') && (
+          <Text size='xs' c='red' mt={-10}>
+            {errors.taskDescription}
+          </Text>
+        )}
 
         <Stack gap='xs'>
           <Text size='sm' fw={600}>
@@ -163,6 +266,8 @@ const AddTaskModal = ({
             leftSection={<IconLink size={16} />}
             value={link}
             onChange={e => setLink(e.target.value)}
+            onBlur={() => touch('link')}
+            error={fieldError('link')}
             description='YouTube, blog posts, articles, or any public URL'
           />
         ) : mode === 'FILE' ? (
@@ -172,6 +277,8 @@ const AddTaskModal = ({
             leftSection={<IconUpload size={16} />}
             value={file}
             onChange={setFile}
+            onBlur={() => touch('file')}
+            error={fieldError('file')}
             required
             clearable
             description='Any file type is supported'
@@ -184,8 +291,8 @@ const AddTaskModal = ({
                   <IconCode size={14} />
                 </ThemeIcon>
                 <Text size='xs' c='dimmed'>
-                  The title above becomes the coding question and the description
-                  becomes the problem statement learners solve.
+                  The title above becomes the coding question and the
+                  description becomes the problem statement learners solve.
                 </Text>
               </Group>
             </Paper>
@@ -203,10 +310,13 @@ const AddTaskModal = ({
         <FileInput
           label='Thumbnail (optional)'
           placeholder='Upload a thumbnail image'
-          accept='image/*'
+          accept='image/jpeg,image/png,image/webp'
           leftSection={<IconUpload size={16} color='gray' />}
           value={thumbnail}
           onChange={setThumbnail}
+          onBlur={() => touch('thumbnail')}
+          error={fieldError('thumbnail')}
+          description='JPG, PNG, or WEBP'
           clearable
         />
 

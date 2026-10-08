@@ -243,22 +243,31 @@ const EmployeeRoutes = () => {
           })
         },
         Button: {
-          styles: () => ({
-            root: {
-              backgroundColor: currentThemeConfig.button.color,
-              color: currentThemeConfig.button.textColor,
-              borderColor: currentThemeConfig.borderColor,
-              transition:
-                'background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out',
-              '&:hover': {
-                backgroundColor:
-                  currentThemeConfig.button.hoverColor ||
-                  currentThemeConfig.button.color,
-                transform: 'translateY(-1px)',
-                transition: 'all 0.2s ease-in-out'
+          styles: (_theme, props) => {
+            const isDisabled =
+              Boolean(props?.disabled || props?.['data-disabled']) &&
+              !props?.loading;
+            return {
+              root: {
+                ...(isDisabled
+                  ? {}
+                  : {
+                      backgroundColor: currentThemeConfig.button.color,
+                      color: currentThemeConfig.button.textColor,
+                      borderColor: currentThemeConfig.borderColor
+                    }),
+                transition:
+                  'background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out',
+                '&:hover': {
+                  backgroundColor:
+                    currentThemeConfig.button.hoverColor ||
+                    currentThemeConfig.button.color,
+                  transform: 'translateY(-1px)',
+                  transition: 'all 0.2s ease-in-out'
+                }
               }
-            }
-          })
+            };
+          }
         },
         TextInput: {
           styles: () => ({

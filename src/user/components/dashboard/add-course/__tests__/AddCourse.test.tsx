@@ -1,4 +1,10 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  act
+} from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { MantineProvider } from '@mantine/core';
 import { BrowserRouter } from 'react-router-dom';
@@ -53,13 +59,19 @@ jest.mock('@components/common/button/CommonButton', () => ({
   )
 }));
 
+let mockEditorText = 'Course description html';
+let mockEditorOptions: any = null;
+
 const mockEditor = {
   getHTML: () => '<p>Course description html</p>',
-  getText: () => 'Write your course description here...'
+  getText: () => mockEditorText
 };
 
 jest.mock('@tiptap/react', () => ({
-  useEditor: () => mockEditor
+  useEditor: (options: any) => {
+    mockEditorOptions = options;
+    return mockEditor;
+  }
 }));
 
 jest.mock('@tiptap/starter-kit', () => jest.fn());
@@ -69,6 +81,9 @@ jest.mock('@tiptap/extension-subscript', () => jest.fn());
 jest.mock('@tiptap/extension-highlight', () => jest.fn());
 jest.mock('@tiptap/extension-text-align', () => ({
   configure: jest.fn(() => ({}))
+}));
+jest.mock('@tiptap/extensions', () => ({
+  Placeholder: { configure: jest.fn(() => ({})) }
 }));
 
 jest.mock('@mantine/tiptap', () => {
@@ -161,6 +176,8 @@ describe('AddCourse', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockAddCourse.mockResolvedValue({});
+    mockEditorText = 'Course description html';
+    mockEditorOptions = null;
     Object.defineProperty(global, 'FileReader', {
       writable: true,
       value: MockFileReader
@@ -201,8 +218,12 @@ describe('AddCourse', () => {
 
     it('renders the Create Course, Cancel and Tips cards', () => {
       renderForm();
-      expect(screen.getByRole('button', { name: 'Create Course' })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'Create Course' })
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'Cancel' })
+      ).toBeInTheDocument();
       expect(screen.getByText('Tips for a Great Course')).toBeInTheDocument();
     });
   });
@@ -210,14 +231,18 @@ describe('AddCourse', () => {
   describe('Validation', () => {
     it('disables Create Course before the form is complete', () => {
       renderForm();
-      expect(screen.getByRole('button', { name: 'Create Course' })).toBeDisabled();
+      expect(
+        screen.getByRole('button', { name: 'Create Course' })
+      ).toBeDisabled();
     });
 
     it('keeps Create Course disabled when only the name is provided', () => {
       const result = renderForm();
       container = result.container;
       typeCourseName('React Fundamentals');
-      expect(screen.getByRole('button', { name: 'Create Course' })).toBeDisabled();
+      expect(
+        screen.getByRole('button', { name: 'Create Course' })
+      ).toBeDisabled();
     });
 
     it('enables Create Course once name and thumbnail are provided', () => {
@@ -225,7 +250,29 @@ describe('AddCourse', () => {
       container = result.container;
       typeCourseName('React Fundamentals');
       selectThumbnail(container);
-      expect(screen.getByRole('button', { name: 'Create Course' })).toBeEnabled();
+      expect(
+        screen.getByRole('button', { name: 'Create Course' })
+      ).toBeEnabled();
+    });
+
+    it('re-evaluates validation when the description is typed into the editor', () => {
+      mockEditorText = '';
+      const result = renderForm();
+      container = result.container;
+      typeCourseName('React Fundamentals');
+      selectThumbnail(container);
+      expect(
+        screen.getByRole('button', { name: 'Create Course' })
+      ).toBeDisabled();
+
+      mockEditorText = 'Learn how to build React apps';
+      act(() => {
+        mockEditorOptions?.onUpdate?.({ editor: mockEditor });
+      });
+
+      expect(
+        screen.getByRole('button', { name: 'Create Course' })
+      ).toBeEnabled();
     });
   });
 
@@ -236,7 +283,9 @@ describe('AddCourse', () => {
       selectThumbnail(container);
       expect(screen.getByText('course.png')).toBeInTheDocument();
       expect(screen.getByText('0.00 MB')).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Remove' })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'Remove' })
+      ).toBeInTheDocument();
       expect(screen.getByAltText('Course thumbnail')).toBeInTheDocument();
     });
 
@@ -246,12 +295,16 @@ describe('AddCourse', () => {
       selectThumbnail(container);
       fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
       expect(screen.queryByText('course.png')).not.toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Create Course' })).toBeDisabled();
+      expect(
+        screen.getByRole('button', { name: 'Create Course' })
+      ).toBeDisabled();
     });
 
     it('handles removing thumbnail when no file is set', () => {
       renderForm();
-      expect(screen.queryByRole('button', { name: 'Remove' })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: 'Remove' })
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -292,7 +345,9 @@ describe('AddCourse', () => {
       expect(payload.image).toBeInstanceOf(File);
       expect(payload.image.name).toBe('course.png');
 
-      expect(mockShowSuccessToast).toHaveBeenCalledWith('Course added successfully!');
+      expect(mockShowSuccessToast).toHaveBeenCalledWith(
+        'Course added successfully!'
+      );
       expect(mockNavigate).toHaveBeenCalledWith(-1);
     });
 
@@ -307,7 +362,9 @@ describe('AddCourse', () => {
       submitForm();
 
       await waitFor(() => {
-        expect(mockShowErrorToast).toHaveBeenCalledWith('Server rejected course');
+        expect(mockShowErrorToast).toHaveBeenCalledWith(
+          'Server rejected course'
+        );
       });
       expect(mockShowSuccessToast).not.toHaveBeenCalled();
       expect(mockNavigate).not.toHaveBeenCalled();

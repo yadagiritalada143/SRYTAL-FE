@@ -1,5 +1,12 @@
 import { AxiosError } from 'axios';
 
+interface ApiErrorBody {
+  message?: string;
+  error?: string;
+  /** Validation failures (`error.details`), most specific text first. */
+  errors?: unknown;
+}
+
 /**
  * Extracts a human-readable message from an unknown error (typically an Axios
  * error from the API). Centralises the `error?.response?.data?.message` pattern
@@ -15,14 +22,17 @@ export const getErrorMessage = (
   if (!error) return fallback;
 
   // Axios errors: prefer the API-provided message, then the HTTP message.
-  const axiosError = error as AxiosError<{ message?: string; error?: string }>;
+  const axiosError = error as AxiosError<ApiErrorBody>;
   if (axiosError?.isAxiosError) {
-    return (
-      axiosError.response?.data?.message ||
-      axiosError.response?.data?.error ||
-      axiosError.message ||
-      fallback
-    );
+    const data = axiosError.response?.data;
+    const details = Array.isArray(data?.errors)
+      ? data.errors.filter(
+          (detail): detail is string =>
+            typeof detail === 'string' && detail.trim() !== ''
+        )
+      : [];
+    if (details.length > 0) return details.join(' ');
+    return data?.message || data?.error || axiosError.message || fallback;
   }
 
   if (error instanceof Error) {
