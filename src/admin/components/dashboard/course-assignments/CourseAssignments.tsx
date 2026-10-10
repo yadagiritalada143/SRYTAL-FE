@@ -15,7 +15,6 @@ import {
   Badge,
   Center
 } from '@mantine/core';
-import { DatePickerInput } from '@mantine/dates';
 import {
   IconUser,
   IconBook,
@@ -42,6 +41,7 @@ import { EmployeeInterface } from '@interfaces/employee';
 import { Course } from '@interfaces/contentwriter';
 import { AssignedCourseForEmployee } from '@interfaces/course-assignment';
 import { CommonButton } from '@components/common/button/CommonButton';
+import { CommonDatePickerInput } from '@components/common/date-picker/CommonDatePickerInput';
 import PageHeader from '@components/common/page-header/PageHeader';
 import DataView from '@components/common/loaders/DataView';
 
@@ -71,7 +71,7 @@ const CourseAssignments = () => {
     defaultValues: {
       employeeId: '',
       courseId: '',
-      dueDate: undefined
+      dueDate: new Date()
     }
   });
 
@@ -163,7 +163,7 @@ const CourseAssignments = () => {
         dueDate: data.dueDate.toISOString()
       });
       showSuccessToast('Course assigned successfully!');
-      reset({ employeeId: '', courseId: '', dueDate: undefined });
+      reset({ employeeId: '', courseId: '', dueDate: new Date() });
       setFormKey(k => k + 1);
     } catch (error) {
       showErrorToast(
@@ -369,13 +369,18 @@ const CourseAssignments = () => {
                       name='dueDate'
                       control={control}
                       render={({ field }) => (
-                        <DatePickerInput
+                        <CommonDatePickerInput
                           key={`due-${formKey}`}
                           placeholder='Pick a due date'
-                          value={field.value ? new Date(field.value) : null}
+                          value={
+                            field.value ? new Date(field.value) : new Date()
+                          }
+                          defaultDate={
+                            field.value ? new Date(field.value) : new Date()
+                          }
                           onChange={date => {
                             if (!date) {
-                              field.onChange(null);
+                              field.onChange(new Date());
                               return;
                             }
                             field.onChange(new Date(date));

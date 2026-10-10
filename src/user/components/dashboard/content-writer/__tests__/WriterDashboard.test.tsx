@@ -375,6 +375,25 @@ describe('WriterDashboard', () => {
       );
     });
 
+    it('activates an archived course on success', async () => {
+      mockCourses = [makeCourse({ status: 'ARCHIVE' })];
+      renderDashboard();
+
+      fireEvent.click(cardButton('Archive'));
+
+      await waitFor(() => {
+        expect(mockUpdateCourse).toHaveBeenCalledWith({
+          id: 'c1',
+          courseName: 'React Basics',
+          courseDescription: '<p>Learn React fundamentals</p>',
+          status: 'ACTIVE'
+        });
+      });
+      expect(mockShowSuccessToast).toHaveBeenCalledWith(
+        'Course activated successfully!'
+      );
+    });
+
     it('shows an error toast when archiving fails', async () => {
       mockUpdateCourse.mockRejectedValueOnce({});
       mockCourses = [makeCourse()];

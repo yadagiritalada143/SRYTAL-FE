@@ -18,9 +18,9 @@ export interface ResolvedTaskContent {
 }
 
 export const isCodingTask = (
-  task: Pick<AssignedTask, 'type' | 'link'>
+  task: Pick<AssignedTask, 'type' | 'isCoding'>
 ): boolean =>
-  task.type === 'CODE' || (task.type === 'LINK' && !task.link);
+  task.isCoding === true || String(task.type || '').toUpperCase() === 'CODE';
 
 const EXTENSION_MIME_TYPES: Record<string, string> = {
   mp4: 'video/mp4',

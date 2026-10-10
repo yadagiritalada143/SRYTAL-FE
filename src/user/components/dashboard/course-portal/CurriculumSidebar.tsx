@@ -11,33 +11,106 @@ import {
 import {
   IconCircleCheckFilled,
   IconCircleDashed,
+  IconCode,
   IconFile,
+  IconFileText,
+  IconHelpCircle,
   IconLink,
+  IconMusic,
+  IconPhoto,
   IconPlayerPlay
 } from '@tabler/icons-react';
 import { useAppTheme } from '@hooks/use-app-theme';
 import { AssignedModule, AssignedTask } from '@interfaces/course-assignment';
+import { isCodingTask } from './task-content';
 
 interface CurriculumSidebarProps {
   modules: AssignedModule[];
   activeTaskId?: string;
-  /** Module ids the accordion should start open on (the active module). */
   openModuleIds: string[];
   onOpenModulesChange: (moduleIds: string[]) => void;
   onSelectTask: (task: AssignedTask, moduleId: string) => void;
 }
 
-const taskIcon = (task: AssignedTask, isActive: boolean) => {
-  if (isActive) return <IconPlayerPlay size={14} />;
-  return task.type === 'LINK' ? <IconLink size={14} /> : <IconFile size={14} />;
+export const getTaskTypeMeta = (task: AssignedTask) => {
+  if (isCodingTask(task)) {
+    return {
+      label: 'Coding Challenge',
+      icon: <IconCode size={14} />,
+      color: 'violet'
+    };
+  }
+
+  const type = String(task.type || '').toUpperCase();
+  if (type === 'QUIZ') {
+    return {
+      label: 'Quiz',
+      icon: <IconHelpCircle size={14} />,
+      color: 'orange'
+    };
+  }
+
+  if (type === 'LINK') {
+    return {
+      label: 'Link',
+      icon: <IconLink size={14} />,
+      color: 'blue'
+    };
+  }
+
+  const mime = (task.contentMimeType || '').toLowerCase();
+  const fileName = (task.contentFileName || '').toLowerCase();
+
+  if (mime.startsWith('video/') || fileName.match(/\.(mp4|webm|mov|mkv)$/)) {
+    return {
+      label: 'Video',
+      icon: <IconPlayerPlay size={14} />,
+      color: 'blue'
+    };
+  }
+
+  if (mime.startsWith('audio/') || fileName.match(/\.(mp3|wav|ogg|m4a)$/)) {
+    return {
+      label: 'Audio',
+      icon: <IconMusic size={14} />,
+      color: 'teal'
+    };
+  }
+
+  if (
+    mime.startsWith('image/') ||
+    fileName.match(/\.(png|jpg|jpeg|gif|webp)$/)
+  ) {
+    return {
+      label: 'Image',
+      icon: <IconPhoto size={14} />,
+      color: 'green'
+    };
+  }
+
+  if (mime === 'application/pdf' || fileName.endsWith('.pdf')) {
+    return {
+      label: 'PDF Document',
+      icon: <IconFileText size={14} />,
+      color: 'red'
+    };
+  }
+
+  if (mime.startsWith('text/') || fileName.match(/\.(txt|md|csv|doc|docx)$/)) {
+    return {
+      label: 'Document',
+      icon: <IconFileText size={14} />,
+      color: 'indigo'
+    };
+  }
+
+  return {
+    label: 'File',
+    icon: <IconFile size={14} />,
+    color: 'gray'
+  };
 };
 
-/**
- * The course curriculum: modules as an accordion, each listing its tasks with
- * their completion state. Selecting a task swaps the player's content; the
- * completion ticks are read-only here (marking happens in the player, so there
- * is a single place that talks to the progress API).
- */
 const CurriculumSidebar = ({
   modules,
   activeTaskId,
@@ -46,6 +119,8 @@ const CurriculumSidebar = ({
   onSelectTask
 }: CurriculumSidebarProps) => {
   const { themeConfig } = useAppTheme();
+  const accentColor =
+    themeConfig?.button?.color || themeConfig?.primaryColor || '#495057';
 
   return (
     <Accordion
@@ -56,8 +131,8 @@ const CurriculumSidebar = ({
       radius='md'
       styles={{
         item: {
-          backgroundColor: themeConfig.cardBackground,
-          borderColor: themeConfig.borderColor
+          backgroundColor: themeConfig?.cardBackground,
+          borderColor: themeConfig?.borderColor
         },
         content: { padding: 0 }
       }}
@@ -93,84 +168,102 @@ const CurriculumSidebar = ({
                   value={percent}
                   size='xs'
                   radius='xl'
-                  color={percent === 100 ? 'teal' : themeConfig.primaryColor}
+                  color={percent === 100 ? 'teal' : themeConfig?.primaryColor}
                 />
               </Stack>
             </Accordion.Control>
 
             <Accordion.Panel>
-              <Stack gap={0} pb='xs'>
-                {module.tasks.length === 0 && (
-                  <Text
-                    size='xs'
-                    c={themeConfig.mutedTextColor}
-                    px='md'
-                    py='sm'
-                  >
-                    No content in this module yet.
-                  </Text>
-                )}
-
-                {module.tasks.map(task => {
-                  const isActive = task._id === activeTaskId;
-
-                  return (
-                    <UnstyledButton
-                      key={task._id}
-                      onClick={() => onSelectTask(task, module._id)}
+              <Box style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                <Stack gap={0} pb='xs'>
+                  {module.tasks.length === 0 && (
+                    <Text
+                      size='xs'
+                      c={themeConfig?.mutedTextColor}
                       px='md'
                       py='sm'
-                      style={{
-                        borderLeft: `3px solid ${
-                          isActive ? themeConfig.accentColor : 'transparent'
-                        }`,
-                        backgroundColor: isActive
-                          ? themeConfig.headerBackgroundColor
-                          : 'transparent'
-                      }}
                     >
-                      <Group gap='sm' wrap='nowrap' align='flex-start'>
-                        <Box
-                          mt={2}
-                          style={{
-                            flexShrink: 0,
-                            display: 'flex',
-                            color: task.isCompleted
-                              ? themeConfig.successColor
-                              : themeConfig.mutedTextColor
-                          }}
-                        >
-                          {task.isCompleted ? (
-                            <IconCircleCheckFilled size={18} />
-                          ) : (
-                            <IconCircleDashed size={18} />
-                          )}
-                        </Box>
-                        <Stack gap={2} style={{ minWidth: 0, flex: 1 }}>
-                          <Text
-                            size='sm'
-                            lineClamp={2}
-                            fw={isActive ? 600 : 400}
-                            c={isActive ? themeConfig.accentColor : undefined}
+                      No content in this module yet.
+                    </Text>
+                  )}
+
+                  {module.tasks.map(task => {
+                    const isActive = task._id === activeTaskId;
+                    const meta = getTaskTypeMeta(task);
+
+                    return (
+                      <UnstyledButton
+                        key={task._id}
+                        onClick={() => onSelectTask(task, module._id)}
+                        px='md'
+                        py='sm'
+                        style={{
+                          borderLeft: `3px solid ${
+                            isActive ? accentColor : 'transparent'
+                          }`,
+                          backgroundColor: isActive
+                            ? `${accentColor}14`
+                            : 'transparent',
+                          transition: 'background-color 0.15s ease'
+                        }}
+                      >
+                        <Group gap='sm' wrap='nowrap' align='flex-start'>
+                          <Box
+                            mt={2}
+                            style={{
+                              flexShrink: 0,
+                              display: 'flex',
+                              color: task.isCompleted
+                                ? accentColor
+                                : themeConfig?.mutedTextColor
+                            }}
                           >
-                            {task.taskName}
-                          </Text>
-                          <Group
-                            gap={6}
-                            wrap='nowrap'
-                            c={themeConfig.mutedTextColor}
-                          >
-                            {taskIcon(task, isActive)}
-                            <Text size='xs' c={themeConfig.mutedTextColor}>
-                              {task.type === 'LINK' ? 'Link' : 'File'}
+                            {task.isCompleted ? (
+                              <IconCircleCheckFilled size={18} />
+                            ) : (
+                              <IconCircleDashed size={18} />
+                            )}
+                          </Box>
+                          <Stack gap={2} style={{ minWidth: 0, flex: 1 }}>
+                            <Text
+                              size='sm'
+                              lineClamp={2}
+                              fw={isActive ? 600 : 400}
+                              c={isActive ? accentColor : undefined}
+                            >
+                              {task.taskName}
                             </Text>
-                          </Group>
-                        </Stack>
-                      </Group>
-                    </UnstyledButton>
-                  );
-                })}
-              </Stack>
+                            <Group
+                              gap={6}
+                              wrap='nowrap'
+                              c={themeConfig?.mutedTextColor}
+                            >
+                              <Box
+                                style={{
+                                  display: 'flex',
+                                  color: isActive ? accentColor : undefined
+                                }}
+                              >
+                                {meta.icon}
+                              </Box>
+                              <Text
+                                size='xs'
+                                c={
+                                  isActive
+                                    ? accentColor
+                                    : themeConfig?.mutedTextColor
+                                }
+                              >
+                                {meta.label}
+                              </Text>
+                            </Group>
+                          </Stack>
+                        </Group>
+                      </UnstyledButton>
+                    );
+                  })}
+                </Stack>
+              </Box>
             </Accordion.Panel>
           </Accordion.Item>
         );
