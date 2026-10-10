@@ -1,21 +1,10 @@
 import { TaskContentType } from './contentwriter';
 
-/**
- * Employee-facing view of a course. These mirror the response of
- * `/getMyAssignedCourses`, `/getMyAssignedCourseById/:courseAssignmentId` and
- * `/updateMyTaskProgress` — deliberately different from the content-writer
- * `Course`/`Module`/`Task` types in `contentwriter.ts`, which are the authoring
- * shapes and carry S3 keys the employee never receives.
- */
-
-// Mirrors the enum stored on `course-assignments.status`. The backend re-derives
-// it from task progress on every write, so it is read-only for the client.
 export type CourseAssignmentStatus = 'Assigned' | 'In Progress' | 'Completed';
 
 export interface CourseProgress {
   totalTasks: number;
   completedTasks: number;
-  /** Whole-number percentage (0-100). */
   percentComplete: number;
 }
 
@@ -25,7 +14,7 @@ export interface AssignedTask {
   taskDescription: string;
   status?: string;
   type?: TaskContentType | string;
-  /** External URL — only present on LINK tasks. */
+  isCoding?: boolean;
   link?: string;
   contentMimeType?: string;
   contentFileName?: string;
