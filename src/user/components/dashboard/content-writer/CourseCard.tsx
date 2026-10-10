@@ -11,6 +11,7 @@ import {
   IconDots,
   IconEdit,
   IconArchive,
+  IconCircleCheck,
   IconTrash
 } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom';
@@ -57,6 +58,7 @@ const CourseCard = ({
   const stop = (e: React.MouseEvent) => e.stopPropagation();
   const hasMenu = onEdit || onArchive || onDelete;
   const description = stripHtml(course.courseDescription);
+  const isArchived = (course.status || '').toUpperCase() === 'ARCHIVE';
 
   return (
     <Card
@@ -94,7 +96,13 @@ const CourseCard = ({
             {description || 'No description available'}
           </Text>
           <Badge
-            color={course.status === 'ACTIVE' ? 'green' : 'blue'}
+            color={
+              (course.status || '').toUpperCase() === 'ACTIVE'
+                ? 'green'
+                : isArchived
+                  ? 'orange'
+                  : 'blue'
+            }
             radius='sm'
             variant='light'
             size='xs'
@@ -132,13 +140,20 @@ const CourseCard = ({
               )}
               {onArchive && (
                 <Menu.Item
-                  leftSection={<IconArchive size={14} />}
+                  leftSection={
+                    isArchived ? (
+                      <IconCircleCheck size={14} />
+                    ) : (
+                      <IconArchive size={14} />
+                    )
+                  }
+                  color={isArchived ? 'green' : undefined}
                   onClick={e => {
                     stop(e);
                     onArchive(course._id);
                   }}
                 >
-                  Archive
+                  {isArchived ? 'Activate' : 'Archive'}
                 </Menu.Item>
               )}
               {onDelete && (

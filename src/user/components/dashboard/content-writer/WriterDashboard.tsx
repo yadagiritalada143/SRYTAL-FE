@@ -27,7 +27,8 @@ import {
   IconSearch,
   IconX,
   IconClock,
-  IconPencil
+  IconPencil,
+  IconArchive
 } from '@tabler/icons-react';
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -60,21 +61,61 @@ const WriterDashboard = () => {
   const navigate = useNavigate();
 
   const stats = useMemo(() => {
-    const totalCourses = courses.length;
-    const totalModules = courses.reduce(
-      (sum: number, c: Course) => sum + (c.modules?.length || 0),
-      0
-    );
-    const totalTasks = courses.reduce(
-      (sum: number, c: Course) =>
-        sum +
-        (c.modules?.reduce(
-          (mSum: number, m: any) => mSum + (m.tasks?.length || 0),
-          0
-        ) || 0),
-      0
-    );
-    return { totalCourses, totalModules, totalTasks };
+    const courseList: Course[] = Array.isArray(courses)
+      ? courses
+      : (courses as any)?.courses || [];
+
+    const totalCourses = courseList.length;
+    const totalActiveCourses = courseList.filter(
+      (c: Course) => (c.status || '').toUpperCase() === 'ACTIVE'
+    ).length;
+    const totalArchivedCourses = courseList.filter(
+      (c: Course) => (c.status || '').toUpperCase() === 'ARCHIVE'
+    ).length;
+
+    let totalModules = 0;
+    let totalActiveModules = 0;
+    let totalArchivedModules = 0;
+
+    let totalTasks = 0;
+    let totalActiveTasks = 0;
+    let totalInactiveTasks = 0;
+
+    courseList.forEach((c: Course) => {
+      (c.modules || []).forEach((m: any) => {
+        totalModules++;
+        if ((m.status || '').toUpperCase() === 'ARCHIVE') {
+          totalArchivedModules++;
+        } else {
+          totalActiveModules++;
+        }
+
+        (m.tasks || []).forEach((t: any) => {
+          totalTasks++;
+          if (
+            (t.status || '').toUpperCase() === 'INACTIVE' ||
+            (t.status || '').toUpperCase() === 'ARCHIVE'
+          ) {
+            totalInactiveTasks++;
+          } else {
+            totalActiveTasks++;
+          }
+        });
+      });
+    });
+
+    const beData = courses as any;
+    return {
+      totalCourses: beData?.totalCourses ?? totalCourses,
+      totalActiveCourses: beData?.totalActiveCourses ?? totalActiveCourses,
+      totalArchivedCourses: beData?.totalArchivedCourses ?? totalArchivedCourses,
+      totalModules: beData?.totalModules ?? totalModules,
+      totalActiveModules: beData?.totalActiveModules ?? totalActiveModules,
+      totalArchivedModules: beData?.totalArchivedModules ?? totalArchivedModules,
+      totalTasks: beData?.totalTasks ?? totalTasks,
+      totalActiveTasks: beData?.totalActiveTasks ?? totalActiveTasks,
+      totalInactiveTasks: beData?.totalInactiveTasks ?? totalInactiveTasks
+    };
   }, [courses]);
 
   const sortedCourses = useMemo(
@@ -123,16 +164,27 @@ const WriterDashboard = () => {
   const handleArchive = async (courseId: string) => {
     const course = courses.find((c: Course) => c._id === courseId);
     if (!course) return;
+    const isArchived = (course.status || '').toUpperCase() === 'ARCHIVE';
+    const nextStatus = isArchived ? 'ACTIVE' : 'ARCHIVE';
     try {
       await updateCourse({
         id: course._id,
         courseName: course.courseName,
         courseDescription: course.courseDescription,
-        status: 'ARCHIVE'
+        status: nextStatus
       });
-      showSuccessToast('Course archived successfully!');
+      showSuccessToast(
+        isArchived
+          ? 'Course activated successfully!'
+          : 'Course archived successfully!'
+      );
     } catch (error) {
-      showErrorToast(getErrorMessage(error, 'Failed to archive course'));
+      showErrorToast(
+        getErrorMessage(
+          error,
+          isArchived ? 'Failed to activate course' : 'Failed to archive course'
+        )
+      );
     }
   };
 
@@ -157,19 +209,69 @@ const WriterDashboard = () => {
       label: 'Total Courses',
       value: stats.totalCourses,
       icon: <IconBook size={22} />,
-      color: themeConfig.color
+      color: themeConfig.color,
+      badges: (
+        <Group gap={4} mt={4} wrap='wrap'>
+          <Badge size='xs' variant='light' color='green'>
+            {stats.totalActiveCourses} Active
+          </Badge>
+          <Badge size='xs' variant='light' color='orange'>
+            {stats.totalArchivedCourses} Archived
+          </Badge>
+        </Group>
+      )
+    },
+    {
+      label: 'Archived Courses',
+      value: stats.totalArchivedCourses,
+      icon: <IconArchive size={22} />,
+      color: 'orange',
+      badges: (
+        <Group gap={4} mt={4} wrap='wrap'>
+          <Badge size='xs' variant='light' color='orange'>
+            {stats.totalArchivedCourses} Total
+          </Badge>
+          <Badge size='xs' variant='light' color='green'>
+            {stats.totalActiveCourses} Active
+          </Badge>
+        </Group>
+      )
     },
     {
       label: 'Total Modules',
       value: stats.totalModules,
       icon: <IconLayersSubtract size={22} />,
-      color: 'indigo'
+      color: 'indigo',
+      badges: (
+        <Group gap={4} mt={4} wrap='wrap'>
+          <Badge size='xs' variant='light' color='indigo'>
+            {stats.totalActiveModules} Active
+          </Badge>
+          {stats.totalArchivedModules > 0 && (
+            <Badge size='xs' variant='light' color='gray'>
+              {stats.totalArchivedModules} Archived
+            </Badge>
+          )}
+        </Group>
+      )
     },
     {
       label: 'Total Tasks',
       value: stats.totalTasks,
       icon: <IconListCheck size={22} />,
-      color: 'violet'
+      color: 'violet',
+      badges: (
+        <Group gap={4} mt={4} wrap='wrap'>
+          <Badge size='xs' variant='light' color='violet'>
+            {stats.totalActiveTasks} Active
+          </Badge>
+          {stats.totalInactiveTasks > 0 && (
+            <Badge size='xs' variant='light' color='gray'>
+              {stats.totalInactiveTasks} Inactive
+            </Badge>
+          )}
+        </Group>
+      )
     }
   ];
 
@@ -177,9 +279,9 @@ const WriterDashboard = () => {
     return (
       <Container size='xl' pt={80} pb='xl'>
         <Skeleton height={120} radius='lg' mb='xl' />
-        <SimpleGrid cols={{ base: 1, xs: 3 }} spacing='md' mb='xl'>
-          {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} height={92} radius='md' />
+        <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing='md' mb='xl'>
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} height={105} radius='md' />
           ))}
         </SimpleGrid>
         <Grid gutter='xl'>
@@ -239,21 +341,22 @@ const WriterDashboard = () => {
         </Group>
       </Box>
 
-      {/* Stats*/}
-      <SimpleGrid cols={{ base: 1, xs: 3 }} spacing='md' mb='xl'>
+      {/* Stats */}
+      <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing='md' mb='xl'>
         {statCards.map((s, i) => (
           <Card key={i} withBorder radius='md' p='md'>
-            <Group gap='sm' wrap='nowrap'>
+            <Group gap='sm' wrap='nowrap' align='flex-start'>
               <ThemeIcon size={44} radius='md' variant='light' color={s.color}>
                 {s.icon}
               </ThemeIcon>
-              <Stack gap={2} style={{ minWidth: 0 }}>
+              <Stack gap={2} style={{ minWidth: 0, flex: 1 }}>
                 <Title order={3} lh={1}>
                   {s.value}
                 </Title>
                 <Text size='xs' c='dimmed' lineClamp={1}>
                   {s.label}
                 </Text>
+                {s.badges}
               </Stack>
             </Group>
           </Card>
