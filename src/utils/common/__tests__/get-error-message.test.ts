@@ -15,7 +15,7 @@ describe('getErrorMessage', () => {
     const error = {
       isAxiosError: true,
       response: { data: { message: 'Not found' } },
-      message: 'Request failed',
+      message: 'Request failed'
     };
     expect(getErrorMessage(error)).toBe('Not found');
   });
@@ -24,16 +24,58 @@ describe('getErrorMessage', () => {
     const error = {
       isAxiosError: true,
       response: { data: { error: 'Invalid input' } },
-      message: 'Request failed',
+      message: 'Request failed'
     };
     expect(getErrorMessage(error)).toBe('Invalid input');
+  });
+
+  it('prefers the response.data.errors details over the generic message', () => {
+    const error = {
+      isAxiosError: true,
+      response: {
+        data: {
+          message: 'Invalid course task request.',
+          errors: [
+            'Task name is required.',
+            'A file is required for FILE tasks.'
+          ]
+        }
+      },
+      message: 'Request failed'
+    };
+    expect(getErrorMessage(error)).toBe(
+      'Task name is required. A file is required for FILE tasks.'
+    );
+  });
+
+  it('ignores empty or non-string entries in response.data.errors', () => {
+    const error = {
+      isAxiosError: true,
+      response: {
+        data: {
+          message: 'Fallback',
+          errors: ['Task name is required.', '', 42]
+        }
+      },
+      message: 'Request failed'
+    };
+    expect(getErrorMessage(error)).toBe('Task name is required.');
+  });
+
+  it('falls back to the message when errors is an empty array', () => {
+    const error = {
+      isAxiosError: true,
+      response: { data: { message: 'Something specific', errors: [] } },
+      message: 'Request failed'
+    };
+    expect(getErrorMessage(error)).toBe('Something specific');
   });
 
   it('returns axiosError.message when response data has neither', () => {
     const error = {
       isAxiosError: true,
       response: { data: {} },
-      message: 'Network Error',
+      message: 'Network Error'
     };
     expect(getErrorMessage(error)).toBe('Network Error');
   });
@@ -42,7 +84,7 @@ describe('getErrorMessage', () => {
     const error = {
       isAxiosError: true,
       response: undefined,
-      message: undefined,
+      message: undefined
     };
     expect(getErrorMessage(error)).toBe(fallback);
   });

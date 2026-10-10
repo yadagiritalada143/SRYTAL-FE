@@ -22,6 +22,7 @@ import TextAlign from '@tiptap/extension-text-align';
 import Superscript from '@tiptap/extension-superscript';
 import SubScript from '@tiptap/extension-subscript';
 import Highlight from '@tiptap/extension-highlight';
+import { Placeholder } from '@tiptap/extensions';
 import {
   IconUpload,
   IconX,
@@ -29,7 +30,7 @@ import {
   IconArrowLeft,
   IconCheck
 } from '@tabler/icons-react';
-import React, { useState } from 'react';
+import React, { useReducer, useState } from 'react';
 import { useMediaQuery } from '@mantine/hooks';
 import { useNavigate } from 'react-router-dom';
 import { useCustomToast } from '@utils/common/toast';
@@ -49,6 +50,7 @@ const AddCourse = () => {
   const { mutateAsync: addCourse, isPending: isSubmitting } = useAddCourse();
 
   const isMobile = useMediaQuery('(max-width: 768px)');
+  const [, forceDescriptionCheck] = useReducer((tick: number) => tick + 1, 0);
 
   const editor = useEditor({
     extensions: [
@@ -58,9 +60,12 @@ const AddCourse = () => {
       Superscript,
       SubScript,
       Highlight,
-      TextAlign.configure({ types: ['heading', 'paragraph'] })
+      TextAlign.configure({ types: ['heading', 'paragraph'] }),
+      Placeholder.configure({
+        placeholder: 'Write your course description here...'
+      })
     ],
-    content: '<p>Write your course description here...</p>'
+    onUpdate: () => forceDescriptionCheck()
   });
 
   const handleThumbnailChange = (file: File | null) => {
@@ -96,8 +101,9 @@ const AddCourse = () => {
     }
   };
 
-  const isFormValid =
-    courseName.trim() && thumbnailFile && editor?.getText().trim();
+  const isFormValid = Boolean(
+    courseName.trim() && thumbnailFile && editor?.getText().trim()
+  );
 
   return (
     <Container

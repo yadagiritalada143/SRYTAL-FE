@@ -127,6 +127,32 @@ describe('AddModuleModal', () => {
         screen.getByRole('button', { name: 'Add Module' })
       ).not.toBeDisabled();
     });
+
+    it('shows a validation message when the empty name field loses focus', () => {
+      renderModal();
+      expect(
+        screen.queryByText('Module Name is required')
+      ).not.toBeInTheDocument();
+
+      fireEvent.blur(screen.getByPlaceholderText('Enter module name'));
+
+      expect(screen.getByText('Module Name is required')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Add Module' })).toBeDisabled();
+    });
+
+    it('clears the validation message once a name is typed', () => {
+      renderModal();
+      fireEvent.blur(screen.getByPlaceholderText('Enter module name'));
+      expect(screen.getByText('Module Name is required')).toBeInTheDocument();
+
+      fireEvent.change(screen.getByPlaceholderText('Enter module name'), {
+        target: { value: 'My Module' }
+      });
+
+      expect(
+        screen.queryByText('Module Name is required')
+      ).not.toBeInTheDocument();
+    });
   });
 
   describe('Submit', () => {

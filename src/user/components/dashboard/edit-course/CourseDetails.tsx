@@ -8,13 +8,14 @@ import {
   Box,
   ActionIcon,
   Badge,
-  Divider,
   Paper,
-  Accordion,
+  SimpleGrid,
   ThemeIcon,
   Center,
   Tooltip,
-  Modal
+  Modal,
+  Collapse,
+  UnstyledButton
 } from '@mantine/core';
 import {
   IconArrowLeft,
@@ -23,7 +24,12 @@ import {
   IconLayersSubtract,
   IconListCheck,
   IconExternalLink,
-  IconEdit
+  IconEdit,
+  IconCode,
+  IconFileText,
+  IconCheck,
+  IconChevronDown,
+  IconCornerDownRight
 } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 import { useMediaQuery } from '@mantine/hooks';
@@ -61,7 +67,7 @@ const CourseDetails = () => {
   const { id = '' } = useParams();
   const navigate = useNavigate();
   const isMobile = useMediaQuery('(max-width: 768px)');
-  const { themeConfig: currentThemeConfig, isDarkTheme } = useAppTheme();
+  const { themeConfig: currentThemeConfig } = useAppTheme();
 
   const { data: course, isLoading } = useGetCourseById(id) as {
     data?: Course;
@@ -77,13 +83,25 @@ const CourseDetails = () => {
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
   const [taskToView, setTaskToView] = useState<Task | null>(null);
 
+  const [expandedModules, setExpandedModules] = useState<
+    Record<string, boolean>
+  >({});
+
   useEffect(() => {
     const pending = readTaskPopupState();
     clearTaskPopupState();
     if (pending && pending.courseId === id) {
       setTaskModalModuleId(pending.moduleId);
+      setExpandedModules(prev => ({ ...prev, [pending.moduleId]: true }));
     }
   }, [id]);
+
+  const toggleModule = (moduleId: string) => {
+    setExpandedModules(prev => ({
+      ...prev,
+      [moduleId]: !prev[moduleId]
+    }));
+  };
 
   const modules: Module[] = course?.modules || [];
   const totalTasks = modules.reduce(
@@ -91,8 +109,6 @@ const CourseDetails = () => {
     0
   );
 
-  // Opening goes through the backend, which redirects to the link or streams
-  // the uploaded file inline. Always opened in a fresh browser tab. Coding
   const handleViewContent = (task: Task) => {
     if (task.isCoding || task.type === 'CODE') {
       setTaskToView(task);
@@ -111,145 +127,185 @@ const CourseDetails = () => {
 
   const stats = [
     {
-      icon: <IconBook size={20} />,
+      icon: <IconBook size={18} />,
       label: 'Modules',
       value: modules.length,
       color: 'indigo'
     },
     {
-      icon: <IconListCheck size={20} />,
+      icon: <IconListCheck size={18} />,
       label: 'Task Items',
       value: totalTasks,
       color: 'pink'
     },
     {
-      icon: <IconLayersSubtract size={20} />,
+      icon: <IconLayersSubtract size={18} />,
       label: 'Status',
       value: course?.status || 'N/A',
-      color: 'teal'
+      color: course?.status === 'ACTIVE' ? 'teal' : 'blue'
     }
   ];
 
   return (
     <Container
       size='lg'
-      py={{ base: 'md', sm: 'xl' }}
+      py={{ base: 'sm', sm: 'md' }}
       px={{ base: 'xs', sm: 'md' }}
     >
       <DataView isLoading={false} label='course' isEmpty={!course}>
-        <Stack gap='lg'>
-          {/* Header */}
-          <Stack gap='sm'>
-            <Group
-              justify='space-between'
-              align='flex-start'
-              wrap='wrap'
-              gap='sm'
-            >
+        <Stack gap='md'>
+          <Card
+            shadow='sm'
+            p={{ base: 'md', sm: 'lg' }}
+            radius='md'
+            withBorder
+            style={{
+              backgroundColor: currentThemeConfig.cardBackground,
+              borderColor: currentThemeConfig.borderColor,
+              color: currentThemeConfig.color
+            }}
+          >
+            <Stack gap='md'>
               <Group
+                justify='space-between'
+                align='center'
+                wrap='wrap'
                 gap='sm'
-                align='flex-start'
-                style={{ flex: 1, minWidth: 0 }}
+              >
+                <CommonButton
+                  leftSection={<IconArrowLeft size={16} />}
+                  variant='default'
+                  size='xs'
+                  onClick={() => navigate(-1)}
+                >
+                  Back
+                </CommonButton>
+                <Group gap='xs' wrap='wrap'>
+                  <Badge
+                    size={isMobile ? 'sm' : 'md'}
+                    radius='sm'
+                    variant='light'
+                    color={course?.status === 'ACTIVE' ? 'teal' : 'blue'}
+                    leftSection={<IconCheck size={12} />}
+                  >
+                    {course?.status || 'Draft'}
+                  </Badge>
+                  <CommonButton
+                    leftSection={<IconEdit size={14} />}
+                    onClick={() => setCourseEditOpen(true)}
+                    disabled={!course}
+                    size='xs'
+                  >
+                    Edit Course
+                  </CommonButton>
+                </Group>
+              </Group>
+
+              <Group
+                gap='md'
+                align='center'
+                wrap='nowrap'
+                style={{ minWidth: 0 }}
               >
                 {course && (
                   <CourseThumbnail
                     name={course.courseName}
                     src={course.thumbnailUrl || course.thumbnail}
-                    size={isMobile ? 52 : 72}
+                    size={isMobile ? 54 : 64}
                     radius='md'
                   />
                 )}
-                <Stack gap={4} style={{ flex: 1, minWidth: 0 }}>
-                  <Title order={isMobile ? 2 : 1}>{course?.courseName}</Title>
-                  <Text size={isMobile ? 'xs' : 'sm'} c='dimmed'>
+                <Stack gap={2} style={{ flex: 1, minWidth: 0 }}>
+                  <Title
+                    order={isMobile ? 3 : 2}
+                    style={{
+                      color: currentThemeConfig.color,
+                      lineHeight: 1.2
+                    }}
+                  >
+                    {course?.courseName}
+                  </Title>
+                  <Text size={isMobile ? 'xs' : 'sm'} c='dimmed' lineClamp={1}>
                     Manage modules and content for this course
                   </Text>
                 </Stack>
               </Group>
-              <Group gap='sm' mt={{ base: 'xs', sm: 0 }} wrap='wrap'>
-                <Badge
-                  size={isMobile ? 'md' : 'lg'}
-                  variant='light'
-                  color={course?.status === 'ACTIVE' ? 'green' : 'blue'}
-                >
-                  {course?.status || 'Draft'}
-                </Badge>
-                <CommonButton
-                  leftSection={<IconArrowLeft size={16} />}
-                  variant='default'
-                  onClick={() => navigate(-1)}
-                >
-                  Back
-                </CommonButton>
-                <CommonButton
-                  leftSection={<IconEdit size={16} />}
-                  onClick={() => setCourseEditOpen(true)}
-                  disabled={!course}
-                >
-                  Edit Course
-                </CommonButton>
-              </Group>
-            </Group>
-            <Divider />
-          </Stack>
+            </Stack>
+          </Card>
 
-          {/* Stats */}
-          <Group grow={!isMobile} wrap='wrap'>
+          <Group grow wrap='wrap' gap='sm'>
             {stats.map(item => (
-              <Card
+              <Paper
                 key={item.label}
-                shadow='sm'
-                p='md'
+                p='sm'
                 radius='md'
                 withBorder
-                style={{ flex: isMobile ? '1 1 100%' : 1 }}
+                style={{
+                  backgroundColor: currentThemeConfig.cardBackground,
+                  borderColor: currentThemeConfig.borderColor,
+                  flex: isMobile ? '1 1 100%' : 1
+                }}
               >
-                <Group gap='sm'>
-                  <ThemeIcon
-                    size={42}
-                    radius='md'
-                    color={item.color}
-                    variant='light'
-                  >
-                    {item.icon}
-                  </ThemeIcon>
-                  <Stack gap={0}>
-                    <Text size='xs' c='dimmed'>
-                      {item.label}
-                    </Text>
-                    <Text fw={700} size='lg'>
-                      {item.value}
-                    </Text>
-                  </Stack>
+                <Group gap='xs' justify='space-between' align='center'>
+                  <Group gap='sm'>
+                    <ThemeIcon
+                      size={32}
+                      radius='md'
+                      color={item.color}
+                      variant='light'
+                    >
+                      {item.icon}
+                    </ThemeIcon>
+                    <Stack gap={0}>
+                      <Text size='xs' c='dimmed' fw={500}>
+                        {item.label}
+                      </Text>
+                      <Text
+                        fw={700}
+                        size='md'
+                        style={{ color: currentThemeConfig.color }}
+                      >
+                        {item.value}
+                      </Text>
+                    </Stack>
+                  </Group>
                 </Group>
-              </Card>
+              </Paper>
             ))}
           </Group>
 
-          {/* Description */}
           {course?.courseDescription && (
             <Card
               shadow='sm'
-              p={{ base: 'md', sm: 'lg' }}
+              p='md'
               radius='md'
               withBorder
+              style={{
+                backgroundColor: currentThemeConfig.cardBackground,
+                borderColor: currentThemeConfig.borderColor
+              }}
             >
-              <Text fw={600} mb='sm'>
+              <Text
+                fw={600}
+                size='sm'
+                mb='xs'
+                style={{ color: currentThemeConfig.color }}
+              >
                 About this course
               </Text>
               <Paper
-                p={{ base: 'sm', sm: 'md' }}
+                p='sm'
                 radius='md'
                 style={{
-                  backgroundColor: isDarkTheme ? '#1a1b1e' : '#f8f9fa',
+                  backgroundColor: currentThemeConfig.headerBackgroundColor,
                   border: `1px solid ${currentThemeConfig.borderColor}`
                 }}
               >
                 <Box
                   style={{
                     color: currentThemeConfig.color,
-                    fontSize: isMobile ? '14px' : '15px',
-                    lineHeight: 1.6
+                    fontSize: isMobile ? '13px' : '14px',
+                    lineHeight: 1.5
                   }}
                   dangerouslySetInnerHTML={{
                     __html: course.courseDescription
@@ -259,114 +315,337 @@ const CourseDetails = () => {
             </Card>
           )}
 
-          {/* Modules + Content */}
-          <Group justify='space-between' align='center' wrap='wrap'>
-            <Title order={3}>Modules</Title>
-            <CommonButton
-              leftSection={<IconPlus size={16} />}
-              onClick={() => setModuleModalOpen(true)}
-            >
-              Add Module
-            </CommonButton>
-          </Group>
+          <Paper
+            p='md'
+            radius='md'
+            withBorder
+            style={{
+              backgroundColor: currentThemeConfig.cardBackground,
+              borderColor: currentThemeConfig.borderColor
+            }}
+          >
+            <Group justify='space-between' align='center' wrap='wrap' gap='xs'>
+              <Stack gap={2}>
+                <Group gap='xs' align='center'>
+                  <ThemeIcon
+                    size={28}
+                    radius='md'
+                    variant='light'
+                    color='indigo'
+                  >
+                    <IconBook size={16} />
+                  </ThemeIcon>
+                  <Title
+                    order={3}
+                    style={{
+                      color: currentThemeConfig.color,
+                      fontSize: '1.15rem'
+                    }}
+                  >
+                    Modules
+                  </Title>
+                </Group>
+                <Text size='xs' c='dimmed'>
+                  Course curriculum modules and task breakdown
+                </Text>
+              </Stack>
+              <CommonButton
+                leftSection={<IconPlus size={14} />}
+                onClick={() => setModuleModalOpen(true)}
+                size='xs'
+              >
+                Add Module
+              </CommonButton>
+            </Group>
+          </Paper>
 
+          {/* Parent Modules + Nested Tasks Hierarchy */}
           {modules.length === 0 ? (
-            <Card shadow='sm' p='xl' radius='md' withBorder>
-              <Center>
-                <Stack align='center' gap='xs'>
-                  <ThemeIcon size={48} radius='xl' variant='light' color='gray'>
+            <Card
+              shadow='sm'
+              p='xl'
+              radius='md'
+              withBorder
+              style={{
+                backgroundColor: currentThemeConfig.cardBackground,
+                borderColor: currentThemeConfig.borderColor
+              }}
+            >
+              <Center py='lg'>
+                <Stack align='center' gap='sm'>
+                  <ThemeIcon
+                    size={48}
+                    radius='xl'
+                    variant='light'
+                    color='indigo'
+                  >
                     <IconBook size={24} />
                   </ThemeIcon>
-                  <Text c='dimmed' ta='center'>
-                    No modules yet. Add your first module to start building this
-                    course.
-                  </Text>
+                  <Stack gap={4} align='center'>
+                    <Text
+                      fw={600}
+                      size='sm'
+                      style={{ color: currentThemeConfig.color }}
+                    >
+                      No modules created
+                    </Text>
+                    <Text c='dimmed' size='xs' ta='center' maw={400}>
+                      No modules yet. Add your first module to start building
+                      this course.
+                    </Text>
+                  </Stack>
+                  <CommonButton
+                    leftSection={<IconPlus size={14} />}
+                    onClick={() => setModuleModalOpen(true)}
+                    size='xs'
+                    variant='light'
+                  >
+                    Add Module
+                  </CommonButton>
                 </Stack>
               </Center>
             </Card>
           ) : (
-            <Accordion variant='separated' radius='md' multiple>
-              {modules.map(module => (
-                <Accordion.Item key={module._id} value={module._id}>
-                  {/* The edit control sits beside Accordion.Control rather
-                      than inside it, so it is not a button within a button. */}
-                  <Center>
-                    <Accordion.Control style={{ flex: 1, minWidth: 0 }}>
-                      <Group justify='space-between' wrap='nowrap' pr='sm'>
-                        <Group gap='sm' wrap='nowrap' style={{ minWidth: 0 }}>
-                          <CourseThumbnail
-                            name={module.moduleName}
-                            src={module.thumbnailUrl || module.thumbnail}
-                            size={40}
-                            radius='sm'
-                          />
-                          <Stack gap={2} style={{ minWidth: 0 }}>
-                            <Text fw={600} lineClamp={1}>
-                              {module.moduleName}
-                            </Text>
-                            {stripHtml(module.moduleDescription) && (
-                              <Text size='xs' c='dimmed' lineClamp={1}>
-                                {stripHtml(module.moduleDescription)}
+            <Stack gap='lg'>
+              {modules.map((module, index) => {
+                const isExpanded = Boolean(expandedModules[module._id]);
+
+                return (
+                  <Card
+                    key={module._id}
+                    shadow='sm'
+                    p={0}
+                    radius='lg'
+                    withBorder
+                    style={{
+                      backgroundColor: currentThemeConfig.cardBackground,
+                      borderColor: currentThemeConfig.borderColor,
+                      overflow: 'hidden',
+                      transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
+                    }}
+                  >
+                    <Box
+                      p='md'
+                      style={{
+                        backgroundColor: currentThemeConfig.cardBackground,
+                        borderLeft: '5px solid var(--mantine-color-indigo-6)',
+                        transition: 'background-color 0.2s ease'
+                      }}
+                    >
+                      <Stack gap='xs'>
+                        <Group
+                          justify='space-between'
+                          align='center'
+                          wrap='nowrap'
+                        >
+                          <Group
+                            gap='sm'
+                            align='center'
+                            style={{ minWidth: 0, flex: 1 }}
+                          >
+                            <Badge
+                              size='md'
+                              variant='filled'
+                              color='indigo'
+                              radius='sm'
+                              style={{ fontWeight: 700, flexShrink: 0 }}
+                            >
+                              MODULE {String(index + 1).padStart(2, '0')}
+                            </Badge>
+                            <CourseThumbnail
+                              name={module.moduleName}
+                              src={module.thumbnailUrl || module.thumbnail}
+                              size={36}
+                              radius='sm'
+                            />
+                            <UnstyledButton
+                              onClick={() => toggleModule(module._id)}
+                              style={{
+                                minWidth: 0,
+                                flex: 1,
+                                textAlign: 'left'
+                              }}
+                            >
+                              <Text
+                                fw={700}
+                                size='md'
+                                lineClamp={1}
+                                style={{ color: currentThemeConfig.color }}
+                              >
+                                {module.moduleName}
                               </Text>
+                            </UnstyledButton>
+                          </Group>
+
+                          <Group
+                            gap='xs'
+                            wrap='nowrap'
+                            style={{ flexShrink: 0 }}
+                          >
+                            {module.status === 'ARCHIVE' && (
+                              <Badge
+                                color='gray'
+                                radius='sm'
+                                variant='light'
+                                size='xs'
+                              >
+                                Archived
+                              </Badge>
+                            )}
+                            <Badge
+                              variant='light'
+                              color='blue'
+                              radius='sm'
+                              size='sm'
+                              leftSection={<IconListCheck size={12} />}
+                            >
+                              {module.tasks?.length || 0} items
+                            </Badge>
+                            <Tooltip label='Edit module' withArrow>
+                              <ActionIcon
+                                variant='subtle'
+                                color='gray'
+                                size='md'
+                                aria-label={`Edit ${module.moduleName}`}
+                                onClick={() => setModuleToEdit(module)}
+                              >
+                                <IconEdit size={16} />
+                              </ActionIcon>
+                            </Tooltip>
+                            <ActionIcon
+                              variant='subtle'
+                              color='gray'
+                              size='md'
+                              aria-label={
+                                isExpanded ? 'Collapse module' : 'Expand module'
+                              }
+                              onClick={() => toggleModule(module._id)}
+                              style={{
+                                transform: isExpanded
+                                  ? 'rotate(180deg)'
+                                  : 'rotate(0deg)',
+                                transition:
+                                  'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
+                              }}
+                            >
+                              <IconChevronDown size={18} />
+                            </ActionIcon>
+                          </Group>
+                        </Group>
+
+                        {stripHtml(module.moduleDescription) && (
+                          <Text
+                            size='xs'
+                            c='dimmed'
+                            style={{
+                              lineHeight: 1.5,
+                              wordBreak: 'break-word',
+                              paddingLeft: 4
+                            }}
+                          >
+                            {stripHtml(module.moduleDescription)}
+                          </Text>
+                        )}
+                      </Stack>
+                    </Box>
+
+                    <Collapse
+                      in={isExpanded}
+                      transitionDuration={300}
+                      transitionTimingFunction='cubic-bezier(0.4, 0, 0.2, 1)'
+                      keepMounted
+                    >
+                      <Box
+                        p='md'
+                        style={{
+                          backgroundColor:
+                            currentThemeConfig.headerBackgroundColor,
+                          borderTop: `1px solid ${currentThemeConfig.borderColor}`
+                        }}
+                      >
+                        <Box
+                          style={{
+                            borderLeft:
+                              '2px dashed var(--mantine-color-indigo-4)',
+                            paddingLeft: 12,
+                            marginLeft: 4
+                          }}
+                        >
+                          <Stack gap='sm'>
+                            <Group justify='space-between' align='center'>
+                              <Group gap={6} align='center'>
+                                <IconCornerDownRight
+                                  size={14}
+                                  style={{
+                                    color: 'var(--mantine-color-indigo-5)'
+                                  }}
+                                />
+                                <Text
+                                  fw={700}
+                                  size='xs'
+                                  c='dimmed'
+                                  tt='uppercase'
+                                  style={{ letterSpacing: '0.05em' }}
+                                >
+                                  Tasks in this Module (
+                                  {module.tasks?.length || 0})
+                                </Text>
+                              </Group>
+
+                              <CommonButton
+                                variant='light'
+                                size='xs'
+                                leftSection={<IconPlus size={12} />}
+                                onClick={() => setTaskModalModuleId(module._id)}
+                              >
+                                Add Task
+                              </CommonButton>
+                            </Group>
+
+                            {module.tasks?.length ? (
+                              <SimpleGrid
+                                cols={{ base: 1, sm: 2, md: 3 }}
+                                spacing='sm'
+                              >
+                                {module.tasks.map((task, taskIndex) => (
+                                  <TaskRow
+                                    key={task._id}
+                                    task={task}
+                                    moduleIndex={index + 1}
+                                    taskIndex={taskIndex + 1}
+                                    onView={() => handleViewContent(task)}
+                                    onEdit={() => setTaskToEdit(task)}
+                                    borderColor={currentThemeConfig.borderColor}
+                                    cardBg={currentThemeConfig.cardBackground}
+                                    textColor={currentThemeConfig.color}
+                                  />
+                                ))}
+                              </SimpleGrid>
+                            ) : (
+                              <Paper
+                                p='md'
+                                radius='md'
+                                withBorder
+                                style={{
+                                  borderColor: currentThemeConfig.borderColor,
+                                  backgroundColor:
+                                    currentThemeConfig.cardBackground,
+                                  textAlign: 'center'
+                                }}
+                              >
+                                <Text size='xs' c='dimmed'>
+                                  No tasks in this module yet.
+                                </Text>
+                              </Paper>
                             )}
                           </Stack>
-                        </Group>
-                        <Group gap='xs' wrap='nowrap' style={{ flexShrink: 0 }}>
-                          {module.status === 'ARCHIVE' && (
-                            <Badge color='gray' radius='sm' variant='light'>
-                              Archived
-                            </Badge>
-                          )}
-                          <Badge variant='gradient' radius='sm'>
-                            {module.tasks?.length || 0} items
-                          </Badge>
-                        </Group>
-                      </Group>
-                    </Accordion.Control>
-                    <Tooltip label='Edit module' withArrow>
-                      <ActionIcon
-                        variant='subtle'
-                        color='gray'
-                        size='lg'
-                        mr='xs'
-                        aria-label={`Edit ${module.moduleName}`}
-                        onClick={() => setModuleToEdit(module)}
-                      >
-                        <IconEdit size={18} />
-                      </ActionIcon>
-                    </Tooltip>
-                  </Center>
-                  <Accordion.Panel>
-                    <Stack gap='sm'>
-                      {module.tasks?.length ? (
-                        module.tasks.map(task => (
-                          <TaskRow
-                            key={task._id}
-                            task={task}
-                            onView={() => handleViewContent(task)}
-                            onEdit={() => setTaskToEdit(task)}
-                            borderColor={currentThemeConfig.borderColor}
-                          />
-                        ))
-                      ) : (
-                        <Text size='sm' c='dimmed'>
-                          No tasks in this module yet.
-                        </Text>
-                      )}
-                      <CommonButton
-                        variant='light'
-                        size='xs'
-                        leftSection={<IconPlus size={14} />}
-                        onClick={() => setTaskModalModuleId(module._id)}
-                        style={{ width: 'fit-content' }}
-                      >
-                        Add Task
-                      </CommonButton>
-                    </Stack>
-                  </Accordion.Panel>
-                </Accordion.Item>
-              ))}
-            </Accordion>
+                        </Box>
+                      </Box>
+                    </Collapse>
+                  </Card>
+                );
+              })}
+            </Stack>
           )}
         </Stack>
       </DataView>
@@ -432,67 +711,155 @@ const CourseDetails = () => {
 
 interface TaskRowProps {
   task: Task;
+  moduleIndex: number;
+  taskIndex: number;
   onView: () => void;
   onEdit: () => void;
   borderColor: string;
+  cardBg: string;
+  textColor: string;
 }
 
-const TaskRow = ({ task, onView, onEdit, borderColor }: TaskRowProps) => {
+const TaskRow = ({
+  task,
+  moduleIndex,
+  taskIndex,
+  onView,
+  onEdit,
+  borderColor,
+  cardBg,
+  textColor
+}: TaskRowProps) => {
+  const getStatusBadge = () => {
+    if (!task.status) return null;
+    const statusUpper = task.status.toUpperCase();
+    if (statusUpper === 'ARCHIVE' || statusUpper === 'ARCHIVED') {
+      return (
+        <Badge color='gray' radius='sm' variant='light' size='xs'>
+          Archived
+        </Badge>
+      );
+    }
+    if (statusUpper === 'ACTIVE') {
+      return (
+        <Badge color='teal' radius='sm' variant='light' size='xs'>
+          Active
+        </Badge>
+      );
+    }
+    return (
+      <Badge color='blue' radius='sm' variant='light' size='xs'>
+        {task.status}
+      </Badge>
+    );
+  };
+
   return (
-    <Paper p='sm' radius='md' withBorder style={{ borderColor }}>
-      <Group justify='space-between' wrap='nowrap'>
-        <Group gap='sm' wrap='nowrap' style={{ minWidth: 0 }}>
-          <CourseThumbnail
-            name={task.taskName}
-            src={task.thumbnailUrl || task.thumbnail}
-            size={36}
-            radius='sm'
-          />
-          <Stack gap={0} style={{ minWidth: 0 }}>
-            <Group gap='xs' wrap='nowrap'>
-              <Text fw={500} size='sm' lineClamp={1}>
-                {task.taskName}
-              </Text>
+    <Card
+      p='sm'
+      radius='md'
+      withBorder
+      style={{
+        borderColor,
+        backgroundColor: cardBg,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+      }}
+    >
+      <Stack gap='xs' justify='space-between' style={{ height: '100%' }}>
+        <Stack gap='xs'>
+          <Group justify='space-between' align='center'>
+            <Group gap='xs'>
+              <Badge
+                variant='outline'
+                color='indigo'
+                size='xs'
+                radius='sm'
+                style={{ fontWeight: 700 }}
+              >
+                {moduleIndex}.{taskIndex}
+              </Badge>
+              <ThemeIcon
+                size={26}
+                radius='sm'
+                variant='light'
+                color={task.isCoding ? 'grape' : 'indigo'}
+              >
+                {task.isCoding ? (
+                  <IconCode size={14} />
+                ) : (
+                  <IconFileText size={14} />
+                )}
+              </ThemeIcon>
               {task.isCoding && (
                 <Badge color='grape' radius='sm' variant='light' size='xs'>
                   Coding
                 </Badge>
               )}
-              {task.status === 'ARCHIVE' && (
-                <Badge color='gray' radius='sm' variant='light' size='xs'>
-                  Archived
-                </Badge>
-              )}
+              {getStatusBadge()}
             </Group>
-            {stripHtml(task.taskDescription) && (
-              <Text size='xs' c='dimmed' lineClamp={1}>
-                {stripHtml(task.taskDescription)}
+
+            <Tooltip label='Edit task' withArrow>
+              <ActionIcon
+                variant='subtle'
+                color='gray'
+                size='sm'
+                aria-label={`Edit ${task.taskName}`}
+                onClick={onEdit}
+              >
+                <IconEdit size={14} />
+              </ActionIcon>
+            </Tooltip>
+          </Group>
+
+          <Group
+            gap='xs'
+            align='flex-start'
+            wrap='nowrap'
+            style={{ minWidth: 0 }}
+          >
+            <CourseThumbnail
+              name={task.taskName}
+              src={task.thumbnailUrl || task.thumbnail}
+              size={34}
+              radius='sm'
+            />
+            <Stack gap={2} style={{ minWidth: 0 }}>
+              <Text
+                fw={600}
+                size='sm'
+                lineClamp={1}
+                style={{ color: textColor }}
+              >
+                {task.taskName}
               </Text>
-            )}
-          </Stack>
-        </Group>
-        <Group gap={4} wrap='nowrap' style={{ flexShrink: 0 }}>
+              {stripHtml(task.taskDescription) && (
+                <Text size='xs' c='dimmed' lineClamp={2}>
+                  {stripHtml(task.taskDescription)}
+                </Text>
+              )}
+            </Stack>
+          </Group>
+        </Stack>
+
+        <Group
+          justify='flex-end'
+          pt='xs'
+          style={{ borderTop: `1px solid ${borderColor}` }}
+        >
           <CommonButton
-            variant='subtle'
+            variant='light'
             size='xs'
-            rightSection={<IconExternalLink size={14} />}
+            rightSection={<IconExternalLink size={12} />}
             onClick={onView}
           >
             Open
           </CommonButton>
-          <Tooltip label='Edit task' withArrow>
-            <ActionIcon
-              variant='subtle'
-              color='gray'
-              aria-label={`Edit ${task.taskName}`}
-              onClick={onEdit}
-            >
-              <IconEdit size={16} />
-            </ActionIcon>
-          </Tooltip>
         </Group>
-      </Group>
-    </Paper>
+      </Stack>
+    </Card>
   );
 };
 

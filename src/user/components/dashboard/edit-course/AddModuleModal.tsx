@@ -1,12 +1,5 @@
 import { useState } from 'react';
-import {
-  Modal,
-  Stack,
-  TextInput,
-  FileInput,
-  Group,
-  Loader
-} from '@mantine/core';
+import { Modal, Stack, TextInput, FileInput, Group } from '@mantine/core';
 import { IconUpload, IconCheck } from '@tabler/icons-react';
 import { CommonButton } from '@components/common/button/CommonButton';
 import { useAddCourseModule } from '@hooks/mutations/useUserMutations';
@@ -22,14 +15,19 @@ interface AddModuleModalProps {
 
 const AddModuleModal = ({ opened, onClose, courseId }: AddModuleModalProps) => {
   const [moduleName, setModuleName] = useState('');
+  const [moduleNameTouched, setModuleNameTouched] = useState(false);
   const [moduleDescription, setModuleDescription] = useState('');
   const [thumbnail, setThumbnail] = useState<File | null>(null);
 
   const { mutateAsync: addModule, isPending } = useAddCourseModule();
   const { showSuccessToast, showErrorToast } = useCustomToast();
 
+  const moduleNameError =
+    moduleNameTouched && !moduleName.trim() ? 'Module Name is required' : '';
+
   const reset = () => {
     setModuleName('');
+    setModuleNameTouched(false);
     setModuleDescription('');
     setThumbnail(null);
   };
@@ -41,6 +39,10 @@ const AddModuleModal = ({ opened, onClose, courseId }: AddModuleModalProps) => {
   };
 
   const handleSubmit = async () => {
+    if (!moduleName.trim()) {
+      setModuleNameTouched(true);
+      return;
+    }
     try {
       await addModule({
         courseId,
@@ -65,6 +67,8 @@ const AddModuleModal = ({ opened, onClose, courseId }: AddModuleModalProps) => {
           required
           value={moduleName}
           onChange={e => setModuleName(e.target.value)}
+          onBlur={() => setModuleNameTouched(true)}
+          error={moduleNameError}
         />
         <DescriptionEditor
           label='Module Description'
@@ -85,14 +89,9 @@ const AddModuleModal = ({ opened, onClose, courseId }: AddModuleModalProps) => {
             Cancel
           </CommonButton>
           <CommonButton
-            leftSection={
-              isPending ? (
-                <Loader size='xs' color='white' />
-              ) : (
-                <IconCheck size={16} />
-              )
-            }
-            disabled={!moduleName.trim() || isPending}
+            leftSection={<IconCheck size={16} />}
+            disabled={!moduleName.trim()}
+            loading={isPending}
             onClick={handleSubmit}
           >
             {isPending ? 'Adding...' : 'Add Module'}

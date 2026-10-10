@@ -22,6 +22,55 @@ describe('CourseThumbnail', () => {
     expect(img).toHaveAttribute('src', 'http://example.com/thumb.png');
   });
 
+  it('shows a skeleton while the image is still being fetched', () => {
+    const { container } = renderThumb({ src: 'http://example.com/thumb.png' });
+
+    const img = screen.getByRole('img', { name: 'My Course' });
+    expect(container.querySelector('.mantine-Skeleton-root')).toBeVisible();
+    expect(img).toHaveStyle({ opacity: '0' });
+
+    fireEvent.load(img);
+
+    expect(
+      container.querySelector('.mantine-Skeleton-root')
+    ).not.toBeInTheDocument();
+    expect(img).toHaveStyle({ opacity: '1' });
+  });
+
+  it('keeps showing the skeleton when a different src starts loading', () => {
+    const { container, rerender } = renderThumb({
+      src: 'http://example.com/one.png'
+    });
+    const first = screen.getByRole('img', { name: 'My Course' });
+    fireEvent.load(first);
+
+    rerender(
+      <MantineProvider>
+        <CourseThumbnail
+          name='My Course'
+          size={40}
+          src='http://example.com/two.png'
+        />
+      </MantineProvider>
+    );
+
+    expect(container.querySelector('.mantine-Skeleton-root')).toBeVisible();
+    expect(screen.getByRole('img', { name: 'My Course' })).toHaveStyle({
+      opacity: '0'
+    });
+  });
+
+  it('goes straight to the placeholder for a raw S3 key instead of a URL', () => {
+    const { container } = renderThumb({
+      src: 'course-thumbnails/abc123.png'
+    });
+
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
+    expect(container.querySelector('.mantine-Skeleton-root')).toBeNull();
+    expect(screen.getByLabelText('My Course')).toBeInTheDocument();
+    expect(screen.getByText('MC')).toBeInTheDocument();
+  });
+
   it('falls back to the placeholder when the image fails to load', () => {
     renderThumb({ src: 'http://example.com/broken.png' });
 
