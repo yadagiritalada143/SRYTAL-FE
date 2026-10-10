@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState, MouseEvent } from 'react';
 import { Box, Text } from '@mantine/core';
 import { RichTextEditor, Link } from '@mantine/tiptap';
 import { useEditor } from '@tiptap/react';
@@ -24,10 +24,6 @@ interface DescriptionEditorProps {
   required?: boolean;
 }
 
-/**
- * Rich-text editor for course descriptions. Descriptions are stored as HTML,
- * so edits have to go through the same editor used when creating a course.
- */
 const DescriptionEditor = ({
   label,
   value,
@@ -37,6 +33,11 @@ const DescriptionEditor = ({
 }: DescriptionEditorProps) => {
   const { themeConfig: currentThemeConfig } = useAppTheme();
   const isMobile = useMediaQuery('(max-width: 768px)');
+  const [, forceUpdate] = useState({});
+
+  const activeBg =
+    currentThemeConfig?.button?.color || 'var(--mantine-color-indigo-6)';
+  const activeText = currentThemeConfig?.button?.textColor || '#ffffff';
 
   const editor = useEditor({
     extensions: [
@@ -49,7 +50,9 @@ const DescriptionEditor = ({
       TextAlign.configure({ types: ['heading', 'paragraph'] })
     ],
     content: value,
-    onUpdate: ({ editor: instance }) => onChange(instance.getHTML())
+    onUpdate: ({ editor: instance }) => onChange(instance.getHTML()),
+    onTransaction: () => forceUpdate({}),
+    onSelectionUpdate: () => forceUpdate({})
   });
 
   // Seed the editor when it first mounts for a given record. Guarded on the
@@ -62,12 +65,59 @@ const DescriptionEditor = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editor, resetKey]);
 
+  const handleToolbarMouseDown = (e: MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (
+      target.closest('.mantine-RichTextEditor-control') ||
+      target.closest('.mantine-RichTextEditor-controlsGroup')
+    ) {
+      setTimeout(() => {
+        if (editor && !editor.isFocused) {
+          editor.commands.focus();
+        }
+      }, 0);
+    }
+  };
+
   return (
     <Box>
-      <Text size='sm' fw={500} mb={6} c={currentThemeConfig.color}>
+      <style>{`
+        .mantine-RichTextEditor-control[data-active],
+        .mantine-RichTextEditor-control[data-active="true"],
+        .mantine-RichTextEditor-control[aria-pressed="true"],
+        button[data-active="true"].mantine-RichTextEditor-control {
+          background-color: ${activeBg} !important;
+          color: ${activeText} !important;
+          font-weight: 600 !important;
+          box-shadow: 0 2px 8px ${activeBg}45 !important;
+        }
+        .mantine-RichTextEditor-control[data-active] svg,
+        .mantine-RichTextEditor-control[data-active="true"] svg,
+        .mantine-RichTextEditor-control[aria-pressed="true"] svg {
+          color: ${activeText} !important;
+          stroke: ${activeText} !important;
+        }
+        .mantine-RichTextEditor-control:hover:not([data-active]):not([aria-pressed="true"]) {
+          background-color: ${activeBg}20 !important;
+        }
+        .mantine-RichTextEditor-controlsGroup {
+          gap: 4px !important;
+        }
+        .mantine-RichTextEditor-controlsGroup:last-child {
+          margin-right: 0 !important;
+          padding-right: 0 !important;
+          border-right: none !important;
+        }
+      `}</style>
+      <Text
+        size='sm'
+        fw={600}
+        mb={6}
+        style={{ color: currentThemeConfig.color }}
+      >
         {label}
         {required && (
-          <Text component='span' c='red'>
+          <Text component='span' c='red' fw={700}>
             {' '}
             *
           </Text>
@@ -79,32 +129,38 @@ const DescriptionEditor = ({
           root: {
             backgroundColor: currentThemeConfig.headerBackgroundColor,
             color: currentThemeConfig.color,
-            borderColor: currentThemeConfig.borderColor
+            borderColor: currentThemeConfig.borderColor,
+            borderRadius: '12px',
+            overflow: 'hidden',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+            transition: 'border-color 0.2s ease, box-shadow 0.2s ease'
           },
           toolbar: {
-            backgroundColor: currentThemeConfig.headerBackgroundColor,
+            backgroundColor: currentThemeConfig.cardBackground,
             color: currentThemeConfig.color,
-            border: 'none',
-            padding: isMobile ? '4px' : '6px',
-            gap: isMobile ? '2px' : '4px',
+            borderBottom: `1px solid ${currentThemeConfig.borderColor}`,
+            padding: isMobile ? '6px 8px' : '10px 14px',
+            gap: isMobile ? '6px' : '5px',
             flexWrap: 'wrap'
           },
           control: {
-            backgroundColor: currentThemeConfig.headerBackgroundColor,
             color: currentThemeConfig.color,
             border: 'none',
-            minWidth: isMobile ? '26px' : '30px',
-            minHeight: isMobile ? '26px' : '30px'
+            borderRadius: '6px',
+            minWidth: isMobile ? '28px' : '32px',
+            minHeight: isMobile ? '28px' : '32px',
+            transition: 'all 0.15s ease'
           },
           content: {
             backgroundColor: currentThemeConfig.headerBackgroundColor,
             color: currentThemeConfig.color,
-            padding: isMobile ? '0.5rem' : '0.75rem',
-            fontSize: isMobile ? '13px' : '14px'
+            padding: isMobile ? '0.75rem' : '1rem',
+            fontSize: isMobile ? '13px' : '14px',
+            lineHeight: 1.6
           }
         }}
       >
-        <RichTextEditor.Toolbar>
+        <RichTextEditor.Toolbar onMouseDown={handleToolbarMouseDown}>
           <RichTextEditor.ControlsGroup>
             <RichTextEditor.Bold />
             <RichTextEditor.Italic />
@@ -137,7 +193,7 @@ const DescriptionEditor = ({
 
         <RichTextEditor.Content
           style={{
-            minHeight: isMobile ? 140 : 200,
+            minHeight: isMobile ? 140 : 180,
             maxHeight: isMobile ? 240 : 320,
             overflowY: 'auto'
           }}

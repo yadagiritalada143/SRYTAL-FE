@@ -25,6 +25,7 @@ import { useAddCourseTask } from '@hooks/mutations/useUserMutations';
 import { useCustomToast } from '@utils/common/toast';
 import { getErrorMessage } from '@utils/common/get-error-message';
 import { commonUrls } from '@utils/common/constants';
+import { useAppTheme } from '@hooks/use-app-theme';
 import {
   saveTaskPopupState,
   saveTaskDraft,
@@ -77,6 +78,7 @@ const AddTaskModal = ({
 }: AddTaskModalProps) => {
   const { organization = '' } = useParams();
   const navigate = useNavigate();
+  const { themeConfig: currentThemeConfig } = useAppTheme();
   const [taskName, setTaskName] = useState('');
   const [taskDescription, setTaskDescription] = useState('');
   const [mode, setMode] = useState<ContentMode>('LINK');
@@ -192,8 +194,34 @@ const AddTaskModal = ({
   };
 
   return (
-    <Modal opened={opened} onClose={handleClose} title='Add Task' centered>
-      <Stack gap='md'>
+    <Modal
+      opened={opened}
+      onClose={handleClose}
+      title='Add Task'
+      centered
+      radius='lg'
+      size='md'
+      overlayProps={{ backgroundOpacity: 0.5, blur: 4 }}
+      transitionProps={{ transition: 'pop', duration: 200 }}
+      styles={{
+        header: {
+          backgroundColor: currentThemeConfig.cardBackground,
+          borderBottom: `1px solid ${currentThemeConfig.borderColor}`,
+          paddingBottom: '12px'
+        },
+        title: {
+          fontWeight: 700,
+          fontSize: '1.1rem',
+          color: currentThemeConfig.color
+        },
+        content: {
+          backgroundColor: currentThemeConfig.cardBackground,
+          color: currentThemeConfig.color,
+          borderRadius: '16px'
+        }
+      }}
+    >
+      <Stack gap='md' className='mt-4'>
         <TextInput
           label='Title'
           placeholder='e.g. Introduction video, Reading material'
@@ -202,6 +230,7 @@ const AddTaskModal = ({
           onChange={e => setTaskName(e.target.value)}
           onBlur={() => touch('taskName')}
           error={fieldError('taskName')}
+          radius='md'
         />
         <Box onBlur={() => touch('taskDescription')}>
           <DescriptionEditor
@@ -224,6 +253,8 @@ const AddTaskModal = ({
           </Text>
           <SegmentedControl
             fullWidth
+            radius='md'
+            color='indigo'
             value={mode}
             onChange={value => setMode(value as ContentMode)}
             data={[
@@ -269,6 +300,7 @@ const AddTaskModal = ({
             onBlur={() => touch('link')}
             error={fieldError('link')}
             description='YouTube, blog posts, articles, or any public URL'
+            radius='md'
           />
         ) : mode === 'FILE' ? (
           <FileInput
@@ -282,12 +314,13 @@ const AddTaskModal = ({
             required
             clearable
             description='Any file type is supported'
+            radius='md'
           />
         ) : (
           <Stack gap='xs'>
-            <Paper p='xs' radius='md' withBorder>
+            <Paper p='sm' radius='md' withBorder style={{ backgroundColor: 'rgba(99, 102, 241, 0.05)' }}>
               <Group gap='xs' wrap='nowrap' align='flex-start'>
-                <ThemeIcon size={24} radius='md' variant='light'>
+                <ThemeIcon size={24} radius='md' variant='light' color='indigo'>
                   <IconCode size={14} />
                 </ThemeIcon>
                 <Text size='xs' c='dimmed'>
@@ -318,6 +351,7 @@ const AddTaskModal = ({
           error={fieldError('thumbnail')}
           description='JPG, PNG, or WEBP'
           clearable
+          radius='md'
         />
 
         <Group justify='flex-end' mt='sm'>

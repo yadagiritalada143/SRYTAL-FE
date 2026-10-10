@@ -101,14 +101,40 @@ const EditTaskModal = ({
   const isLink = task?.type === 'LINK';
 
   return (
-    <Modal opened={opened} onClose={handleClose} title='Edit Task' centered>
-      <Stack gap='md'>
+    <Modal
+      opened={opened}
+      onClose={handleClose}
+      title='Edit Task'
+      centered
+      radius='lg'
+      overlayProps={{ backgroundOpacity: 0.5, blur: 4 }}
+      transitionProps={{ transition: 'pop', duration: 200 }}
+      styles={{
+        header: {
+          backgroundColor: currentThemeConfig.cardBackground,
+          borderBottom: `1px solid ${currentThemeConfig.borderColor}`,
+          paddingBottom: '12px'
+        },
+        title: {
+          fontWeight: 700,
+          fontSize: '1.1rem',
+          color: currentThemeConfig.color
+        },
+        content: {
+          backgroundColor: currentThemeConfig.cardBackground,
+          color: currentThemeConfig.color,
+          borderRadius: '16px'
+        }
+      }}
+    >
+      <Stack gap='md' className='mt-4'>
         <TextInput
           label='Title'
           placeholder='e.g. Introduction video, Reading material'
           required
           value={taskName}
           onChange={e => setTaskName(e.target.value)}
+          radius='md'
         />
         <DescriptionEditor
           label='Description'
@@ -192,6 +218,7 @@ const EditTaskModal = ({
             value={thumbnail}
             onChange={setThumbnail}
             clearable
+            radius='md'
             description={
               !task?.thumbnailUrl && !task?.thumbnail && !thumbPreview
                 ? 'No thumbnail yet — optional, but recommended'
@@ -207,15 +234,14 @@ const EditTaskModal = ({
           onChange={value => setStatus((value as CourseStatus) || 'ACTIVE')}
           allowDeselect={false}
           comboboxProps={{ withinPortal: true }}
+          radius='md'
         />
 
         {!isCoding && (
           <>
-            {/* The update endpoint only replaces the thumbnail; the attached
-              file/link is shown for reference but cannot be swapped. */}
             <Stack gap={6}>
               <Text size='sm' fw={500}>
-                Attached File
+                Attached Resource
               </Text>
               <Paper
                 p='sm'

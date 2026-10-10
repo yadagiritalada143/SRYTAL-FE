@@ -59,8 +59,29 @@ const AddModuleModal = ({ opened, onClose, courseId }: AddModuleModalProps) => {
   };
 
   return (
-    <Modal opened={opened} onClose={handleClose} title='Add Module' centered>
-      <Stack gap='md'>
+    <Modal
+      opened={opened}
+      onClose={handleClose}
+      title='Add Module'
+      centered
+      radius='lg'
+      overlayProps={{ backgroundOpacity: 0.5, blur: 4 }}
+      transitionProps={{ transition: 'pop', duration: 200 }}
+      styles={{
+        header: {
+          borderBottom: '1px solid var(--mantine-color-default-border)',
+          paddingBottom: '12px'
+        },
+        title: {
+          fontWeight: 700,
+          fontSize: '1.1rem'
+        },
+        content: {
+          borderRadius: '16px'
+        }
+      }}
+    >
+      <Stack gap='md' className='mt-4'>
         <TextInput
           label='Module Name'
           placeholder='Enter module name'
@@ -69,6 +90,7 @@ const AddModuleModal = ({ opened, onClose, courseId }: AddModuleModalProps) => {
           onChange={e => setModuleName(e.target.value)}
           onBlur={() => setModuleNameTouched(true)}
           error={moduleNameError}
+          radius='md'
         />
         <DescriptionEditor
           label='Module Description'
@@ -83,6 +105,7 @@ const AddModuleModal = ({ opened, onClose, courseId }: AddModuleModalProps) => {
           value={thumbnail}
           onChange={setThumbnail}
           clearable
+          radius='md'
         />
         <Group justify='flex-end' mt='sm'>
           <CommonButton variant='default' onClick={handleClose}>
