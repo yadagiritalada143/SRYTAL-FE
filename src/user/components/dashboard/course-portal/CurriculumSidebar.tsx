@@ -174,94 +174,96 @@ const CurriculumSidebar = ({
             </Accordion.Control>
 
             <Accordion.Panel>
-              <Stack gap={0} pb='xs'>
-                {module.tasks.length === 0 && (
-                  <Text
-                    size='xs'
-                    c={themeConfig?.mutedTextColor}
-                    px='md'
-                    py='sm'
-                  >
-                    No content in this module yet.
-                  </Text>
-                )}
-
-                {module.tasks.map(task => {
-                  const isActive = task._id === activeTaskId;
-                  const meta = getTaskTypeMeta(task);
-
-                  return (
-                    <UnstyledButton
-                      key={task._id}
-                      onClick={() => onSelectTask(task, module._id)}
+              <Box style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                <Stack gap={0} pb='xs'>
+                  {module.tasks.length === 0 && (
+                    <Text
+                      size='xs'
+                      c={themeConfig?.mutedTextColor}
                       px='md'
                       py='sm'
-                      style={{
-                        borderLeft: `3px solid ${
-                          isActive ? accentColor : 'transparent'
-                        }`,
-                        backgroundColor: isActive
-                          ? `${accentColor}14`
-                          : 'transparent',
-                        transition: 'background-color 0.15s ease'
-                      }}
                     >
-                      <Group gap='sm' wrap='nowrap' align='flex-start'>
-                        <Box
-                          mt={2}
-                          style={{
-                            flexShrink: 0,
-                            display: 'flex',
-                            color: task.isCompleted
-                              ? accentColor
-                              : themeConfig?.mutedTextColor
-                          }}
-                        >
-                          {task.isCompleted ? (
-                            <IconCircleCheckFilled size={18} />
-                          ) : (
-                            <IconCircleDashed size={18} />
-                          )}
-                        </Box>
-                        <Stack gap={2} style={{ minWidth: 0, flex: 1 }}>
-                          <Text
-                            size='sm'
-                            lineClamp={2}
-                            fw={isActive ? 600 : 400}
-                            c={isActive ? accentColor : undefined}
+                      No content in this module yet.
+                    </Text>
+                  )}
+
+                  {module.tasks.map(task => {
+                    const isActive = task._id === activeTaskId;
+                    const meta = getTaskTypeMeta(task);
+
+                    return (
+                      <UnstyledButton
+                        key={task._id}
+                        onClick={() => onSelectTask(task, module._id)}
+                        px='md'
+                        py='sm'
+                        style={{
+                          borderLeft: `3px solid ${
+                            isActive ? accentColor : 'transparent'
+                          }`,
+                          backgroundColor: isActive
+                            ? `${accentColor}14`
+                            : 'transparent',
+                          transition: 'background-color 0.15s ease'
+                        }}
+                      >
+                        <Group gap='sm' wrap='nowrap' align='flex-start'>
+                          <Box
+                            mt={2}
+                            style={{
+                              flexShrink: 0,
+                              display: 'flex',
+                              color: task.isCompleted
+                                ? accentColor
+                                : themeConfig?.mutedTextColor
+                            }}
                           >
-                            {task.taskName}
-                          </Text>
-                          <Group
-                            gap={6}
-                            wrap='nowrap'
-                            c={themeConfig?.mutedTextColor}
-                          >
-                            <Box
-                              style={{
-                                display: 'flex',
-                                color: isActive ? accentColor : undefined
-                              }}
-                            >
-                              {meta.icon}
-                            </Box>
+                            {task.isCompleted ? (
+                              <IconCircleCheckFilled size={18} />
+                            ) : (
+                              <IconCircleDashed size={18} />
+                            )}
+                          </Box>
+                          <Stack gap={2} style={{ minWidth: 0, flex: 1 }}>
                             <Text
-                              size='xs'
-                              c={
-                                isActive
-                                  ? accentColor
-                                  : themeConfig?.mutedTextColor
-                              }
+                              size='sm'
+                              lineClamp={2}
+                              fw={isActive ? 600 : 400}
+                              c={isActive ? accentColor : undefined}
                             >
-                              {meta.label}
+                              {task.taskName}
                             </Text>
-                          </Group>
-                        </Stack>
-                      </Group>
-                    </UnstyledButton>
-                  );
-                })}
-              </Stack>
+                            <Group
+                              gap={6}
+                              wrap='nowrap'
+                              c={themeConfig?.mutedTextColor}
+                            >
+                              <Box
+                                style={{
+                                  display: 'flex',
+                                  color: isActive ? accentColor : undefined
+                                }}
+                              >
+                                {meta.icon}
+                              </Box>
+                              <Text
+                                size='xs'
+                                c={
+                                  isActive
+                                    ? accentColor
+                                    : themeConfig?.mutedTextColor
+                                }
+                              >
+                                {meta.label}
+                              </Text>
+                            </Group>
+                          </Stack>
+                        </Group>
+                      </UnstyledButton>
+                    );
+                  })}
+                </Stack>
+              </Box>
             </Accordion.Panel>
           </Accordion.Item>
         );

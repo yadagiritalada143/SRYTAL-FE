@@ -338,7 +338,16 @@ const CoursePlayer = () => {
             </Stack>
 
             {!isMobile && (
-              <Box style={{ width: 360, flexShrink: 0 }}>
+              <Box
+                style={{
+                  width: 360,
+                  flexShrink: 0,
+                  position: 'sticky',
+                  top: 80,
+                  maxHeight: 'calc(100vh - 100px)',
+                  overflowY: 'auto'
+                }}
+              >
                 <Text fw={600} mb='xs'>
                   Course content
                 </Text>

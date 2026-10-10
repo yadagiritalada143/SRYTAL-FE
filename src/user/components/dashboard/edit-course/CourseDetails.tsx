@@ -29,6 +29,7 @@ import {
   IconFileText,
   IconCheck,
   IconChevronDown,
+  IconChevronUp,
   IconCornerDownRight
 } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
@@ -86,6 +87,9 @@ const CourseDetails = () => {
   const [expandedModules, setExpandedModules] = useState<
     Record<string, boolean>
   >({});
+  const [expandedTaskModules, setExpandedTaskModules] = useState<
+    Record<string, boolean>
+  >({});
 
   useEffect(() => {
     const pending = readTaskPopupState();
@@ -98,6 +102,13 @@ const CourseDetails = () => {
 
   const toggleModule = (moduleId: string) => {
     setExpandedModules(prev => ({
+      ...prev,
+      [moduleId]: !prev[moduleId]
+    }));
+  };
+
+  const toggleModuleTasks = (moduleId: string) => {
+    setExpandedTaskModules(prev => ({
       ...prev,
       [moduleId]: !prev[moduleId]
     }));
@@ -603,24 +614,76 @@ const CourseDetails = () => {
                             </Group>
 
                             {module.tasks?.length ? (
-                              <SimpleGrid
-                                cols={{ base: 1, sm: 2, md: 3 }}
-                                spacing='sm'
-                              >
-                                {module.tasks.map((task, taskIndex) => (
-                                  <TaskRow
-                                    key={task._id}
-                                    task={task}
-                                    moduleIndex={index + 1}
-                                    taskIndex={taskIndex + 1}
-                                    onView={() => handleViewContent(task)}
-                                    onEdit={() => setTaskToEdit(task)}
-                                    borderColor={currentThemeConfig.borderColor}
-                                    cardBg={currentThemeConfig.cardBackground}
-                                    textColor={currentThemeConfig.color}
-                                  />
-                                ))}
-                              </SimpleGrid>
+                              <Stack gap='sm'>
+                                <SimpleGrid
+                                  cols={{ base: 1, sm: 2, md: 3 }}
+                                  spacing='sm'
+                                >
+                                  {module.tasks.slice(0, 6).map((task, taskIndex) => (
+                                    <TaskRow
+                                      key={task._id}
+                                      task={task}
+                                      moduleIndex={index + 1}
+                                      taskIndex={taskIndex + 1}
+                                      onView={() => handleViewContent(task)}
+                                      onEdit={() => setTaskToEdit(task)}
+                                      borderColor={currentThemeConfig.borderColor}
+                                      cardBg={currentThemeConfig.cardBackground}
+                                      textColor={currentThemeConfig.color}
+                                    />
+                                  ))}
+                                </SimpleGrid>
+
+                                {module.tasks.length > 6 && (
+                                  <>
+                                    <Collapse
+                                      in={Boolean(expandedTaskModules[module._id])}
+                                      transitionDuration={300}
+                                      transitionTimingFunction='cubic-bezier(0.4, 0, 0.2, 1)'
+                                      animateOpacity
+                                    >
+                                      <SimpleGrid
+                                        cols={{ base: 1, sm: 2, md: 3 }}
+                                        spacing='sm'
+                                        pt='xs'
+                                      >
+                                        {module.tasks.slice(6).map((task, taskIndex) => (
+                                          <TaskRow
+                                            key={task._id}
+                                            task={task}
+                                            moduleIndex={index + 1}
+                                            taskIndex={taskIndex + 7}
+                                            onView={() => handleViewContent(task)}
+                                            onEdit={() => setTaskToEdit(task)}
+                                            borderColor={currentThemeConfig.borderColor}
+                                            cardBg={currentThemeConfig.cardBackground}
+                                            textColor={currentThemeConfig.color}
+                                          />
+                                        ))}
+                                      </SimpleGrid>
+                                    </Collapse>
+
+                                    <Group justify='center' mt='xs'>
+                                      <CommonButton
+                                        variant='subtle'
+                                        size='xs'
+                                        leftSection={
+                                          expandedTaskModules[module._id] ? (
+                                            <IconChevronUp size={14} />
+                                          ) : (
+                                            <IconChevronDown size={14} />
+                                          )
+                                        }
+                                        onClick={() => toggleModuleTasks(module._id)}
+                                      >
+                                        {expandedTaskModules[module._id]
+                                          ? 'Show Less Tasks'
+                                          : `Show More Tasks (+${module.tasks.length - 6} more)`}
+                                      </CommonButton>
+                                    </Group>
+                                  </>
+                                )}
+                              </Stack>
                             ) : (
                               <Paper
                                 p='md'
