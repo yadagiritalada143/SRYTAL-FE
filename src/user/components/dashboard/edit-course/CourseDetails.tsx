@@ -684,7 +684,7 @@ const CourseDetails = () => {
         title='Coding Question'
         centered
       >
-        <Stack gap='sm'>
+        <Stack gap='sm' className='mt-4'>
           <Text fw={600}>{taskToView?.taskName}</Text>
           <Paper
             p='md'
