@@ -13,7 +13,8 @@ import {
   Divider,
   ThemeIcon,
   Badge,
-  Center
+  Center,
+  Paper
 } from '@mantine/core';
 import {
   IconUser,
@@ -26,6 +27,7 @@ import {
   IconCalendar,
   IconArrowLeft
 } from '@tabler/icons-react';
+import { useMediaQuery } from '@mantine/hooks';
 import { useAppTheme } from '@hooks/use-app-theme';
 import { useCustomToast } from '@utils/common/toast';
 import { getErrorMessage } from '@utils/common/get-error-message';
@@ -42,10 +44,12 @@ import { Course } from '@interfaces/contentwriter';
 import { AssignedCourseForEmployee } from '@interfaces/course-assignment';
 import { CommonButton } from '@components/common/button/CommonButton';
 import { CommonDatePickerInput } from '@components/common/date-picker/CommonDatePickerInput';
+import CourseThumbnail from '@user/components/dashboard/content-writer/CourseThumbnail';
 import PageHeader from '@components/common/page-header/PageHeader';
 import DataView from '@components/common/loaders/DataView';
 
 const CourseAssignments = () => {
+  const isMobile = useMediaQuery('(max-width: 768px)');
   const { themeConfig } = useAppTheme();
   const { showSuccessToast, showErrorToast } = useCustomToast();
   const navigate = useNavigate();
@@ -153,7 +157,9 @@ const CourseAssignments = () => {
     return { moduleCount, taskCount };
   }, [selectedCourse]);
 
-  const showReview = watchedEmployeeId && watchedCourseId && watchedDueDate;
+  const isFormComplete = Boolean(
+    watchedEmployeeId && watchedCourseId && watchedDueDate
+  );
 
   const onSubmit = async (data: AssignCourseForm) => {
     try {
@@ -178,8 +184,9 @@ const CourseAssignments = () => {
   return (
     <Container
       size='xl'
-      py={{ base: 'md', sm: 'xl' }}
-      px={{ base: 'xs', sm: 'md' }}
+      pt={{ base: 'md', sm: 'xl' }}
+      pb={{ base: 10, sm: 'xl' }}
+      px={{ base: 'sm', sm: 'md' }}
     >
       <PageHeader
         title='Assign Course'
@@ -197,28 +204,59 @@ const CourseAssignments = () => {
 
       <DataView isLoading={isLoadingData} label='data' isEmpty={false}>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <Grid gutter='lg' mt='lg'>
+          <Grid gutter={{ base: 'md', sm: 'lg' }} mt={{ base: 'md', sm: 'lg' }}>
             <Grid.Col span={{ base: 12, lg: 6 }}>
               <Stack gap='lg'>
-                <Card withBorder radius='md' p='lg'>
+                {/* Step 1: Select Employee */}
+                <Card
+                  withBorder
+                  radius='lg'
+                  p={{ base: 'md', sm: 'lg' }}
+                  shadow='xs'
+                  style={{
+                    backgroundColor: themeConfig.cardBackground || '#ffffff',
+                    borderColor: watchedEmployeeId
+                      ? 'var(--mantine-color-blue-4)'
+                      : themeConfig.borderColor,
+                    boxShadow: watchedEmployeeId
+                      ? '0 4px 14px rgba(34, 139, 230, 0.08)'
+                      : '0 2px 6px rgba(0, 0, 0, 0.03)',
+                    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
+                  }}
+                >
                   <Stack gap='md'>
-                    <Group gap='sm'>
-                      <ThemeIcon
-                        size={36}
-                        radius='md'
-                        variant='light'
-                        color='blue'
+                    <Group justify='space-between' align='center'>
+                      <Group gap='sm'>
+                        <ThemeIcon
+                          size={38}
+                          radius='md'
+                          variant='light'
+                          color='blue'
+                          style={{ transition: 'all 0.2s ease' }}
+                        >
+                          <IconUser size={20} />
+                        </ThemeIcon>
+                        <Stack gap={0}>
+                          <Text fw={700} size='sm'>
+                            Select Employee
+                          </Text>
+                          <Text size='xs' c='dimmed'>
+                            Choose the employee to assign this course to
+                          </Text>
+                        </Stack>
+                      </Group>
+                      <Badge
+                        size='xs'
+                        variant={watchedEmployeeId ? 'filled' : 'light'}
+                        color={watchedEmployeeId ? 'teal' : 'gray'}
+                        leftSection={
+                          watchedEmployeeId ? (
+                            <IconCheck size={10} />
+                          ) : undefined
+                        }
                       >
-                        <IconUser size={18} />
-                      </ThemeIcon>
-                      <Stack gap={0}>
-                        <Text fw={600} size='sm'>
-                          Select Employee
-                        </Text>
-                        <Text size='xs' c='dimmed'>
-                          Choose the employee to assign this course to
-                        </Text>
-                      </Stack>
+                        Step 1
+                      </Badge>
                     </Group>
 
                     <Controller
@@ -243,26 +281,54 @@ const CourseAssignments = () => {
                   </Stack>
                 </Card>
 
-                {/* Course Selection */}
-                <Card withBorder radius='md' p='lg'>
+                {/* Step 2: Course Selection */}
+                <Card
+                  withBorder
+                  radius='lg'
+                  p={{ base: 'md', sm: 'lg' }}
+                  shadow='xs'
+                  style={{
+                    backgroundColor: themeConfig.cardBackground || '#ffffff',
+                    borderColor: watchedCourseId
+                      ? 'var(--mantine-color-teal-4)'
+                      : themeConfig.borderColor,
+                    boxShadow: watchedCourseId
+                      ? '0 4px 14px rgba(18, 184, 134, 0.08)'
+                      : '0 2px 6px rgba(0, 0, 0, 0.03)',
+                    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
+                  }}
+                >
                   <Stack gap='md'>
-                    <Group gap='sm'>
-                      <ThemeIcon
-                        size={36}
-                        radius='md'
-                        variant='light'
-                        color='green'
+                    <Group justify='space-between' align='center'>
+                      <Group gap='sm'>
+                        <ThemeIcon
+                          size={38}
+                          radius='md'
+                          variant='light'
+                          color='green'
+                          style={{ transition: 'all 0.2s ease' }}
+                        >
+                          <IconBook size={20} />
+                        </ThemeIcon>
+                        <Stack gap={0}>
+                          <Text fw={700} size='sm'>
+                            Select Course
+                          </Text>
+                          <Text size='xs' c='dimmed'>
+                            Choose the course to assign
+                          </Text>
+                        </Stack>
+                      </Group>
+                      <Badge
+                        size='xs'
+                        variant={watchedCourseId ? 'filled' : 'light'}
+                        color={watchedCourseId ? 'teal' : 'gray'}
+                        leftSection={
+                          watchedCourseId ? <IconCheck size={10} /> : undefined
+                        }
                       >
-                        <IconBook size={18} />
-                      </ThemeIcon>
-                      <Stack gap={0}>
-                        <Text fw={600} size='sm'>
-                          Select Course
-                        </Text>
-                        <Text size='xs' c='dimmed'>
-                          Choose the course to assign
-                        </Text>
-                      </Stack>
+                        Step 2
+                      </Badge>
                     </Group>
 
                     <Controller
@@ -343,26 +409,54 @@ const CourseAssignments = () => {
                   </Stack>
                 </Card>
 
-                {/* Due Date */}
-                <Card withBorder radius='md' p='lg'>
+                {/* Step 3: Due Date */}
+                <Card
+                  withBorder
+                  radius='lg'
+                  p={{ base: 'md', sm: 'lg' }}
+                  shadow='xs'
+                  style={{
+                    backgroundColor: themeConfig.cardBackground || '#ffffff',
+                    borderColor: watchedDueDate
+                      ? 'var(--mantine-color-orange-4)'
+                      : themeConfig.borderColor,
+                    boxShadow: watchedDueDate
+                      ? '0 4px 14px rgba(247, 103, 7, 0.08)'
+                      : '0 2px 6px rgba(0, 0, 0, 0.03)',
+                    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
+                  }}
+                >
                   <Stack gap='md'>
-                    <Group gap='sm'>
-                      <ThemeIcon
-                        size={36}
-                        radius='md'
-                        variant='light'
-                        color='orange'
+                    <Group justify='space-between' align='center'>
+                      <Group gap='sm'>
+                        <ThemeIcon
+                          size={38}
+                          radius='md'
+                          variant='light'
+                          color='orange'
+                          style={{ transition: 'all 0.2s ease' }}
+                        >
+                          <IconCalendar size={20} />
+                        </ThemeIcon>
+                        <Stack gap={0}>
+                          <Text fw={700} size='sm'>
+                            Due Date
+                          </Text>
+                          <Text size='xs' c='dimmed'>
+                            Set a deadline for this assignment
+                          </Text>
+                        </Stack>
+                      </Group>
+                      <Badge
+                        size='xs'
+                        variant={watchedDueDate ? 'filled' : 'light'}
+                        color={watchedDueDate ? 'teal' : 'gray'}
+                        leftSection={
+                          watchedDueDate ? <IconCheck size={10} /> : undefined
+                        }
                       >
-                        <IconCalendar size={18} />
-                      </ThemeIcon>
-                      <Stack gap={0}>
-                        <Text fw={600} size='sm'>
-                          Due Date
-                        </Text>
-                        <Text size='xs' c='dimmed'>
-                          Set a deadline for this assignment
-                        </Text>
-                      </Stack>
+                        Step 3
+                      </Badge>
                     </Group>
 
                     <Controller
@@ -401,179 +495,364 @@ const CourseAssignments = () => {
             {/* Review Summary */}
             <Grid.Col span={{ base: 12, lg: 6 }}>
               <Stack gap='lg'>
-                {showReview && selectedEmployee && selectedCourse ? (
+                {selectedEmployee ? (
                   <Card
                     withBorder
-                    radius='md'
-                    p='lg'
+                    radius='lg'
+                    p={{ base: 'md', sm: 'lg' }}
+                    shadow='sm'
                     style={{
-                      borderColor: themeConfig.color,
-                      borderWidth: 2,
-                      position: 'sticky',
-                      top: 80
+                      borderColor: isFormComplete
+                        ? 'var(--mantine-color-teal-5)'
+                        : themeConfig.borderColor,
+                      borderWidth: isFormComplete ? 2 : 1,
+                      position: isMobile ? 'static' : 'sticky',
+                      top: 80,
+                      backgroundColor: themeConfig.cardBackground || '#ffffff',
+                      boxShadow: '0 6px 24px rgba(0, 0, 0, 0.06)',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                     }}
                   >
                     <Stack gap='md'>
-                      <Group gap='sm'>
-                        <ThemeIcon
-                          size={36}
-                          radius='md'
+                      <Group
+                        justify='space-between'
+                        align='center'
+                        wrap='wrap'
+                        gap='xs'
+                      >
+                        <Group gap='sm'>
+                          <ThemeIcon
+                            size={38}
+                            radius='md'
+                            variant='light'
+                            color={isFormComplete ? 'teal' : 'blue'}
+                            style={{ transition: 'all 0.3s ease' }}
+                          >
+                            <IconCheck size={20} />
+                          </ThemeIcon>
+                          <Stack gap={0}>
+                            <Text fw={700} size='sm'>
+                              Assignment Summary
+                            </Text>
+                            <Text size='xs' c='dimmed'>
+                              Review details before assigning
+                            </Text>
+                          </Stack>
+                        </Group>
+
+                        <Badge
+                          size='sm'
                           variant='light'
-                          color='teal'
+                          color={isFormComplete ? 'teal' : 'orange'}
+                          leftSection={
+                            isFormComplete ? <IconCheck size={12} /> : undefined
+                          }
+                          style={{ transition: 'all 0.3s ease' }}
                         >
-                          <IconCheck size={18} />
-                        </ThemeIcon>
-                        <Stack gap={0}>
-                          <Text fw={600} size='sm'>
-                            Assignment Summary
-                          </Text>
-                          <Text size='xs' c='dimmed'>
-                            Review before submitting
-                          </Text>
-                        </Stack>
+                          {isFormComplete
+                            ? 'Ready to Assign'
+                            : 'Select Course to Finish'}
+                        </Badge>
+                      </Group>
+
+                      {/* Step Progress Pills */}
+                      <Group gap={isMobile ? 6 : 'xs'} grow>
+                        <Badge
+                          size='xs'
+                          variant='filled'
+                          color='teal'
+                          leftSection={<IconCheck size={10} />}
+                        >
+                          Employee
+                        </Badge>
+                        <Badge
+                          size='xs'
+                          variant={selectedCourse ? 'filled' : 'light'}
+                          color={selectedCourse ? 'teal' : 'orange'}
+                          leftSection={
+                            selectedCourse ? <IconCheck size={10} /> : undefined
+                          }
+                          style={{ transition: 'all 0.25s ease' }}
+                        >
+                          {selectedCourse ? 'Course Added' : 'Course Pending'}
+                        </Badge>
+                        <Badge
+                          size='xs'
+                          variant={watchedDueDate ? 'filled' : 'light'}
+                          color={watchedDueDate ? 'teal' : 'gray'}
+                          leftSection={
+                            watchedDueDate ? <IconCheck size={10} /> : undefined
+                          }
+                        >
+                          Due Date Set
+                        </Badge>
                       </Group>
 
                       <Divider />
 
                       {/* Employee Info */}
                       <Stack gap='xs'>
-                        <Text fw={600} size='xs' c='dimmed' tt='uppercase'>
-                          Employee
-                        </Text>
-                        <Group gap='sm'>
-                          <ThemeIcon
-                            size={40}
-                            radius='md'
-                            variant='light'
-                            color={themeConfig.color}
-                          >
-                            <IconUser size={20} />
-                          </ThemeIcon>
-                          <Stack gap={0}>
-                            <Text fw={600} size='sm'>
-                              {selectedEmployee.firstName}{' '}
-                              {selectedEmployee.lastName}
-                            </Text>
-                            <Group gap='xs' c='dimmed'>
-                              <IconId size={12} />
-                              <Text size='xs'>
-                                {selectedEmployee.employeeId ||
-                                  selectedEmployee.id}
-                              </Text>
-                            </Group>
-                            {selectedEmployee.employeeRole?.[0] && (
-                              <Group gap='xs' c='dimmed'>
-                                <IconBriefcase size={12} />
-                                <Text size='xs'>
-                                  {selectedEmployee.employeeRole[0].designation}
-                                </Text>
-                              </Group>
-                            )}
-                          </Stack>
+                        <Group justify='space-between' align='center'>
+                          <Text fw={700} size='xs' c='dimmed' tt='uppercase'>
+                            Employee
+                          </Text>
+                          <Badge size='xs' variant='light' color='blue'>
+                            Selected
+                          </Badge>
                         </Group>
+
+                        <Paper
+                          p='sm'
+                          radius='md'
+                          withBorder
+                          style={{
+                            borderColor: themeConfig.borderColor,
+                            backgroundColor:
+                              themeConfig.headerBackgroundColor || '#fafafa',
+                            transition: 'all 0.2s ease'
+                          }}
+                        >
+                          <Group gap='sm'>
+                            <ThemeIcon
+                              size={42}
+                              radius='md'
+                              variant='light'
+                              color={themeConfig.color || 'blue'}
+                            >
+                              <IconUser size={22} />
+                            </ThemeIcon>
+                            <Stack gap={2} style={{ flex: 1, minWidth: 0 }}>
+                              <Text fw={600} size='sm' lineClamp={1}>
+                                {selectedEmployee.firstName}{' '}
+                                {selectedEmployee.lastName}
+                              </Text>
+                              <Group gap='xs' wrap='wrap'>
+                                <Badge
+                                  size='xs'
+                                  variant='outline'
+                                  color='gray'
+                                  leftSection={<IconId size={10} />}
+                                >
+                                  {selectedEmployee.employeeId ||
+                                    selectedEmployee.id}
+                                </Badge>
+                                {selectedEmployee.employeeRole?.[0] && (
+                                  <Badge
+                                    size='xs'
+                                    variant='light'
+                                    color='blue'
+                                    leftSection={<IconBriefcase size={10} />}
+                                  >
+                                    {
+                                      selectedEmployee.employeeRole[0]
+                                        .designation
+                                    }
+                                  </Badge>
+                                )}
+                              </Group>
+                            </Stack>
+                          </Group>
+                        </Paper>
                       </Stack>
 
                       <Divider />
 
                       {/* Course Info */}
                       <Stack gap='xs'>
-                        <Text fw={600} size='xs' c='dimmed' tt='uppercase'>
-                          Course
-                        </Text>
-                        <Group gap='sm'>
-                          <ThemeIcon
-                            size={40}
-                            radius='md'
-                            variant='light'
-                            color={themeConfig.color}
-                          >
-                            <IconBook size={20} />
-                          </ThemeIcon>
-                          <Stack gap={0}>
-                            <Text fw={600} size='sm'>
-                              {selectedCourse.courseName}
-                            </Text>
-                            <Group gap='xs'>
-                              <Badge
-                                size='xs'
-                                variant='light'
-                                color='indigo'
-                                leftSection={<IconLayersSubtract size={10} />}
-                              >
-                                {courseMeta?.moduleCount ?? 0} modules
-                              </Badge>
-                              <Badge
-                                size='xs'
-                                variant='light'
-                                color='pink'
-                                leftSection={<IconListCheck size={10} />}
-                              >
-                                {courseMeta?.taskCount ?? 0} tasks
-                              </Badge>
-                              <Badge
-                                size='xs'
-                                color={
-                                  selectedCourse.status === 'ACTIVE'
-                                    ? 'green'
-                                    : 'blue'
-                                }
-                                variant='light'
-                              >
-                                {selectedCourse.status}
-                              </Badge>
-                            </Group>
-                          </Stack>
+                        <Group justify='space-between' align='center'>
+                          <Text fw={700} size='xs' c='dimmed' tt='uppercase'>
+                            Course
+                          </Text>
+                          {selectedCourse ? (
+                            <Badge size='xs' variant='light' color='green'>
+                              Selected
+                            </Badge>
+                          ) : (
+                            <Badge size='xs' variant='light' color='orange'>
+                              Required
+                            </Badge>
+                          )}
                         </Group>
+
+                        {selectedCourse ? (
+                          <Paper
+                            p='sm'
+                            radius='md'
+                            withBorder
+                            style={{
+                              borderColor: themeConfig.borderColor,
+                              backgroundColor:
+                                themeConfig.headerBackgroundColor || '#fafafa',
+                              transition: 'all 0.25s ease'
+                            }}
+                          >
+                            <Group gap='sm' align='flex-start' wrap='nowrap'>
+                              <CourseThumbnail
+                                name={selectedCourse.courseName}
+                                src={
+                                  selectedCourse.thumbnailUrl ||
+                                  selectedCourse.thumbnail
+                                }
+                                size={isMobile ? 38 : 44}
+                                radius='md'
+                              />
+                              <Stack gap={4} style={{ flex: 1, minWidth: 0 }}>
+                                <Text fw={600} size='sm' lineClamp={1}>
+                                  {selectedCourse.courseName}
+                                </Text>
+                                <Group gap='xs' wrap='wrap'>
+                                  <Badge
+                                    size='xs'
+                                    variant='light'
+                                    color='indigo'
+                                    leftSection={
+                                      <IconLayersSubtract size={10} />
+                                    }
+                                  >
+                                    {courseMeta?.moduleCount ?? 0} modules
+                                  </Badge>
+                                  <Badge
+                                    size='xs'
+                                    variant='light'
+                                    color='pink'
+                                    leftSection={<IconListCheck size={10} />}
+                                  >
+                                    {courseMeta?.taskCount ?? 0} tasks
+                                  </Badge>
+                                  <Badge
+                                    size='xs'
+                                    color={
+                                      selectedCourse.status === 'ACTIVE'
+                                        ? 'green'
+                                        : 'blue'
+                                    }
+                                    variant='light'
+                                  >
+                                    {selectedCourse.status}
+                                  </Badge>
+                                </Group>
+                              </Stack>
+                            </Group>
+                          </Paper>
+                        ) : (
+                          <Paper
+                            p='md'
+                            radius='md'
+                            style={{
+                              border:
+                                '1.5px dashed var(--mantine-color-orange-3)',
+                              backgroundColor: 'var(--mantine-color-orange-0)',
+                              textAlign: 'center',
+                              transition: 'all 0.25s ease'
+                            }}
+                          >
+                            <Stack gap={4} align='center'>
+                              <ThemeIcon
+                                size={32}
+                                radius='xl'
+                                variant='light'
+                                color='orange'
+                              >
+                                <IconBook size={16} />
+                              </ThemeIcon>
+                              <Text size='xs' fw={600} c='orange.8'>
+                                No course selected
+                              </Text>
+                              <Text size='xs' c='dimmed'>
+                                Choose a course from the dropdown on the left
+                              </Text>
+                            </Stack>
+                          </Paper>
+                        )}
                       </Stack>
 
                       <Divider />
 
                       {/* Due Date */}
                       <Stack gap='xs'>
-                        <Text fw={600} size='xs' c='dimmed' tt='uppercase'>
-                          Due Date
-                        </Text>
-                        <Group gap='sm'>
-                          <ThemeIcon
-                            size={40}
-                            radius='md'
-                            variant='light'
-                            color={themeConfig.color}
-                          >
-                            <IconCalendar size={20} />
-                          </ThemeIcon>
-                          <Text fw={600} size='sm'>
-                            {watchedDueDate
-                              ? new Date(watchedDueDate).toLocaleDateString(
-                                  undefined,
-                                  {
-                                    month: 'long',
-                                    day: 'numeric',
-                                    year: 'numeric'
-                                  }
-                                )
-                              : 'Not set'}
+                        <Group justify='space-between' align='center'>
+                          <Text fw={700} size='xs' c='dimmed' tt='uppercase'>
+                            Due Date
                           </Text>
+                          <Badge size='xs' variant='light' color='orange'>
+                            Deadline
+                          </Badge>
                         </Group>
+
+                        <Paper
+                          p='sm'
+                          radius='md'
+                          withBorder
+                          style={{
+                            borderColor: themeConfig.borderColor,
+                            backgroundColor:
+                              themeConfig.headerBackgroundColor || '#fafafa',
+                            transition: 'all 0.2s ease'
+                          }}
+                        >
+                          <Group gap='sm'>
+                            <ThemeIcon
+                              size={40}
+                              radius='md'
+                              variant='light'
+                              color='orange'
+                            >
+                              <IconCalendar size={20} />
+                            </ThemeIcon>
+                            <Stack gap={0}>
+                              <Text fw={600} size='sm'>
+                                {watchedDueDate
+                                  ? new Date(watchedDueDate).toLocaleDateString(
+                                      undefined,
+                                      {
+                                        month: 'long',
+                                        day: 'numeric',
+                                        year: 'numeric'
+                                      }
+                                    )
+                                  : 'Not set'}
+                              </Text>
+                              <Text size='xs' c='dimmed'>
+                                Target completion date
+                              </Text>
+                            </Stack>
+                          </Group>
+                        </Paper>
                       </Stack>
                     </Stack>
                   </Card>
                 ) : (
-                  <Card withBorder radius='md' p='lg'>
-                    <Center py='xl'>
+                  <Card
+                    withBorder
+                    radius='lg'
+                    p={{ base: 'md', sm: 'xl' }}
+                    shadow='sm'
+                    style={{
+                      borderStyle: 'dashed',
+                      borderColor: themeConfig.borderColor,
+                      backgroundColor: themeConfig.cardBackground || '#ffffff',
+                      transition: 'all 0.3s ease'
+                    }}
+                  >
+                    <Center py={{ base: 'md', sm: 'xl' }}>
                       <Stack align='center' gap='sm'>
                         <ThemeIcon
-                          size={48}
+                          size={52}
                           radius='xl'
                           variant='light'
                           color='gray'
                         >
-                          <IconCheck size={24} />
+                          <IconCheck size={26} />
                         </ThemeIcon>
-                        <Text size='sm' c='dimmed' ta='center'>
-                          Select an employee, course, and due date to see the
-                          summary
-                        </Text>
+                        <Stack gap={2} align='center'>
+                          <Text fw={600} size='sm' ta='center'>
+                            Assignment Summary Preview
+                          </Text>
+                          <Text size='xs' c='dimmed' ta='center' maw={280}>
+                            Select an employee, course, and due date to see the
+                            summary
+                          </Text>
+                        </Stack>
                       </Stack>
                     </Center>
                   </Card>
@@ -582,20 +861,32 @@ const CourseAssignments = () => {
             </Grid.Col>
           </Grid>
 
-          <Stack gap='md' mt='lg'>
+          <Stack
+            gap='md'
+            mt={{ base: 'xl', sm: 'lg' }}
+            mb={{ base: 60, sm: 0 }}
+          >
             {/* Actions */}
-            <Group justify='flex-end' gap='sm'>
+            <Group
+              justify='flex-end'
+              gap='sm'
+              grow={Boolean(isMobile)}
+              wrap='wrap'
+            >
               <CommonButton
                 variant='default'
                 onClick={() => reset()}
                 disabled={isSubmitting || assignMutation.isPending}
+                size={isMobile ? 'md' : 'sm'}
               >
                 Cancel
               </CommonButton>
               <CommonButton
                 type='submit'
                 loading={isSubmitting || assignMutation.isPending}
-                disabled={!showReview}
+                disabled={!isFormComplete}
+                leftSection={<IconCheck size={16} />}
+                size={isMobile ? 'md' : 'sm'}
               >
                 Assign Course
               </CommonButton>
