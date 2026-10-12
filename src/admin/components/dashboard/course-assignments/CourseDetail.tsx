@@ -21,7 +21,8 @@ import {
   IconListCheck,
   IconLink,
   IconFile,
-  IconExternalLink
+  IconExternalLink,
+  IconArchive
 } from '@tabler/icons-react';
 import { useMediaQuery } from '@mantine/hooks';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -58,10 +59,37 @@ const CourseDetail = () => {
   };
 
   const modules: Module[] = course?.modules || [];
+
+  const totalModules = modules.length;
+
+  const archivedModules = modules.filter(
+    m => (m.status || '').toUpperCase() === 'ARCHIVE'
+  ).length;
+
+  const activeModules = totalModules - archivedModules;
+
   const totalTasks = modules.reduce(
     (sum, m) => sum + (m.tasks?.length || 0),
     0
   );
+
+  const archivedTasks = modules.reduce(
+    (sum, m) =>
+      sum +
+      (m.tasks?.filter(t => (t.status || '').toUpperCase() === 'ARCHIVE')
+        .length || 0),
+    0
+  );
+
+  const inactiveTasks = modules.reduce(
+    (sum, m) =>
+      sum +
+      (m.tasks?.filter(t => (t.status || '').toUpperCase() === 'INACTIVE')
+        .length || 0),
+    0
+  );
+
+  const activeTasks = totalTasks - archivedTasks - inactiveTasks;
 
   const handleViewContent = (task: Task) => {
     window.open(getCourseTaskContentUrl(task._id), '_blank', 'noopener');
@@ -77,22 +105,38 @@ const CourseDetail = () => {
 
   const stats = [
     {
-      icon: <IconBook size={20} />,
-      label: 'Modules',
-      value: modules.length,
-      color: 'indigo'
+      icon: <IconLayersSubtract size={20} />,
+      label: 'Total Modules',
+      value: totalModules,
+      color: 'indigo',
+      active: activeModules,
+      archived: archivedModules
+    },
+    {
+      icon: <IconArchive size={20} />,
+      label: 'Archived Modules',
+      value: archivedModules,
+      color: 'orange',
+      active: activeModules,
+      archived: archivedModules
     },
     {
       icon: <IconListCheck size={20} />,
-      label: 'Task Items',
+      label: 'Total Tasks',
       value: totalTasks,
-      color: 'pink'
+      color: 'violet',
+      active: activeTasks,
+      archived: archivedTasks,
+      inactive: inactiveTasks
     },
     {
-      icon: <IconLayersSubtract size={20} />,
-      label: 'Status',
-      value: course?.status || 'N/A',
-      color: 'teal'
+      icon: <IconArchive size={20} />,
+      label: 'Archived Tasks',
+      value: archivedTasks,
+      color: 'gray',
+      active: activeTasks,
+      archived: archivedTasks,
+      inactive: inactiveTasks
     }
   ];
 
@@ -161,6 +205,26 @@ const CourseDetail = () => {
                     <Text fw={700} size='lg'>
                       {item.value}
                     </Text>
+
+                    <Group gap={4} mt={4} wrap='wrap'>
+                      {'active' in item && (
+                        <Badge size='xs' variant='light' color='green'>
+                          {item.active} Active
+                        </Badge>
+                      )}
+
+                      {'archived' in item && (
+                        <Badge size='xs' variant='light' color='orange'>
+                          {item.archived} Archived
+                        </Badge>
+                      )}
+
+                      {item.inactive !== undefined && item.inactive > 0 && (
+                        <Badge size='xs' variant='light' color='gray'>
+                          {item.inactive} Inactive
+                        </Badge>
+                      )}
+                    </Group>
                   </Stack>
                 </Group>
               </Card>
@@ -297,16 +361,18 @@ const CourseDetail = () => {
                                   )}
                                 </Stack>
                               </Group>
-                              <ActionIcon
-                                variant='subtle'
-                                size='lg'
-                                color='gray'
-                                style={{ flexShrink: 0 }}
-                                onClick={() => handleViewContent(task)}
-                                aria-label={`Open ${task.taskName}`}
-                              >
-                                <IconExternalLink size={18} />
-                              </ActionIcon>
+                              {!task.isCoding && task.type !== 'CODE' && (
+                                <ActionIcon
+                                  variant='subtle'
+                                  size='lg'
+                                  color='gray'
+                                  style={{ flexShrink: 0 }}
+                                  onClick={() => handleViewContent(task)}
+                                  aria-label={`Open ${task.taskName}`}
+                                >
+                                  <IconExternalLink size={18} />
+                                </ActionIcon>
+                              )}
                             </Group>
                           </Paper>
                         ))

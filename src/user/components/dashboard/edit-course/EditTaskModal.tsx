@@ -3,6 +3,7 @@ import {
   Modal,
   Stack,
   TextInput,
+  Switch,
   Select,
   Group,
   Loader,
@@ -27,6 +28,10 @@ import { useAppTheme } from '@hooks/use-app-theme';
 import { Task, CourseStatus, COURSE_STATUSES } from '@interfaces/contentwriter';
 import CourseThumbnail from '../content-writer/CourseThumbnail';
 import DescriptionEditor from './DescriptionEditor';
+import {
+  REQUIRED_ACKNOWLEDGEMENT_TEXT,
+  taskRequiresAcknowledgement
+} from './task-popup-state';
 
 interface EditTaskModalProps {
   opened: boolean;
@@ -46,6 +51,7 @@ const EditTaskModal = ({
   const [thumbnail, setThumbnail] = useState<File | null>(null);
   const [thumbPreview, setThumbPreview] = useState<string | null>(null);
   const [status, setStatus] = useState<CourseStatus>('ACTIVE');
+  const [requiresAcknowledgement, setRequiresAcknowledgement] = useState(false);
 
   const { mutateAsync: updateTask, isPending } = useUpdateCourseTask(courseId);
   const { showSuccessToast, showErrorToast } = useCustomToast();
@@ -70,6 +76,9 @@ const EditTaskModal = ({
     setTaskDescription(task.taskDescription || '');
     setThumbnail(null);
     setStatus((task.status as CourseStatus) || 'ACTIVE');
+    setRequiresAcknowledgement(
+      taskRequiresAcknowledgement(task.acknowledgementText)
+    );
   } else if (!opened && seededFor !== null) {
     setSeededFor(null);
   }
@@ -87,7 +96,14 @@ const EditTaskModal = ({
         taskName: taskName.trim(),
         taskDescription: taskDescription.trim(),
         thumbnail,
-        status
+        status,
+        ...(isFile
+          ? {
+              acknowledgementText: requiresAcknowledgement
+                ? REQUIRED_ACKNOWLEDGEMENT_TEXT
+                : ''
+            }
+          : {})
       });
       showSuccessToast('Task updated successfully!');
       onClose();
@@ -99,6 +115,8 @@ const EditTaskModal = ({
   const isCoding = task?.isCoding || task?.type === 'CODE';
 
   const isLink = task?.type === 'LINK';
+
+  const isFile = !isCoding && task?.type === 'FILE';
 
   return (
     <Modal
@@ -271,6 +289,17 @@ const EditTaskModal = ({
               </Paper>
             </Stack>
           </>
+        )}
+
+        {isFile && (
+          <Switch
+            label='Require acknowledgement'
+            checked={requiresAcknowledgement}
+            onChange={event =>
+              setRequiresAcknowledgement(event.currentTarget.checked)
+            }
+            description='Employees must tick a checkbox confirming they have read this file before they can complete the task or move on.'
+          />
         )}
 
         <Group justify='flex-end' mt='sm'>

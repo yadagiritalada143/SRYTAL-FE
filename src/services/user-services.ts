@@ -22,6 +22,8 @@ import {
   CodeRunResult,
   CodingQuestion,
   RunCodePayload,
+  UpdateMyTaskAcknowledgementPayload,
+  UpdateMyTaskAcknowledgementResponse,
   UpdateTaskProgressPayload,
   UpdateTaskProgressResponse
 } from '@interfaces/course-assignment';
@@ -204,11 +206,9 @@ export const addCourseContentWriter = async (
     if (image) {
       formData.append('coursethumbnail', image);
     }
-    const response = await apiClient.post(
-      '/addCourse',
-      formData,
-      { headers: { 'Content-Type': 'multipart/form-data' } }
-    );
+    const response = await apiClient.post('/addCourse', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
     return response.data;
   } catch (error) {
     throw error;
@@ -224,11 +224,9 @@ export const addCourseModuleContentWriter = async (data: AddModulePayload) => {
     if (data.thumbnail) {
       formData.append('coursemodulethumbnail', data.thumbnail);
     }
-    const response = await apiClient.post(
-      '/addCourseModule',
-      formData,
-      { headers: { 'Content-Type': 'multipart/form-data' } }
-    );
+    const response = await apiClient.post('/addCourseModule', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
     return response.data;
   } catch (error) {
     throw error;
@@ -242,6 +240,9 @@ export const addCourseTaskContentWriter = async (data: AddTaskPayload) => {
     formData.append('taskName', data.taskName);
     formData.append('taskDescription', data.taskDescription);
     formData.append('type', data.type || 'LINK');
+    if (data.acknowledgementText !== undefined) {
+      formData.append('acknowledgementText', data.acknowledgementText);
+    }
     // A task carries either an uploaded file or an external link.
     if (data.file) {
       formData.append('taskFile', data.file);
@@ -251,11 +252,9 @@ export const addCourseTaskContentWriter = async (data: AddTaskPayload) => {
     if (data.thumbnail) {
       formData.append('thumbnailFile', data.thumbnail);
     }
-    const response = await apiClient.post(
-      '/addcoursetask',
-      formData,
-      { headers: { 'Content-Type': 'multipart/form-data' } }
-    );
+    const response = await apiClient.post('/addcoursetask', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
     return response.data;
   } catch (error) {
     throw error;
@@ -275,11 +274,9 @@ export const updateCourseContentWriter = async (data: UpdateCoursePayload) => {
     if (data.thumbnail) {
       formData.append('thumbnail', data.thumbnail);
     }
-    const response = await apiClient.put(
-      '/updatecourse',
-      formData,
-      { headers: { 'Content-Type': 'multipart/form-data' } }
-    );
+    const response = await apiClient.put('/updatecourse', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
     return response.data;
   } catch (error) {
     throw error;
@@ -300,11 +297,9 @@ export const updateCourseModuleContentWriter = async (
     if (data.thumbnail) {
       formData.append('thumbnail', data.thumbnail);
     }
-    const response = await apiClient.put(
-      '/updatecoursemodule',
-      formData,
-      { headers: { 'Content-Type': 'multipart/form-data' } }
-    );
+    const response = await apiClient.put('/updatecoursemodule', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
     return response.data;
   } catch (error) {
     throw error;
@@ -323,14 +318,15 @@ export const updateCourseTaskContentWriter = async (
     formData.append('taskName', data.taskName);
     formData.append('taskDescription', data.taskDescription);
     formData.append('status', data.status);
+    if (data.acknowledgementText !== undefined) {
+      formData.append('acknowledgementText', data.acknowledgementText);
+    }
     if (data.thumbnail) {
       formData.append('thumbnailFile', data.thumbnail);
     }
-    const response = await apiClient.put(
-      '/updatecoursetask',
-      formData,
-      { headers: { 'Content-Type': 'multipart/form-data' } }
-    );
+    const response = await apiClient.put('/updatecoursetask', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
     return response.data;
   } catch (error) {
     throw error;
@@ -375,6 +371,13 @@ export const updateMyTaskProgress = async (
   data: UpdateTaskProgressPayload
 ): Promise<UpdateTaskProgressResponse> => {
   const response = await apiClient.put('/updateMyTaskProgress', data);
+  return response.data;
+};
+
+export const updateMyTaskAcknowledgement = async (
+  data: UpdateMyTaskAcknowledgementPayload
+): Promise<UpdateMyTaskAcknowledgementResponse> => {
+  const response = await apiClient.put('/updateMyTaskAcknowledgement', data);
   return response.data;
 };
 

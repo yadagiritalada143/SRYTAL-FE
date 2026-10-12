@@ -5,6 +5,7 @@ import {
   Modal,
   Stack,
   TextInput,
+  Switch,
   FileInput,
   SegmentedControl,
   Group,
@@ -34,6 +35,7 @@ import {
   AddTaskContentMode
 } from './task-popup-state';
 import DescriptionEditor from './DescriptionEditor';
+import { REQUIRED_ACKNOWLEDGEMENT_TEXT } from './task-popup-state';
 
 interface AddTaskModalProps {
   opened: boolean;
@@ -85,6 +87,7 @@ const AddTaskModal = ({
   const [link, setLink] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [thumbnail, setThumbnail] = useState<File | null>(null);
+  const [requiresAcknowledgement, setRequiresAcknowledgement] = useState(false);
   const [touched, setTouched] = useState<Record<TaskField, boolean>>({
     taskName: false,
     link: false,
@@ -123,6 +126,7 @@ const AddTaskModal = ({
     setLink('');
     setFile(null);
     setThumbnail(null);
+    setRequiresAcknowledgement(false);
     setTouched({
       taskName: false,
       link: false,
@@ -183,6 +187,13 @@ const AddTaskModal = ({
         type: mode === 'CODING' ? 'CODE' : mode,
         link: mode === 'LINK' ? link.trim() : undefined,
         file: mode === 'FILE' ? file : undefined,
+        ...(mode === 'FILE'
+          ? {
+              acknowledgementText: requiresAcknowledgement
+                ? REQUIRED_ACKNOWLEDGEMENT_TEXT
+                : ''
+            }
+          : {}),
         thumbnail
       });
       showSuccessToast(response?.message || 'Task added successfully!');
@@ -318,7 +329,12 @@ const AddTaskModal = ({
           />
         ) : (
           <Stack gap='xs'>
-            <Paper p='sm' radius='md' withBorder style={{ backgroundColor: 'rgba(99, 102, 241, 0.05)' }}>
+            <Paper
+              p='sm'
+              radius='md'
+              withBorder
+              style={{ backgroundColor: 'rgba(99, 102, 241, 0.05)' }}
+            >
               <Group gap='xs' wrap='nowrap' align='flex-start'>
                 <ThemeIcon size={24} radius='md' variant='light' color='indigo'>
                   <IconCode size={14} />
@@ -338,6 +354,17 @@ const AddTaskModal = ({
               Add Programming Language
             </CommonButton>
           </Stack>
+        )}
+
+        {mode === 'FILE' && (
+          <Switch
+            label='Require acknowledgement'
+            checked={requiresAcknowledgement}
+            onChange={event =>
+              setRequiresAcknowledgement(event.currentTarget.checked)
+            }
+            description='Employees must tick a checkbox confirming they have read this file before they can complete the task or move on.'
+          />
         )}
 
         <FileInput

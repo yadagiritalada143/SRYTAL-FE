@@ -18,6 +18,9 @@ export interface AssignedTask {
   link?: string;
   contentMimeType?: string;
   contentFileName?: string;
+  acknowledgementText?: string;
+  acknowledged?: boolean;
+  acknowledgedAt?: string | null;
   isCompleted: boolean;
   completedAt?: string | null;
 }
@@ -126,6 +129,23 @@ export interface UpdateTaskProgressResponse {
   courseStatus: CourseAssignmentStatus;
   progress: CourseProgress;
   task: { taskId: string; isCompleted: boolean; completedAt?: string | null };
+}
+
+export interface UpdateMyTaskAcknowledgementPayload {
+  courseAssignmentId: string;
+  taskId: string;
+  acknowledged: boolean;
+}
+
+export interface UpdateMyTaskAcknowledgementResponse {
+  success: boolean;
+  message?: string;
+  data?: {
+    courseAssignmentId: string;
+    taskId: string;
+    acknowledged: boolean;
+    acknowledgedAt?: string | null;
+  };
 }
 
 export interface AdminAssignmentEmployee {

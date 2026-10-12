@@ -2,6 +2,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { MantineProvider } from '@mantine/core';
 import EditTaskModal from '../EditTaskModal';
+import { REQUIRED_ACKNOWLEDGEMENT_TEXT } from '../acknowledgement';
 
 jest.mock('@hooks/mutations/useUserMutations', () => ({
   useUpdateCourseTask: () => ({
@@ -228,6 +229,63 @@ describe('EditTaskModal', () => {
     it('shows a fallback label when content info is missing', () => {
       renderModal(makeTask({ type: 'FILE', contentFileName: undefined }));
       expect(screen.getByText('Uploaded file')).toBeInTheDocument();
+    });
+  });
+
+  describe('Acknowledgement', () => {
+    it('shows and seeds the acknowledgement switch for FILE tasks', () => {
+      renderModal(
+        makeTask({
+          type: 'FILE',
+          contentFileName: 'policy.pdf',
+          acknowledgementText: 'I have read the policy.'
+        })
+      );
+      expect(screen.getByLabelText(/Require acknowledgement/)).toBeChecked();
+    });
+
+    it('hides the acknowledgement switch for non-FILE tasks', () => {
+      renderModal(makeTask({ type: 'LINK' }));
+      expect(
+        screen.queryByLabelText(/Require acknowledgement/)
+      ).not.toBeInTheDocument();
+    });
+
+    it('submits the standard acknowledgement when the switch is turned on', async () => {
+      renderModal(makeTask({ type: 'FILE', contentFileName: 'policy.pdf' }));
+
+      fireEvent.click(screen.getByLabelText(/Require acknowledgement/));
+
+      fireEvent.click(screen.getByRole('button', { name: 'Save Changes' }));
+
+      await waitFor(() => {
+        expect(mockUpdateTask).toHaveBeenCalledWith(
+          expect.objectContaining({
+            acknowledgementText: REQUIRED_ACKNOWLEDGEMENT_TEXT
+          })
+        );
+      });
+    });
+
+    it('sends an empty acknowledgement to clear it when the switch is off', async () => {
+      renderModal(
+        makeTask({
+          type: 'FILE',
+          contentFileName: 'policy.pdf',
+          acknowledgementText: 'Old statement'
+        })
+      );
+
+      // Seeded as on; turning it off clears the stored acknowledgement.
+      fireEvent.click(screen.getByLabelText(/Require acknowledgement/));
+
+      fireEvent.click(screen.getByRole('button', { name: 'Save Changes' }));
+
+      await waitFor(() => {
+        expect(mockUpdateTask).toHaveBeenCalledWith(
+          expect.objectContaining({ acknowledgementText: '' })
+        );
+      });
     });
   });
 

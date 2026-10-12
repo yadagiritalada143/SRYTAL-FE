@@ -2,6 +2,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { MantineProvider } from '@mantine/core';
 import AddTaskModal from '../AddTaskModal';
+import { REQUIRED_ACKNOWLEDGEMENT_TEXT } from '../acknowledgement';
 import {
   REOPEN_TASK_POPUP_KEY,
   saveTaskDraft,
@@ -232,6 +233,21 @@ describe('AddTaskModal', () => {
     it('renders the thumbnail file input', () => {
       renderModal();
       expect(screen.getByText('Thumbnail (optional)')).toBeInTheDocument();
+    });
+
+    it('does not show the acknowledgement switch for Link tasks', () => {
+      renderModal();
+      expect(
+        screen.queryByLabelText(/Require acknowledgement/)
+      ).not.toBeInTheDocument();
+    });
+
+    it('shows the acknowledgement switch for File tasks', () => {
+      renderModal();
+      clickFileMode();
+      expect(
+        screen.getByLabelText(/Require acknowledgement/)
+      ).toBeInTheDocument();
     });
   });
 
@@ -543,6 +559,50 @@ describe('AddTaskModal', () => {
             link: undefined,
             file
           })
+        );
+      });
+    });
+
+    it('sends the standard acknowledgement when the switch is on', async () => {
+      const { container } = renderModal();
+
+      typeTitle('Reading material');
+      clickFileMode();
+
+      const file = new File(['x'], 'notes.pdf', { type: 'application/pdf' });
+      fireEvent.change(getMainFileInput(container), {
+        target: { files: [file] }
+      });
+      fireEvent.click(screen.getByLabelText(/Require acknowledgement/));
+
+      fireEvent.click(screen.getByRole('button', { name: 'Add Task' }));
+
+      await waitFor(() => {
+        expect(mockAddTask).toHaveBeenCalledWith(
+          expect.objectContaining({
+            type: 'FILE',
+            acknowledgementText: REQUIRED_ACKNOWLEDGEMENT_TEXT
+          })
+        );
+      });
+    });
+
+    it('sends an empty acknowledgement when the switch is off', async () => {
+      const { container } = renderModal();
+
+      typeTitle('Reading material');
+      clickFileMode();
+
+      const file = new File(['x'], 'notes.pdf', { type: 'application/pdf' });
+      fireEvent.change(getMainFileInput(container), {
+        target: { files: [file] }
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: 'Add Task' }));
+
+      await waitFor(() => {
+        expect(mockAddTask).toHaveBeenCalledWith(
+          expect.objectContaining({ type: 'FILE', acknowledgementText: '' })
         );
       });
     });
