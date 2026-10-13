@@ -148,44 +148,68 @@ const CourseDetails = () => {
 
   const stats = [
     {
-      icon: <IconBook size={19} />,
       label: 'Total Modules',
       value: modules.length,
+      icon: <IconBook size={22} />,
       color: 'indigo',
-      badges: [
-        { label: `${activeModules} ACTIVE`, color: 'green' },
-        { label: `${archivedModules} ARCHIVED`, color: 'orange' }
-      ]
+      badges: (
+        <Group gap={4} mt={4} wrap='wrap'>
+          <Badge size='xs' variant='light' color='green'>
+            {activeModules} Active
+          </Badge>
+          <Badge size='xs' variant='light' color='orange'>
+            {archivedModules} Archived
+          </Badge>
+        </Group>
+      )
     },
     {
-      icon: <IconArchive size={19} />,
       label: 'Archived Modules',
       value: archivedModules,
+      icon: <IconArchive size={22} />,
       color: 'orange',
-      badges: [
-        { label: `${modules.length} TOTAL`, color: 'orange' },
-        { label: `${activeModules} ACTIVE`, color: 'green' }
-      ]
+      badges: (
+        <Group gap={4} mt={4} wrap='wrap'>
+          <Badge size='xs' variant='light' color='orange'>
+            {modules.length} Total
+          </Badge>
+          <Badge size='xs' variant='light' color='green'>
+            {activeModules} Active
+          </Badge>
+        </Group>
+      )
     },
     {
-      icon: <IconLayersSubtract size={19} />,
       label: 'Total Tasks',
       value: totalTasks,
+      icon: <IconLayersSubtract size={22} />,
       color: 'indigo',
-      badges: [
-        { label: `${activeTasks} ACTIVE`, color: 'indigo' },
-        { label: `${archivedTasks} ARCHIVED`, color: 'orange' }
-      ]
+      badges: (
+        <Group gap={4} mt={4} wrap='wrap'>
+          <Badge size='xs' variant='light' color='indigo'>
+            {activeTasks} Active
+          </Badge>
+          <Badge size='xs' variant='light' color='orange'>
+            {archivedTasks} Archived
+          </Badge>
+        </Group>
+      )
     },
     {
-      icon: <IconListCheck size={19} />,
       label: 'Archived Tasks',
       value: archivedTasks,
+      icon: <IconListCheck size={22} />,
       color: 'violet',
-      badges: [
-        { label: `${totalTasks} TOTAL`, color: 'violet' },
-        { label: `${activeTasks} ACTIVE`, color: 'green' }
-      ]
+      badges: (
+        <Group gap={4} mt={4} wrap='wrap'>
+          <Badge size='xs' variant='light' color='violet'>
+            {totalTasks} Total
+          </Badge>
+          <Badge size='xs' variant='light' color='green'>
+            {activeTasks} Active
+          </Badge>
+        </Group>
+      )
     }
   ];
 
@@ -276,72 +300,30 @@ const CourseDetails = () => {
             </Stack>
           </Card>
 
-          <SimpleGrid cols={{ base: 1, xs: 2, md: 4 }} spacing='sm'>
-            {stats.map(item => (
-              <Paper
-                key={item.label}
-                p='md'
-                radius='md'
-                withBorder
-                style={{
-                  backgroundColor: '#191919',
-                  borderColor: '#34383f',
-                  color: '#f5f5f5',
-                  minWidth: 0
-                }}
-              >
-                <Group gap='sm' align='flex-start' wrap='nowrap'>
+          {/* Stats */}
+          <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing='md'>
+            {stats.map((s, i) => (
+              <Card key={i} withBorder radius='md' p='md'>
+                <Group gap='sm' wrap='nowrap' align='flex-start'>
                   <ThemeIcon
                     size={44}
                     radius='md'
                     variant='light'
-                    color={item.color}
-                    style={{ flexShrink: 0 }}
+                    color={s.color}
                   >
-                    {item.icon}
+                    {s.icon}
                   </ThemeIcon>
-
-                  <Stack gap={4} style={{ minWidth: 0, flex: 1 }}>
-                    <Text
-                      fw={700}
-                      size='xl'
-                      lh={1}
-                      style={{ color: '#f5f5f5' }}
-                    >
-                      {item.value}
+                  <Stack gap={2} style={{ minWidth: 0, flex: 1 }}>
+                    <Title order={3} lh={1}>
+                      {s.value}
+                    </Title>
+                    <Text size='xs' c='dimmed' lineClamp={1}>
+                      {s.label}
                     </Text>
-
-                    <Text size='xs' c='dimmed' lh={1.3}>
-                      {item.label}
-                    </Text>
-
-                    <Group gap={4} mt={2} wrap='wrap'>
-                      {item.badges.map(badge => (
-                        <Badge
-                          key={badge.label}
-                          size='xs'
-                          radius='xl'
-                          variant='light'
-                          color={badge.color}
-                          styles={{
-                            root: {
-                              fontSize: 9,
-                              height: 17,
-                              paddingInline: 6,
-                              fontWeight: 700
-                            },
-                            label: {
-                              lineHeight: 1
-                            }
-                          }}
-                        >
-                          {badge.label}
-                        </Badge>
-                      ))}
-                    </Group>
+                    {s.badges}
                   </Stack>
                 </Group>
-              </Paper>
+              </Card>
             ))}
           </SimpleGrid>
 

@@ -230,7 +230,7 @@ const AddTaskModal = ({
       title='Add Task'
       centered
       radius='lg'
-      size='md'
+      size='lg'
       overlayProps={{ backgroundOpacity: 0.5, blur: 4 }}
       transitionProps={{ transition: 'pop', duration: 200 }}
       styles={{
