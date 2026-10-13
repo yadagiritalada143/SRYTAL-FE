@@ -160,6 +160,12 @@ const CoursePlayer = () => {
     }
   };
 
+  const handleAcknowledged = () => {
+    if (active && !active.task.isCompleted) {
+      setCompletion(true);
+    }
+  };
+
   const curriculum = (
     <CurriculumSidebar
       modules={modules}
@@ -276,6 +282,7 @@ const CoursePlayer = () => {
                       <TaskAcknowledgement
                         courseAssignmentId={courseAssignmentId}
                         task={active.task}
+                        onAcknowledged={handleAcknowledged}
                       />
                     </Card>
                   ) : (
@@ -321,10 +328,19 @@ const CoursePlayer = () => {
 
                       <Group justify='space-between' wrap='wrap' gap='sm'>
                         <Group gap='xs'>
-                          <Tooltip label='Previous item' withArrow>
+                          <Tooltip
+                            label={
+                              needsAcknowledgement
+                                ? 'Acknowledge this document to continue'
+                                : 'Previous item'
+                            }
+                            withArrow
+                          >
                             <CommonButton
                               variant='default'
-                              disabled={activeIndex <= 0}
+                              disabled={
+                                activeIndex <= 0 || needsAcknowledgement
+                              }
                               leftSection={<IconChevronLeft size={16} />}
                               onClick={() => goTo(activeIndex - 1)}
                             >

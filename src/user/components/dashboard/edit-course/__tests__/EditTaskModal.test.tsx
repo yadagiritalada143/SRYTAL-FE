@@ -2,7 +2,6 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { MantineProvider } from '@mantine/core';
 import EditTaskModal from '../EditTaskModal';
-import { REQUIRED_ACKNOWLEDGEMENT_TEXT } from '../acknowledgement';
 
 jest.mock('@hooks/mutations/useUserMutations', () => ({
   useUpdateCourseTask: () => ({
@@ -232,6 +231,39 @@ describe('EditTaskModal', () => {
     });
   });
 
+  describe('Description', () => {
+    it('disables Save Changes until the description is provided', () => {
+      renderModal(makeTask({ taskDescription: 'Watch this intro' }));
+
+      fireEvent.change(screen.getByLabelText('Description'), {
+        target: { value: '' }
+      });
+      expect(
+        screen.getByRole('button', { name: 'Save Changes' })
+      ).toBeDisabled();
+
+      fireEvent.change(screen.getByLabelText('Description'), {
+        target: { value: 'Watch the updated intro.' }
+      });
+      expect(
+        screen.getByRole('button', { name: 'Save Changes' })
+      ).not.toBeDisabled();
+    });
+
+    it('shows the description required message once the editor is blurred', () => {
+      renderModal(makeTask({ taskDescription: 'Watch this intro' }));
+
+      fireEvent.change(screen.getByLabelText('Description'), {
+        target: { value: '' }
+      });
+      fireEvent.blur(screen.getByLabelText('Description'));
+
+      expect(
+        screen.getByText('Task description is required.')
+      ).toBeInTheDocument();
+    });
+  });
+
   describe('Acknowledgement', () => {
     it('shows and seeds the acknowledgement switch for FILE tasks', () => {
       renderModal(
@@ -244,6 +276,26 @@ describe('EditTaskModal', () => {
       expect(screen.getByLabelText(/Require acknowledgement/)).toBeChecked();
     });
 
+    it('seeds the acknowledgement text field from the task', () => {
+      renderModal(
+        makeTask({
+          type: 'FILE',
+          contentFileName: 'policy.pdf',
+          acknowledgementText: 'I have read the policy.'
+        })
+      );
+      expect(screen.getByLabelText(/Acknowledgement text/)).toHaveValue(
+        'I have read the policy.'
+      );
+    });
+
+    it('hides the acknowledgement text field when the switch is off', () => {
+      renderModal(makeTask({ type: 'FILE', contentFileName: 'policy.pdf' }));
+      expect(
+        screen.queryByLabelText(/Acknowledgement text/)
+      ).not.toBeInTheDocument();
+    });
+
     it('hides the acknowledgement switch for non-FILE tasks', () => {
       renderModal(makeTask({ type: 'LINK' }));
       expect(
@@ -251,17 +303,20 @@ describe('EditTaskModal', () => {
       ).not.toBeInTheDocument();
     });
 
-    it('submits the standard acknowledgement when the switch is turned on', async () => {
+    it('submits the acknowledgement text entered when the switch is turned on', async () => {
       renderModal(makeTask({ type: 'FILE', contentFileName: 'policy.pdf' }));
 
       fireEvent.click(screen.getByLabelText(/Require acknowledgement/));
+      fireEvent.change(screen.getByLabelText(/Acknowledgement text/), {
+        target: { value: 'I have read and understood the policy.' }
+      });
 
       fireEvent.click(screen.getByRole('button', { name: 'Save Changes' }));
 
       await waitFor(() => {
         expect(mockUpdateTask).toHaveBeenCalledWith(
           expect.objectContaining({
-            acknowledgementText: REQUIRED_ACKNOWLEDGEMENT_TEXT
+            acknowledgementText: 'I have read and understood the policy.'
           })
         );
       });

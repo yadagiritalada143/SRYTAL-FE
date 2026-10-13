@@ -52,6 +52,8 @@ jest.mock('@components/common/button/CommonButton', () => ({
   )
 }));
 
+const ACKNOWLEDGEMENT_LABEL = 'I have read the acceptable use policy.';
+
 const makeTask = (overrides: any = {}) => ({
   _id: 't1',
   taskName: 'Acceptable use policy',
@@ -63,10 +65,17 @@ const makeTask = (overrides: any = {}) => ({
   ...overrides
 });
 
-const renderComponent = (task: any = makeTask()) =>
+const renderComponent = (
+  task: any = makeTask(),
+  onAcknowledged?: () => void
+) =>
   render(
     <MantineProvider>
-      <TaskAcknowledgement courseAssignmentId='ca1' task={task} />
+      <TaskAcknowledgement
+        courseAssignmentId='ca1'
+        task={task}
+        onAcknowledged={onAcknowledged}
+      />
     </MantineProvider>
   );
 
@@ -95,21 +104,27 @@ describe('TaskAcknowledgement', () => {
   it('renders nothing for a LINK task', () => {
     renderComponent(makeTask({ type: 'LINK' }));
     expect(screen.queryByText('Acknowledgement')).not.toBeInTheDocument();
-    expect(screen.queryByText('Required')).not.toBeInTheDocument();
   });
 
   it('renders nothing for a FILE task without a statement', () => {
     renderComponent(makeTask({ acknowledgementText: '' }));
     expect(screen.queryByText('Acknowledgement')).not.toBeInTheDocument();
-    expect(screen.queryByText('Required')).not.toBeInTheDocument();
   });
 
   it('renders the acknowledgement gate for a gated FILE task', () => {
     renderComponent();
     expect(screen.getByText('Acknowledgement')).toBeInTheDocument();
-    expect(screen.getByText('Required')).toBeInTheDocument();
     expect(
-      screen.getByLabelText('I have read and understood the above.')
+      screen.getByLabelText(ACKNOWLEDGEMENT_LABEL)
+    ).toBeInTheDocument();
+  });
+
+  it('renders the statement supplied by the backend', () => {
+    renderComponent(
+      makeTask({ acknowledgementText: 'Please read the security policy.' })
+    );
+    expect(
+      screen.getByLabelText('Please read the security policy.')
     ).toBeInTheDocument();
   });
 
@@ -117,7 +132,6 @@ describe('TaskAcknowledgement', () => {
     renderComponent(
       makeTask({ acknowledged: true, acknowledgedAt: '2024-06-01T00:00:00Z' })
     );
-    expect(screen.queryByText('Required')).not.toBeInTheDocument();
     expect(
       screen.getByText(/You acknowledged this document/)
     ).toBeInTheDocument();
@@ -129,7 +143,7 @@ describe('TaskAcknowledgement', () => {
     expect(button).toBeDisabled();
 
     fireEvent.click(
-      screen.getByLabelText('I have read and understood the above.')
+      screen.getByLabelText(ACKNOWLEDGEMENT_LABEL)
     );
     expect(button).not.toBeDisabled();
   });
@@ -138,7 +152,7 @@ describe('TaskAcknowledgement', () => {
     renderComponent();
 
     fireEvent.click(
-      screen.getByLabelText('I have read and understood the above.')
+      screen.getByLabelText(ACKNOWLEDGEMENT_LABEL)
     );
     fireEvent.click(screen.getByRole('button', { name: 'Acknowledge' }));
 
@@ -154,6 +168,36 @@ describe('TaskAcknowledgement', () => {
     );
   });
 
+  it('notifies the parent once the acknowledgement is recorded', async () => {
+    const onAcknowledged = jest.fn();
+    renderComponent(makeTask(), onAcknowledged);
+
+    fireEvent.click(
+      screen.getByLabelText(ACKNOWLEDGEMENT_LABEL)
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Acknowledge' }));
+
+    await waitFor(() => {
+      expect(onAcknowledged).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it('does not notify the parent when the mutation fails', async () => {
+    const onAcknowledged = jest.fn();
+    mockAcknowledge.mockRejectedValueOnce({ message: 'boom' });
+    renderComponent(makeTask(), onAcknowledged);
+
+    fireEvent.click(
+      screen.getByLabelText(ACKNOWLEDGEMENT_LABEL)
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Acknowledge' }));
+
+    await waitFor(() => {
+      expect(mockShowErrorToast).toHaveBeenCalled();
+    });
+    expect(onAcknowledged).not.toHaveBeenCalled();
+  });
+
   it('shows an error toast when the mutation fails', async () => {
     mockAcknowledge.mockRejectedValueOnce({
       response: { data: { message: 'Acknowledgement is applicable only for file tasks !' } }
@@ -161,7 +205,7 @@ describe('TaskAcknowledgement', () => {
     renderComponent();
 
     fireEvent.click(
-      screen.getByLabelText('I have read and understood the above.')
+      screen.getByLabelText(ACKNOWLEDGEMENT_LABEL)
     );
     fireEvent.click(screen.getByRole('button', { name: 'Acknowledge' }));
 

@@ -192,6 +192,8 @@ const renderPlayer = () => {
   );
 };
 
+const ACKNOWLEDGEMENT_LABEL = 'I have read the acceptable use policy.';
+
 describe('CoursePlayer', () => {
   beforeEach(() => {
     mockCourse = makeCourse();
@@ -453,7 +455,6 @@ describe('CoursePlayer', () => {
       });
 
       expect(screen.getByText('Acknowledgement')).toBeInTheDocument();
-      expect(screen.getByText('Required')).toBeInTheDocument();
     });
 
     it('blocks completing and moving on until the task is acknowledged', async () => {
@@ -469,6 +470,46 @@ describe('CoursePlayer', () => {
       expect(
         screen.getByRole('button', { name: 'Complete and continue' })
       ).toBeDisabled();
+      expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled();
+    });
+
+    it('disables Previous while the task requires acknowledgement', async () => {
+      mockCourse = makeCourse({
+        modules: [
+          {
+            _id: 'm1',
+            moduleName: 'Policies',
+            moduleDescription: '',
+            totalTasks: 2,
+            completedTasks: 0,
+            tasks: [
+              makeTask({ _id: 't1', taskName: 'Intro', type: 'LINK' }),
+              makeTask({
+                _id: 't2',
+                taskName: 'Acceptable use policy',
+                type: 'FILE',
+                acknowledgementText: 'I have read the acceptable use policy.',
+                acknowledged: false
+              })
+            ]
+          }
+        ]
+      });
+      renderPlayer();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('task-viewer')).toHaveTextContent('Intro');
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: 'Next' }));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('task-viewer')).toHaveTextContent(
+          'Acceptable use policy'
+        );
+      });
+
+      expect(screen.getByRole('button', { name: 'Previous' })).toBeDisabled();
       expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled();
     });
 
@@ -488,7 +529,7 @@ describe('CoursePlayer', () => {
       expect(acknowledgeButton).toBeDisabled();
 
       fireEvent.click(
-        screen.getByLabelText('I have read and understood the above.')
+        screen.getByLabelText(ACKNOWLEDGEMENT_LABEL)
       );
       expect(acknowledgeButton).not.toBeDisabled();
 
@@ -504,6 +545,14 @@ describe('CoursePlayer', () => {
       expect(mockShowSuccessToast).toHaveBeenCalledWith(
         'Acknowledgement recorded'
       );
+
+      // Acknowledging the document also completes the task.
+      await waitFor(() => {
+        expect(mockMutateFn).toHaveBeenCalledWith(
+          { courseAssignmentId: 'ca1', taskId: 't1', isCompleted: true },
+          expect.objectContaining({ onSuccess: expect.any(Function) })
+        );
+      });
     });
 
     it('does not gate a FILE task without an acknowledgement statement', async () => {

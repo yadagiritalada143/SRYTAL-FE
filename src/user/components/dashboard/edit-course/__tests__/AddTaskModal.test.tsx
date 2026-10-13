@@ -2,7 +2,6 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { MantineProvider } from '@mantine/core';
 import AddTaskModal from '../AddTaskModal';
-import { REQUIRED_ACKNOWLEDGEMENT_TEXT } from '../acknowledgement';
 import {
   REOPEN_TASK_POPUP_KEY,
   saveTaskDraft,
@@ -147,6 +146,12 @@ const clickCodingMode = () => {
   fireEvent.click(screen.getByRole('button', { name: 'Coding' }));
 };
 
+const typeAcknowledgement = (value: string) => {
+  fireEvent.change(screen.getByLabelText(/Acknowledgement text/), {
+    target: { value }
+  });
+};
+
 const getMainFileInput = (container: HTMLElement) =>
   container.querySelectorAll('input[type="file"]')[0] as HTMLInputElement;
 
@@ -249,6 +254,19 @@ describe('AddTaskModal', () => {
         screen.getByLabelText(/Require acknowledgement/)
       ).toBeInTheDocument();
     });
+
+    it('shows the acknowledgement text field only when the switch is on', () => {
+      renderModal();
+      clickFileMode();
+      expect(
+        screen.queryByLabelText(/Acknowledgement text/)
+      ).not.toBeInTheDocument();
+
+      fireEvent.click(screen.getByLabelText(/Require acknowledgement/));
+      expect(
+        screen.getByLabelText(/Acknowledgement text/)
+      ).toBeInTheDocument();
+    });
   });
 
   describe('Validation', () => {
@@ -263,18 +281,34 @@ describe('AddTaskModal', () => {
       expect(screen.getByRole('button', { name: 'Add Task' })).toBeDisabled();
     });
 
-    it('enables Add Task when title and link are provided', () => {
+    it('enables Add Task when title, description, and link are provided', () => {
       renderModal();
       typeTitle('Intro video');
+      typeDescription('Watch the introduction video.');
       typeLink('https://youtube.com/watch?v=abc123');
       expect(
         screen.getByRole('button', { name: 'Add Task' })
       ).not.toBeDisabled();
     });
 
-    it('enables Add Task when title and file are provided in File mode', () => {
+    it('keeps Add Task disabled until the description is provided', () => {
+      renderModal();
+      typeTitle('Intro video');
+      typeLink('https://youtube.com/watch?v=abc123');
+      // The description is mandatory for every task type.
+      expect(screen.getByRole('button', { name: 'Add Task' })).toBeDisabled();
+
+      typeDescription('Watch the introduction video.');
+
+      expect(
+        screen.getByRole('button', { name: 'Add Task' })
+      ).not.toBeDisabled();
+    });
+
+    it('enables Add Task when title, description, and file are provided in File mode', () => {
       const { container } = renderModal();
       typeTitle('Reading material');
+      typeDescription('Read the attached policy.');
       clickFileMode();
 
       fireEvent.change(getMainFileInput(container), {
@@ -352,6 +386,7 @@ describe('AddTaskModal', () => {
     it('accepts a backend-approved thumbnail type', () => {
       const { container } = renderModal();
       typeTitle('Intro video');
+      typeDescription('Watch the introduction video.');
       typeLink('https://youtube.com/watch?v=abc123');
 
       fireEvent.change(getMainFileInput(container), {
@@ -390,7 +425,7 @@ describe('AddTaskModal', () => {
       fireEvent.blur(screen.getByLabelText('Description'));
 
       expect(
-        screen.getByText('Task description is required for coding tasks.')
+        screen.getByText('Task description is required.')
       ).toBeInTheDocument();
     });
 
@@ -515,6 +550,7 @@ describe('AddTaskModal', () => {
       renderModal(true, 'm1', 'c1');
 
       typeTitle('YouTube video');
+      typeDescription('Watch the intro video.');
       typeLink('https://youtube.com/watch?v=abc123');
 
       fireEvent.click(screen.getByRole('button', { name: 'Add Task' }));
@@ -526,7 +562,7 @@ describe('AddTaskModal', () => {
       expect(mockAddTask).toHaveBeenCalledWith({
         moduleId: 'm1',
         taskName: 'YouTube video',
-        taskDescription: '',
+        taskDescription: 'Watch the intro video.',
         type: 'LINK',
         link: 'https://youtube.com/watch?v=abc123',
         file: undefined,
@@ -543,6 +579,7 @@ describe('AddTaskModal', () => {
       const { container } = renderModal();
 
       typeTitle('Reading material');
+      typeDescription('Read the attached policy.');
       clickFileMode();
 
       const file = new File(['x'], 'notes.pdf', { type: 'application/pdf' });
@@ -563,10 +600,34 @@ describe('AddTaskModal', () => {
       });
     });
 
-    it('sends the standard acknowledgement when the switch is on', async () => {
+    it('keeps Add Task disabled until the acknowledgement text is provided', () => {
       const { container } = renderModal();
 
       typeTitle('Reading material');
+      typeDescription('Read the attached policy.');
+      clickFileMode();
+
+      fireEvent.change(getMainFileInput(container), {
+        target: {
+          files: [new File(['x'], 'notes.pdf', { type: 'application/pdf' })]
+        }
+      });
+      fireEvent.click(screen.getByLabelText(/Require acknowledgement/));
+
+      expect(screen.getByRole('button', { name: 'Add Task' })).toBeDisabled();
+
+      typeAcknowledgement('I confirm I have read this policy.');
+
+      expect(
+        screen.getByRole('button', { name: 'Add Task' })
+      ).not.toBeDisabled();
+    });
+
+    it('sends the acknowledgement text entered when the switch is on', async () => {
+      const { container } = renderModal();
+
+      typeTitle('Reading material');
+      typeDescription('Read the attached policy.');
       clickFileMode();
 
       const file = new File(['x'], 'notes.pdf', { type: 'application/pdf' });
@@ -574,6 +635,7 @@ describe('AddTaskModal', () => {
         target: { files: [file] }
       });
       fireEvent.click(screen.getByLabelText(/Require acknowledgement/));
+      typeAcknowledgement('I confirm I have read this policy.');
 
       fireEvent.click(screen.getByRole('button', { name: 'Add Task' }));
 
@@ -581,7 +643,7 @@ describe('AddTaskModal', () => {
         expect(mockAddTask).toHaveBeenCalledWith(
           expect.objectContaining({
             type: 'FILE',
-            acknowledgementText: REQUIRED_ACKNOWLEDGEMENT_TEXT
+            acknowledgementText: 'I confirm I have read this policy.'
           })
         );
       });
@@ -591,6 +653,7 @@ describe('AddTaskModal', () => {
       const { container } = renderModal();
 
       typeTitle('Reading material');
+      typeDescription('Read the attached policy.');
       clickFileMode();
 
       const file = new File(['x'], 'notes.pdf', { type: 'application/pdf' });
@@ -645,6 +708,7 @@ describe('AddTaskModal', () => {
 
       renderModal();
       typeTitle('YouTube video');
+      typeDescription('Watch the intro video.');
       typeLink('https://youtube.com/watch?v=abc123');
 
       fireEvent.click(screen.getByRole('button', { name: 'Add Task' }));
@@ -660,6 +724,7 @@ describe('AddTaskModal', () => {
       renderModal();
 
       typeTitle('  Trimmed Title  ');
+      typeDescription('  Watch the video.  ');
       typeLink('  https://youtube.com/watch?v=def456  ');
 
       fireEvent.click(screen.getByRole('button', { name: 'Add Task' }));
@@ -682,6 +747,7 @@ describe('AddTaskModal', () => {
 
       renderModal();
       typeTitle('Intro video');
+      typeDescription('Watch the intro video.');
       typeLink('https://youtube.com/watch?v=abc123');
 
       fireEvent.click(screen.getByRole('button', { name: 'Add Task' }));
@@ -709,6 +775,7 @@ describe('AddTaskModal', () => {
 
       renderModal();
       typeTitle('Intro video');
+      typeDescription('Watch the intro video.');
       typeLink('https://youtube.com/watch?v=abc123');
 
       fireEvent.click(screen.getByRole('button', { name: 'Add Task' }));
@@ -725,6 +792,7 @@ describe('AddTaskModal', () => {
 
       renderModal();
       typeTitle('Intro video');
+      typeDescription('Watch the intro video.');
       typeLink('https://youtube.com/watch?v=abc123');
 
       fireEvent.click(screen.getByRole('button', { name: 'Add Task' }));

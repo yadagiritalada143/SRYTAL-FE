@@ -5,6 +5,7 @@ import {
   Modal,
   Stack,
   TextInput,
+  Textarea,
   Switch,
   FileInput,
   SegmentedControl,
@@ -35,7 +36,6 @@ import {
   AddTaskContentMode
 } from './task-popup-state';
 import DescriptionEditor from './DescriptionEditor';
-import { REQUIRED_ACKNOWLEDGEMENT_TEXT } from './task-popup-state';
 
 interface AddTaskModalProps {
   opened: boolean;
@@ -45,13 +45,20 @@ interface AddTaskModalProps {
 }
 
 type ContentMode = AddTaskContentMode;
-type TaskField = 'taskName' | 'link' | 'file' | 'taskDescription' | 'thumbnail';
+type TaskField =
+  | 'taskName'
+  | 'link'
+  | 'file'
+  | 'taskDescription'
+  | 'acknowledgementText'
+  | 'thumbnail';
 
 const VALIDATION_MESSAGES = {
   taskName: 'Task name is required.',
   link: 'A valid HTTP or HTTPS link is required for LINK tasks.',
   file: 'A file is required for FILE tasks.',
-  taskDescription: 'Task description is required for coding tasks.',
+  taskDescription: 'Task description is required.',
+  acknowledgementText: 'Acknowledgement text is required.',
   thumbnail: 'Thumbnail must be a JPG, PNG, or WEBP image.'
 } as const;
 
@@ -88,11 +95,13 @@ const AddTaskModal = ({
   const [file, setFile] = useState<File | null>(null);
   const [thumbnail, setThumbnail] = useState<File | null>(null);
   const [requiresAcknowledgement, setRequiresAcknowledgement] = useState(false);
+  const [acknowledgementText, setAcknowledgementText] = useState('');
   const [touched, setTouched] = useState<Record<TaskField, boolean>>({
     taskName: false,
     link: false,
     file: false,
     taskDescription: false,
+    acknowledgementText: false,
     thumbnail: false
   });
   const [draftResetKey, setDraftResetKey] = useState(0);
@@ -127,11 +136,13 @@ const AddTaskModal = ({
     setFile(null);
     setThumbnail(null);
     setRequiresAcknowledgement(false);
+    setAcknowledgementText('');
     setTouched({
       taskName: false,
       link: false,
       file: false,
       taskDescription: false,
+      acknowledgementText: false,
       thumbnail: false
     });
   };
@@ -166,8 +177,16 @@ const AddTaskModal = ({
       errors.link = VALIDATION_MESSAGES.link;
   } else if (mode === 'FILE') {
     if (!file) errors.file = VALIDATION_MESSAGES.file;
-  } else if (!hasVisibleText(taskDescription)) {
+  }
+  if (!hasVisibleText(taskDescription)) {
     errors.taskDescription = VALIDATION_MESSAGES.taskDescription;
+  }
+  if (
+    mode === 'FILE' &&
+    requiresAcknowledgement &&
+    !acknowledgementText.trim()
+  ) {
+    errors.acknowledgementText = VALIDATION_MESSAGES.acknowledgementText;
   }
   if (thumbnail && !THUMBNAIL_MIME_TYPES.includes(thumbnail.type)) {
     errors.thumbnail = VALIDATION_MESSAGES.thumbnail;
@@ -190,7 +209,7 @@ const AddTaskModal = ({
         ...(mode === 'FILE'
           ? {
               acknowledgementText: requiresAcknowledgement
-                ? REQUIRED_ACKNOWLEDGEMENT_TEXT
+                ? acknowledgementText.trim()
                 : ''
             }
           : {}),
@@ -249,10 +268,10 @@ const AddTaskModal = ({
             value={taskDescription}
             onChange={setTaskDescription}
             resetKey={draftResetKey}
-            required={mode === 'CODING'}
+            required
           />
         </Box>
-        {mode === 'CODING' && fieldError('taskDescription') && (
+        {fieldError('taskDescription') && (
           <Text size='xs' c='red' mt={-10}>
             {errors.taskDescription}
           </Text>
@@ -357,14 +376,32 @@ const AddTaskModal = ({
         )}
 
         {mode === 'FILE' && (
-          <Switch
-            label='Require acknowledgement'
-            checked={requiresAcknowledgement}
-            onChange={event =>
-              setRequiresAcknowledgement(event.currentTarget.checked)
-            }
-            description='Employees must tick a checkbox confirming they have read this file before they can complete the task or move on.'
-          />
+          <Stack gap='xs'>
+            <Switch
+              label='Require acknowledgement'
+              checked={requiresAcknowledgement}
+              onChange={event =>
+                setRequiresAcknowledgement(event.currentTarget.checked)
+              }
+              description='Employees must tick a checkbox confirming they have read this file before they can complete the task or move on.'
+            />
+            {requiresAcknowledgement && (
+              <Textarea
+                label='Acknowledgement text'
+                placeholder='e.g. I confirm that I have read and understood the attached document.'
+                required
+                autosize
+                minRows={2}
+                value={acknowledgementText}
+                onChange={event =>
+                  setAcknowledgementText(event.currentTarget.value)
+                }
+                onBlur={() => touch('acknowledgementText')}
+                error={fieldError('acknowledgementText')}
+                radius='md'
+              />
+            )}
+          </Stack>
         )}
 
         <FileInput

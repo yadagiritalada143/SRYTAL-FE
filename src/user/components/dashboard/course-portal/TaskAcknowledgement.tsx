@@ -1,13 +1,5 @@
 import { useEffect, useState } from 'react';
-import {
-  Badge,
-  Box,
-  Checkbox,
-  Group,
-  Stack,
-  Text,
-  ThemeIcon
-} from '@mantine/core';
+import { Box, Checkbox, Group, Stack, Text, ThemeIcon } from '@mantine/core';
 import { IconCheck, IconShieldCheck } from '@tabler/icons-react';
 import { useAppTheme } from '@hooks/use-app-theme';
 import { useUpdateMyTaskAcknowledgement } from '@hooks/mutations/useUserMutations';
@@ -20,11 +12,13 @@ import { isCodingTask } from './task-content';
 interface TaskAcknowledgementProps {
   courseAssignmentId: string;
   task: AssignedTask;
+  onAcknowledged?: () => void;
 }
 
 const TaskAcknowledgement = ({
   courseAssignmentId,
-  task
+  task,
+  onAcknowledged
 }: TaskAcknowledgementProps) => {
   const { themeConfig } = useAppTheme();
   const { showSuccessToast, showErrorToast } = useCustomToast();
@@ -52,6 +46,7 @@ const TaskAcknowledgement = ({
         acknowledged: true
       });
       showSuccessToast('Acknowledgement recorded');
+      onAcknowledged?.();
     } catch (error) {
       showErrorToast(
         getErrorMessage(error, 'Could not record your acknowledgement')
@@ -85,19 +80,13 @@ const TaskAcknowledgement = ({
             </ThemeIcon>
             <Stack gap={0} style={{ flex: 1 }}>
               <Text fw={600}>Acknowledgement</Text>
-              <Text size='xs' c={themeConfig.mutedTextColor}>
-                Please read this before continuing.
-              </Text>
             </Stack>
-            <Badge variant='light' color='orange' radius='sm' size='sm'>
-              Required
-            </Badge>
           </Group>
 
           <Checkbox
             checked={checked}
             onChange={event => setChecked(event.currentTarget.checked)}
-            label='I have read and understood the above.'
+            label={task.acknowledgementText?.trim()}
           />
 
           <Group justify='flex-end'>

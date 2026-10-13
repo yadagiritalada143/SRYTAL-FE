@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import {
+  Box,
   Modal,
   Stack,
   TextInput,
+  Textarea,
   Switch,
   Select,
   Group,
@@ -28,10 +30,13 @@ import { useAppTheme } from '@hooks/use-app-theme';
 import { Task, CourseStatus, COURSE_STATUSES } from '@interfaces/contentwriter';
 import CourseThumbnail from '../content-writer/CourseThumbnail';
 import DescriptionEditor from './DescriptionEditor';
-import {
-  REQUIRED_ACKNOWLEDGEMENT_TEXT,
-  taskRequiresAcknowledgement
-} from './task-popup-state';
+import { taskRequiresAcknowledgement } from './task-popup-state';
+
+const hasVisibleText = (html: string): boolean =>
+  html
+    .replace(/<[^>]*>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .trim().length > 0;
 
 interface EditTaskModalProps {
   opened: boolean;
@@ -51,7 +56,10 @@ const EditTaskModal = ({
   const [thumbnail, setThumbnail] = useState<File | null>(null);
   const [thumbPreview, setThumbPreview] = useState<string | null>(null);
   const [status, setStatus] = useState<CourseStatus>('ACTIVE');
+  const [descriptionTouched, setDescriptionTouched] = useState(false);
   const [requiresAcknowledgement, setRequiresAcknowledgement] = useState(false);
+  const [acknowledgementText, setAcknowledgementText] = useState('');
+  const [acknowledgementTouched, setAcknowledgementTouched] = useState(false);
 
   const { mutateAsync: updateTask, isPending } = useUpdateCourseTask(courseId);
   const { showSuccessToast, showErrorToast } = useCustomToast();
@@ -76,9 +84,12 @@ const EditTaskModal = ({
     setTaskDescription(task.taskDescription || '');
     setThumbnail(null);
     setStatus((task.status as CourseStatus) || 'ACTIVE');
+    setDescriptionTouched(false);
     setRequiresAcknowledgement(
       taskRequiresAcknowledgement(task.acknowledgementText)
     );
+    setAcknowledgementText(task.acknowledgementText || '');
+    setAcknowledgementTouched(false);
   } else if (!opened && seededFor !== null) {
     setSeededFor(null);
   }
@@ -100,7 +111,7 @@ const EditTaskModal = ({
         ...(isFile
           ? {
               acknowledgementText: requiresAcknowledgement
-                ? REQUIRED_ACKNOWLEDGEMENT_TEXT
+                ? acknowledgementText.trim()
                 : ''
             }
           : {})
@@ -154,12 +165,20 @@ const EditTaskModal = ({
           onChange={e => setTaskName(e.target.value)}
           radius='md'
         />
-        <DescriptionEditor
-          label='Description'
-          value={taskDescription}
-          onChange={setTaskDescription}
-          resetKey={seededFor ?? undefined}
-        />
+        <Box onBlur={() => setDescriptionTouched(true)}>
+          <DescriptionEditor
+            label='Description'
+            value={taskDescription}
+            onChange={setTaskDescription}
+            resetKey={seededFor ?? undefined}
+            required
+          />
+        </Box>
+        {descriptionTouched && !hasVisibleText(taskDescription) && (
+          <Text size='xs' c='red' mt={-10}>
+            Task description is required.
+          </Text>
+        )}
 
         <Stack gap={6}>
           <Text size='sm' fw={500}>
@@ -292,14 +311,36 @@ const EditTaskModal = ({
         )}
 
         {isFile && (
-          <Switch
-            label='Require acknowledgement'
-            checked={requiresAcknowledgement}
-            onChange={event =>
-              setRequiresAcknowledgement(event.currentTarget.checked)
-            }
-            description='Employees must tick a checkbox confirming they have read this file before they can complete the task or move on.'
-          />
+          <Stack gap='xs'>
+            <Switch
+              label='Require acknowledgement'
+              checked={requiresAcknowledgement}
+              onChange={event =>
+                setRequiresAcknowledgement(event.currentTarget.checked)
+              }
+              description='Employees must tick a checkbox confirming they have read this file before they can complete the task or move on.'
+            />
+            {requiresAcknowledgement && (
+              <Textarea
+                label='Acknowledgement text'
+                placeholder='e.g. I confirm that I have read and understood the attached document.'
+                required
+                autosize
+                minRows={2}
+                value={acknowledgementText}
+                onChange={event =>
+                  setAcknowledgementText(event.currentTarget.value)
+                }
+                onBlur={() => setAcknowledgementTouched(true)}
+                error={
+                  acknowledgementTouched && !acknowledgementText.trim()
+                    ? 'Acknowledgement text is required.'
+                    : undefined
+                }
+                radius='md'
+              />
+            )}
+          </Stack>
         )}
 
         <Group justify='flex-end' mt='sm'>
@@ -314,7 +355,14 @@ const EditTaskModal = ({
                 <IconCheck size={16} />
               )
             }
-            disabled={!taskName.trim() || isPending}
+            disabled={
+              !taskName.trim() ||
+              !hasVisibleText(taskDescription) ||
+              (isFile &&
+                requiresAcknowledgement &&
+                !acknowledgementText.trim()) ||
+              isPending
+            }
             onClick={handleSubmit}
           >
             {isPending ? 'Saving...' : 'Save Changes'}
