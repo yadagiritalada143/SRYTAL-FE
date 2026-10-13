@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import {
   ActionIcon,
   Badge,
@@ -10,6 +10,7 @@ import {
   Divider,
   Group,
   Modal,
+  Paper,
   Progress,
   ScrollArea,
   Stack,
@@ -19,10 +20,11 @@ import {
   Tooltip,
   UnstyledButton
 } from '@mantine/core';
-import { DatePickerInput } from '@mantine/dates';
 import { useDisclosure } from '@mantine/hooks';
 import {
   IconArrowLeft,
+  IconArrowRight,
+  IconAlertTriangle,
   IconBook,
   IconCalendar,
   IconCheck,
@@ -30,6 +32,8 @@ import {
   IconChevronRight,
   IconChevronUp,
   IconCircleDot,
+  IconClock,
+  IconRotate,
   IconSelector,
   IconTrash
 } from '@tabler/icons-react';
@@ -52,6 +56,10 @@ import {
 import PageHeader from '@components/common/page-header/PageHeader';
 import DataView from '@components/common/loaders/DataView';
 import { CommonButton } from '@components/common/button/CommonButton';
+import {
+  CommonDatePickerInput,
+  formatDateStr
+} from '@components/common/date-picker/CommonDatePickerInput';
 import { organizationAdminUrls } from '@utils/common/constants';
 
 const STATUS_COLORS: Record<CourseAssignmentStatus, string> = {
@@ -64,11 +72,55 @@ const formatDate = (value?: string | Date) => {
   if (!value) return '—';
   const d = new Date(value);
   if (isNaN(d.getTime())) return '—';
-  return d.toLocaleDateString(undefined, {
+  return d.toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric'
   });
+};
+
+const getDueStatus = (
+  dueDateValue?: string | Date | null,
+  isCompleted?: boolean
+) => {
+  if (isCompleted) {
+    return { label: 'Completed', color: 'green', isOverdue: false };
+  }
+  if (!dueDateValue) {
+    return { label: 'No Deadline', color: 'gray', isOverdue: false };
+  }
+  const target = new Date(dueDateValue);
+  if (isNaN(target.getTime())) {
+    return { label: 'No Deadline', color: 'gray', isOverdue: false };
+  }
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const targetMidnight = new Date(target);
+  targetMidnight.setHours(0, 0, 0, 0);
+
+  const diffDays = Math.round(
+    (targetMidnight.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+  );
+
+  if (diffDays < 0) {
+    const days = Math.abs(diffDays);
+    return {
+      label: `Overdue by ${days} day${days === 1 ? '' : 's'}`,
+      color: 'red',
+      isOverdue: true
+    };
+  }
+  if (diffDays === 0) {
+    return { label: 'Due Today', color: 'orange', isOverdue: false };
+  }
+  if (diffDays === 1) {
+    return { label: 'Due Tomorrow', color: 'orange', isOverdue: false };
+  }
+  return {
+    label: `${diffDays} days remaining`,
+    color: 'teal',
+    isOverdue: false
+  };
 };
 
 type SortKey = 'status' | 'dueDate' | 'progress';
@@ -256,6 +308,34 @@ const EmployeeCourseProgress = () => {
   const detailCourse = detail?.course;
   const isCompletedCourse =
     (detailCourse?.progress?.percentComplete ?? 0) >= 100;
+
+  const currentDueDate = useMemo(() => {
+    const raw = detailCourse?.dueDate || selectedAssignment?.dueDate;
+    return raw ? new Date(raw) : null;
+  }, [detailCourse?.dueDate, selectedAssignment?.dueDate]);
+
+  useEffect(() => {
+    if (!opened) return;
+    if (currentDueDate) {
+      setEditingDate(new Date(currentDueDate));
+    } else {
+      setEditingDate(null);
+    }
+  }, [opened, selectedAssignmentId, currentDueDate]);
+
+  const isDateChanged = useMemo(() => {
+    if (!editingDate && !currentDueDate) return false;
+    if (!editingDate || !currentDueDate) return true;
+    return formatDateStr(editingDate) !== formatDateStr(currentDueDate);
+  }, [editingDate, currentDueDate]);
+
+  const currentDueStatus = useMemo(() => {
+    return getDueStatus(
+      currentDueDate || detailCourse?.dueDate,
+      isCompletedCourse
+    );
+  }, [currentDueDate, detailCourse?.dueDate, isCompletedCourse]);
+
   const completed = employeeAssignments.filter(
     a => a.status === 'Completed'
   ).length;
@@ -537,48 +617,206 @@ const EmployeeCourseProgress = () => {
               </Group>
 
               {/* Due date edit */}
-              <Card withBorder radius='md' p='md'>
-                <Stack gap='sm'>
-                  <Text size='sm' fw={600}>
-                    Due Date
-                  </Text>
-                  <Group gap='sm' align='flex-end' wrap='wrap'>
-                    <DatePickerInput
-                      leftSection={<IconCalendar size={16} />}
-                      value={editingDate}
-                      onChange={date => {
-                        if (date === null) {
-                          setEditingDate(null);
-                          return;
+              <Card
+                withBorder
+                radius='lg'
+                p='md'
+                style={{
+                  borderColor: isDateChanged
+                    ? 'var(--mantine-color-blue-4)'
+                    : themeConfig.borderColor,
+                  backgroundColor: themeConfig.cardBackground || '#ffffff',
+                  boxShadow: isDateChanged
+                    ? '0 4px 16px rgba(34, 139, 230, 0.12)'
+                    : '0 2px 8px rgba(0, 0, 0, 0.04)',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                }}
+              >
+                <Stack gap='md'>
+                  <Group justify='space-between' align='center' wrap='wrap'>
+                    <Group gap='sm'>
+                      <ThemeIcon
+                        size={38}
+                        radius='md'
+                        variant='light'
+                        color={
+                          isCompletedCourse
+                            ? 'green'
+                            : currentDueStatus.isOverdue
+                              ? 'red'
+                              : 'blue'
                         }
-                        setEditingDate(new Date(date));
-                      }}
-                      placeholder='Pick a due date'
-                      minDate={new Date(new Date().setHours(0, 0, 0, 0))}
-                      valueFormat='DD MMM YYYY'
-                      w={{ base: '100%', sm: 240 }}
-                      disabled={isCompletedCourse}
-                    />
-                    <Button
-                      color={themeConfig.color}
-                      loading={updateDueDateMutation.isPending}
-                      disabled={!editingDate || isCompletedCourse}
-                      onClick={handleSaveDueDate}
+                        style={{
+                          transition: 'transform 0.25s ease',
+                          transform: isDateChanged ? 'scale(1.05)' : 'none'
+                        }}
+                      >
+                        <IconCalendar size={20} />
+                      </ThemeIcon>
+                      <Stack gap={0}>
+                        <Text fw={700} size='sm'>
+                          Assignment Due Date
+                        </Text>
+                        <Text size='xs' c='dimmed'>
+                          {isCompletedCourse
+                            ? 'Course is completed — deadline locked'
+                            : 'Active deadline for employee completion'}
+                        </Text>
+                      </Stack>
+                    </Group>
+
+                    <Badge
+                      size='sm'
+                      variant='light'
+                      color={currentDueStatus.color}
+                      leftSection={
+                        isCompletedCourse ? (
+                          <IconCheck size={12} />
+                        ) : currentDueStatus.isOverdue ? (
+                          <IconAlertTriangle size={12} />
+                        ) : (
+                          <IconClock size={12} />
+                        )
+                      }
+                      style={{ transition: 'all 0.25s ease' }}
                     >
-                      Save
-                    </Button>
+                      {currentDueStatus.label}
+                    </Badge>
                   </Group>
-                  {isCompletedCourse && (
+
+                  <Paper
+                    p='xs'
+                    radius='md'
+                    withBorder
+                    style={{
+                      backgroundColor:
+                        themeConfig.headerBackgroundColor || '#fafafa',
+                      borderColor: themeConfig.borderColor,
+                      transition: 'all 0.25s ease'
+                    }}
+                  >
+                    <Group
+                      justify='space-between'
+                      align='center'
+                      wrap='wrap'
+                      gap='xs'
+                    >
+                      <Group gap='xs'>
+                        <Text size='xs' c='dimmed' fw={500}>
+                          Current Active Deadline:
+                        </Text>
+                        <Badge
+                          size='sm'
+                          variant='filled'
+                          color={currentDueStatus.isOverdue ? 'red' : 'blue'}
+                        >
+                          {formatDate(currentDueDate || detailCourse.dueDate)}
+                        </Badge>
+                      </Group>
+
+                      {isDateChanged && editingDate && (
+                        <Group gap={6}>
+                          <Text size='xs' c='dimmed'>
+                            Changing to:
+                          </Text>
+                          <IconArrowRight size={12} style={{ opacity: 0.6 }} />
+                          <Badge size='sm' variant='filled' color='teal'>
+                            {formatDate(editingDate)}
+                          </Badge>
+                        </Group>
+                      )}
+                    </Group>
+                  </Paper>
+
+                  <Group gap='sm' align='flex-end' wrap='wrap'>
+                    <Box style={{ flex: 1, minWidth: 220 }}>
+                      <CommonDatePickerInput
+                        leftSection={<IconCalendar size={18} />}
+                        value={editingDate}
+                        defaultDate={
+                          editingDate || currentDueDate || new Date()
+                        }
+                        originalDate={currentDueDate}
+                        activeColor={
+                          themeConfig.accentColor ||
+                          themeConfig.color ||
+                          '#228be6'
+                        }
+                        onChange={date => {
+                          if (date === null) {
+                            setEditingDate(null);
+                            return;
+                          }
+                          setEditingDate(new Date(date));
+                        }}
+                        placeholder='Pick a due date'
+                        minDate={new Date(new Date().setHours(0, 0, 0, 0))}
+                        valueFormat='DD MMM YYYY'
+                        size='md'
+                        disabled={isCompletedCourse}
+                        clearable={!isCompletedCourse}
+                        data-testid='due-date-input'
+                      />
+                    </Box>
+
+                    <Group gap='xs'>
+                      {isDateChanged && (
+                        <Button
+                          variant='default'
+                          size='md'
+                          radius='md'
+                          leftSection={<IconRotate size={14} />}
+                          onClick={() => setEditingDate(currentDueDate)}
+                          disabled={updateDueDateMutation.isPending}
+                          style={{ transition: 'all 0.2s ease' }}
+                        >
+                          Reset
+                        </Button>
+                      )}
+
+                      <Button
+                        color={
+                          isDateChanged
+                            ? 'teal'
+                            : themeConfig.accentColor ||
+                              themeConfig.color ||
+                              'blue'
+                        }
+                        size='md'
+                        radius='md'
+                        leftSection={<IconCheck size={16} />}
+                        loading={updateDueDateMutation.isPending}
+                        disabled={
+                          !editingDate || !isDateChanged || isCompletedCourse
+                        }
+                        onClick={handleSaveDueDate}
+                        style={{
+                          transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                          boxShadow: isDateChanged
+                            ? '0 4px 14px rgba(18, 184, 134, 0.3)'
+                            : undefined,
+                          transform: isDateChanged ? 'scale(1.02)' : 'none'
+                        }}
+                      >
+                        Save
+                      </Button>
+                    </Group>
+                  </Group>
+
+                  {isCompletedCourse ? (
                     <Text size='xs' c='dimmed'>
                       Due date cannot be changed for a completed course.
                     </Text>
-                  )}
-                  <Text size='xs' c='dimmed'>
-                    Current due date:{' '}
-                    <Text component='span' fw={600}>
-                      {formatDate(detailCourse.dueDate)}
+                  ) : isDateChanged ? (
+                    <Text size='xs' c='teal.8' fw={500}>
+                      ● New deadline selected. Click Save to apply changes.
                     </Text>
-                  </Text>
+                  ) : (
+                    <Text size='xs' c='dimmed'>
+                      Current due date is shown above. You can select a new date
+                      to change the deadline.
+                    </Text>
+                  )}
                 </Stack>
               </Card>
 

@@ -4,6 +4,7 @@ import { useAppTheme } from '@hooks/use-app-theme';
 
 export interface CommonDatePickerInputProps extends DatePickerInputProps {
   activeColor?: string;
+  originalDate?: Date | string | null;
 }
 
 export const formatDateStr = (d: Date | string | null | undefined): string => {
@@ -22,11 +23,15 @@ export const CommonDatePickerInput: React.FC<CommonDatePickerInputProps> = ({
   highlightToday = true,
   getDayProps,
   activeColor,
+  originalDate,
   ...props
 }) => {
   const { themeConfig } = useAppTheme();
   const effectiveActiveColor =
-    activeColor || themeConfig?.button?.color || 'var(--mantine-color-blue-6)';
+    activeColor ||
+    themeConfig?.accentColor ||
+    themeConfig?.color ||
+    '#228be6';
 
   const customGetDayProps = (date: any) => {
     const userDayProps = getDayProps ? getDayProps(date) : {};
@@ -38,27 +43,44 @@ export const CommonDatePickerInput: React.FC<CommonDatePickerInputProps> = ({
         ? (value as Date | string)
         : defaultDate
           ? (defaultDate as Date | string)
-          : new Date()
+          : null
     );
+    const originalStr = formatDateStr(originalDate);
 
-    const isSelected = Boolean(dateStr && dateStr === selectedStr);
+    const isSelected = Boolean(selectedStr && dateStr === selectedStr);
+    const isOriginal = Boolean(
+      originalStr && dateStr === originalStr && !isSelected
+    );
     const isToday = Boolean(dateStr && dateStr === todayStr);
 
-    let computedStyle: React.CSSProperties = {};
+    let computedStyle: React.CSSProperties = {
+      transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+      borderRadius: '8px'
+    };
 
     if (isSelected) {
       computedStyle = {
+        ...computedStyle,
         backgroundColor: effectiveActiveColor,
         color: '#ffffff',
         fontWeight: 700,
-        borderRadius: '8px'
+        boxShadow: `0 3px 10px ${effectiveActiveColor}40`,
+        transform: 'scale(1.06)'
+      };
+    } else if (isOriginal) {
+      computedStyle = {
+        ...computedStyle,
+        border: `2px dashed ${effectiveActiveColor}`,
+        backgroundColor: `${effectiveActiveColor}15`,
+        color: effectiveActiveColor,
+        fontWeight: 700
       };
     } else if (isToday && highlightToday) {
       computedStyle = {
+        ...computedStyle,
         backgroundColor: 'var(--mantine-color-blue-1)',
         color: 'var(--mantine-color-blue-7)',
-        fontWeight: 700,
-        borderRadius: '8px'
+        fontWeight: 700
       };
     }
 
@@ -71,10 +93,22 @@ export const CommonDatePickerInput: React.FC<CommonDatePickerInputProps> = ({
     };
   };
 
+  const resolvedDefaultDate =
+    defaultDate ||
+    (value
+      ? typeof value === 'string'
+        ? new Date(value)
+        : (value as Date)
+      : originalDate
+        ? typeof originalDate === 'string'
+          ? new Date(originalDate)
+          : originalDate
+        : new Date());
+
   return (
     <DatePickerInput
       value={value}
-      defaultDate={defaultDate || (value ? (value as Date) : new Date())}
+      defaultDate={resolvedDefaultDate}
       highlightToday={highlightToday}
       getDayProps={customGetDayProps}
       {...props}
