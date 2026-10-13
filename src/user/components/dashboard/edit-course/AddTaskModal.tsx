@@ -230,9 +230,8 @@ const AddTaskModal = ({
       title='Add Task'
       centered
       radius='lg'
-      size='md'
       overlayProps={{ backgroundOpacity: 0.5, blur: 4 }}
-      transitionProps={{ transition: 'pop', duration: 200 }}
+      transitionProps={{ transition: 'fade-down', duration: 200 }}
       styles={{
         header: {
           backgroundColor: currentThemeConfig.cardBackground,

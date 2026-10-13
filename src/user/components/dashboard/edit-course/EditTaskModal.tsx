@@ -137,7 +137,7 @@ const EditTaskModal = ({
       centered
       radius='lg'
       overlayProps={{ backgroundOpacity: 0.5, blur: 4 }}
-      transitionProps={{ transition: 'pop', duration: 200 }}
+      transitionProps={{ transition: 'fade-down', duration: 200 }}
       styles={{
         header: {
           backgroundColor: currentThemeConfig.cardBackground,

@@ -11,6 +11,7 @@ import {
   IconIdBadge2
 } from '@tabler/icons-react';
 import { useAppTheme } from '@hooks/use-app-theme';
+import { formatAadhaarNumber, sanitizeAadhaarNumber } from '@utils/common/aadhaar';
 import type { SectionProps } from './types';
 
 const BasicInfoSection = ({ register, control, errors }: SectionProps) => {
@@ -131,17 +132,29 @@ const BasicInfoSection = ({ register, control, errors }: SectionProps) => {
         </Grid.Col>
 
         <Grid.Col span={{ base: 12, sm: 6 }}>
-          <TextInput
-            label='Aadhar Number'
-            placeholder='Enter Aadhaar number'
-            type='tel'
-            leftSection={
-              <IconFingerprint size={16} color={themeConfig.iconColor} />
-            }
-            {...register('aadharNumber')}
-            maxLength={12}
-            error={errors.aadharNumber?.message}
-            required
+          <Controller
+            name='aadharNumber'
+            control={control}
+            render={({ field }) => (
+              <TextInput
+                label='Aadhar Number'
+                placeholder='Enter Aadhaar number'
+                type='tel'
+                leftSection={
+                  <IconFingerprint size={16} color={themeConfig.iconColor} />
+                }
+                value={formatAadhaarNumber(field.value)}
+                onChange={event =>
+                  field.onChange(
+                    sanitizeAadhaarNumber(event.currentTarget.value)
+                  )
+                }
+                maxLength={14}
+                error={errors.aadharNumber?.message}
+                required
+                styles={fieldStyles}
+              />
+            )}
           />
         </Grid.Col>
 
