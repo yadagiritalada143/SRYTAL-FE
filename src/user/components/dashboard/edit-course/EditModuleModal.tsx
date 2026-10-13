@@ -100,6 +100,7 @@ const EditModuleModal = ({
       onClose={handleClose}
       title='Edit Module'
       centered
+      size='lg'
       radius='lg'
       overlayProps={{ backgroundOpacity: 0.5, blur: 4 }}
       transitionProps={{ transition: 'pop', duration: 200 }}

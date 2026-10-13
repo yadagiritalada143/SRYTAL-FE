@@ -135,6 +135,7 @@ const EditTaskModal = ({
       onClose={handleClose}
       title='Edit Task'
       centered
+      size='lg'
       radius='lg'
       overlayProps={{ backgroundOpacity: 0.5, blur: 4 }}
       transitionProps={{ transition: 'fade-down', duration: 200 }}
