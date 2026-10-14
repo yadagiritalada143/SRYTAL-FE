@@ -231,6 +231,119 @@ describe('EditTaskModal', () => {
     });
   });
 
+  describe('Description', () => {
+    it('disables Save Changes until the description is provided', () => {
+      renderModal(makeTask({ taskDescription: 'Watch this intro' }));
+
+      fireEvent.change(screen.getByLabelText('Description'), {
+        target: { value: '' }
+      });
+      expect(
+        screen.getByRole('button', { name: 'Save Changes' })
+      ).toBeDisabled();
+
+      fireEvent.change(screen.getByLabelText('Description'), {
+        target: { value: 'Watch the updated intro.' }
+      });
+      expect(
+        screen.getByRole('button', { name: 'Save Changes' })
+      ).not.toBeDisabled();
+    });
+
+    it('shows the description required message once the editor is blurred', () => {
+      renderModal(makeTask({ taskDescription: 'Watch this intro' }));
+
+      fireEvent.change(screen.getByLabelText('Description'), {
+        target: { value: '' }
+      });
+      fireEvent.blur(screen.getByLabelText('Description'));
+
+      expect(
+        screen.getByText('Task description is required.')
+      ).toBeInTheDocument();
+    });
+  });
+
+  describe('Acknowledgement', () => {
+    it('shows and seeds the acknowledgement switch for FILE tasks', () => {
+      renderModal(
+        makeTask({
+          type: 'FILE',
+          contentFileName: 'policy.pdf',
+          acknowledgementText: 'I have read the policy.'
+        })
+      );
+      expect(screen.getByLabelText(/Require acknowledgement/)).toBeChecked();
+    });
+
+    it('seeds the acknowledgement text field from the task', () => {
+      renderModal(
+        makeTask({
+          type: 'FILE',
+          contentFileName: 'policy.pdf',
+          acknowledgementText: 'I have read the policy.'
+        })
+      );
+      expect(screen.getByLabelText(/Acknowledgement text/)).toHaveValue(
+        'I have read the policy.'
+      );
+    });
+
+    it('hides the acknowledgement text field when the switch is off', () => {
+      renderModal(makeTask({ type: 'FILE', contentFileName: 'policy.pdf' }));
+      expect(
+        screen.queryByLabelText(/Acknowledgement text/)
+      ).not.toBeInTheDocument();
+    });
+
+    it('hides the acknowledgement switch for non-FILE tasks', () => {
+      renderModal(makeTask({ type: 'LINK' }));
+      expect(
+        screen.queryByLabelText(/Require acknowledgement/)
+      ).not.toBeInTheDocument();
+    });
+
+    it('submits the acknowledgement text entered when the switch is turned on', async () => {
+      renderModal(makeTask({ type: 'FILE', contentFileName: 'policy.pdf' }));
+
+      fireEvent.click(screen.getByLabelText(/Require acknowledgement/));
+      fireEvent.change(screen.getByLabelText(/Acknowledgement text/), {
+        target: { value: 'I have read and understood the policy.' }
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: 'Save Changes' }));
+
+      await waitFor(() => {
+        expect(mockUpdateTask).toHaveBeenCalledWith(
+          expect.objectContaining({
+            acknowledgementText: 'I have read and understood the policy.'
+          })
+        );
+      });
+    });
+
+    it('sends an empty acknowledgement to clear it when the switch is off', async () => {
+      renderModal(
+        makeTask({
+          type: 'FILE',
+          contentFileName: 'policy.pdf',
+          acknowledgementText: 'Old statement'
+        })
+      );
+
+      // Seeded as on; turning it off clears the stored acknowledgement.
+      fireEvent.click(screen.getByLabelText(/Require acknowledgement/));
+
+      fireEvent.click(screen.getByRole('button', { name: 'Save Changes' }));
+
+      await waitFor(() => {
+        expect(mockUpdateTask).toHaveBeenCalledWith(
+          expect.objectContaining({ acknowledgementText: '' })
+        );
+      });
+    });
+  });
+
   describe('Submit', () => {
     it('calls updateTask with the form values on success', async () => {
       renderModal(makeTask());

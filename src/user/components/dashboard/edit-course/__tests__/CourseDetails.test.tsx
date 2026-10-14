@@ -262,13 +262,14 @@ describe('CourseDetails', () => {
   });
 
   describe('Stats', () => {
-    it('shows module count, task item count and status', () => {
+    it('shows total and archived module and task counts', () => {
       renderPage();
-      expect(screen.getAllByText('Modules').length).toBeGreaterThanOrEqual(1);
+      expect(screen.getByText('Total Modules')).toBeInTheDocument();
+      expect(screen.getByText('Archived Modules')).toBeInTheDocument();
+      expect(screen.getByText('Total Tasks')).toBeInTheDocument();
+      expect(screen.getByText('Archived Tasks')).toBeInTheDocument();
       expect(screen.getByText('2')).toBeInTheDocument();
-      expect(screen.getByText('Task Items')).toBeInTheDocument();
       expect(screen.getByText('3')).toBeInTheDocument();
-      expect(screen.getByText('Status')).toBeInTheDocument();
     });
   });
 
@@ -482,7 +483,7 @@ describe('CourseDetails', () => {
       openSpy.mockRestore();
     });
 
-    it('shows the coding question in a modal instead of opening a tab', () => {
+    it('does not show an Open action for coding tasks', () => {
       const openSpy = jest.spyOn(window, 'open').mockImplementation(() => null);
       mockCourse = makeCourse({
         modules: [
@@ -495,9 +496,9 @@ describe('CourseDetails', () => {
               {
                 _id: 't9',
                 taskName: 'FizzBuzz',
-                taskDescription: '',
+                taskDescription: 'Return fizz for multiples of three.',
                 status: 'ACTIVE',
-                type: 'LINK',
+                type: 'CODE',
                 content: '',
                 isCoding: true,
                 question: 'Return fizz for multiples of three.',
@@ -510,15 +511,7 @@ describe('CourseDetails', () => {
       });
       renderPage();
 
-      const openButton = screen
-        .getAllByText('Open')[0]!
-        .closest('button') as HTMLButtonElement;
-      fireEvent.click(openButton);
-
-      expect(screen.getByTestId('coding-question-modal')).toBeInTheDocument();
-      expect(
-        screen.getByText('Return fizz for multiples of three.')
-      ).toBeInTheDocument();
+      expect(screen.queryByText('Open')).not.toBeInTheDocument();
       expect(openSpy).not.toHaveBeenCalled();
 
       openSpy.mockRestore();

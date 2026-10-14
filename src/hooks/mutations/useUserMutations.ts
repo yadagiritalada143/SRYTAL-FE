@@ -13,6 +13,7 @@ import {
   updateCourseContentWriter,
   updateCourseModuleContentWriter,
   updateCourseTaskContentWriter,
+  updateMyTaskAcknowledgement,
   updateMyTaskProgress,
   runCode,
   submitCode,
@@ -35,6 +36,7 @@ import {
 } from '@interfaces/contentwriter';
 import {
   RunCodePayload,
+  UpdateMyTaskAcknowledgementPayload,
   UpdateTaskProgressPayload
 } from '@interfaces/course-assignment';
 
@@ -222,6 +224,20 @@ export const useUpdateMyTaskProgress = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: UpdateTaskProgressPayload) => updateMyTaskProgress(data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: userQueryKeys.myCourse(variables.courseAssignmentId)
+      });
+      queryClient.invalidateQueries({ queryKey: userQueryKeys.myCourses });
+    }
+  });
+};
+
+export const useUpdateMyTaskAcknowledgement = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: UpdateMyTaskAcknowledgementPayload) =>
+      updateMyTaskAcknowledgement(data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: userQueryKeys.myCourse(variables.courseAssignmentId)

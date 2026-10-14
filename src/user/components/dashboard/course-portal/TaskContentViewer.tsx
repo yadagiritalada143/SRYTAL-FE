@@ -15,23 +15,36 @@ import { resolveTaskContent, isCodingTask } from './task-content';
 interface TaskContentViewerProps {
   task: AssignedTask;
   onFinished?: () => void;
+  embedded?: boolean;
 }
 
-const TaskContentViewer = ({ task, onFinished }: TaskContentViewerProps) => {
+const TaskContentViewer = ({
+  task,
+  onFinished,
+  embedded = false
+}: TaskContentViewerProps) => {
   const { themeConfig } = useAppTheme();
   const navigate = useNavigate();
 
+  const framedBox = embedded
+    ? { backgroundColor: 'transparent' }
+    : {
+        borderRadius: 12,
+        border: `1px solid ${themeConfig.borderColor}`,
+        backgroundColor: themeConfig.cardBackground
+      };
+
+  const dashedBox = embedded
+    ? { backgroundColor: 'transparent' }
+    : {
+        borderRadius: 12,
+        border: `1px dashed ${themeConfig.borderColor}`,
+        backgroundColor: themeConfig.cardBackground
+      };
+
   if (isCodingTask(task)) {
     return (
-      <Center
-        p='xl'
-        style={{
-          minHeight: 260,
-          borderRadius: 12,
-          border: `1px dashed ${themeConfig.borderColor}`,
-          backgroundColor: themeConfig.cardBackground
-        }}
-      >
+      <Center p='xl' style={{ minHeight: 260, ...dashedBox }}>
         <Stack align='center' gap='sm' maw={420}>
           <ThemeIcon size={56} radius='xl' variant='light'>
             <IconCode size={28} />
@@ -58,7 +71,7 @@ const TaskContentViewer = ({ task, onFinished }: TaskContentViewerProps) => {
 
   const surface = {
     backgroundColor: '#000',
-    borderRadius: 12,
+    borderRadius: embedded ? 0 : 12,
     overflow: 'hidden' as const
   };
 
@@ -100,14 +113,7 @@ const TaskContentViewer = ({ task, onFinished }: TaskContentViewerProps) => {
 
   if (content.kind === 'audio') {
     return (
-      <Box
-        p='xl'
-        style={{
-          borderRadius: 12,
-          border: `1px solid ${themeConfig.borderColor}`,
-          backgroundColor: themeConfig.cardBackground
-        }}
-      >
+      <Box p='xl' style={framedBox}>
         <audio
           key={content.url}
           src={content.url}
@@ -121,14 +127,7 @@ const TaskContentViewer = ({ task, onFinished }: TaskContentViewerProps) => {
 
   if (content.kind === 'image') {
     return (
-      <Box
-        style={{
-          borderRadius: 12,
-          border: `1px solid ${themeConfig.borderColor}`,
-          backgroundColor: themeConfig.cardBackground,
-          overflow: 'hidden'
-        }}
-      >
+      <Box style={{ ...framedBox, overflow: 'hidden' }}>
         <img
           src={content.url}
           alt={task.taskName}
@@ -145,14 +144,7 @@ const TaskContentViewer = ({ task, onFinished }: TaskContentViewerProps) => {
 
   if (content.kind === 'pdf' || content.kind === 'text') {
     return (
-      <Box
-        style={{
-          borderRadius: 12,
-          border: `1px solid ${themeConfig.borderColor}`,
-          overflow: 'hidden',
-          backgroundColor: themeConfig.cardBackground
-        }}
-      >
+      <Box style={{ ...framedBox, overflow: 'hidden' }}>
         <iframe
           key={content.url}
           src={content.url}
@@ -167,15 +159,7 @@ const TaskContentViewer = ({ task, onFinished }: TaskContentViewerProps) => {
   const openUrl = content.externalUrl || content.url;
 
   return (
-    <Center
-      p='xl'
-      style={{
-        minHeight: 260,
-        borderRadius: 12,
-        border: `1px dashed ${themeConfig.borderColor}`,
-        backgroundColor: themeConfig.cardBackground
-      }}
-    >
+    <Center p='xl' style={{ minHeight: 260, ...dashedBox }}>
       <Stack align='center' gap='sm' maw={420}>
         <ThemeIcon size={56} radius='xl' variant='light'>
           {isExternal ? <IconLink size={28} /> : <IconFileDownload size={28} />}

@@ -1,6 +1,7 @@
 import { Box, Divider, Grid, Paper, Stack, Text } from '@mantine/core';
 import { useAppTheme } from '@hooks/use-app-theme';
 import type { EmployeeInterface } from '@interfaces/employee';
+import { formatAadhaarNumber } from '@utils/common/aadhaar';
 import { formatDate } from './utils';
 
 interface FieldProps {
@@ -80,7 +81,10 @@ const EmployeeInfoCard = ({ employee }: { employee: EmployeeInterface }) => (
             <Field label='PAN' value={employee.panCardNumber} />
           </Grid.Col>
           <Grid.Col span={6}>
-            <Field label='Aadhar Number' value={employee.aadharNumber} />
+            <Field
+              label='Aadhar Number'
+              value={formatAadhaarNumber(employee.aadharNumber)}
+            />
           </Grid.Col>
         </Grid>
       </Box>

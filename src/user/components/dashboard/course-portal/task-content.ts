@@ -159,3 +159,18 @@ export const resolveTaskContent = (
   const kind = kindForMimeType(mimeTypeOf(task));
   return { kind, url: fileUrl, label: CONTENT_LABELS[kind] };
 };
+
+export const hasTaskAcknowledgement = (
+  task: Pick<AssignedTask, 'type' | 'isCoding' | 'acknowledgementText'>
+): boolean => {
+  const isFileTask =
+    !isCodingTask(task) && String(task.type || '').toUpperCase() === 'FILE';
+  return isFileTask && Boolean(task.acknowledgementText?.trim());
+};
+
+export const requiresTaskAcknowledgement = (
+  task: Pick<
+    AssignedTask,
+    'type' | 'isCoding' | 'acknowledgementText' | 'acknowledged'
+  >
+): boolean => hasTaskAcknowledgement(task) && task.acknowledged !== true;

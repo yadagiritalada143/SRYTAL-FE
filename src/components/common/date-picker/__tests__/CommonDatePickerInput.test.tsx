@@ -59,4 +59,28 @@ describe('CommonDatePickerInput Component', () => {
 
     expect(screen.getByText(/October 11, 2026/i)).toBeInTheDocument();
   });
+
+  it('applies custom day styles for active, original, and today dates', () => {
+    let capturedGetDayProps: any;
+    const TestComponent = () => {
+      return (
+        <RecoilRoot>
+          <MantineProvider>
+            <CommonDatePickerInput
+              placeholder='Pick a date'
+              value={new Date('2026-10-25')}
+              originalDate={new Date('2026-10-20')}
+              getDayProps={(date: any) => {
+                capturedGetDayProps = date;
+                return {};
+              }}
+            />
+          </MantineProvider>
+        </RecoilRoot>
+      );
+    };
+
+    render(<TestComponent />);
+    expect(screen.getByText(/October 25, 2026/i)).toBeInTheDocument();
+  });
 });

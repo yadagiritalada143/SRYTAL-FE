@@ -13,7 +13,6 @@ import {
   ThemeIcon,
   Center,
   Tooltip,
-  Modal,
   Collapse,
   UnstyledButton
 } from '@mantine/core';
@@ -30,7 +29,8 @@ import {
   IconCheck,
   IconChevronDown,
   IconChevronUp,
-  IconCornerDownRight
+  IconCornerDownRight,
+  IconArchive
 } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 import { useMediaQuery } from '@mantine/hooks';
@@ -82,7 +82,6 @@ const CourseDetails = () => {
   const [courseEditOpen, setCourseEditOpen] = useState(false);
   const [moduleToEdit, setModuleToEdit] = useState<Module | null>(null);
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
-  const [taskToView, setTaskToView] = useState<Task | null>(null);
 
   const [expandedModules, setExpandedModules] = useState<
     Record<string, boolean>
@@ -121,10 +120,6 @@ const CourseDetails = () => {
   );
 
   const handleViewContent = (task: Task) => {
-    if (task.isCoding || task.type === 'CODE') {
-      setTaskToView(task);
-      return;
-    }
     window.open(getCourseTaskContentUrl(task._id), '_blank', 'noopener');
   };
 
@@ -136,24 +131,85 @@ const CourseDetails = () => {
     );
   }
 
+  const archivedModules = modules.filter(
+    m => (m.status || '').toUpperCase() === 'ARCHIVE'
+  ).length;
+
+  const archivedTasks = modules.reduce(
+    (sum, m) =>
+      sum +
+      (m.tasks?.filter(t => (t.status || '').toUpperCase() === 'ARCHIVE')
+        .length || 0),
+    0
+  );
+
+  const activeModules = modules.length - archivedModules;
+  const activeTasks = totalTasks - archivedTasks;
+
   const stats = [
     {
-      icon: <IconBook size={18} />,
-      label: 'Modules',
+      label: 'Total Modules',
       value: modules.length,
-      color: 'indigo'
+      icon: <IconBook size={22} />,
+      color: 'indigo',
+      badges: (
+        <Group gap={4} mt={4} wrap='wrap'>
+          <Badge size='xs' variant='light' color='green'>
+            {activeModules} Active
+          </Badge>
+          <Badge size='xs' variant='light' color='orange'>
+            {archivedModules} Archived
+          </Badge>
+        </Group>
+      )
     },
     {
-      icon: <IconListCheck size={18} />,
-      label: 'Task Items',
+      label: 'Archived Modules',
+      value: archivedModules,
+      icon: <IconArchive size={22} />,
+      color: 'orange',
+      badges: (
+        <Group gap={4} mt={4} wrap='wrap'>
+          <Badge size='xs' variant='light' color='orange'>
+            {modules.length} Total
+          </Badge>
+          <Badge size='xs' variant='light' color='green'>
+            {activeModules} Active
+          </Badge>
+        </Group>
+      )
+    },
+    {
+      label: 'Total Tasks',
       value: totalTasks,
-      color: 'pink'
+      icon: <IconLayersSubtract size={22} />,
+      color: 'indigo',
+      badges: (
+        <Group gap={4} mt={4} wrap='wrap'>
+          <Badge size='xs' variant='light' color='indigo'>
+            {activeTasks} Active
+          </Badge>
+          <Badge size='xs' variant='light' color='orange'>
+            {archivedTasks} Archived
+          </Badge>
+        </Group>
+      )
     },
     {
-      icon: <IconLayersSubtract size={18} />,
-      label: 'Status',
-      value: course?.status || 'N/A',
-      color: course?.status === 'ACTIVE' ? 'teal' : 'blue'
+      label: 'Archived Tasks',
+      value: archivedTasks,
+      icon: <IconListCheck size={22} />,
+      color: 'violet',
+      badges: (
+        <Group gap={4} mt={4} wrap='wrap'>
+          <Badge size='xs' variant='light' color='violet'>
+            {totalTasks} Total
+          </Badge>
+          <Badge size='xs' variant='light' color='green'>
+            {activeTasks} Active
+          </Badge>
+        </Group>
+      )
     }
   ];
 
@@ -244,46 +300,32 @@ const CourseDetails = () => {
             </Stack>
           </Card>
 
-          <Group grow wrap='wrap' gap='sm'>
-            {stats.map(item => (
-              <Paper
-                key={item.label}
-                p='sm'
-                radius='md'
-                withBorder
-                style={{
-                  backgroundColor: currentThemeConfig.cardBackground,
-                  borderColor: currentThemeConfig.borderColor,
-                  flex: isMobile ? '1 1 100%' : 1
-                }}
-              >
-                <Group gap='xs' justify='space-between' align='center'>
-                  <Group gap='sm'>
-                    <ThemeIcon
-                      size={32}
-                      radius='md'
-                      color={item.color}
-                      variant='light'
-                    >
-                      {item.icon}
-                    </ThemeIcon>
-                    <Stack gap={0}>
-                      <Text size='xs' c='dimmed' fw={500}>
-                        {item.label}
-                      </Text>
-                      <Text
-                        fw={700}
-                        size='md'
-                        style={{ color: currentThemeConfig.color }}
-                      >
-                        {item.value}
-                      </Text>
-                    </Stack>
-                  </Group>
+          {/* Stats */}
+          <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing='md'>
+            {stats.map((s, i) => (
+              <Card key={i} withBorder radius='md' p='md'>
+                <Group gap='sm' wrap='nowrap' align='flex-start'>
+                  <ThemeIcon
+                    size={44}
+                    radius='md'
+                    variant='light'
+                    color={s.color}
+                  >
+                    {s.icon}
+                  </ThemeIcon>
+                  <Stack gap={2} style={{ minWidth: 0, flex: 1 }}>
+                    <Title order={3} lh={1}>
+                      {s.value}
+                    </Title>
+                    <Text size='xs' c='dimmed' lineClamp={1}>
+                      {s.label}
+                    </Text>
+                    {s.badges}
+                  </Stack>
                 </Group>
-              </Paper>
+              </Card>
             ))}
-          </Group>
+          </SimpleGrid>
 
           {course?.courseDescription && (
             <Card
@@ -619,25 +661,33 @@ const CourseDetails = () => {
                                   cols={{ base: 1, sm: 2, md: 3 }}
                                   spacing='sm'
                                 >
-                                  {module.tasks.slice(0, 6).map((task, taskIndex) => (
-                                    <TaskRow
-                                      key={task._id}
-                                      task={task}
-                                      moduleIndex={index + 1}
-                                      taskIndex={taskIndex + 1}
-                                      onView={() => handleViewContent(task)}
-                                      onEdit={() => setTaskToEdit(task)}
-                                      borderColor={currentThemeConfig.borderColor}
-                                      cardBg={currentThemeConfig.cardBackground}
-                                      textColor={currentThemeConfig.color}
-                                    />
-                                  ))}
+                                  {module.tasks
+                                    .slice(0, 6)
+                                    .map((task, taskIndex) => (
+                                      <TaskRow
+                                        key={task._id}
+                                        task={task}
+                                        moduleIndex={index + 1}
+                                        taskIndex={taskIndex + 1}
+                                        onView={() => handleViewContent(task)}
+                                        onEdit={() => setTaskToEdit(task)}
+                                        borderColor={
+                                          currentThemeConfig.borderColor
+                                        }
+                                        cardBg={
+                                          currentThemeConfig.cardBackground
+                                        }
+                                        textColor={currentThemeConfig.color}
+                                      />
+                                    ))}
                                 </SimpleGrid>
 
                                 {module.tasks.length > 6 && (
                                   <>
                                     <Collapse
-                                      in={Boolean(expandedTaskModules[module._id])}
+                                      in={Boolean(
+                                        expandedTaskModules[module._id]
+                                      )}
                                       transitionDuration={300}
                                       transitionTimingFunction='cubic-bezier(0.4, 0, 0.2, 1)'
                                       animateOpacity
@@ -647,19 +697,29 @@ const CourseDetails = () => {
                                         spacing='sm'
                                         pt='xs'
                                       >
-                                        {module.tasks.slice(6).map((task, taskIndex) => (
-                                          <TaskRow
-                                            key={task._id}
-                                            task={task}
-                                            moduleIndex={index + 1}
-                                            taskIndex={taskIndex + 7}
-                                            onView={() => handleViewContent(task)}
-                                            onEdit={() => setTaskToEdit(task)}
-                                            borderColor={currentThemeConfig.borderColor}
-                                            cardBg={currentThemeConfig.cardBackground}
-                                            textColor={currentThemeConfig.color}
-                                          />
-                                        ))}
+                                        {module.tasks
+                                          .slice(6)
+                                          .map((task, taskIndex) => (
+                                            <TaskRow
+                                              key={task._id}
+                                              task={task}
+                                              moduleIndex={index + 1}
+                                              taskIndex={taskIndex + 7}
+                                              onView={() =>
+                                                handleViewContent(task)
+                                              }
+                                              onEdit={() => setTaskToEdit(task)}
+                                              borderColor={
+                                                currentThemeConfig.borderColor
+                                              }
+                                              cardBg={
+                                                currentThemeConfig.cardBackground
+                                              }
+                                              textColor={
+                                                currentThemeConfig.color
+                                              }
+                                            />
+                                          ))}
                                       </SimpleGrid>
                                     </Collapse>
 
@@ -674,7 +734,9 @@ const CourseDetails = () => {
                                             <IconChevronDown size={14} />
                                           )
                                         }
-                                        onClick={() => toggleModuleTasks(module._id)}
+                                        onClick={() =>
+                                          toggleModuleTasks(module._id)
+                                        }
                                       >
                                         {expandedTaskModules[module._id]
                                           ? 'Show Less Tasks'
@@ -741,33 +803,6 @@ const CourseDetails = () => {
         task={taskToEdit || undefined}
         courseId={id}
       />
-      <Modal
-        opened={!!taskToView}
-        onClose={() => setTaskToView(null)}
-        title='Coding Question'
-        centered
-      >
-        <Stack gap='sm' className='mt-4'>
-          <Text fw={600}>{taskToView?.taskName}</Text>
-          <Paper
-            p='md'
-            radius='md'
-            withBorder
-            style={{ borderColor: currentThemeConfig.borderColor }}
-          >
-            <Text size='sm' style={{ whiteSpace: 'pre-wrap' }}>
-              {taskToView?.question ||
-                taskToView?.taskName ||
-                'No question provided.'}
-            </Text>
-          </Paper>
-          <Group justify='flex-end'>
-            <CommonButton variant='default' onClick={() => setTaskToView(null)}>
-              Close
-            </CommonButton>
-          </Group>
-        </Stack>
-      </Modal>
     </Container>
   );
 };
@@ -793,6 +828,8 @@ const TaskRow = ({
   cardBg,
   textColor
 }: TaskRowProps) => {
+  const isCoding = Boolean(task.isCoding) || task.type === 'CODE';
+
   const getStatusBadge = () => {
     if (!task.status) return null;
     const statusUpper = task.status.toUpperCase();
@@ -861,6 +898,12 @@ const TaskRow = ({
                   Coding
                 </Badge>
               )}
+              {task.type === 'FILE' &&
+                Boolean(task.acknowledgementText?.trim()) && (
+                  <Badge color='indigo' radius='sm' variant='light' size='xs'>
+                    Acknowledgement
+                  </Badge>
+                )}
               {getStatusBadge()}
             </Group>
 
@@ -907,20 +950,22 @@ const TaskRow = ({
           </Group>
         </Stack>
 
-        <Group
-          justify='flex-end'
-          pt='xs'
-          style={{ borderTop: `1px solid ${borderColor}` }}
-        >
-          <CommonButton
-            variant='light'
-            size='xs'
-            rightSection={<IconExternalLink size={12} />}
-            onClick={onView}
+        {!isCoding && (
+          <Group
+            justify='flex-end'
+            pt='xs'
+            style={{ borderTop: `1px solid ${borderColor}` }}
           >
-            Open
-          </CommonButton>
-        </Group>
+            <CommonButton
+              variant='light'
+              size='xs'
+              rightSection={<IconExternalLink size={12} />}
+              onClick={onView}
+            >
+              Open
+            </CommonButton>
+          </Group>
+        )}
       </Stack>
     </Card>
   );

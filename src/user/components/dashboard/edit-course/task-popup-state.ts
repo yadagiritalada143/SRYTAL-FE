@@ -46,3 +46,7 @@ export const readTaskDraft = (): AddTaskDraft | null => taskDraft;
 export const clearTaskDraft = (): void => {
   taskDraft = null;
 };
+
+export const taskRequiresAcknowledgement = (
+  acknowledgementText?: string | null
+): boolean => Boolean(acknowledgementText?.trim());

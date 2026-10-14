@@ -132,15 +132,16 @@ describe('CourseDetail', () => {
     expect(screen.getByText('About this course')).toBeInTheDocument();
   });
 
-  it('renders the stats cards (Modules, Task Items, Status)', () => {
+  it('renders the stats cards (Total/Archived Modules, Total/Archived Tasks)', () => {
     mockUseGetCourseByIdAdmin.mockReturnValue({
       data: mockCourseData,
       isLoading: false
     });
     renderCourseDetail();
-    expect(screen.getAllByText('Modules').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText('Task Items')).toBeInTheDocument();
-    expect(screen.getByText('Status')).toBeInTheDocument();
+    expect(screen.getByText('Total Modules')).toBeInTheDocument();
+    expect(screen.getByText('Archived Modules')).toBeInTheDocument();
+    expect(screen.getByText('Total Tasks')).toBeInTheDocument();
+    expect(screen.getByText('Archived Tasks')).toBeInTheDocument();
   });
 
   it('shows the correct module count', () => {
@@ -149,7 +150,7 @@ describe('CourseDetail', () => {
       isLoading: false
     });
     renderCourseDetail();
-    const moduleCount = screen.getAllByText('Modules');
+    const moduleCount = screen.getAllByText('Total Modules');
     expect(moduleCount.length).toBeGreaterThanOrEqual(1);
   });
 
@@ -222,6 +223,41 @@ describe('CourseDetail', () => {
     );
   });
 
+  it('does not show an Open action for coding tasks', () => {
+    window.open = jest.fn();
+    mockUseGetCourseByIdAdmin.mockReturnValue({
+      data: {
+        ...mockCourseData,
+        modules: [
+          {
+            _id: 'mod-code',
+            moduleName: 'Coding',
+            moduleDescription: '',
+            status: 'ACTIVE',
+            tasks: [
+              {
+                _id: 'task-code',
+                taskName: 'FizzBuzz',
+                taskDescription: 'Solve it',
+                type: 'CODE',
+                isCoding: true,
+                status: 'ACTIVE'
+              }
+            ]
+          }
+        ]
+      },
+      isLoading: false
+    });
+    renderCourseDetail();
+    fireEvent.click(screen.getByText('Coding'));
+
+    expect(
+      screen.queryByRole('button', { name: /Open FizzBuzz/i })
+    ).not.toBeInTheDocument();
+    expect(window.open).not.toHaveBeenCalled();
+  });
+
   it('shows empty state when course has no modules', () => {
     mockUseGetCourseByIdAdmin.mockReturnValue({
       data: { ...mockCourseData, modules: [] },
@@ -250,16 +286,6 @@ describe('CourseDetail', () => {
     });
     renderCourseDetail();
     expect(screen.queryByText('About this course')).not.toBeInTheDocument();
-  });
-
-  it('shows N/A for status when course status is missing', () => {
-    const noStatus = { ...mockCourseData, status: '' };
-    mockUseGetCourseByIdAdmin.mockReturnValue({
-      data: noStatus,
-      isLoading: false
-    });
-    renderCourseDetail();
-    expect(screen.getByText('N/A')).toBeInTheDocument();
   });
 
   it('shows Draft status for missing status', () => {

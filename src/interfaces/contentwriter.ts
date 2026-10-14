@@ -18,6 +18,7 @@ export interface Task {
   content?: string;
   contentMimeType?: string;
   contentFileName?: string;
+  acknowledgementText?: string;
   isCoding?: boolean;
   question?: string;
   thumbnailUrl?: string;
@@ -71,6 +72,7 @@ export interface UpdateTaskPayload {
   // `thumbnailFile`). When omitted, the stored thumbnail is kept as-is.
   thumbnail?: File | null;
   status: CourseStatus;
+  acknowledgementText?: string;
 }
 
 export interface AddTaskPayload {
@@ -80,6 +82,7 @@ export interface AddTaskPayload {
   type?: TaskContentType;
   file?: File | null;
   link?: string;
+  acknowledgementText?: string;
   // Optional task thumbnail image (multer field `thumbnailFile`).
   thumbnail?: File | null;
 }

@@ -33,6 +33,11 @@ import DataView from '@components/common/loaders/DataView';
 import { AssignedTask } from '@interfaces/course-assignment';
 import CurriculumSidebar from './CurriculumSidebar';
 import TaskContentViewer from './TaskContentViewer';
+import TaskAcknowledgement from './TaskAcknowledgement';
+import {
+  hasTaskAcknowledgement,
+  requiresTaskAcknowledgement
+} from './task-content';
 import { formatDueDate, statusColor } from './course-status';
 
 /** A task paired with the module it belongs to, for prev/next navigation. */
@@ -96,7 +101,18 @@ const CoursePlayer = () => {
   const active = activeIndex >= 0 ? flatTasks[activeIndex] : undefined;
   const progress = course?.progress;
 
+  const needsAcknowledgement = active
+    ? requiresTaskAcknowledgement(active.task) && !active.task.isCompleted
+    : false;
+  const showsAcknowledgement = active
+    ? hasTaskAcknowledgement(active.task)
+    : false;
+
   const selectTask = (task: AssignedTask, moduleId: string) => {
+    if (needsAcknowledgement && task._id !== activeTaskId) {
+      showErrorToast('Acknowledge this document before moving on.');
+      return;
+    }
     setActiveTaskId(task._id);
     setOpenModuleIds(current =>
       current.includes(moduleId) ? current : [...current, moduleId]
@@ -139,7 +155,15 @@ const CoursePlayer = () => {
    * the learner has already finished.
    */
   const handleContentFinished = () => {
-    if (active && !active.task.isCompleted) setCompletion(true);
+    if (active && !active.task.isCompleted && !needsAcknowledgement) {
+      setCompletion(true);
+    }
+  };
+
+  const handleAcknowledged = () => {
+    if (active && !active.task.isCompleted) {
+      setCompletion(true);
+    }
   };
 
   const curriculum = (
@@ -243,10 +267,30 @@ const CoursePlayer = () => {
                 </Card>
               ) : (
                 <>
-                  <TaskContentViewer
-                    task={active.task}
-                    onFinished={handleContentFinished}
-                  />
+                  {showsAcknowledgement ? (
+                    <Card
+                      withBorder
+                      radius='lg'
+                      p={0}
+                      style={{ overflow: 'hidden' }}
+                    >
+                      <TaskContentViewer
+                        task={active.task}
+                        onFinished={handleContentFinished}
+                        embedded
+                      />
+                      <TaskAcknowledgement
+                        courseAssignmentId={courseAssignmentId}
+                        task={active.task}
+                        onAcknowledged={handleAcknowledged}
+                      />
+                    </Card>
+                  ) : (
+                    <TaskContentViewer
+                      task={active.task}
+                      onFinished={handleContentFinished}
+                    />
+                  )}
 
                   <Card withBorder radius='lg' p={{ base: 'md', sm: 'lg' }}>
                     <Stack gap='sm'>
@@ -284,20 +328,39 @@ const CoursePlayer = () => {
 
                       <Group justify='space-between' wrap='wrap' gap='sm'>
                         <Group gap='xs'>
-                          <Tooltip label='Previous item' withArrow>
+                          <Tooltip
+                            label={
+                              needsAcknowledgement
+                                ? 'Acknowledge this document to continue'
+                                : 'Previous item'
+                            }
+                            withArrow
+                          >
                             <CommonButton
                               variant='default'
-                              disabled={activeIndex <= 0}
+                              disabled={
+                                activeIndex <= 0 || needsAcknowledgement
+                              }
                               leftSection={<IconChevronLeft size={16} />}
                               onClick={() => goTo(activeIndex - 1)}
                             >
                               Previous
                             </CommonButton>
                           </Tooltip>
-                          <Tooltip label='Next item' withArrow>
+                          <Tooltip
+                            label={
+                              needsAcknowledgement
+                                ? 'Acknowledge this document to continue'
+                                : 'Next item'
+                            }
+                            withArrow
+                          >
                             <CommonButton
                               variant='default'
-                              disabled={activeIndex >= flatTasks.length - 1}
+                              disabled={
+                                activeIndex >= flatTasks.length - 1 ||
+                                needsAcknowledgement
+                              }
                               rightSection={<IconChevronRight size={16} />}
                               onClick={() => goTo(activeIndex + 1)}
                             >
@@ -317,18 +380,25 @@ const CoursePlayer = () => {
                             Mark as incomplete
                           </CommonButton>
                         ) : (
-                          <CommonButton
-                            loading={isPending}
-                            leftSection={<IconChecks size={16} />}
-                            onClick={() =>
-                              setCompletion(
-                                true,
-                                activeIndex < flatTasks.length - 1
-                              )
-                            }
+                          <Tooltip
+                            label='Acknowledge this document to continue'
+                            withArrow
+                            disabled={!needsAcknowledgement}
                           >
-                            Complete and continue
-                          </CommonButton>
+                            <CommonButton
+                              loading={isPending}
+                              disabled={needsAcknowledgement}
+                              leftSection={<IconChecks size={16} />}
+                              onClick={() =>
+                                setCompletion(
+                                  true,
+                                  activeIndex < flatTasks.length - 1
+                                )
+                              }
+                            >
+                              Complete and continue
+                            </CommonButton>
+                          </Tooltip>
                         )}
                       </Group>
                     </Stack>
