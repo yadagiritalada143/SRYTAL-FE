@@ -55,6 +55,7 @@ import {
   updateNavUserAccessByAdmin,
   getAllCoursesByAdmin,
   getCourseByIdAdmin,
+  getAllActiveCoursesByAdmin,
   assignCourseToEmployee,
   getAllCourseAssignments,
   fetchAssignedCoursesForEmployee,
@@ -915,6 +916,13 @@ describe('admin-services', () => {
       mock.get.mockResolvedValue({ data: { courses: ['c1'] } });
 
       expect(await getAllCoursesByAdmin()).toEqual(['c1']);
+    });
+
+    it('getAllActiveCoursesByAdmin returns only active courses', async () => {
+      mock.get.mockResolvedValue({ data: { courses: ['active1'] } });
+
+      expect(await getAllActiveCoursesByAdmin()).toEqual(['active1']);
+      expect(mock.get).toHaveBeenCalledWith('/getAllActiveCourses');
     });
 
     it('getCourseByIdAdmin returns coursedata', async () => {

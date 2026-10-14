@@ -33,7 +33,7 @@ import { useCustomToast } from '@utils/common/toast';
 import { getErrorMessage } from '@utils/common/get-error-message';
 import {
   useGetAllEmployeesByAdmin,
-  useGetAllCoursesByAdmin,
+  useGetAllActiveCoursesByAdmin,
   useGetCourseByIdAdmin,
   useFetchAssignedCoursesForEmployee
 } from '@hooks/queries/useAdminQueries';
@@ -57,7 +57,7 @@ const CourseAssignments = () => {
   const { data: employees = [], isLoading: employeesLoading } =
     useGetAllEmployeesByAdmin();
   const { data: courses = [], isLoading: coursesLoading } =
-    useGetAllCoursesByAdmin();
+    useGetAllActiveCoursesByAdmin();
 
   const assignMutation = useAssignCourseToEmployee();
 

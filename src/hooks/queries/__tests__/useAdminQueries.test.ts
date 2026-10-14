@@ -16,6 +16,7 @@ import {
   useGetAllFeedbackAttributesByAdmin,
   useGetAllDepartmentsByAdmin,
   useGetAllCoursesByAdmin,
+  useGetAllActiveCoursesByAdmin,
   useGetCourseByIdAdmin,
   useGetAllCourseAssignments,
   useFetchAssignedCoursesForEmployee,
@@ -36,6 +37,7 @@ jest.mock('@services/admin-services', () => ({
   getallfeedbackattributesbyadmin: jest.fn(),
   getAllDepartmentsByAdmin: jest.fn(),
   getAllCoursesByAdmin: jest.fn(),
+  getAllActiveCoursesByAdmin: jest.fn(),
   getCourseByIdAdmin: jest.fn(),
   getAllCourseAssignments: jest.fn(),
   fetchAssignedCoursesForEmployee: jest.fn(),
@@ -82,6 +84,7 @@ describe('useAdminQueries', () => {
       expect(adminQueryKeys.departments).toEqual(['adminDepartments']);
       expect(adminQueryKeys.dashboardStats).toEqual(['adminDashboardStats']);
       expect(adminQueryKeys.courses).toEqual(['adminCourses']);
+      expect(adminQueryKeys.activeCourses).toEqual(['adminActiveCourses']);
       expect(adminQueryKeys.courseAssignments).toEqual([
         'adminCourseAssignments'
       ]);
@@ -397,6 +400,24 @@ describe('useAdminQueries', () => {
       expect(adminService().getAllCoursesByAdmin).toHaveBeenCalled();
       await waitFor(() =>
         expect(result.current.data).toEqual([{ id: 'crs1' }])
+      );
+    });
+  });
+
+  describe('useGetAllActiveCoursesByAdmin', () => {
+    it('fetches only active courses', async () => {
+      adminService().getAllActiveCoursesByAdmin.mockResolvedValue([
+        { id: 'crs1', status: 'ACTIVE' }
+      ]);
+      const { wrapper } = createWrapper();
+
+      const { result } = renderHook(() => useGetAllActiveCoursesByAdmin(), {
+        wrapper
+      });
+
+      expect(adminService().getAllActiveCoursesByAdmin).toHaveBeenCalled();
+      await waitFor(() =>
+        expect(result.current.data).toEqual([{ id: 'crs1', status: 'ACTIVE' }])
       );
     });
   });

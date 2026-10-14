@@ -45,6 +45,8 @@ interface FlatTask {
   task: AssignedTask;
   moduleId: string;
   moduleName: string;
+  moduleTaskIndex: number;
+  moduleTaskCount: number;
 }
 
 /**
@@ -77,10 +79,12 @@ const CoursePlayer = () => {
   const flatTasks = useMemo<FlatTask[]>(
     () =>
       modules.flatMap(module =>
-        module.tasks.map(task => ({
+        module.tasks.map((task, moduleTaskIndex) => ({
           task,
           moduleId: module._id,
-          moduleName: module.moduleName
+          moduleName: module.moduleName,
+          moduleTaskIndex,
+          moduleTaskCount: module.tasks.length
         }))
       ),
     [modules]
@@ -296,8 +300,9 @@ const CoursePlayer = () => {
                     <Stack gap='sm'>
                       <Stack gap={4}>
                         <Text size='xs' c={themeConfig.mutedTextColor}>
-                          {active.moduleName} · Item {activeIndex + 1} of{' '}
-                          {flatTasks.length}
+                          {active.moduleName} · Item{' '}
+                          {active.moduleTaskIndex + 1} of{' '}
+                          {active.moduleTaskCount}
                         </Text>
                         <Title order={isMobile ? 5 : 4}>
                           {active.task.taskName}

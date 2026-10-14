@@ -15,6 +15,7 @@ import {
   getDashboardStatsByAdmin,
   getAllCoursesByAdmin,
   getCourseByIdAdmin,
+  getAllActiveCoursesByAdmin,
   getAllCourseAssignments,
   getCourseAssignmentDetails,
   fetchAssignedCoursesForEmployee
@@ -36,6 +37,7 @@ export const adminQueryKeys = {
   programmingLanguages: ['adminProgrammingLanguages'] as const,
   dashboardStats: ['adminDashboardStats'] as const,
   courses: ['adminCourses'] as const,
+  activeCourses: ['adminActiveCourses'] as const,
   course: (id: string) => ['adminCourse', id] as const,
   courseAssignments: ['adminCourseAssignments'] as const,
   assignedCoursesForEmployee: (employeeId: string) =>
@@ -148,6 +150,13 @@ export const useGetAllCoursesByAdmin = () => {
   return useQuery({
     queryKey: adminQueryKeys.courses,
     queryFn: getAllCoursesByAdmin
+  });
+};
+
+export const useGetAllActiveCoursesByAdmin = () => {
+  return useQuery({
+    queryKey: adminQueryKeys.activeCourses,
+    queryFn: getAllActiveCoursesByAdmin
   });
 };
 
