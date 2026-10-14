@@ -68,6 +68,9 @@ const CodingTaskPage = lazy(
 const ProgrammingLanguagesTable = lazy(
   () => import('@admin/components/dashboard/settings/ProgrammingLanguagesTable')
 );
+const QuizQuestionsPage = lazy(
+  () => import('@user/components/dashboard/edit-course/QuizQuestionsPage')
+);
 
 // Common components
 const Dashboard = lazy(() => import('@components/common/dashboard/dashboard'));
@@ -584,6 +587,10 @@ const EmployeeRoutes = () => {
                   <Route
                     path='content-writer/programming-languages'
                     element={<ProgrammingLanguagesTable showBackButton />}
+                  />
+                  <Route
+                    path='content-writer/quiz-questions'
+                    element={<QuizQuestionsPage />}
                   />
                 </Route>
                 <Route path='add-course' element={<AddCourse />} />

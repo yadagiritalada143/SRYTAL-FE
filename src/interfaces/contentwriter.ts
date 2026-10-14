@@ -1,4 +1,4 @@
-export type TaskContentType = 'FILE' | 'LINK' | 'CODE';
+export type TaskContentType = 'FILE' | 'LINK' | 'CODE' | 'QUIZ';
 
 // Mirrors the backend `validStatusValues` whitelist. The update endpoints
 // reject anything else with a 400.

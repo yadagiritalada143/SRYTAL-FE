@@ -120,6 +120,9 @@ const AddCourse = lazy(
 const CourseDetails = lazy(
   () => import('@user/components/dashboard/edit-course/CourseDetails')
 );
+const QuizQuestionsPage = lazy(
+  () => import('@user/components/dashboard/edit-course/QuizQuestionsPage')
+);
 // User domain components reused in Admin
 const Companies = lazy(
   () => import('@user/components/dashboard/companies/companies')
@@ -609,6 +612,10 @@ const AdminRoutes = () => {
               <Route
                 path='content-writer/programming-languages'
                 element={<ProgrammingLanguagesTable showBackButton />}
+              />
+              <Route
+                path='content-writer/quiz-questions'
+                element={<QuizQuestionsPage />}
               />
               <Route path='add-course' element={<AddCourse />} />
               <Route path='course/:id' element={<CourseDetails />} />

@@ -829,6 +829,7 @@ const TaskRow = ({
   textColor
 }: TaskRowProps) => {
   const isCoding = Boolean(task.isCoding) || task.type === 'CODE';
+  const isQuiz = task.type === 'QUIZ';
 
   const getStatusBadge = () => {
     if (!task.status) return null;
@@ -885,17 +886,24 @@ const TaskRow = ({
                 size={26}
                 radius='sm'
                 variant='light'
-                color={task.isCoding ? 'grape' : 'indigo'}
+                color={isCoding ? 'grape' : isQuiz ? 'cyan' : 'indigo'}
               >
-                {task.isCoding ? (
+                {isCoding ? (
                   <IconCode size={14} />
+                ) : isQuiz ? (
+                  <IconListCheck size={14} />
                 ) : (
                   <IconFileText size={14} />
                 )}
               </ThemeIcon>
-              {task.isCoding && (
+              {isCoding && (
                 <Badge color='grape' radius='sm' variant='light' size='xs'>
                   Coding
+                </Badge>
+              )}
+              {isQuiz && (
+                <Badge color='cyan' radius='sm' variant='light' size='xs'>
+                  Quiz
                 </Badge>
               )}
               {task.type === 'FILE' &&

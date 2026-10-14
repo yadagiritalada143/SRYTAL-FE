@@ -20,7 +20,8 @@ import {
   IconCheck,
   IconLink,
   IconFile,
-  IconCode
+  IconCode,
+  IconListCheck
 } from '@tabler/icons-react';
 import { CommonButton } from '@components/common/button/CommonButton';
 import { useAddCourseTask } from '@hooks/mutations/useUserMutations';
@@ -36,6 +37,7 @@ import {
   AddTaskContentMode
 } from './task-popup-state';
 import DescriptionEditor from './DescriptionEditor';
+import { QuizQuestion } from '@interfaces/quiz';
 
 interface AddTaskModalProps {
   opened: boolean;
@@ -96,6 +98,7 @@ const AddTaskModal = ({
   const [thumbnail, setThumbnail] = useState<File | null>(null);
   const [requiresAcknowledgement, setRequiresAcknowledgement] = useState(false);
   const [acknowledgementText, setAcknowledgementText] = useState('');
+  const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
   const [touched, setTouched] = useState<Record<TaskField, boolean>>({
     taskName: false,
     link: false,
@@ -124,6 +127,7 @@ const AddTaskModal = ({
     setLink(draft.link);
     setFile(draft.file);
     setThumbnail(draft.thumbnail);
+    setQuizQuestions(draft.quizQuestions ?? []);
     setDraftResetKey(key => key + 1);
   }, [courseId, moduleId]);
 
@@ -137,6 +141,7 @@ const AddTaskModal = ({
     setThumbnail(null);
     setRequiresAcknowledgement(false);
     setAcknowledgementText('');
+    setQuizQuestions([]);
     setTouched({
       taskName: false,
       link: false,
@@ -170,6 +175,24 @@ const AddTaskModal = ({
     );
   };
 
+  const handleManageQuiz = () => {
+    saveTaskDraft({
+      courseId,
+      moduleId,
+      taskName,
+      taskDescription,
+      mode,
+      link,
+      file,
+      thumbnail,
+      quizQuestions
+    });
+    saveTaskPopupState({ courseId, moduleId });
+    navigate(
+      `${commonUrls(organization)}/dashboard/content-writer/quiz-questions`
+    );
+  };
+
   const errors: Partial<Record<TaskField, string>> = {};
   if (!taskName.trim()) errors.taskName = VALIDATION_MESSAGES.taskName;
   if (mode === 'LINK') {
@@ -192,7 +215,12 @@ const AddTaskModal = ({
     errors.thumbnail = VALIDATION_MESSAGES.thumbnail;
   }
 
-  const isValid = Object.keys(errors).length === 0;
+  const activeQuizCount = quizQuestions.filter(
+    question => !question.isDeleted
+  ).length;
+  const isValid =
+    Object.keys(errors).length === 0 &&
+    (mode !== 'QUIZ' || activeQuizCount > 0);
   const fieldError = (field: TaskField) =>
     touched[field] ? errors[field] : undefined;
 
@@ -313,6 +341,15 @@ const AddTaskModal = ({
                     <span>Coding</span>
                   </Group>
                 )
+              },
+              {
+                value: 'QUIZ',
+                label: (
+                  <Group gap={6} justify='center'>
+                    <IconListCheck size={16} />
+                    <span>Quiz</span>
+                  </Group>
+                )
               }
             ]}
           />
@@ -345,6 +382,32 @@ const AddTaskModal = ({
             description='Any file type is supported'
             radius='md'
           />
+        ) : mode === 'QUIZ' ? (
+          <Stack gap='xs'>
+            <Paper
+              p='sm'
+              radius='md'
+              withBorder
+              style={{ backgroundColor: 'rgba(99, 102, 241, 0.05)' }}
+            ></Paper>
+            <Group gap='xs' align='center'>
+              <CommonButton
+                variant='light'
+                leftSection={<IconListCheck size={16} />}
+                onClick={handleManageQuiz}
+                style={{ width: 'fit-content' }}
+              >
+                Add Quiz Questions
+              </CommonButton>
+              <Text size='xs' c='dimmed'>
+                {activeQuizCount > 0
+                  ? `${activeQuizCount} question${
+                      activeQuizCount === 1 ? '' : 's'
+                    } added`
+                  : 'Add at least one question to create the quiz.'}
+              </Text>
+            </Group>
+          </Stack>
         ) : (
           <Stack gap='xs'>
             <Paper

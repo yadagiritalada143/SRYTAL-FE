@@ -100,7 +100,9 @@ jest.mock('@mantine/core', () => {
               ? 'Link'
               : d.value === 'FILE'
                 ? 'File'
-                : 'Coding'}
+                : d.value === 'QUIZ'
+                  ? 'Quiz'
+                  : 'Coding'}
           </button>
         ))}
       </div>
@@ -144,6 +146,10 @@ const clickFileMode = () => {
 
 const clickCodingMode = () => {
   fireEvent.click(screen.getByRole('button', { name: 'Coding' }));
+};
+
+const clickQuizMode = () => {
+  fireEvent.click(screen.getByRole('button', { name: 'Quiz' }));
 };
 
 const typeAcknowledgement = (value: string) => {
@@ -808,6 +814,124 @@ describe('AddTaskModal', () => {
       renderModal();
       fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
       expect(mockOnClose).toHaveBeenCalled();
+    });
+  });
+
+  describe('Quiz tasks', () => {
+    const quizQuestion = {
+      id: 'q1',
+      question: 'What is your favourite colour?',
+      type: 'RADIO' as const,
+      status: 'SHOW' as const,
+      required: true,
+      options: [
+        { id: 'o1', text: 'Red', isCorrect: true },
+        { id: 'o2', text: 'Green', isCorrect: false }
+      ],
+      isDeleted: false
+    };
+
+    it('shows the Add Quiz Questions button in Quiz mode', () => {
+      renderModal();
+      expect(
+        screen.queryByRole('button', { name: 'Add Quiz Questions' })
+      ).not.toBeInTheDocument();
+
+      clickQuizMode();
+
+      expect(
+        screen.getByRole('button', { name: 'Add Quiz Questions' })
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText('Add at least one question to create the quiz.')
+      ).toBeInTheDocument();
+    });
+
+    it('opens the quiz questions page, parks the draft and remembers the module', () => {
+      renderModal();
+
+      typeTitle('Colour quiz');
+      clickQuizMode();
+      typeDescription('Pick a colour.');
+
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Add Quiz Questions' })
+      );
+
+      expect(mockNavigate).toHaveBeenCalledWith(
+        '/acme/employee/dashboard/content-writer/quiz-questions'
+      );
+      expect(
+        JSON.parse(sessionStorage.getItem(REOPEN_TASK_POPUP_KEY) || '{}')
+      ).toEqual({ courseId: 'c1', moduleId: 'm1' });
+      expect(readTaskDraft()).toEqual({
+        courseId: 'c1',
+        moduleId: 'm1',
+        taskName: 'Colour quiz',
+        taskDescription: 'Pick a colour.',
+        mode: 'QUIZ',
+        link: '',
+        file: null,
+        thumbnail: null,
+        quizQuestions: []
+      });
+    });
+
+    it('keeps Add Task disabled for a quiz without questions', () => {
+      renderModal();
+
+      typeTitle('Colour quiz');
+      typeDescription('Pick a colour.');
+      clickQuizMode();
+
+      expect(screen.getByRole('button', { name: 'Add Task' })).toBeDisabled();
+    });
+
+    it('restores parked quiz questions and enables Add Task', () => {
+      saveTaskDraft({
+        courseId: 'c1',
+        moduleId: 'm1',
+        taskName: 'Colour quiz',
+        taskDescription: 'Pick a colour.',
+        mode: 'QUIZ',
+        link: '',
+        file: null,
+        thumbnail: null,
+        quizQuestions: [quizQuestion]
+      });
+
+      renderModal();
+
+      expect(
+        screen.getByRole('button', { name: 'Add Quiz Questions' })
+      ).toBeInTheDocument();
+      expect(screen.getByText('1 question added')).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'Add Task' })
+      ).not.toBeDisabled();
+    });
+
+    it('submits a quiz task with its type once questions exist', async () => {
+      saveTaskDraft({
+        courseId: 'c1',
+        moduleId: 'm1',
+        taskName: 'Colour quiz',
+        taskDescription: 'Pick a colour.',
+        mode: 'QUIZ',
+        link: '',
+        file: null,
+        thumbnail: null,
+        quizQuestions: [quizQuestion]
+      });
+
+      renderModal();
+      fireEvent.click(screen.getByRole('button', { name: 'Add Task' }));
+
+      await waitFor(() => {
+        expect(mockAddTask).toHaveBeenCalledWith(
+          expect.objectContaining({ type: 'QUIZ' })
+        );
+      });
     });
   });
 });
