@@ -920,6 +920,15 @@ export const getAllCoursesByAdmin = async () => {
   }
 };
 
+export const getAllActiveCoursesByAdmin = async () => {
+  try {
+    const response = await apiClient.get('/getAllActiveCourses');
+    return response.data.courses;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getCourseByIdAdmin = async (id: string) => {
   try {
     const response = await apiClient.get(`/getCourseById/${id}`);

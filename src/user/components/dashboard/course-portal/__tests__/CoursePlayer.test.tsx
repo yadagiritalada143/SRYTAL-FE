@@ -244,8 +244,31 @@ describe('CoursePlayer', () => {
     renderPlayer();
 
     await waitFor(() => {
-      expect(screen.getByText(/Item 1 of 4/)).toBeInTheDocument();
+      expect(screen.getByText(/Item 1 of 2/)).toBeInTheDocument();
     });
+  });
+
+  it('scopes the item count to the active module, restarting per module', async () => {
+    renderPlayer();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('task-viewer')).toHaveTextContent('Intro');
+    });
+    expect(screen.getByText(/Item 1 of 2/)).toBeInTheDocument();
+
+    // Second (last) task of the first module.
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }));
+    await waitFor(() => {
+      expect(screen.getByTestId('task-viewer')).toHaveTextContent('Video');
+    });
+    expect(screen.getByText(/Item 2 of 2/)).toBeInTheDocument();
+
+    // First task of the second module — numbering starts over.
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }));
+    await waitFor(() => {
+      expect(screen.getByTestId('task-viewer')).toHaveTextContent('Hooks');
+    });
+    expect(screen.getByText(/Item 1 of 2/)).toBeInTheDocument();
   });
 
   it('navigates to the next task when Next is clicked', async () => {
@@ -528,9 +551,7 @@ describe('CoursePlayer', () => {
       });
       expect(acknowledgeButton).toBeDisabled();
 
-      fireEvent.click(
-        screen.getByLabelText(ACKNOWLEDGEMENT_LABEL)
-      );
+      fireEvent.click(screen.getByLabelText(ACKNOWLEDGEMENT_LABEL));
       expect(acknowledgeButton).not.toBeDisabled();
 
       fireEvent.click(acknowledgeButton);
