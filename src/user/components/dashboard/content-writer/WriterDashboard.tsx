@@ -16,7 +16,9 @@ import {
   ActionIcon,
   Pagination,
   Badge,
-  Modal
+  Modal,
+  Paper,
+  Tabs
 } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import {
@@ -43,6 +45,8 @@ import { CommonButton } from '@components/common/button/CommonButton';
 import CourseCard from './CourseCard';
 import CourseThumbnail from './CourseThumbnail';
 import EditCourseModal from '../edit-course/EditCourseModal';
+import ArchiveCourseModal from './ArchiveCourseModal';
+import CloneCourseModal from './CloneCourseModal';
 
 const COURSES_PER_PAGE = 6;
 
@@ -54,6 +58,13 @@ const WriterDashboard = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [, setCourseToDelete] = useState<string | null>(null);
   const [courseToEdit, setCourseToEdit] = useState<Course | null>(null);
+  const [activeTab, setActiveTab] = useState<'active' | 'archived'>('active');
+  const [courseToArchive, setCourseToArchive] = useState<{
+    course: Course;
+    mode: 'archive' | 'activate';
+  } | null>(null);
+  const [courseToClone, setCourseToClone] = useState<Course | null>(null);
+  const [isArchiving, setIsArchiving] = useState(false);
 
   const { data: courses = [], isLoading } = useGetAllCoursesByUser();
   const { mutateAsync: updateCourse } = useUpdateCourse();
@@ -108,10 +119,12 @@ const WriterDashboard = () => {
     return {
       totalCourses: beData?.totalCourses ?? totalCourses,
       totalActiveCourses: beData?.totalActiveCourses ?? totalActiveCourses,
-      totalArchivedCourses: beData?.totalArchivedCourses ?? totalArchivedCourses,
+      totalArchivedCourses:
+        beData?.totalArchivedCourses ?? totalArchivedCourses,
       totalModules: beData?.totalModules ?? totalModules,
       totalActiveModules: beData?.totalActiveModules ?? totalActiveModules,
-      totalArchivedModules: beData?.totalArchivedModules ?? totalArchivedModules,
+      totalArchivedModules:
+        beData?.totalArchivedModules ?? totalArchivedModules,
       totalTasks: beData?.totalTasks ?? totalTasks,
       totalActiveTasks: beData?.totalActiveTasks ?? totalActiveTasks,
       totalInactiveTasks: beData?.totalInactiveTasks ?? totalInactiveTasks
@@ -133,15 +146,22 @@ const WriterDashboard = () => {
     [sortedCourses]
   );
 
+  const tabCourses = useMemo(() => {
+    return sortedCourses.filter((c: Course) => {
+      const isArchived = (c.status || '').toUpperCase() === 'ARCHIVE';
+      return activeTab === 'archived' ? isArchived : !isArchived;
+    });
+  }, [sortedCourses, activeTab]);
+
   const filteredCourses = useMemo(() => {
-    if (!searchQuery.trim()) return sortedCourses;
+    if (!searchQuery.trim()) return tabCourses;
     const q = searchQuery.toLowerCase();
-    return sortedCourses.filter(
+    return tabCourses.filter(
       (c: Course) =>
         c.courseName.toLowerCase().includes(q) ||
         c.courseDescription?.toLowerCase().includes(q)
     );
-  }, [sortedCourses, searchQuery]);
+  }, [tabCourses, searchQuery]);
 
   const { paginatedCourses, totalPages } = useMemo(() => {
     const start = (activePage - 1) * COURSES_PER_PAGE;
@@ -161,11 +181,22 @@ const WriterDashboard = () => {
     setDeleteModalOpen(true);
   };
 
-  const handleArchive = async (courseId: string) => {
+  const handleArchiveClick = (courseId: string) => {
+    const course = courses.find((c: Course) => c._id === courseId);
+    if (!course) return;
+    const isArchived = (course.status || '').toUpperCase() === 'ARCHIVE';
+    setCourseToArchive({
+      course,
+      mode: isArchived ? 'activate' : 'archive'
+    });
+  };
+
+  const handleConfirmArchive = async (courseId: string) => {
     const course = courses.find((c: Course) => c._id === courseId);
     if (!course) return;
     const isArchived = (course.status || '').toUpperCase() === 'ARCHIVE';
     const nextStatus = isArchived ? 'ACTIVE' : 'ARCHIVE';
+    setIsArchiving(true);
     try {
       await updateCourse({
         id: course._id,
@@ -178,6 +209,7 @@ const WriterDashboard = () => {
           ? 'Course activated successfully!'
           : 'Course archived successfully!'
       );
+      setCourseToArchive(null);
     } catch (error) {
       showErrorToast(
         getErrorMessage(
@@ -185,6 +217,8 @@ const WriterDashboard = () => {
           isArchived ? 'Failed to activate course' : 'Failed to archive course'
         )
       );
+    } finally {
+      setIsArchiving(false);
     }
   };
 
@@ -373,23 +407,13 @@ const WriterDashboard = () => {
               align='center'
               wrap='wrap'
               gap='md'
-              mb='lg'
+              mb='md'
             >
               <Group gap='xs'>
                 <IconPencil size={20} color={themeConfig.color} />
                 <Text fw={600} size='lg'>
                   My Courses
                 </Text>
-                {courses.length > 0 && (
-                  <Badge
-                    variant='light'
-                    color={themeConfig.color}
-                    radius='sm'
-                    size='lg'
-                  >
-                    {filteredCourses.length}
-                  </Badge>
-                )}
               </Group>
               <TextInput
                 placeholder='Search courses...'
@@ -403,6 +427,7 @@ const WriterDashboard = () => {
                         setSearchQuery('');
                         setActivePage(1);
                       }}
+                      aria-label='Clear search'
                     >
                       <IconX size={14} />
                     </ActionIcon>
@@ -419,6 +444,135 @@ const WriterDashboard = () => {
               />
             </Group>
 
+            <Tabs
+              value={activeTab}
+              onChange={value => {
+                if (value === 'active' || value === 'archived') {
+                  setActiveTab(value);
+                  setActivePage(1);
+                }
+              }}
+              variant='default'
+              color={themeConfig.button.color}
+              classNames={{
+                tab: 'settings-tab'
+              }}
+              styles={{
+                list: {
+                  flexWrap: isMobile ? 'wrap' : 'nowrap',
+                  justifyContent: isMobile ? 'center' : 'flex-start',
+                  gap: isMobile ? 8 : 0,
+                  ...(isMobile
+                    ? {}
+                    : {
+                        overflowX: 'auto',
+                        scrollbarWidth: 'thin'
+                      })
+                },
+                tab: {
+                  fontWeight: 500,
+                  flexShrink: 0,
+                  transition: 'color 0.2s ease',
+                  ...(isDarkTheme && {
+                    color: themeConfig.color,
+                    '&[data-active]': {
+                      color: '#ffffff'
+                    },
+                    '&[data-active] svg': {
+                      color: '#ffffff'
+                    }
+                  })
+                }
+              }}
+              mb='md'
+            >
+              <Tabs.List>
+                <Tabs.Tab
+                  value='active'
+                  leftSection={<IconBook size={16} stroke={1.8} />}
+                  rightSection={
+                    <Badge
+                      size='xs'
+                      radius='xl'
+                      variant={activeTab === 'active' ? 'filled' : 'light'}
+                      color='teal'
+                      style={{ marginLeft: 6 }}
+                    >
+                      {stats.totalActiveCourses}
+                    </Badge>
+                  }
+                >
+                  Active Courses
+                </Tabs.Tab>
+
+                <Tabs.Tab
+                  value='archived'
+                  leftSection={<IconArchive size={16} stroke={1.8} />}
+                  rightSection={
+                    <Badge
+                      size='xs'
+                      radius='xl'
+                      variant={activeTab === 'archived' ? 'filled' : 'light'}
+                      color='orange'
+                      style={{ marginLeft: 6 }}
+                    >
+                      {stats.totalArchivedCourses}
+                    </Badge>
+                  }
+                >
+                  Archived Courses
+                </Tabs.Tab>
+              </Tabs.List>
+            </Tabs>
+
+            {activeTab === 'archived' && (
+              <Paper
+                p='sm'
+                mb='md'
+                radius='md'
+                style={{
+                  backgroundColor: isDarkTheme
+                    ? 'rgba(245, 159, 0, 0.08)'
+                    : '#fff9db',
+                  border: '1px solid rgba(245, 159, 0, 0.35)',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                <Group
+                  justify='space-between'
+                  align='center'
+                  wrap='wrap'
+                  gap='xs'
+                >
+                  <Group gap='xs' wrap='nowrap'>
+                    <ThemeIcon
+                      size={28}
+                      radius='md'
+                      color='orange'
+                      variant='light'
+                      style={{ flexShrink: 0 }}
+                    >
+                      <IconArchive size={16} />
+                    </ThemeIcon>
+                    <Stack gap={1}>
+                      <Text
+                        size='xs'
+                        fw={600}
+                        c={isDarkTheme ? 'yellow.4' : 'orange.9'}
+                      >
+                        Archived Courses
+                      </Text>
+                      <Text size='xs' c='dimmed'>
+                        Archived courses are hidden from learners. You can clone
+                        their modules and tasks into a new active course, or
+                        reactivate anytime.
+                      </Text>
+                    </Stack>
+                  </Group>
+                </Group>
+              </Paper>
+            )}
+
             {paginatedCourses.length > 0 ? (
               <>
                 <SimpleGrid cols={{ base: 1, sm: 2 }} spacing='md'>
@@ -427,8 +581,9 @@ const WriterDashboard = () => {
                       key={course._id}
                       course={course}
                       onEdit={handleEdit}
-                      onArchive={handleArchive}
+                      onArchive={handleArchiveClick}
                       onDelete={handleDelete}
+                      onClone={setCourseToClone}
                     />
                   ))}
                 </SimpleGrid>
@@ -452,19 +607,33 @@ const WriterDashboard = () => {
                     size={56}
                     radius='xl'
                     variant='light'
-                    color={themeConfig.color}
+                    color={
+                      activeTab === 'archived' ? 'orange' : themeConfig.color
+                    }
                   >
-                    <IconBook size={28} />
+                    {activeTab === 'archived' ? (
+                      <IconArchive size={28} />
+                    ) : (
+                      <IconBook size={28} />
+                    )}
                   </ThemeIcon>
                   <Text fw={500} size='md'>
-                    {searchQuery ? 'No matching courses' : 'No courses yet'}
+                    {searchQuery
+                      ? activeTab === 'archived'
+                        ? 'No matching archived courses'
+                        : 'No matching courses'
+                      : activeTab === 'archived'
+                        ? 'No archived courses'
+                        : 'No courses yet'}
                   </Text>
-                  <Text size='sm' c='dimmed' ta='center' maw={280}>
+                  <Text size='sm' c='dimmed' ta='center' maw={340}>
                     {searchQuery
                       ? 'Try adjusting your search term'
-                      : 'Create your first course to start building content'}
+                      : activeTab === 'archived'
+                        ? 'When you archive courses, they are safely preserved here for future reference, reactivating, or cloning.'
+                        : 'Create your first course to start building content'}
                   </Text>
-                  {!searchQuery && (
+                  {!searchQuery && activeTab === 'active' && (
                     <CommonButton
                       mt='xs'
                       leftSection={<IconPlus size={14} />}
@@ -473,6 +642,19 @@ const WriterDashboard = () => {
                       Create Course
                     </CommonButton>
                   )}
+                  {!searchQuery &&
+                    activeTab === 'archived' &&
+                    stats.totalActiveCourses > 0 && (
+                      <CommonButton
+                        mt='xs'
+                        variant='light'
+                        color={themeConfig.color}
+                        leftSection={<IconBook size={14} />}
+                        onClick={() => setActiveTab('active')}
+                      >
+                        View Active Courses
+                      </CommonButton>
+                    )}
                 </Stack>
               </Center>
             )}
@@ -491,63 +673,89 @@ const WriterDashboard = () => {
 
             {recentActivity.length > 0 ? (
               <Stack gap={0}>
-                {recentActivity.map((course: Course, i: number) => (
-                  <div key={course._id}>
-                    <Group
-                      p='sm'
-                      gap='sm'
-                      style={{
-                        cursor: 'pointer',
-                        borderRadius: 'var(--mantine-radius-sm)',
-                        transition: 'background-color 0.15s ease'
-                      }}
-                      onClick={() => goToCourse(course._id)}
-                      onMouseEnter={e => {
-                        e.currentTarget.style.backgroundColor = isDarkTheme
-                          ? 'var(--mantine-color-dark-6)'
-                          : 'var(--mantine-color-gray-1)';
-                      }}
-                      onMouseLeave={e => {
-                        e.currentTarget.style.backgroundColor = '';
-                      }}
-                    >
-                      <CourseThumbnail
-                        name={course.courseName}
-                        src={course.thumbnailUrl}
-                        size={40}
-                        radius='sm'
-                      />
-                      <Stack gap={2} style={{ flex: 1, minWidth: 0 }}>
-                        <Text size='sm' fw={500} lineClamp={1}>
-                          {course.courseName}
-                        </Text>
-                        <Group gap={4} wrap='nowrap'>
-                          <IconClock size={11} color='dimmed' />
-                          <Text size='xs' c='dimmed'>
-                            {course.updatedAt
-                              ? new Date(course.updatedAt).toLocaleDateString(
-                                  undefined,
-                                  {
-                                    month: 'short',
-                                    day: 'numeric',
-                                    year: 'numeric'
-                                  }
-                                )
-                              : '—'}
-                          </Text>
-                        </Group>
-                      </Stack>
-                      <Badge
-                        size='xs'
-                        variant='light'
-                        color={course.status === 'ACTIVE' ? 'green' : 'blue'}
+                {recentActivity.map((course: Course, i: number) => {
+                  const isArchived =
+                    (course.status || '').toUpperCase() === 'ARCHIVE';
+                  return (
+                    <div key={course._id}>
+                      <Group
+                        p='sm'
+                        gap='sm'
+                        style={{
+                          cursor: isArchived ? 'default' : 'pointer',
+                          borderRadius: 'var(--mantine-radius-sm)',
+                          transition: 'background-color 0.15s ease'
+                        }}
+                        title={
+                          isArchived
+                            ? undefined
+                            : 'Click to view course details'
+                        }
+                        onClick={
+                          isArchived ? undefined : () => goToCourse(course._id)
+                        }
+                        onMouseEnter={e => {
+                          if (!isArchived) {
+                            e.currentTarget.style.backgroundColor = isDarkTheme
+                              ? 'var(--mantine-color-dark-6)'
+                              : 'var(--mantine-color-gray-1)';
+                          }
+                        }}
+                        onMouseLeave={e => {
+                          if (!isArchived) {
+                            e.currentTarget.style.backgroundColor = '';
+                          }
+                        }}
                       >
-                        {course.status === 'ACTIVE' ? 'Active' : 'Archived'}
-                      </Badge>
-                    </Group>
-                    {i < recentActivity.length - 1 && <Divider />}
-                  </div>
-                ))}
+                        <CourseThumbnail
+                          name={course.courseName}
+                          src={course.thumbnailUrl}
+                          size={40}
+                          radius='sm'
+                        />
+                        <Stack gap={2} style={{ flex: 1, minWidth: 0 }}>
+                          <Text
+                            size='sm'
+                            fw={500}
+                            lineClamp={1}
+                            style={{
+                              color: isArchived
+                                ? isDarkTheme
+                                  ? 'var(--mantine-color-gray-4)'
+                                  : 'var(--mantine-color-gray-7)'
+                                : undefined
+                            }}
+                          >
+                            {course.courseName}
+                          </Text>
+                          <Group gap={4} wrap='nowrap'>
+                            <IconClock size={11} color='dimmed' />
+                            <Text size='xs' c='dimmed'>
+                              {course.updatedAt
+                                ? new Date(course.updatedAt).toLocaleDateString(
+                                    undefined,
+                                    {
+                                      month: 'short',
+                                      day: 'numeric',
+                                      year: 'numeric'
+                                    }
+                                  )
+                                : '—'}
+                            </Text>
+                          </Group>
+                        </Stack>
+                        <Badge
+                          size='xs'
+                          variant='light'
+                          color={isArchived ? 'orange' : 'green'}
+                        >
+                          {isArchived ? 'Archived' : 'Active'}
+                        </Badge>
+                      </Group>
+                      {i < recentActivity.length - 1 && <Divider />}
+                    </div>
+                  );
+                })}
               </Stack>
             ) : (
               <Center p='xl'>
@@ -591,6 +799,26 @@ const WriterDashboard = () => {
         opened={!!courseToEdit}
         onClose={() => setCourseToEdit(null)}
         course={courseToEdit || undefined}
+      />
+
+      <ArchiveCourseModal
+        opened={!!courseToArchive}
+        onClose={() => setCourseToArchive(null)}
+        course={courseToArchive?.course || null}
+        mode={courseToArchive?.mode || 'archive'}
+        onConfirm={handleConfirmArchive}
+        loading={isArchiving}
+      />
+
+      <CloneCourseModal
+        opened={!!courseToClone}
+        onClose={() => setCourseToClone(null)}
+        course={courseToClone}
+        onSuccess={() => {
+          setCourseToClone(null);
+          setActiveTab('active');
+          setActivePage(1);
+        }}
       />
     </Container>
   );
