@@ -27,9 +27,14 @@ jest.mock('@hooks/queries/useUserQueries', () => ({
 }));
 
 const mockUpdateCourse = jest.fn();
+const mockCloneCourse = jest.fn();
 jest.mock('@hooks/mutations/useUserMutations', () => ({
   useUpdateCourse: () => ({
     mutateAsync: mockUpdateCourse
+  }),
+  useCloneCourse: () => ({
+    mutateAsync: mockCloneCourse,
+    isPending: false
   })
 }));
 
@@ -79,6 +84,7 @@ jest.mock('../CourseCard', () => (props: any) => (
     <button onClick={() => props.onEdit?.(props.course._id)}>Edit</button>
     <button onClick={() => props.onArchive?.(props.course._id)}>Archive</button>
     <button onClick={() => props.onDelete?.(props.course._id)}>Delete</button>
+    <button onClick={() => props.onClone?.(props.course)}>Clone</button>
   </div>
 ));
 
@@ -88,6 +94,42 @@ jest.mock('../../edit-course/EditCourseModal', () => (props: any) => (
     data-opened={String(!!props.opened)}
     data-course={props.course?._id}
   />
+));
+
+jest.mock('../ArchiveCourseModal', () => (props: any) => (
+  <div
+    data-testid='archive-course-modal'
+    data-opened={String(!!props.opened)}
+    data-course={props.course?._id}
+    data-mode={props.mode}
+  >
+    {props.opened && (
+      <button onClick={() => props.onConfirm(props.course?._id)}>
+        Confirm {props.mode === 'archive' ? 'Archive' : 'Activate'}
+      </button>
+    )}
+  </div>
+));
+
+jest.mock('../CloneCourseModal', () => (props: any) => (
+  <div
+    data-testid='clone-course-modal'
+    data-opened={String(!!props.opened)}
+    data-course={props.course?._id}
+  >
+    {props.opened && (
+      <button
+        onClick={() =>
+          props.onSuccess?.({
+            _id: 'cloned_c1',
+            courseName: 'Cloned Course'
+          })
+        }
+      >
+        Confirm Clone
+      </button>
+    )}
+  </div>
 ));
 
 const mockNavigate = jest.fn();
@@ -350,7 +392,7 @@ describe('WriterDashboard', () => {
       );
     });
 
-    it('archives a course on success', async () => {
+    it('archives a course on success via confirmation modal', async () => {
       mockCourses = [
         makeCourse({
           _id: 'c1',
@@ -361,6 +403,13 @@ describe('WriterDashboard', () => {
       renderDashboard();
 
       fireEvent.click(cardButton('Archive'));
+
+      const modal = screen.getByTestId('archive-course-modal');
+      expect(modal).toHaveAttribute('data-opened', 'true');
+      expect(modal).toHaveAttribute('data-mode', 'archive');
+      fireEvent.click(
+        within(modal).getByRole('button', { name: 'Confirm Archive' })
+      );
 
       await waitFor(() => {
         expect(mockUpdateCourse).toHaveBeenCalledWith({
@@ -375,11 +424,21 @@ describe('WriterDashboard', () => {
       );
     });
 
-    it('activates an archived course on success', async () => {
+    it('activates an archived course on success via confirmation modal', async () => {
       mockCourses = [makeCourse({ status: 'ARCHIVE' })];
       renderDashboard();
 
+      // Switch to Archived tab
+      fireEvent.click(screen.getByRole('tab', { name: /Archived Courses/i }));
+
       fireEvent.click(cardButton('Archive'));
+
+      const modal = screen.getByTestId('archive-course-modal');
+      expect(modal).toHaveAttribute('data-opened', 'true');
+      expect(modal).toHaveAttribute('data-mode', 'activate');
+      fireEvent.click(
+        within(modal).getByRole('button', { name: 'Confirm Activate' })
+      );
 
       await waitFor(() => {
         expect(mockUpdateCourse).toHaveBeenCalledWith({
@@ -401,11 +460,54 @@ describe('WriterDashboard', () => {
 
       fireEvent.click(cardButton('Archive'));
 
+      const modal = screen.getByTestId('archive-course-modal');
+      fireEvent.click(
+        within(modal).getByRole('button', { name: 'Confirm Archive' })
+      );
+
       await waitFor(() => {
         expect(mockShowErrorToast).toHaveBeenCalledWith(
           'Failed to archive course'
         );
       });
+    });
+
+    it('switches between Active and Archived courses tabs', () => {
+      mockCourses = [
+        makeCourse({ _id: 'c1', courseName: 'Active Course', status: 'ACTIVE' }),
+        makeCourse({ _id: 'c2', courseName: 'Archived Course', status: 'ARCHIVE' })
+      ];
+      renderDashboard();
+
+      const activeCards = screen.getAllByTestId('course-card');
+      expect(activeCards.length).toBe(1);
+      expect(within(activeCards[0]).getByText('Active Course')).toBeInTheDocument();
+
+      // Click Archived Courses tab
+      fireEvent.click(screen.getByRole('tab', { name: /Archived Courses/i }));
+
+      const archivedCards = screen.getAllByTestId('course-card');
+      expect(archivedCards.length).toBe(1);
+      expect(within(archivedCards[0]).getByText('Archived Course')).toBeInTheDocument();
+    });
+
+    it('opens and confirms the clone course modal for archived courses', async () => {
+      mockCourses = [
+        makeCourse({ _id: 'c1', courseName: 'Archived 101', status: 'ARCHIVE' })
+      ];
+      renderDashboard();
+
+      fireEvent.click(screen.getByRole('tab', { name: /Archived Courses/i }));
+
+      fireEvent.click(cardButton('Clone'));
+
+      const modal = screen.getByTestId('clone-course-modal');
+      expect(modal).toHaveAttribute('data-opened', 'true');
+      expect(modal).toHaveAttribute('data-course', 'c1');
+
+      fireEvent.click(within(modal).getByRole('button', { name: 'Confirm Clone' }));
+
+      expect(modal).toHaveAttribute('data-opened', 'false');
     });
 
     it('opens and confirms the delete modal', async () => {

@@ -124,3 +124,41 @@ export interface DashboardData {
     updatedAt?: string;
   }[];
 }
+
+export interface CloneCourseModuleSelection {
+  moduleId: string;
+  taskIds: string[];
+}
+
+export interface CloneCoursePayload {
+  courseId: string;
+  courseName: string;
+  modules: CloneCourseModuleSelection[];
+}
+
+export interface ClonedCourseTask {
+  taskId: string;
+  taskName: string;
+  type?: string;
+  status?: string;
+}
+
+export interface ClonedCourseModule {
+  moduleId: string;
+  moduleName: string;
+  status?: string;
+  tasks: ClonedCourseTask[];
+}
+
+export interface ClonedCourseData {
+  courseId: string;
+  courseName: string;
+  status: string;
+  modules: ClonedCourseModule[];
+}
+
+export interface CloneCourseResponse {
+  success: boolean;
+  message?: string;
+  data?: ClonedCourseData;
+}

@@ -13,6 +13,7 @@ import {
   updateCourseContentWriter,
   updateCourseModuleContentWriter,
   updateCourseTaskContentWriter,
+  cloneCourseContentWriter,
   updateMyTaskAcknowledgement,
   updateMyTaskProgress,
   runCode,
@@ -36,7 +37,8 @@ import {
   AddTaskPayload,
   UpdateCoursePayload,
   UpdateModulePayload,
-  UpdateTaskPayload
+  UpdateTaskPayload,
+  CloneCoursePayload
 } from '@interfaces/contentwriter';
 import {
   RunCodePayload,
@@ -294,6 +296,16 @@ export const useUpdateCourseTask = (courseId?: string) => {
           queryKey: userQueryKeys.course(courseId)
         });
       }
+      queryClient.invalidateQueries({ queryKey: userQueryKeys.courses });
+    }
+  });
+};
+
+export const useCloneCourse = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: CloneCoursePayload) => cloneCourseContentWriter(data),
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: userQueryKeys.courses });
     }
   });
