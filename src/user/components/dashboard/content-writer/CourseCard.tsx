@@ -12,7 +12,8 @@ import {
   IconEdit,
   IconArchive,
   IconCircleCheck,
-  IconTrash
+  IconTrash,
+  IconCopy
 } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom';
 import { commonUrls } from '@utils/common/constants';
@@ -39,16 +40,18 @@ interface CourseCardProps {
   onEdit?: (id: string) => void;
   onArchive?: (id: string) => void;
   onDelete?: (id: string) => void;
+  onClone?: (course: Course) => void;
 }
 
 const CourseCard = ({
   course,
   onEdit,
   onArchive,
-  onDelete
+  onDelete,
+  onClone
 }: CourseCardProps) => {
   const navigate = useNavigate();
-  const { themeConfig, organizationConfig } = useAppTheme();
+  const { organizationConfig, isDarkTheme } = useAppTheme();
 
   const goToCourse = () =>
     navigate(
@@ -56,9 +59,10 @@ const CourseCard = ({
     );
 
   const stop = (e: React.MouseEvent) => e.stopPropagation();
-  const hasMenu = onEdit || onArchive || onDelete;
-  const description = stripHtml(course.courseDescription);
   const isArchived = (course.status || '').toUpperCase() === 'ARCHIVE';
+  const hasMenu =
+    (!isArchived && onEdit) || onArchive || onDelete || (isArchived && onClone);
+  const description = stripHtml(course.courseDescription);
 
   return (
     <Card
@@ -66,18 +70,23 @@ const CourseCard = ({
       radius='md'
       p='xs'
       withBorder
-      onClick={goToCourse}
+      onClick={isArchived ? undefined : goToCourse}
+      title={isArchived ? undefined : 'Click to view course details'}
       style={{
-        cursor: 'pointer',
+        cursor: isArchived ? 'default' : 'pointer',
         transition: 'box-shadow 0.15s ease, transform 0.15s ease'
       }}
       onMouseEnter={e => {
-        e.currentTarget.style.transform = 'translateY(-2px)';
-        e.currentTarget.style.boxShadow = '0 6px 18px rgba(0,0,0,0.10)';
+        if (!isArchived) {
+          e.currentTarget.style.transform = 'translateY(-2px)';
+          e.currentTarget.style.boxShadow = '0 6px 18px rgba(0,0,0,0.10)';
+        }
       }}
       onMouseLeave={e => {
-        e.currentTarget.style.transform = '';
-        e.currentTarget.style.boxShadow = '';
+        if (!isArchived) {
+          e.currentTarget.style.transform = '';
+          e.currentTarget.style.boxShadow = '';
+        }
       }}
     >
       <Group wrap='nowrap' gap='sm' align='flex-start'>
@@ -89,31 +98,66 @@ const CourseCard = ({
         />
 
         <Stack gap={3} style={{ flex: 1, minWidth: 0 }}>
-          <Text fw={600} size='sm' lineClamp={1}>
+          <Text
+            fw={600}
+            size='sm'
+            lineClamp={1}
+            style={{
+              color: isArchived
+                ? isDarkTheme
+                  ? 'var(--mantine-color-gray-4)'
+                  : 'var(--mantine-color-gray-7)'
+                : undefined
+            }}
+          >
             {course.courseName}
           </Text>
           <Text size='xs' c='dimmed' lineClamp={2}>
             {description || 'No description available'}
           </Text>
-          <Badge
-            color={
-              (course.status || '').toUpperCase() === 'ACTIVE'
-                ? 'green'
-                : isArchived
-                  ? 'orange'
-                  : 'blue'
-            }
-            radius='sm'
-            variant='light'
-            size='xs'
-            style={{ width: 'fit-content' }}
-          >
-            {course.status || 'Draft'}
-          </Badge>
+          <Group justify='space-between' align='center' wrap='nowrap' mt={2}>
+            <Badge
+              color={
+                (course.status || '').toUpperCase() === 'ACTIVE'
+                  ? 'green'
+                  : isArchived
+                    ? 'orange'
+                    : 'blue'
+              }
+              radius='sm'
+              variant='light'
+              size='xs'
+              style={{ width: 'fit-content' }}
+            >
+              {course.status || 'Draft'}
+            </Badge>
+          </Group>
         </Stack>
 
         {hasMenu && (
-          <Menu position='bottom-end' shadow='md' width={160}>
+          <Menu
+            position='bottom-end'
+            shadow='md'
+            width={160}
+            radius='md'
+            transitionProps={{ transition: 'pop', duration: 150 }}
+            styles={{
+              dropdown: {
+                backgroundColor: isDarkTheme ? '#1e293b' : '#ffffff',
+                borderColor: isDarkTheme ? '#334155' : '#e2e8f0',
+                boxShadow: isDarkTheme
+                  ? '0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5)'
+                  : '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05)',
+                padding: '4px'
+              },
+              item: {
+                borderRadius: '6px',
+                fontSize: '13px',
+                fontWeight: 500,
+                color: isDarkTheme ? '#f1f5f9' : '#1e293b'
+              }
+            }}
+          >
             <Menu.Target>
               <ActionIcon
                 variant='subtle'
@@ -127,7 +171,19 @@ const CourseCard = ({
               </ActionIcon>
             </Menu.Target>
             <Menu.Dropdown>
-              {onEdit && (
+              {isArchived && onClone && (
+                <Menu.Item
+                  leftSection={<IconCopy size={14} />}
+                  color='indigo'
+                  onClick={e => {
+                    stop(e);
+                    onClone(course);
+                  }}
+                >
+                  Clone Course
+                </Menu.Item>
+              )}
+              {!isArchived && onEdit && (
                 <Menu.Item
                   leftSection={<IconEdit size={14} />}
                   onClick={e => {
@@ -147,7 +203,7 @@ const CourseCard = ({
                       <IconArchive size={14} />
                     )
                   }
-                  color={isArchived ? 'green' : undefined}
+                  color={isArchived ? 'teal' : 'orange'}
                   onClick={e => {
                     stop(e);
                     onArchive(course._id);
@@ -159,7 +215,7 @@ const CourseCard = ({
               {onDelete && (
                 <>
                   <Menu.Divider
-                    style={{ borderColor: themeConfig.borderColor }}
+                    style={{ borderColor: isDarkTheme ? '#334155' : '#e2e8f0' }}
                   />
                   <Menu.Item
                     color='red'

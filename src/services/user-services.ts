@@ -14,7 +14,8 @@ import {
   AddTaskPayload,
   UpdateCoursePayload,
   UpdateModulePayload,
-  UpdateTaskPayload
+  UpdateTaskPayload,
+  CloneCoursePayload
 } from '@interfaces/contentwriter';
 import {
   AssignedCourse,
@@ -327,6 +328,15 @@ export const updateCourseTaskContentWriter = async (
     const response = await apiClient.put('/updatecoursetask', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const cloneCourseContentWriter = async (data: CloneCoursePayload) => {
+  try {
+    const response = await apiClient.post('/clonecourse', data);
     return response.data;
   } catch (error) {
     throw error;
