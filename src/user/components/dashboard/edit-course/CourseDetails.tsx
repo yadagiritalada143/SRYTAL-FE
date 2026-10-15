@@ -42,6 +42,7 @@ import { CommonButton } from '@components/common/button/CommonButton';
 import PremiumLoader from '@components/common/loaders/PremiumLoader';
 import DataView from '@components/common/loaders/DataView';
 import { Course, Module, Task } from '@interfaces/contentwriter';
+import { commonUrls } from '@utils/common/constants';
 import AddModuleModal from './AddModuleModal';
 import AddTaskModal from './AddTaskModal';
 import EditCourseModal from './EditCourseModal';
@@ -65,7 +66,7 @@ const stripHtml = (html?: string): string =>
     .trim();
 
 const CourseDetails = () => {
-  const { id = '' } = useParams();
+  const { id = '', organization = '' } = useParams();
   const navigate = useNavigate();
   const isMobile = useMediaQuery('(max-width: 768px)');
   const { themeConfig: currentThemeConfig } = useAppTheme();
@@ -121,6 +122,16 @@ const CourseDetails = () => {
 
   const handleViewContent = (task: Task) => {
     window.open(getCourseTaskContentUrl(task._id), '_blank', 'noopener');
+  };
+
+  const handleManageQuizQuestions = (task: Task) => {
+    const params = new URLSearchParams({
+      taskId: task._id,
+      courseId: id
+    });
+    navigate(
+      `${commonUrls(organization)}/dashboard/content-writer/quiz-questions?${params.toString()}`
+    );
   };
 
   if (isLoading) {
@@ -671,6 +682,9 @@ const CourseDetails = () => {
                                         taskIndex={taskIndex + 1}
                                         onView={() => handleViewContent(task)}
                                         onEdit={() => setTaskToEdit(task)}
+                                        onManageQuestions={() =>
+                                          handleManageQuizQuestions(task)
+                                        }
                                         borderColor={
                                           currentThemeConfig.borderColor
                                         }
@@ -709,6 +723,9 @@ const CourseDetails = () => {
                                                 handleViewContent(task)
                                               }
                                               onEdit={() => setTaskToEdit(task)}
+                                              onManageQuestions={() =>
+                                                handleManageQuizQuestions(task)
+                                              }
                                               borderColor={
                                                 currentThemeConfig.borderColor
                                               }
@@ -813,6 +830,7 @@ interface TaskRowProps {
   taskIndex: number;
   onView: () => void;
   onEdit: () => void;
+  onManageQuestions: () => void;
   borderColor: string;
   cardBg: string;
   textColor: string;
@@ -824,6 +842,7 @@ const TaskRow = ({
   taskIndex,
   onView,
   onEdit,
+  onManageQuestions,
   borderColor,
   cardBg,
   textColor
@@ -964,14 +983,25 @@ const TaskRow = ({
             pt='xs'
             style={{ borderTop: `1px solid ${borderColor}` }}
           >
-            <CommonButton
-              variant='light'
-              size='xs'
-              rightSection={<IconExternalLink size={12} />}
-              onClick={onView}
-            >
-              Open
-            </CommonButton>
+            {isQuiz ? (
+              <CommonButton
+                variant='light'
+                size='xs'
+                leftSection={<IconListCheck size={12} />}
+                onClick={onManageQuestions}
+              >
+                Edit questions
+              </CommonButton>
+            ) : (
+              <CommonButton
+                variant='light'
+                size='xs'
+                rightSection={<IconExternalLink size={12} />}
+                onClick={onView}
+              >
+                Open
+              </CommonButton>
+            )}
           </Group>
         )}
       </Stack>

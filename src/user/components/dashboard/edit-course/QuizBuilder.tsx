@@ -3,11 +3,13 @@ import {
   ActionIcon,
   Badge,
   Card,
+  Center,
   Checkbox,
   Group,
+  Loader,
+  Modal,
   Paper,
   Radio,
-  SegmentedControl,
   Select,
   Stack,
   Switch,
@@ -18,8 +20,9 @@ import {
   Tooltip
 } from '@mantine/core';
 import {
-  IconArrowBackUp,
   IconCheck,
+  IconEye,
+  IconEyeOff,
   IconListCheck,
   IconPencil,
   IconPlus,
@@ -39,15 +42,19 @@ import {
   quizQuestionStatusLabel
 } from '@interfaces/quiz';
 import {
+  adjustOptionsForType,
   createQuizOption,
   createQuizQuestion,
   validateQuizQuestion
 } from './quiz-helpers';
 
+type EditorMode = 'create' | 'edit';
+
 interface QuestionEditorProps {
   value: QuizQuestion;
   error: string | null;
-  isEditing: boolean;
+  isSubmitting: boolean;
+  mode: EditorMode;
   onChange: (question: QuizQuestion) => void;
   onSave: () => void;
   onCancel: () => void;
@@ -56,31 +63,25 @@ interface QuestionEditorProps {
 const QuestionEditor = ({
   value,
   error,
-  isEditing,
+  isSubmitting,
+  mode,
   onChange,
   onSave,
   onCancel
 }: QuestionEditorProps) => {
   const { themeConfig } = useAppTheme();
   const isMulti = isMultiAnswerType(value.type);
+  const isToggle = value.type === 'TOGGLE';
   const isText = isTextAnswerType(value.type);
+  const isEditing = mode === 'edit';
   const correctOptionId =
     value.options.find(option => option.isCorrect)?.id ?? '';
 
   const patch = (partial: Partial<QuizQuestion>) =>
     onChange({ ...value, ...partial });
 
-  const handleTypeChange = (type: QuizAnswerType) => {
-    let options = value.options;
-    if (!isMultiAnswerType(type) && !isTextAnswerType(type)) {
-      const firstCorrect = options.find(option => option.isCorrect)?.id;
-      options = options.map(option => ({
-        ...option,
-        isCorrect: option.id === firstCorrect
-      }));
-    }
-    patch({ type, options });
-  };
+  const handleTypeChange = (type: QuizAnswerType) =>
+    patch({ type, options: adjustOptionsForType(value.options, type) });
 
   const updateOption = (id: string, text: string) =>
     patch({
@@ -111,10 +112,20 @@ const QuestionEditor = ({
     patch({ options: value.options.filter(option => option.id !== id) });
 
   const answerControl = (option: QuizOption, index: number) => {
-    if (isMulti) {
-      const Control = value.type === 'TOGGLE' ? Switch : Checkbox;
+    if (isToggle) {
       return (
-        <Control
+        <Switch
+          checked={option.isCorrect}
+          onChange={() => toggleCorrect(option.id)}
+          aria-label={`Mark option ${index + 1} as answer`}
+          label='Correct'
+          styles={{ label: { whiteSpace: 'nowrap' } }}
+        />
+      );
+    }
+    if (isMulti) {
+      return (
+        <Checkbox
           checked={option.isCorrect}
           onChange={() => toggleCorrect(option.id)}
           aria-label={`Mark option ${index + 1} as answer`}
@@ -125,6 +136,28 @@ const QuestionEditor = ({
     }
     return <Radio value={option.id} label='Correct' />;
   };
+
+  const optionRow = (option: QuizOption, index: number) => (
+    <Group key={option.id} gap='xs' wrap='nowrap' align='center'>
+      {answerControl(option, index)}
+      <TextInput
+        aria-label={`Option ${index + 1}`}
+        placeholder={`Option ${index + 1}`}
+        value={option.text}
+        onChange={event => updateOption(option.id, event.currentTarget.value)}
+        style={{ flex: 1 }}
+        radius='md'
+      />
+      <ActionIcon
+        variant='subtle'
+        color='red'
+        aria-label={`Remove option ${index + 1}`}
+        onClick={() => removeOption(option.id)}
+      >
+        <IconTrash size={16} />
+      </ActionIcon>
+    </Group>
+  );
 
   return (
     <Paper
@@ -180,22 +213,6 @@ const QuestionEditor = ({
           />
         </Group>
 
-        <Stack gap={4}>
-          <Text size='sm' fw={500}>
-            Required
-          </Text>
-          <SegmentedControl
-            aria-label='Required'
-            radius='md'
-            value={value.required ? 'REQUIRED' : 'OPTIONAL'}
-            onChange={next => patch({ required: next === 'REQUIRED' })}
-            data={[
-              { value: 'REQUIRED', label: 'Required' },
-              { value: 'OPTIONAL', label: 'Optional' }
-            ]}
-          />
-        </Stack>
-
         {isText ? (
           <Paper p='sm' radius='md' withBorder>
             <Text size='xs' c='dimmed'>
@@ -208,64 +225,17 @@ const QuestionEditor = ({
             <Text size='sm' fw={600}>
               Answer options
             </Text>
-            {isMulti ? (
-              value.options.map((option, index) => (
-                <Group key={option.id} gap='xs' wrap='nowrap' align='center'>
-                  {answerControl(option, index)}
-                  <TextInput
-                    aria-label={`Option ${index + 1}`}
-                    placeholder={`Option ${index + 1}`}
-                    value={option.text}
-                    onChange={event =>
-                      updateOption(option.id, event.currentTarget.value)
-                    }
-                    style={{ flex: 1 }}
-                    radius='md'
-                  />
-                  <ActionIcon
-                    variant='subtle'
-                    color='red'
-                    aria-label={`Remove option ${index + 1}`}
-                    onClick={() => removeOption(option.id)}
-                  >
-                    <IconTrash size={16} />
-                  </ActionIcon>
-                </Group>
-              ))
+            {isMulti || isToggle ? (
+              value.options.map((option, index) => optionRow(option, index))
             ) : (
               <Radio.Group
                 value={correctOptionId}
                 onChange={selected => setSingleCorrect(selected)}
               >
                 <Stack gap='xs'>
-                  {value.options.map((option, index) => (
-                    <Group
-                      key={option.id}
-                      gap='xs'
-                      wrap='nowrap'
-                      align='center'
-                    >
-                      {answerControl(option, index)}
-                      <TextInput
-                        aria-label={`Option ${index + 1}`}
-                        placeholder={`Option ${index + 1}`}
-                        value={option.text}
-                        onChange={event =>
-                          updateOption(option.id, event.currentTarget.value)
-                        }
-                        style={{ flex: 1 }}
-                        radius='md'
-                      />
-                      <ActionIcon
-                        variant='subtle'
-                        color='red'
-                        aria-label={`Remove option ${index + 1}`}
-                        onClick={() => removeOption(option.id)}
-                      >
-                        <IconTrash size={16} />
-                      </ActionIcon>
-                    </Group>
-                  ))}
+                  {value.options.map((option, index) =>
+                    optionRow(option, index)
+                  )}
                 </Stack>
               </Radio.Group>
             )}
@@ -295,6 +265,8 @@ const QuestionEditor = ({
           <CommonButton
             size='xs'
             leftSection={<IconCheck size={14} />}
+            loading={isSubmitting}
+            disabled={isSubmitting}
             onClick={onSave}
           >
             {isEditing ? 'Save changes' : 'Add question'}
@@ -306,20 +278,35 @@ const QuestionEditor = ({
 };
 
 interface QuizBuilderProps {
-  value: QuizQuestion[];
-  onChange: (questions: QuizQuestion[]) => void;
+  questions: QuizQuestion[];
+  onAddQuestion: (question: QuizQuestion) => Promise<void> | void;
+  onUpdateQuestion?: (question: QuizQuestion) => Promise<void> | void;
+  onToggleStatus?: (question: QuizQuestion) => Promise<void> | void;
+  onDeleteQuestion?: (question: QuizQuestion) => Promise<void> | void;
+  isLoading?: boolean;
+  isSubmitting?: boolean;
 }
 
-const QuizBuilder = ({ value, onChange }: QuizBuilderProps) => {
+const cloneQuestion = (question: QuizQuestion): QuizQuestion => ({
+  ...question,
+  options: question.options.map(option => ({ ...option }))
+});
+
+const QuizBuilder = ({
+  questions,
+  onAddQuestion,
+  onUpdateQuestion,
+  onToggleStatus,
+  onDeleteQuestion,
+  isLoading = false,
+  isSubmitting = false
+}: QuizBuilderProps) => {
   const { themeConfig } = useAppTheme();
   const [draft, setDraft] = useState<QuizQuestion>(() => createQuizQuestion());
-  const [editingId, setEditingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [showDeleted, setShowDeleted] = useState(false);
-
-  const activeQuestions = value.filter(question => !question.isDeleted);
-  const deletedQuestions = value.filter(question => question.isDeleted);
-  const isEditing = editingId !== null;
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<QuizQuestion | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const resetDraft = () => {
     setDraft(createQuizQuestion());
@@ -327,46 +314,49 @@ const QuizBuilder = ({ value, onChange }: QuizBuilderProps) => {
     setError(null);
   };
 
-  const beginEdit = (question: QuizQuestion) => {
-    setError(null);
+  const startEditing = (question: QuizQuestion) => {
+    setDraft(cloneQuestion(question));
     setEditingId(question.id);
-    setDraft({
-      ...question,
-      options: question.options.map(option => ({ ...option }))
-    });
+    setError(null);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const message = validateQuizQuestion(draft);
     if (message) {
       setError(message);
       return;
     }
-    if (isEditing) {
-      onChange(
-        value.map(question => (question.id === editingId ? draft : question))
-      );
-    } else {
-      onChange([...value, draft]);
+    try {
+      if (editingId) {
+        await onUpdateQuestion?.(cloneQuestion(draft));
+      } else {
+        await onAddQuestion(draft);
+      }
+      resetDraft();
+    } catch {
+      // The page surfaces the request error; keep the draft so it can retry.
     }
-    resetDraft();
   };
 
-  const softDelete = (id: string) =>
-    onChange(
-      value.map(question =>
-        question.id === id ? { ...question, isDeleted: true } : question
-      )
-    );
+  const closeDeleteModal = () => {
+    if (isDeleting) return;
+    setDeleteTarget(null);
+  };
 
-  const restore = (id: string) =>
-    onChange(
-      value.map(question =>
-        question.id === id ? { ...question, isDeleted: false } : question
-      )
-    );
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    setIsDeleting(true);
+    try {
+      await onDeleteQuestion?.(deleteTarget);
+      if (editingId === deleteTarget.id) resetDraft();
+      setDeleteTarget(null);
+    } catch {
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
-  const renderQuestionCard = (question: QuizQuestion, deleted: boolean) => (
+  const renderQuestionCard = (question: QuizQuestion) => (
     <Card
       key={question.id}
       withBorder
@@ -374,178 +364,183 @@ const QuizBuilder = ({ value, onChange }: QuizBuilderProps) => {
       p='sm'
       style={{
         borderColor: themeConfig.borderColor,
-        backgroundColor: themeConfig.cardBackground,
-        opacity: deleted ? 0.6 : 1
+        backgroundColor: themeConfig.cardBackground
       }}
     >
-      <Group justify='space-between' align='flex-start' wrap='nowrap'>
-        <Stack gap={6} style={{ minWidth: 0, flex: 1 }}>
-          <Text fw={600} size='sm' lineClamp={2}>
+      <Stack gap={6} style={{ minWidth: 0 }}>
+        <Group gap='xs' justify='space-between' wrap='nowrap' align='start'>
+          <Text fw={600} size='sm' lineClamp={2} style={{ minWidth: 0 }}>
             {question.question || 'Untitled question'}
           </Text>
-
-          <Group gap='xs'>
-            <Badge variant='light' color='indigo' radius='sm' size='xs'>
-              {quizAnswerTypeLabel(question.type)}
-            </Badge>
-            <Badge
-              variant='light'
-              color={question.required ? 'red' : 'gray'}
-              radius='sm'
-              size='xs'
-            >
-              {question.required ? 'Required' : 'Optional'}
-            </Badge>
-            <Badge
-              variant='light'
-              color={question.status === 'SHOW' ? 'teal' : 'gray'}
-              radius='sm'
-              size='xs'
-            >
-              {quizQuestionStatusLabel(question.status)}
-            </Badge>
-            {deleted && (
-              <Badge variant='light' color='red' radius='sm' size='xs'>
-                Deleted
-              </Badge>
-            )}
-          </Group>
-
-          {!isTextAnswerType(question.type) && question.options.length > 0 && (
-            <Group gap={6}>
-              {question.options.map(option => (
-                <Badge
-                  key={option.id}
-                  variant='light'
-                  color='gray'
-                  radius='sm'
-                  size='xs'
-                  styles={{ label: { textTransform: 'none' } }}
-                >
-                  {option.text.trim() || 'Untitled option'}
-                </Badge>
-              ))}
-            </Group>
-          )}
-
-          {isTextAnswerType(question.type) && (
-            <Text size='xs' c='dimmed'>
-              Learners answer in their own words.
-            </Text>
-          )}
-        </Stack>
-
-        <Group gap={4} wrap='nowrap'>
-          {deleted ? (
-            <Tooltip label='Restore question' withArrow>
+          <Group gap={4} wrap='nowrap'>
+            <Tooltip label='Edit' withArrow>
               <ActionIcon
                 variant='subtle'
-                color='teal'
-                aria-label={`Restore question: ${question.question}`}
-                onClick={() => restore(question.id)}
+                aria-label='Edit question'
+                onClick={() => startEditing(question)}
               >
-                <IconArrowBackUp size={16} />
+                <IconPencil size={16} />
               </ActionIcon>
             </Tooltip>
-          ) : (
-            <>
-              <Tooltip label='Edit question' withArrow>
-                <ActionIcon
-                  variant='subtle'
-                  color='gray'
-                  aria-label={`Edit question: ${question.question}`}
-                  onClick={() => beginEdit(question)}
-                >
-                  <IconPencil size={16} />
-                </ActionIcon>
-              </Tooltip>
-              <Tooltip label='Delete question' withArrow>
-                <ActionIcon
-                  variant='subtle'
-                  color='red'
-                  aria-label={`Delete question: ${question.question}`}
-                  onClick={() => softDelete(question.id)}
-                >
-                  <IconTrash size={16} />
-                </ActionIcon>
-              </Tooltip>
-            </>
-          )}
+            <Tooltip
+              label={question.status === 'SHOW' ? 'Hide' : 'Show'}
+              withArrow
+            >
+              <ActionIcon
+                variant='subtle'
+                aria-label={
+                  question.status === 'SHOW' ? 'Hide question' : 'Show question'
+                }
+                onClick={() => onToggleStatus?.(question)}
+              >
+                {question.status === 'SHOW' ? (
+                  <IconEyeOff size={16} />
+                ) : (
+                  <IconEye size={16} />
+                )}
+              </ActionIcon>
+            </Tooltip>
+            <Tooltip label='Delete' withArrow>
+              <ActionIcon
+                variant='subtle'
+                color='red'
+                aria-label='Delete question'
+                onClick={() => setDeleteTarget(question)}
+              >
+                <IconTrash size={16} />
+              </ActionIcon>
+            </Tooltip>
+          </Group>
         </Group>
-      </Group>
+
+        <Group gap='xs'>
+          <Badge variant='light' color='indigo' radius='sm' size='xs'>
+            {quizAnswerTypeLabel(question.type)}
+          </Badge>
+          <Badge
+            variant='light'
+            color={question.status === 'SHOW' ? 'teal' : 'gray'}
+            radius='sm'
+            size='xs'
+          >
+            {quizQuestionStatusLabel(question.status)}
+          </Badge>
+        </Group>
+
+        {!isTextAnswerType(question.type) && question.options.length > 0 && (
+          <Group gap={6}>
+            {question.options.map(option => (
+              <Badge
+                key={option.id}
+                variant='light'
+                color='gray'
+                radius='sm'
+                size='xs'
+                styles={{ label: { textTransform: 'none' } }}
+              >
+                {option.text.trim() || 'Untitled option'}
+              </Badge>
+            ))}
+          </Group>
+        )}
+
+        {isTextAnswerType(question.type) && (
+          <Text size='xs' c='dimmed'>
+            Learners answer in their own words.
+          </Text>
+        )}
+      </Stack>
     </Card>
   );
 
   return (
-    <Stack gap='lg'>
-      <QuestionEditor
-        value={draft}
-        error={error}
-        isEditing={isEditing}
-        onChange={setDraft}
-        onSave={handleSave}
-        onCancel={resetDraft}
-      />
+    <>
+      <Stack gap='lg'>
+        <QuestionEditor
+          value={draft}
+          error={error}
+          isSubmitting={isSubmitting}
+          mode={editingId ? 'edit' : 'create'}
+          onChange={setDraft}
+          onSave={handleSave}
+          onCancel={resetDraft}
+        />
 
-      <Stack gap='sm'>
-        <Group gap='xs' align='center'>
-          <ThemeIcon size={28} radius='md' variant='light' color='teal'>
-            <IconListCheck size={16} />
-          </ThemeIcon>
-          <Stack gap={0}>
-            <Text fw={600} size='sm'>
-              Existing questions
-            </Text>
-            <Text size='xs' c='dimmed'>
-              {activeQuestions.length} question
-              {activeQuestions.length === 1 ? '' : 's'}
-            </Text>
-          </Stack>
-        </Group>
-
-        {activeQuestions.length === 0 ? (
-          <Paper
-            p='md'
-            radius='md'
-            withBorder
-            style={{
-              borderColor: themeConfig.borderColor,
-              textAlign: 'center'
-            }}
-          >
-            <Text size='xs' c='dimmed'>
-              No questions yet. Add your first question to build this quiz.
-            </Text>
-          </Paper>
-        ) : (
-          <Stack gap='xs'>
-            {activeQuestions.map(question =>
-              renderQuestionCard(question, false)
-            )}
-          </Stack>
-        )}
-
-        {deletedQuestions.length > 0 && (
-          <Stack gap='xs'>
-            <Group gap='xs'>
-              <Switch
-                size='xs'
-                checked={showDeleted}
-                onChange={event => setShowDeleted(event.currentTarget.checked)}
-                label='Show deleted questions'
-              />
-              <Text size='xs' c='dimmed'>
-                Deleted questions are kept (soft delete) and can be restored.
+        <Stack gap='sm'>
+          <Group gap='xs' align='center'>
+            <ThemeIcon size={28} radius='md' variant='light' color='teal'>
+              <IconListCheck size={16} />
+            </ThemeIcon>
+            <Stack gap={0}>
+              <Text fw={600} size='sm'>
+                Existing questions
               </Text>
-            </Group>
-            {showDeleted &&
-              deletedQuestions.map(question =>
-                renderQuestionCard(question, true)
-              )}
-          </Stack>
-        )}
+              <Text size='xs' c='dimmed'>
+                {questions.length} question
+                {questions.length === 1 ? '' : 's'}
+              </Text>
+            </Stack>
+          </Group>
+
+          {isLoading ? (
+            <Center py='md'>
+              <Loader size='sm' />
+            </Center>
+          ) : questions.length === 0 ? (
+            <Paper
+              p='md'
+              radius='md'
+              withBorder
+              style={{
+                borderColor: themeConfig.borderColor,
+                textAlign: 'center'
+              }}
+            >
+              <Text size='xs' c='dimmed'>
+                No questions yet. Add your first question to build this quiz.
+              </Text>
+            </Paper>
+          ) : (
+            <Stack gap='xs'>{questions.map(renderQuestionCard)}</Stack>
+          )}
+        </Stack>
       </Stack>
-    </Stack>
+
+      <Modal
+        opened={!!deleteTarget}
+        onClose={closeDeleteModal}
+        title='Delete question'
+        centered
+        radius='md'
+        transitionProps={{ duration: 0 }}
+      >
+        <Stack gap='md'>
+          <Text size='sm' mt='sm'>
+            Delete &ldquo;{deleteTarget?.question || 'this question'}&rdquo;?
+            This cannot be undone.
+          </Text>
+          <Group justify='flex-end'>
+            <CommonButton
+              variant='default'
+              size='xs'
+              onClick={closeDeleteModal}
+              disabled={isDeleting}
+            >
+              Keep question
+            </CommonButton>
+            <CommonButton
+              color='red'
+              size='xs'
+              loading={isDeleting}
+              disabled={isDeleting}
+              onClick={handleConfirmDelete}
+            >
+              Yes, delete
+            </CommonButton>
+          </Group>
+        </Stack>
+      </Modal>
+    </>
   );
 };
 

@@ -34,10 +34,11 @@ import {
   saveTaskDraft,
   readTaskDraft,
   clearTaskDraft,
-  AddTaskContentMode
+  saveQuizTaskState,
+  AddTaskContentMode,
+  AddTaskDraft
 } from './task-popup-state';
 import DescriptionEditor from './DescriptionEditor';
-import { QuizQuestion } from '@interfaces/quiz';
 
 interface AddTaskModalProps {
   opened: boolean;
@@ -98,7 +99,6 @@ const AddTaskModal = ({
   const [thumbnail, setThumbnail] = useState<File | null>(null);
   const [requiresAcknowledgement, setRequiresAcknowledgement] = useState(false);
   const [acknowledgementText, setAcknowledgementText] = useState('');
-  const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
   const [touched, setTouched] = useState<Record<TaskField, boolean>>({
     taskName: false,
     link: false,
@@ -127,7 +127,6 @@ const AddTaskModal = ({
     setLink(draft.link);
     setFile(draft.file);
     setThumbnail(draft.thumbnail);
-    setQuizQuestions(draft.quizQuestions ?? []);
     setDraftResetKey(key => key + 1);
   }, [courseId, moduleId]);
 
@@ -141,7 +140,6 @@ const AddTaskModal = ({
     setThumbnail(null);
     setRequiresAcknowledgement(false);
     setAcknowledgementText('');
-    setQuizQuestions([]);
     setTouched({
       taskName: false,
       link: false,
@@ -175,22 +173,50 @@ const AddTaskModal = ({
     );
   };
 
-  const handleManageQuiz = () => {
-    saveTaskDraft({
-      courseId,
-      moduleId,
-      taskName,
-      taskDescription,
-      mode,
-      link,
-      file,
-      thumbnail,
-      quizQuestions
-    });
-    saveTaskPopupState({ courseId, moduleId });
-    navigate(
-      `${commonUrls(organization)}/dashboard/content-writer/quiz-questions`
-    );
+  const handleCreateQuiz = async () => {
+    touch('taskName');
+    touch('taskDescription');
+    if (
+      !taskName.trim() ||
+      !hasVisibleText(taskDescription) ||
+      (thumbnail && !THUMBNAIL_MIME_TYPES.includes(thumbnail.type))
+    ) {
+      return;
+    }
+    try {
+      const response = await addTask({
+        moduleId,
+        taskName: taskName.trim(),
+        taskDescription: taskDescription.trim(),
+        type: 'QUIZ',
+        thumbnail
+      });
+      const taskId = response?.data?._id;
+      if (!taskId) {
+        throw new Error('Quiz task was created without an id.');
+      }
+      saveQuizTaskState({ courseId, moduleId, taskId });
+      saveTaskPopupState({ courseId, moduleId });
+      showSuccessToast(response?.message || 'Quiz created successfully!');
+      const draft: AddTaskDraft = {
+        courseId,
+        moduleId,
+        taskName,
+        taskDescription,
+        mode,
+        link,
+        file,
+        thumbnail
+      };
+      reset();
+      saveTaskDraft(draft);
+      onClose();
+      navigate(
+        `${commonUrls(organization)}/dashboard/content-writer/quiz-questions`
+      );
+    } catch (error) {
+      showErrorToast(getErrorMessage(error, 'Failed to create quiz'));
+    }
   };
 
   const errors: Partial<Record<TaskField, string>> = {};
@@ -215,12 +241,7 @@ const AddTaskModal = ({
     errors.thumbnail = VALIDATION_MESSAGES.thumbnail;
   }
 
-  const activeQuizCount = quizQuestions.filter(
-    question => !question.isDeleted
-  ).length;
-  const isValid =
-    Object.keys(errors).length === 0 &&
-    (mode !== 'QUIZ' || activeQuizCount > 0);
+  const isValid = Object.keys(errors).length === 0;
   const fieldError = (field: TaskField) =>
     touched[field] ? errors[field] : undefined;
 
@@ -389,24 +410,27 @@ const AddTaskModal = ({
               radius='md'
               withBorder
               style={{ backgroundColor: 'rgba(99, 102, 241, 0.05)' }}
-            ></Paper>
-            <Group gap='xs' align='center'>
-              <CommonButton
-                variant='light'
-                leftSection={<IconListCheck size={16} />}
-                onClick={handleManageQuiz}
-                style={{ width: 'fit-content' }}
-              >
-                Add Quiz Questions
-              </CommonButton>
-              <Text size='xs' c='dimmed'>
-                {activeQuizCount > 0
-                  ? `${activeQuizCount} question${
-                      activeQuizCount === 1 ? '' : 's'
-                    } added`
-                  : 'Add at least one question to create the quiz.'}
-              </Text>
-            </Group>
+            >
+              <Group gap='xs' wrap='nowrap' align='flex-start'>
+                <ThemeIcon size={24} radius='md' variant='light' color='indigo'>
+                  <IconListCheck size={14} />
+                </ThemeIcon>
+                <Text size='xs' c='dimmed'>
+                  The quiz is saved first, then you add its questions on the
+                  next screen.
+                </Text>
+              </Group>
+            </Paper>
+            <CommonButton
+              variant='light'
+              leftSection={<IconListCheck size={16} />}
+              onClick={handleCreateQuiz}
+              disabled={!isValid || isPending}
+              loading={isPending}
+              style={{ width: 'fit-content' }}
+            >
+              Add Quiz Questions
+            </CommonButton>
           </Stack>
         ) : (
           <Stack gap='xs'>
@@ -484,19 +508,21 @@ const AddTaskModal = ({
           <CommonButton variant='default' onClick={handleClose}>
             Cancel
           </CommonButton>
-          <CommonButton
-            leftSection={
-              isPending ? (
-                <Loader size='xs' color='white' />
-              ) : (
-                <IconCheck size={16} />
-              )
-            }
-            disabled={!isValid || isPending}
-            onClick={handleSubmit}
-          >
-            {isPending ? 'Adding...' : 'Add Task'}
-          </CommonButton>
+          {mode !== 'QUIZ' && (
+            <CommonButton
+              leftSection={
+                isPending ? (
+                  <Loader size='xs' color='white' />
+                ) : (
+                  <IconCheck size={16} />
+                )
+              }
+              disabled={!isValid || isPending}
+              onClick={handleSubmit}
+            >
+              {isPending ? 'Adding...' : 'Add Task'}
+            </CommonButton>
+          )}
         </Group>
       </Stack>
     </Modal>

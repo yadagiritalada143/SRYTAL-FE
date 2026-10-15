@@ -15,7 +15,7 @@ let mockIsLoading = false;
 
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
-  useParams: () => ({ id: 'c1' }),
+  useParams: () => ({ id: 'c1', organization: 'acme' }),
   useNavigate: () => mockNavigate
 }));
 
@@ -515,6 +515,69 @@ describe('CourseDetails', () => {
       expect(openSpy).not.toHaveBeenCalled();
 
       openSpy.mockRestore();
+    });
+
+    it('shows an Edit questions action for quiz tasks instead of Open', () => {
+      mockCourse = makeCourse({
+        modules: [
+          {
+            _id: 'm1',
+            moduleName: 'Quiz Module',
+            moduleDescription: '',
+            status: 'ACTIVE',
+            tasks: [
+              {
+                _id: 'q1',
+                taskName: 'Colour quiz',
+                taskDescription: 'Pick a colour.',
+                status: 'ACTIVE',
+                type: 'QUIZ',
+                thumbnailUrl: '',
+                thumbnail: ''
+              }
+            ]
+          }
+        ]
+      });
+      renderPage();
+
+      expect(screen.queryByText('Open')).not.toBeInTheDocument();
+      expect(screen.getByText('Edit questions')).toBeInTheDocument();
+    });
+
+    it('navigates to the quiz editor with the task and course ids', () => {
+      mockCourse = makeCourse({
+        modules: [
+          {
+            _id: 'm1',
+            moduleName: 'Quiz Module',
+            moduleDescription: '',
+            status: 'ACTIVE',
+            tasks: [
+              {
+                _id: 'q1',
+                taskName: 'Colour quiz',
+                taskDescription: 'Pick a colour.',
+                status: 'ACTIVE',
+                type: 'QUIZ',
+                thumbnailUrl: '',
+                thumbnail: ''
+              }
+            ]
+          }
+        ]
+      });
+      renderPage();
+
+      fireEvent.click(
+        screen
+          .getByText('Edit questions')
+          .closest('button') as HTMLButtonElement
+      );
+
+      expect(mockNavigate).toHaveBeenCalledWith(
+        '/acme/employee/dashboard/content-writer/quiz-questions?taskId=q1&courseId=c1'
+      );
     });
   });
 

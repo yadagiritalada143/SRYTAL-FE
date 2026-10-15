@@ -20,6 +20,12 @@ import {
   updateCourseModuleContentWriter,
   updateCourseTaskContentWriter,
   getCourseTaskContentUrl,
+  getAllQuizQuestions,
+  createQuizQuestion,
+  getQuizQuestionById,
+  updateQuizQuestion,
+  updateQuizQuestionStatus,
+  deleteQuizQuestion,
   getMyAssignedCourses,
   getMyAssignedCourseById,
   updateMyTaskProgress,
@@ -36,6 +42,7 @@ jest.mock('@utils/api-client', () => {
     get: jest.fn().mockResolvedValue({ data: {} }),
     post: jest.fn().mockResolvedValue({ data: {} }),
     put: jest.fn().mockResolvedValue({ data: {} }),
+    patch: jest.fn().mockResolvedValue({ data: {} }),
     delete: jest.fn().mockResolvedValue({ data: {} }),
     request: jest.fn().mockResolvedValue({ data: {} })
   });
@@ -51,6 +58,7 @@ interface ApiClientMock {
   get: jest.Mock;
   post: jest.Mock;
   put: jest.Mock;
+  patch: jest.Mock;
   delete: jest.Mock;
 }
 
@@ -380,9 +388,7 @@ describe('user-services', () => {
         status: 'draft'
       } as any);
 
-      expect(mock.put.mock.calls[0][0]).toBe(
-        '/updatecoursemodule'
-      );
+      expect(mock.put.mock.calls[0][0]).toBe('/updatecoursemodule');
       const [, formData] = mock.put.mock.calls[0];
       expect(formData.get('id')).toBe('m1');
       expect(formData.get('status')).toBe('draft');
@@ -433,6 +439,112 @@ describe('user-services', () => {
       expect(url).toBe(
         'http://localhost:3000/getCourseTaskContent/task1?auth_token=tok123'
       );
+    });
+  });
+
+  describe('quiz question services', () => {
+    it('getAllQuizQuestions returns the questions for a task', async () => {
+      mock.get.mockResolvedValue({
+        data: { success: true, data: [{ _id: 'q1' }] }
+      });
+
+      const result = await getAllQuizQuestions('task1');
+
+      expect(mock.get).toHaveBeenCalledWith('/getAllQuizQuestions/task1');
+      expect(result).toEqual([{ _id: 'q1' }]);
+    });
+
+    it('getAllQuizQuestions falls back to an empty list', async () => {
+      mock.get.mockResolvedValue({ data: { success: true } });
+
+      expect(await getAllQuizQuestions('task1')).toEqual([]);
+    });
+
+    it('createQuizQuestion posts the payload and returns the response', async () => {
+      mock.post.mockResolvedValue({
+        data: { success: true, message: 'created', data: { _id: 'q1' } }
+      });
+
+      const payload = {
+        taskId: 'task1',
+        question: 'Pick one',
+        type: 'RADIO' as const,
+        status: 'SHOW' as const,
+        options: [
+          { value: 'A', isanswer: true },
+          { value: 'B', isanswer: false }
+        ]
+      };
+
+      const result = await createQuizQuestion(payload);
+
+      expect(mock.post).toHaveBeenCalledWith('/createQuizQuestion', payload);
+      expect(result).toEqual({
+        success: true,
+        message: 'created',
+        data: { _id: 'q1' }
+      });
+    });
+
+    it('getQuizQuestionById returns the single question', async () => {
+      mock.get.mockResolvedValue({
+        data: { success: true, data: { _id: 'q1' } }
+      });
+
+      const result = await getQuizQuestionById('q1');
+
+      expect(mock.get).toHaveBeenCalledWith('/getQuizQuestion/q1');
+      expect(result).toEqual({ _id: 'q1' });
+    });
+
+    it('getQuizQuestionById falls back to null', async () => {
+      mock.get.mockResolvedValue({ data: { success: true } });
+
+      expect(await getQuizQuestionById('q1')).toBeNull();
+    });
+
+    it('updateQuizQuestion puts the payload and returns the response', async () => {
+      mock.put.mockResolvedValue({
+        data: { success: true, message: 'updated', data: { _id: 'q1' } }
+      });
+
+      const data = { question: 'Updated?' };
+      const result = await updateQuizQuestion('q1', data);
+
+      expect(mock.put).toHaveBeenCalledWith('/updateQuizQuestion/q1', data);
+      expect(result).toEqual({
+        success: true,
+        message: 'updated',
+        data: { _id: 'q1' }
+      });
+    });
+
+    it('updateQuizQuestionStatus patches the status', async () => {
+      mock.patch.mockResolvedValue({
+        data: { success: true, message: 'hidden', data: { _id: 'q1' } }
+      });
+
+      const result = await updateQuizQuestionStatus('q1', 'HIDE');
+
+      expect(mock.patch).toHaveBeenCalledWith('/updateQuizQuestionStatus/q1', {
+        status: 'HIDE'
+      });
+      expect(result).toEqual({
+        success: true,
+        message: 'hidden',
+        data: { _id: 'q1' }
+      });
+    });
+
+    it('deleteQuizQuestion deletes by id', async () => {
+      mock.delete.mockResolvedValue({
+        data: { success: true, message: 'deleted' }
+      });
+
+      const result = await deleteQuizQuestion('q1');
+
+      expect(mock.delete).toHaveBeenCalledWith('/deleteQuizQuestion/q1');
+      expect(result).toEqual({ success: true, message: 'deleted' });
     });
   });
 

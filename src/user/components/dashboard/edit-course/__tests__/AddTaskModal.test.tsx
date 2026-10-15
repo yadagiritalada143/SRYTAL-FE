@@ -6,7 +6,9 @@ import {
   REOPEN_TASK_POPUP_KEY,
   saveTaskDraft,
   readTaskDraft,
-  clearTaskDraft
+  clearTaskDraft,
+  readQuizTaskState,
+  readTaskPopupState
 } from '../task-popup-state';
 
 jest.mock('@hooks/mutations/useUserMutations', () => ({
@@ -818,20 +820,7 @@ describe('AddTaskModal', () => {
   });
 
   describe('Quiz tasks', () => {
-    const quizQuestion = {
-      id: 'q1',
-      question: 'What is your favourite colour?',
-      type: 'RADIO' as const,
-      status: 'SHOW' as const,
-      required: true,
-      options: [
-        { id: 'o1', text: 'Red', isCorrect: true },
-        { id: 'o2', text: 'Green', isCorrect: false }
-      ],
-      isDeleted: false
-    };
-
-    it('shows the Add Quiz Questions button in Quiz mode', () => {
+    it('shows the Add Quiz Questions button in Quiz mode and hides Add Task', () => {
       renderModal();
       expect(
         screen.queryByRole('button', { name: 'Add Quiz Questions' })
@@ -842,12 +831,42 @@ describe('AddTaskModal', () => {
       expect(
         screen.getByRole('button', { name: 'Add Quiz Questions' })
       ).toBeInTheDocument();
+      // The quiz task is created from the quiz section, not the footer button.
       expect(
-        screen.getByText('Add at least one question to create the quiz.')
+        screen.queryByRole('button', { name: 'Add Task' })
+      ).not.toBeInTheDocument();
+      expect(
+        screen.getByText(
+          'The quiz is saved first, then you add its questions on the next screen.'
+        )
       ).toBeInTheDocument();
     });
 
-    it('opens the quiz questions page, parks the draft and remembers the module', () => {
+    it('keeps the quiz button disabled until the title and description are provided', () => {
+      renderModal();
+      clickQuizMode();
+
+      expect(
+        screen.getByRole('button', { name: 'Add Quiz Questions' })
+      ).toBeDisabled();
+
+      typeTitle('Colour quiz');
+      expect(
+        screen.getByRole('button', { name: 'Add Quiz Questions' })
+      ).toBeDisabled();
+
+      typeDescription('Pick a colour.');
+      expect(
+        screen.getByRole('button', { name: 'Add Quiz Questions' })
+      ).not.toBeDisabled();
+    });
+
+    it('creates the quiz task and opens the questions page', async () => {
+      mockAddTask.mockResolvedValueOnce({
+        data: { _id: 'task-99' },
+        message: 'Quiz created successfully!'
+      });
+
       renderModal();
 
       typeTitle('Colour quiz');
@@ -858,12 +877,26 @@ describe('AddTaskModal', () => {
         screen.getByRole('button', { name: 'Add Quiz Questions' })
       );
 
-      expect(mockNavigate).toHaveBeenCalledWith(
-        '/acme/employee/dashboard/content-writer/quiz-questions'
-      );
-      expect(
-        JSON.parse(sessionStorage.getItem(REOPEN_TASK_POPUP_KEY) || '{}')
-      ).toEqual({ courseId: 'c1', moduleId: 'm1' });
+      await waitFor(() => {
+        expect(mockAddTask).toHaveBeenCalledWith({
+          moduleId: 'm1',
+          taskName: 'Colour quiz',
+          taskDescription: 'Pick a colour.',
+          type: 'QUIZ',
+          thumbnail: null
+        });
+      });
+
+      expect(readQuizTaskState()).toEqual({
+        courseId: 'c1',
+        moduleId: 'm1',
+        taskId: 'task-99'
+      });
+      expect(readTaskPopupState()).toEqual({
+        courseId: 'c1',
+        moduleId: 'm1'
+      });
+      // The entered values are kept so the reopened Add Task popup is restored.
       expect(readTaskDraft()).toEqual({
         courseId: 'c1',
         moduleId: 'm1',
@@ -872,66 +905,39 @@ describe('AddTaskModal', () => {
         mode: 'QUIZ',
         link: '',
         file: null,
-        thumbnail: null,
-        quizQuestions: []
+        thumbnail: null
       });
+      expect(mockShowSuccessToast).toHaveBeenCalledWith(
+        'Quiz created successfully!'
+      );
+      expect(mockNavigate).toHaveBeenCalledWith(
+        '/acme/employee/dashboard/content-writer/quiz-questions'
+      );
     });
 
-    it('keeps Add Task disabled for a quiz without questions', () => {
+    it('shows an error toast and stays put when creating the quiz fails', async () => {
+      mockAddTask.mockRejectedValueOnce({
+        isAxiosError: true,
+        response: { data: { message: 'Task name is already used.' } }
+      });
+
       renderModal();
 
       typeTitle('Colour quiz');
-      typeDescription('Pick a colour.');
       clickQuizMode();
+      typeDescription('Pick a colour.');
 
-      expect(screen.getByRole('button', { name: 'Add Task' })).toBeDisabled();
-    });
-
-    it('restores parked quiz questions and enables Add Task', () => {
-      saveTaskDraft({
-        courseId: 'c1',
-        moduleId: 'm1',
-        taskName: 'Colour quiz',
-        taskDescription: 'Pick a colour.',
-        mode: 'QUIZ',
-        link: '',
-        file: null,
-        thumbnail: null,
-        quizQuestions: [quizQuestion]
-      });
-
-      renderModal();
-
-      expect(
+      fireEvent.click(
         screen.getByRole('button', { name: 'Add Quiz Questions' })
-      ).toBeInTheDocument();
-      expect(screen.getByText('1 question added')).toBeInTheDocument();
-      expect(
-        screen.getByRole('button', { name: 'Add Task' })
-      ).not.toBeDisabled();
-    });
-
-    it('submits a quiz task with its type once questions exist', async () => {
-      saveTaskDraft({
-        courseId: 'c1',
-        moduleId: 'm1',
-        taskName: 'Colour quiz',
-        taskDescription: 'Pick a colour.',
-        mode: 'QUIZ',
-        link: '',
-        file: null,
-        thumbnail: null,
-        quizQuestions: [quizQuestion]
-      });
-
-      renderModal();
-      fireEvent.click(screen.getByRole('button', { name: 'Add Task' }));
+      );
 
       await waitFor(() => {
-        expect(mockAddTask).toHaveBeenCalledWith(
-          expect.objectContaining({ type: 'QUIZ' })
+        expect(mockShowErrorToast).toHaveBeenCalledWith(
+          'Task name is already used.'
         );
       });
+      expect(mockNavigate).not.toHaveBeenCalled();
+      expect(readQuizTaskState()).toBeNull();
     });
   });
 });

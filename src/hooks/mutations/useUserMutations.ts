@@ -17,6 +17,10 @@ import {
   updateMyTaskProgress,
   runCode,
   submitCode,
+  createQuizQuestion,
+  updateQuizQuestion,
+  updateQuizQuestionStatus,
+  deleteQuizQuestion,
   saveUserOpenRouterKey
 } from '@services/user-services';
 import { userQueryKeys } from '../queries/useUserQueries';
@@ -39,6 +43,11 @@ import {
   UpdateMyTaskAcknowledgementPayload,
   UpdateTaskProgressPayload
 } from '@interfaces/course-assignment';
+import {
+  QuizQuestionApiPayload,
+  QuizQuestionApiUpdatePayload,
+  QuizQuestionStatus
+} from '@interfaces/quiz';
 
 export const useAddCompany = () => {
   const queryClient = useQueryClient();
@@ -161,6 +170,80 @@ export const useAddCourseTask = (courseId?: string) => {
       if (courseId) {
         queryClient.invalidateQueries({
           queryKey: userQueryKeys.course(courseId)
+        });
+      }
+    }
+  });
+};
+
+export const useCreateQuizQuestion = (taskId?: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: QuizQuestionApiPayload) => createQuizQuestion(data),
+    onSuccess: () => {
+      if (taskId) {
+        queryClient.invalidateQueries({
+          queryKey: userQueryKeys.quizQuestions(taskId)
+        });
+      }
+    }
+  });
+};
+
+export const useUpdateQuizQuestion = (taskId?: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      questionId,
+      data
+    }: {
+      questionId: string;
+      data: QuizQuestionApiUpdatePayload;
+    }) => updateQuizQuestion(questionId, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: userQueryKeys.quizQuestion(variables.questionId)
+      });
+      if (taskId) {
+        queryClient.invalidateQueries({
+          queryKey: userQueryKeys.quizQuestions(taskId)
+        });
+      }
+    }
+  });
+};
+
+export const useUpdateQuizQuestionStatus = (taskId?: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      questionId,
+      status
+    }: {
+      questionId: string;
+      status: QuizQuestionStatus;
+    }) => updateQuizQuestionStatus(questionId, status),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: userQueryKeys.quizQuestion(variables.questionId)
+      });
+      if (taskId) {
+        queryClient.invalidateQueries({
+          queryKey: userQueryKeys.quizQuestions(taskId)
+        });
+      }
+    }
+  });
+};
+
+export const useDeleteQuizQuestion = (taskId?: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (questionId: string) => deleteQuizQuestion(questionId),
+    onSuccess: () => {
+      if (taskId) {
+        queryClient.invalidateQueries({
+          queryKey: userQueryKeys.quizQuestions(taskId)
         });
       }
     }

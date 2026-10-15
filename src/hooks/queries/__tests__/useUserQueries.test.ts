@@ -15,6 +15,8 @@ import {
   useGetMyAssignedCourses,
   useGetMyAssignedCourse,
   useGetCodingQuestion,
+  useGetAllQuizQuestions,
+  useGetQuizQuestion,
   useGetUserOpenRouterKey
 } from '@hooks/queries/useUserQueries';
 
@@ -30,6 +32,8 @@ jest.mock('@services/user-services', () => ({
   getMyAssignedCourses: jest.fn(),
   getMyAssignedCourseById: jest.fn(),
   getCodingQuestion: jest.fn(),
+  getAllQuizQuestions: jest.fn(),
+  getQuizQuestionById: jest.fn(),
   getUserOpenRouterKey: jest.fn()
 }));
 
@@ -174,10 +178,7 @@ describe('useUserQueries', () => {
     it('does not fetch when enabled is false', async () => {
       const { wrapper } = createWrapper();
 
-      renderHook(
-        () => useGetPoolCandidateById('c1', false),
-        { wrapper }
-      );
+      renderHook(() => useGetPoolCandidateById('c1', false), { wrapper });
 
       expect(userService().getPoolCandidateByRecruiter).not.toHaveBeenCalled();
     });
@@ -314,10 +315,7 @@ describe('useUserQueries', () => {
     it('does not fetch when enabled is false', async () => {
       const { wrapper } = createWrapper();
 
-      renderHook(
-        () => useGetMyAssignedCourse('ca1', false),
-        { wrapper }
-      );
+      renderHook(() => useGetMyAssignedCourse('ca1', false), { wrapper });
 
       expect(userService().getMyAssignedCourseById).not.toHaveBeenCalled();
     });
@@ -330,6 +328,66 @@ describe('useUserQueries', () => {
       });
 
       expect(userService().getMyAssignedCourseById).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('useGetAllQuizQuestions', () => {
+    it('fetches the questions for the given task', async () => {
+      userService().getAllQuizQuestions.mockResolvedValue([{ _id: 'q1' }]);
+      const { wrapper } = createWrapper();
+
+      const { result } = renderHook(() => useGetAllQuizQuestions('task1'), {
+        wrapper
+      });
+
+      expect(userService().getAllQuizQuestions).toHaveBeenCalledWith('task1');
+      await waitFor(() => expect(result.current.data).toEqual([{ _id: 'q1' }]));
+    });
+
+    it('does not fetch when enabled is false', () => {
+      const { wrapper } = createWrapper();
+
+      renderHook(() => useGetAllQuizQuestions('task1', false), { wrapper });
+
+      expect(userService().getAllQuizQuestions).not.toHaveBeenCalled();
+    });
+
+    it('does not fetch when the task id is an empty string', () => {
+      const { wrapper } = createWrapper();
+
+      renderHook(() => useGetAllQuizQuestions(''), { wrapper });
+
+      expect(userService().getAllQuizQuestions).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('useGetQuizQuestion', () => {
+    it('fetches a single question by id', async () => {
+      userService().getQuizQuestionById.mockResolvedValue({ _id: 'q1' });
+      const { wrapper } = createWrapper();
+
+      const { result } = renderHook(() => useGetQuizQuestion('q1'), {
+        wrapper
+      });
+
+      expect(userService().getQuizQuestionById).toHaveBeenCalledWith('q1');
+      await waitFor(() => expect(result.current.data).toEqual({ _id: 'q1' }));
+    });
+
+    it('does not fetch when enabled is false', () => {
+      const { wrapper } = createWrapper();
+
+      renderHook(() => useGetQuizQuestion('q1', false), { wrapper });
+
+      expect(userService().getQuizQuestionById).not.toHaveBeenCalled();
+    });
+
+    it('does not fetch when the question id is an empty string', () => {
+      const { wrapper } = createWrapper();
+
+      renderHook(() => useGetQuizQuestion(''), { wrapper });
+
+      expect(userService().getQuizQuestionById).not.toHaveBeenCalled();
     });
   });
 
@@ -354,10 +412,7 @@ describe('useUserQueries', () => {
     it('does not fetch when enabled is false', async () => {
       const { wrapper } = createWrapper();
 
-      renderHook(
-        () => useGetUserOpenRouterKey('u1', false),
-        { wrapper }
-      );
+      renderHook(() => useGetUserOpenRouterKey('u1', false), { wrapper });
 
       expect(userService().getUserOpenRouterKey).not.toHaveBeenCalled();
     });
@@ -443,10 +498,9 @@ describe('useUserQueries', () => {
     it('stays disabled until a task and a language are available', async () => {
       const { wrapper } = createWrapper();
 
-      const { result } = renderHook(
-        () => useGetCodingQuestion('', '', ''),
-        { wrapper }
-      );
+      const { result } = renderHook(() => useGetCodingQuestion('', '', ''), {
+        wrapper
+      });
 
       expect(userService().getCodingQuestion).not.toHaveBeenCalled();
       expect(result.current.data).toBeUndefined();

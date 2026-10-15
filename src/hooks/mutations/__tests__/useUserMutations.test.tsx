@@ -24,6 +24,10 @@ jest.mock('@services/user-services', () => {
   const mockUpdateMyTaskProgress = jest.fn();
   const mockRunCode = jest.fn();
   const mockSubmitCode = jest.fn();
+  const mockCreateQuizQuestion = jest.fn();
+  const mockUpdateQuizQuestion = jest.fn();
+  const mockUpdateQuizQuestionStatus = jest.fn();
+  const mockDeleteQuizQuestion = jest.fn();
   const mockSaveUserOpenRouterKey = jest.fn();
   return {
     addCompanyByRecruiter: mockAddCompanyByRecruiter,
@@ -42,6 +46,10 @@ jest.mock('@services/user-services', () => {
     updateMyTaskProgress: mockUpdateMyTaskProgress,
     runCode: mockRunCode,
     submitCode: mockSubmitCode,
+    createQuizQuestion: mockCreateQuizQuestion,
+    updateQuizQuestion: mockUpdateQuizQuestion,
+    updateQuizQuestionStatus: mockUpdateQuizQuestionStatus,
+    deleteQuizQuestion: mockDeleteQuizQuestion,
     saveUserOpenRouterKey: mockSaveUserOpenRouterKey
   };
 });
@@ -88,6 +96,10 @@ import {
   useUpdateMyTaskProgress,
   useRunCode,
   useSubmitCode,
+  useCreateQuizQuestion,
+  useUpdateQuizQuestion,
+  useUpdateQuizQuestionStatus,
+  useDeleteQuizQuestion,
   useSaveUserOpenRouterKey
 } from '@hooks/mutations/useUserMutations';
 
@@ -418,6 +430,162 @@ describe('useAddCourseTask', () => {
         .getQueryCache()
         .findAll({ queryKey: ['userCourse', 'course1'] })
     ).toHaveLength(0);
+  });
+});
+
+describe('useCreateQuizQuestion', () => {
+  const payload = {
+    taskId: 'task1',
+    question: 'Pick one',
+    type: 'RADIO' as const,
+    status: 'SHOW' as const,
+    options: [
+      { value: 'A', isanswer: true },
+      { value: 'B', isanswer: false }
+    ]
+  };
+
+  it('calls createQuizQuestion and invalidates that task questions', async () => {
+    const { queryClient, wrapper } = createWrapper();
+    getMock('createQuizQuestion').mockResolvedValue({ success: true });
+    queryClient.setQueryData(['quizQuestions', 'task1'], []);
+
+    const { result } = renderHook(() => useCreateQuizQuestion('task1'), {
+      wrapper
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync(payload);
+    });
+
+    expectCalledWithArgs(getMock('createQuizQuestion'), payload);
+    await waitFor(() => {
+      expect(
+        queryClient
+          .getQueryCache()
+          .findAll({ queryKey: ['quizQuestions', 'task1'] })
+      ).toHaveLength(1);
+    });
+  });
+
+  it('does not invalidate anything when taskId is omitted', async () => {
+    const { queryClient, wrapper } = createWrapper();
+    getMock('createQuizQuestion').mockResolvedValue({ success: true });
+    queryClient.setQueryData(['quizQuestions', 'task1'], []);
+
+    const { result } = renderHook(() => useCreateQuizQuestion(), { wrapper });
+
+    await act(async () => {
+      await result.current.mutateAsync(payload);
+    });
+
+    expectCalledWithArgs(getMock('createQuizQuestion'), payload);
+  });
+});
+
+describe('useUpdateQuizQuestion', () => {
+  it('updates a question and invalidates the question + task list', async () => {
+    const { queryClient, wrapper } = createWrapper();
+    getMock('updateQuizQuestion').mockResolvedValue({ success: true });
+    queryClient.setQueryData(['quizQuestions', 'task1'], []);
+    queryClient.setQueryData(['quizQuestion', 'q1'], { _id: 'q1' });
+    const data = { question: 'Updated?' };
+
+    const { result } = renderHook(() => useUpdateQuizQuestion('task1'), {
+      wrapper
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync({ questionId: 'q1', data });
+    });
+
+    expectCalledWithArgs(getMock('updateQuizQuestion'), 'q1', data);
+    await waitFor(() => {
+      expect(
+        queryClient
+          .getQueryCache()
+          .findAll({ queryKey: ['quizQuestions', 'task1'] })
+      ).toHaveLength(1);
+    });
+  });
+
+  it('still invalidates the single question when taskId is omitted', async () => {
+    const { queryClient, wrapper } = createWrapper();
+    getMock('updateQuizQuestion').mockResolvedValue({ success: true });
+    queryClient.setQueryData(['quizQuestion', 'q1'], { _id: 'q1' });
+
+    const { result } = renderHook(() => useUpdateQuizQuestion(), { wrapper });
+
+    await act(async () => {
+      await result.current.mutateAsync({
+        questionId: 'q1',
+        data: { status: 'HIDE' }
+      });
+    });
+
+    expectCalledWithArgs(getMock('updateQuizQuestion'), 'q1', {
+      status: 'HIDE'
+    });
+  });
+});
+
+describe('useUpdateQuizQuestionStatus', () => {
+  it('updates the status and passes the question id + status', async () => {
+    const { queryClient, wrapper } = createWrapper();
+    getMock('updateQuizQuestionStatus').mockResolvedValue({ success: true });
+    queryClient.setQueryData(['quizQuestions', 'task1'], []);
+
+    const { result } = renderHook(() => useUpdateQuizQuestionStatus('task1'), {
+      wrapper
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync({
+        questionId: 'q1',
+        status: 'HIDE'
+      });
+    });
+
+    expectCalledWithArgs(getMock('updateQuizQuestionStatus'), 'q1', 'HIDE');
+  });
+});
+
+describe('useDeleteQuizQuestion', () => {
+  it('deletes a question and invalidates that task questions', async () => {
+    const { queryClient, wrapper } = createWrapper();
+    getMock('deleteQuizQuestion').mockResolvedValue({ success: true });
+    queryClient.setQueryData(['quizQuestions', 'task1'], []);
+
+    const { result } = renderHook(() => useDeleteQuizQuestion('task1'), {
+      wrapper
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync('q1');
+    });
+
+    expectCalledWithArgs(getMock('deleteQuizQuestion'), 'q1');
+    await waitFor(() => {
+      expect(
+        queryClient
+          .getQueryCache()
+          .findAll({ queryKey: ['quizQuestions', 'task1'] })
+      ).toHaveLength(1);
+    });
+  });
+
+  it('does not invalidate anything when taskId is omitted', async () => {
+    const { queryClient, wrapper } = createWrapper();
+    getMock('deleteQuizQuestion').mockResolvedValue({ success: true });
+    queryClient.setQueryData(['quizQuestions', 'task1'], []);
+
+    const { result } = renderHook(() => useDeleteQuizQuestion(), { wrapper });
+
+    await act(async () => {
+      await result.current.mutateAsync('q1');
+    });
+
+    expectCalledWithArgs(getMock('deleteQuizQuestion'), 'q1');
   });
 });
 
