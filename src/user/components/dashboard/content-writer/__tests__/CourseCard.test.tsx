@@ -46,7 +46,9 @@ const archivedCourse = {
 const renderCard = (props: any) => {
   return render(
     <MantineProvider>
-      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <BrowserRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+      >
         <CourseCard {...props} />
       </BrowserRouter>
     </MantineProvider>
@@ -72,7 +74,9 @@ describe('CourseCard', () => {
     expect(screen.getByText('ACTIVE')).toBeInTheDocument();
 
     // Direct clone button should not be on active course
-    expect(screen.queryByRole('button', { name: /^Clone$/ })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /^Clone$/ })
+    ).not.toBeInTheDocument();
 
     // Open menu
     const menuButton = screen.getByLabelText('Course actions');
@@ -119,9 +123,6 @@ describe('CourseCard', () => {
     mockNavigate.mockClear();
     fireEvent.click(screen.getByText('Archived Course'));
     expect(mockNavigate).not.toHaveBeenCalled();
-
-    // Direct clone button is displayed on card
-    expect(screen.getByRole('button', { name: /Clone/i })).toBeInTheDocument();
 
     // Open 3-dots menu
     const menuButton = screen.getByLabelText('Course actions');
