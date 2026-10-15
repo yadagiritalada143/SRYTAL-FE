@@ -5,7 +5,9 @@ import { MantineProvider } from '@mantine/core';
 import { BrowserRouter } from 'react-router-dom';
 import { RecoilRoot, MutableSnapshot } from 'recoil';
 import { employeeDetailsAtom } from '@atoms/employee-atom';
-import { act } from 'react';
+import moment from 'moment';
+import { EmployeeTimesheetAdminView as EmployeeTimesheet } from '../employee-timesheet';
+import { formatData } from '@common/timesheet/helper';
 
 const mockGetTimesheetData = jest.fn().mockResolvedValue([]);
 const mockSubmitTimeSheet = jest.fn().mockResolvedValue({ success: true });
@@ -42,7 +44,10 @@ jest.mock('@hooks/use-app-theme', () => ({
 const mockToastError = jest.fn();
 const mockShowSuccessToast = jest.fn();
 jest.mock('react-toastify', () => ({
-  toast: { success: jest.fn(), error: (...args: any[]) => mockToastError(...args) }
+  toast: {
+    success: jest.fn(),
+    error: (...args: any[]) => mockToastError(...args)
+  }
 }));
 
 jest.mock('@utils/common/toast', () => ({
@@ -61,7 +66,11 @@ jest.mock('@common/style-components/buttons', () => ({
 }));
 
 jest.mock('../components/InfoCard', () => ({
-  InfoCard: (props: any) => <div data-testid='info-card'>{props.employeeInfoItems?.length || 0} items</div>
+  InfoCard: (props: any) => (
+    <div data-testid='info-card'>
+      {props.employeeInfoItems?.length || 0} items
+    </div>
+  )
 }));
 
 jest.mock('../components/FilterSection', () => ({
@@ -69,29 +78,69 @@ jest.mock('../components/FilterSection', () => ({
 }));
 
 jest.mock('../components/TimesheetDataView', () => ({
-  TimesheetDataView: ({ label, data, isLoading, noDataMessage, onApprove, onReject, onToggleSelect, onToggleAll, isAllSelected, sortOrder, onSort }: any) => (
+  TimesheetDataView: ({
+    label,
+    data,
+    isLoading,
+    noDataMessage,
+    onApprove,
+    onReject,
+    onToggleSelect,
+    onToggleAll,
+    isAllSelected,
+    sortOrder,
+    onSort
+  }: any) => (
     <div data-testid={`timesheet-data-${label}`}>
-      <span>{label}: {data?.length || 0} items</span>
+      <span>
+        {label}: {data?.length || 0} items
+      </span>
       {isLoading && <span>loading</span>}
       {data?.length === 0 && <span>{noDataMessage}</span>}
-      {data?.length > 0 && data.map((item: any) => (
-        <div key={item.id} data-testid={`entry-${item.id}`}>
-          <span>{item.project_name}</span>
-          <span>{item.status}</span>
-          <button data-testid={`approve-${item.id}`} onClick={() => onApprove(item.id)}>Approve</button>
-          <button data-testid={`reject-${item.id}`} onClick={() => onReject(item.id)}>Reject</button>
-        </div>
-      ))}
+      {data?.length > 0 &&
+        data.map((item: any) => (
+          <div key={item.id} data-testid={`entry-${item.id}`}>
+            <span>{item.project_name}</span>
+            <span>{item.status}</span>
+            <button
+              data-testid={`approve-${item.id}`}
+              onClick={() => onApprove(item.id)}
+            >
+              Approve
+            </button>
+            <button
+              data-testid={`reject-${item.id}`}
+              onClick={() => onReject(item.id)}
+            >
+              Reject
+            </button>
+          </div>
+        ))}
       <span data-testid='sort-order'>{sortOrder}</span>
-      <button data-testid='sort-btn' onClick={onSort}>Sort</button>
-      <button data-testid='select-all' onClick={() => onToggleAll(!isAllSelected)}>Select All</button>
-      {data?.length > 0 && <button data-testid='select-first' onClick={() => onToggleSelect(data[0].id)}>Select First</button>}
+      <button data-testid='sort-btn' onClick={onSort}>
+        Sort
+      </button>
+      <button
+        data-testid='select-all'
+        onClick={() => onToggleAll(!isAllSelected)}
+      >
+        Select All
+      </button>
+      {data?.length > 0 && (
+        <button
+          data-testid='select-first'
+          onClick={() => onToggleSelect(data[0].id)}
+        >
+          Select First
+        </button>
+      )}
     </div>
   )
 }));
 
 jest.mock('../../update-employee/helper-functions/add-package', () => ({
-  getEmployeeInfoItems: (details: any) => details ? [{ label: 'Name', value: details.firstName }] : []
+  getEmployeeInfoItems: (details: any) =>
+    details ? [{ label: 'Name', value: details.firstName }] : []
 }));
 
 jest.mock('@common/timesheet/helper', () => ({
@@ -106,8 +155,6 @@ jest.mock('react-router-dom', () => ({
   useParams: () => ({ employeeId: 'emp123' })
 }));
 
-const { EmployeeTimesheetAdminView: EmployeeTimesheet } = require('../employee-timesheet');
-
 const renderComponent = (initialAtom: any = null) => {
   const initializeState = ({ set }: MutableSnapshot) => {
     set(employeeDetailsAtom, initialAtom);
@@ -116,46 +163,15 @@ const renderComponent = (initialAtom: any = null) => {
   return render(
     <RecoilRoot initializeState={initializeState}>
       <MantineProvider>
-        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <BrowserRouter
+          future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        >
           <EmployeeTimesheet />
         </BrowserRouter>
       </MantineProvider>
     </RecoilRoot>
   );
 };
-
-const mockTimesheetEntries = [
-  {
-    id: 'ts1',
-    date: '2026-09-01',
-    project_name: 'Project Alpha',
-    task_name: 'Design',
-    hours: 8,
-    status: 'Waiting For Approval',
-    isVacation: false,
-    comments: 'Good progress'
-  },
-  {
-    id: 'ts2',
-    date: '2026-09-02',
-    project_name: 'Project Beta',
-    task_name: 'Development',
-    hours: 6,
-    status: 'Approved',
-    isVacation: false,
-    comments: ''
-  },
-  {
-    id: 'ts3',
-    date: '2026-09-03',
-    project_name: 'Leave',
-    task_name: 'Sick Leave',
-    hours: 0,
-    status: 'Waiting For Approval',
-    isVacation: true,
-    leaveReason: 'Sick'
-  }
-];
 
 describe('EmployeeTimesheetAdminView - Status Changes', () => {
   beforeEach(() => {
@@ -172,15 +188,33 @@ describe('EmployeeTimesheetAdminView - Status Changes', () => {
   });
 
   it('handles successful status change', async () => {
+    const testDate = moment().format('YYYY-MM-DD');
     mockGetTimesheetData.mockResolvedValue([
-      { tasks: [{ timesheet: [{ date: '2026-09-01', hours: 8, status: 'Waiting For Approval', isVacation: false, comments: '', leaveReason: '', _id: 'ts1', isHoliday: false, isWeekOff: false }] }] }
+      {
+        tasks: [
+          {
+            timesheet: [
+              {
+                date: testDate,
+                hours: 8,
+                status: 'Waiting For Approval',
+                isVacation: false,
+                comments: '',
+                leaveReason: '',
+                _id: 'ts1',
+                isHoliday: false,
+                isWeekOff: false
+              }
+            ]
+          }
+        ]
+      }
     ]);
 
-    const { formatData } = require('@common/timesheet/helper');
-    formatData.mockReturnValue([
+    (formatData as jest.Mock).mockReturnValue([
       {
         id: 'ts1',
-        date: '2026-09-01',
+        date: testDate,
         project_name: 'Project Alpha',
         task_name: 'Design',
         hours: 8,
@@ -206,15 +240,33 @@ describe('EmployeeTimesheetAdminView - Status Changes', () => {
   });
 
   it('handles status change failure with response message', async () => {
+    const testDate = moment().format('YYYY-MM-DD');
     mockGetTimesheetData.mockResolvedValue([
-      { tasks: [{ timesheet: [{ date: '2026-09-01', hours: 8, status: 'Waiting For Approval', isVacation: false, comments: '', leaveReason: '', _id: 'ts1', isHoliday: false, isWeekOff: false }] }] }
+      {
+        tasks: [
+          {
+            timesheet: [
+              {
+                date: testDate,
+                hours: 8,
+                status: 'Waiting For Approval',
+                isVacation: false,
+                comments: '',
+                leaveReason: '',
+                _id: 'ts1',
+                isHoliday: false,
+                isWeekOff: false
+              }
+            ]
+          }
+        ]
+      }
     ]);
 
-    const { formatData } = require('@common/timesheet/helper');
-    formatData.mockReturnValue([
+    (formatData as jest.Mock).mockReturnValue([
       {
         id: 'ts1',
-        date: '2026-09-01',
+        date: testDate,
         project_name: 'Project Alpha',
         task_name: 'Design',
         hours: 8,
@@ -244,15 +296,33 @@ describe('EmployeeTimesheetAdminView - Status Changes', () => {
   });
 
   it('handles status change with success false response', async () => {
+    const testDate = moment().format('YYYY-MM-DD');
     mockGetTimesheetData.mockResolvedValue([
-      { tasks: [{ timesheet: [{ date: '2026-09-01', hours: 8, status: 'Waiting For Approval', isVacation: false, comments: '', leaveReason: '', _id: 'ts1', isHoliday: false, isWeekOff: false }] }] }
+      {
+        tasks: [
+          {
+            timesheet: [
+              {
+                date: testDate,
+                hours: 8,
+                status: 'Waiting For Approval',
+                isVacation: false,
+                comments: '',
+                leaveReason: '',
+                _id: 'ts1',
+                isHoliday: false,
+                isWeekOff: false
+              }
+            ]
+          }
+        ]
+      }
     ]);
 
-    const { formatData } = require('@common/timesheet/helper');
-    formatData.mockReturnValue([
+    (formatData as jest.Mock).mockReturnValue([
       {
         id: 'ts1',
-        date: '2026-09-01',
+        date: testDate,
         project_name: 'Project Alpha',
         task_name: 'Design',
         hours: 8,
@@ -263,7 +333,10 @@ describe('EmployeeTimesheetAdminView - Status Changes', () => {
       }
     ]);
 
-    mockSubmitTimeSheet.mockResolvedValueOnce({ success: false, message: 'Partial failure' });
+    mockSubmitTimeSheet.mockResolvedValueOnce({
+      success: false,
+      message: 'Partial failure'
+    });
 
     renderComponent();
 

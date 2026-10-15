@@ -8,22 +8,16 @@
     "build": "tsc -b && vite build && node postbuild.cjs",
     "build:prod": "tsc -b && vite build --mode production && node postbuild.cjs",
     "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "tsc -b",
+    "type-check": "tsc --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "preview": "vite preview",
     "test": "jest",
     "test:cov": "jest --coverage",
-    "test:coverage:watch": "jest --coverage --watchAll"
-  },
-  "lint-staged": {
-    "*!(*.test).{ts,tsx}": [
-      "tsc-files --noEmit"
-    ],
-    "*!(*.test).{js,jsx,ts,tsx}": [
-      "eslint --max-warnings=0",
-      "prettier --write"
-    ],
-    "*.{json,css,md}": [
-      "prettier --write"
-    ]
+    "test:coverage:watch": "jest --coverage --watchAll",
+    "prepare": "husky"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
