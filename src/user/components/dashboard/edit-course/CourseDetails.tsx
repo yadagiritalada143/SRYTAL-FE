@@ -34,7 +34,7 @@ import {
 } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 import { useMediaQuery } from '@mantine/hooks';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useAppTheme } from '@hooks/use-app-theme';
 import { useGetCourseById } from '@hooks/queries/useUserQueries';
 import { getCourseTaskContentUrl } from '@services/user-services';
@@ -49,7 +49,11 @@ import EditCourseModal from './EditCourseModal';
 import EditModuleModal from './EditModuleModal';
 import EditTaskModal from './EditTaskModal';
 import CourseThumbnail from '../content-writer/CourseThumbnail';
-import { readTaskPopupState, clearTaskPopupState } from './task-popup-state';
+import {
+  readTaskPopupState,
+  clearTaskPopupState,
+  AddTaskContentMode
+} from './task-popup-state';
 
 const stripHtml = (html?: string): string =>
   (html || '')
@@ -80,6 +84,8 @@ const CourseDetails = () => {
   const [taskModalModuleId, setTaskModalModuleId] = useState<string | null>(
     null
   );
+  const [taskModalInitialMode, setTaskModalInitialMode] =
+    useState<AddTaskContentMode>('LINK');
   const [courseEditOpen, setCourseEditOpen] = useState(false);
   const [moduleToEdit, setModuleToEdit] = useState<Module | null>(null);
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
@@ -90,6 +96,15 @@ const CourseDetails = () => {
   const [expandedTaskModules, setExpandedTaskModules] = useState<
     Record<string, boolean>
   >({});
+
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    const expandedModuleId = searchParams.get('expandedModuleId');
+    if (expandedModuleId) {
+      setExpandedModules(prev => ({ ...prev, [expandedModuleId]: true }));
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     const pending = readTaskPopupState();
@@ -656,14 +671,19 @@ const CourseDetails = () => {
                                 </Text>
                               </Group>
 
-                              <CommonButton
-                                variant='light'
-                                size='xs'
-                                leftSection={<IconPlus size={12} />}
-                                onClick={() => setTaskModalModuleId(module._id)}
-                              >
-                                Add Task
-                              </CommonButton>
+                              <Group gap='xs'>
+                                <CommonButton
+                                  variant='light'
+                                  size='xs'
+                                  leftSection={<IconPlus size={12} />}
+                                  onClick={() => {
+                                    setTaskModalInitialMode('LINK');
+                                    setTaskModalModuleId(module._id);
+                                  }}
+                                >
+                                  Add Task
+                                </CommonButton>
+                              </Group>
                             </Group>
 
                             {module.tasks?.length ? (
@@ -802,6 +822,7 @@ const CourseDetails = () => {
         onClose={() => setTaskModalModuleId(null)}
         moduleId={taskModalModuleId || ''}
         courseId={id}
+        initialMode={taskModalInitialMode}
       />
       <EditCourseModal
         opened={courseEditOpen}

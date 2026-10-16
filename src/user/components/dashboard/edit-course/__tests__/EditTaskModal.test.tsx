@@ -3,6 +3,13 @@ import '@testing-library/jest-dom';
 import { MantineProvider } from '@mantine/core';
 import EditTaskModal from '../EditTaskModal';
 
+const mockNavigate = jest.fn();
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  useNavigate: () => mockNavigate,
+  useParams: () => ({ organization: 'acme' })
+}));
+
 jest.mock('@hooks/mutations/useUserMutations', () => ({
   useUpdateCourseTask: () => ({
     mutateAsync: mockUpdateTask,
@@ -186,9 +193,7 @@ describe('EditTaskModal', () => {
     });
 
     it('shows the coding task hint only for coding tasks, never a Question textarea', () => {
-      renderModal(
-        makeTask({ isCoding: true, question: 'Reverse a string.' })
-      );
+      renderModal(makeTask({ isCoding: true, question: 'Reverse a string.' }));
       // The title is the question, so no Question field is editable.
       expect(screen.queryByLabelText(/Question/)).not.toBeInTheDocument();
       expect(screen.queryByText('Attached File')).not.toBeInTheDocument();

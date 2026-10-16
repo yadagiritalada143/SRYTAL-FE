@@ -165,7 +165,7 @@ describe('QuizQuestionsPage', () => {
     renderPage();
 
     expect(useGetAllQuizQuestionsMock()).toHaveBeenCalledWith('t7');
-    fireEvent.click(screen.getByRole('button', { name: 'Back' }));
+    fireEvent.click(screen.getByRole('button', { name: /Back/i }));
     expect(readQuizTaskState()).toBeNull();
     expect(mockNavigate).toHaveBeenCalledWith(
       '/acme/employee/dashboard/course/c7'
@@ -386,18 +386,18 @@ describe('QuizQuestionsPage', () => {
     saveQuizTaskState({ courseId: 'c1', moduleId: 'm1', taskId: 't1' });
 
     renderPage();
-    fireEvent.click(screen.getByRole('button', { name: 'Back' }));
+    fireEvent.click(screen.getByRole('button', { name: /Back/i }));
 
     expect(readQuizTaskState()).toBeNull();
     expect(mockNavigate).toHaveBeenCalledWith(
-      '/acme/employee/dashboard/course/c1'
+      '/acme/employee/dashboard/course/c1?expandedModuleId=m1'
     );
   });
 
   it('goes back in history when there is no quiz task state', () => {
     renderPage();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Back' }));
+    fireEvent.click(screen.getByRole('button', { name: /Back/i }));
 
     expect(mockNavigate).toHaveBeenCalledWith(-1);
   });

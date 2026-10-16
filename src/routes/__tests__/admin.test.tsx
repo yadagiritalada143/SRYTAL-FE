@@ -184,6 +184,19 @@ jest.mock('@admin/components/dashboard/settings/DepartmentTable', () => {
   return { __esModule: true, default: m };
 });
 
+jest.mock(
+  '@admin/components/dashboard/settings/ProgrammingLanguagesTable',
+  () => {
+    const m = jest.fn(() => <div>ProgrammingLanguagesTable</div>);
+    return { __esModule: true, default: m };
+  }
+);
+
+jest.mock('@admin/components/dashboard/settings/QuizSettingsTab', () => {
+  const m = jest.fn(() => <div>QuizSettingsTab</div>);
+  return { __esModule: true, default: m };
+});
+
 jest.mock('@components/common/timesheet/timesheet', () => {
   const m = jest.fn(() => <div>DateTableComponent</div>);
   return { __esModule: true, default: m };
@@ -362,5 +375,12 @@ describe('AdminRoutes', () => {
     localStorage.setItem('userRole', 'admin');
     renderRoutes('/srytal/admin/dashboard/settings/menu-access');
     expect(await screen.findByText('NavAccess')).toBeInTheDocument();
+  });
+
+  it('renders settings quizzes route', async () => {
+    localStorage.setItem('token', 'token-123');
+    localStorage.setItem('userRole', 'admin');
+    renderRoutes('/srytal/admin/dashboard/settings/quizzes');
+    expect(await screen.findByText('QuizSettingsTab')).toBeInTheDocument();
   });
 });

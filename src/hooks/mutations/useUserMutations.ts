@@ -174,6 +174,7 @@ export const useAddCourseTask = (courseId?: string) => {
           queryKey: userQueryKeys.course(courseId)
         });
       }
+      queryClient.invalidateQueries({ queryKey: userQueryKeys.courses });
     }
   });
 };

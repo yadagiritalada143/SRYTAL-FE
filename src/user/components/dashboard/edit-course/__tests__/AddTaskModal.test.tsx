@@ -7,7 +7,6 @@ import {
   saveTaskDraft,
   readTaskDraft,
   clearTaskDraft,
-  readQuizTaskState,
   readTaskPopupState
 } from '../task-popup-state';
 
@@ -128,10 +127,7 @@ const renderModal = (opened = true, moduleId = 'm1', courseId = 'c1') => {
 };
 
 const typeTitle = (value: string) => {
-  fireEvent.change(
-    screen.getByPlaceholderText('e.g. Introduction video, Reading material'),
-    { target: { value } }
-  );
+  fireEvent.change(screen.getByLabelText(/Title/), { target: { value } });
 };
 
 const typeLink = (value: string) => {
@@ -139,7 +135,9 @@ const typeLink = (value: string) => {
 };
 
 const typeDescription = (value: string) => {
-  fireEvent.change(screen.getByLabelText('Description'), { target: { value } });
+  fireEvent.change(screen.getByLabelText(/Description/), {
+    target: { value }
+  });
 };
 
 const clickFileMode = () => {
@@ -271,9 +269,7 @@ describe('AddTaskModal', () => {
       ).not.toBeInTheDocument();
 
       fireEvent.click(screen.getByLabelText(/Require acknowledgement/));
-      expect(
-        screen.getByLabelText(/Acknowledgement text/)
-      ).toBeInTheDocument();
+      expect(screen.getByLabelText(/Acknowledgement text/)).toBeInTheDocument();
     });
   });
 
@@ -820,7 +816,7 @@ describe('AddTaskModal', () => {
   });
 
   describe('Quiz tasks', () => {
-    it('shows the Add Quiz Questions button in Quiz mode and hides Add Task', () => {
+    it('shows the Add Quiz Questions button in Quiz mode and preserves Add Task in footer', () => {
       renderModal();
       expect(
         screen.queryByRole('button', { name: 'Add Quiz Questions' })
@@ -831,40 +827,18 @@ describe('AddTaskModal', () => {
       expect(
         screen.getByRole('button', { name: 'Add Quiz Questions' })
       ).toBeInTheDocument();
-      // The quiz task is created from the quiz section, not the footer button.
       expect(
-        screen.queryByRole('button', { name: 'Add Task' })
-      ).not.toBeInTheDocument();
+        screen.getByRole('button', { name: 'Add Task' })
+      ).toBeInTheDocument();
       expect(
-        screen.getByText(
-          'The quiz is saved first, then you add its questions on the next screen.'
-        )
+        screen.getByText(/Learners will be prompted to take this quiz/i)
       ).toBeInTheDocument();
     });
 
-    it('keeps the quiz button disabled until the title and description are provided', () => {
-      renderModal();
-      clickQuizMode();
-
-      expect(
-        screen.getByRole('button', { name: 'Add Quiz Questions' })
-      ).toBeDisabled();
-
-      typeTitle('Colour quiz');
-      expect(
-        screen.getByRole('button', { name: 'Add Quiz Questions' })
-      ).toBeDisabled();
-
-      typeDescription('Pick a colour.');
-      expect(
-        screen.getByRole('button', { name: 'Add Quiz Questions' })
-      ).not.toBeDisabled();
-    });
-
-    it('creates the quiz task and opens the questions page', async () => {
+    it('creates the quiz task via Add Task footer button and closes modal', async () => {
       mockAddTask.mockResolvedValueOnce({
-        data: { _id: 'task-99' },
-        message: 'Quiz created successfully!'
+        data: { _id: 'task-quiz-1' },
+        message: 'Quiz task added successfully!'
       });
 
       renderModal();
@@ -873,9 +847,7 @@ describe('AddTaskModal', () => {
       clickQuizMode();
       typeDescription('Pick a colour.');
 
-      fireEvent.click(
-        screen.getByRole('button', { name: 'Add Quiz Questions' })
-      );
+      fireEvent.click(screen.getByRole('button', { name: 'Add Task' }));
 
       await waitFor(() => {
         expect(mockAddTask).toHaveBeenCalledWith({
@@ -887,40 +859,13 @@ describe('AddTaskModal', () => {
         });
       });
 
-      expect(readQuizTaskState()).toEqual({
-        courseId: 'c1',
-        moduleId: 'm1',
-        taskId: 'task-99'
-      });
-      expect(readTaskPopupState()).toEqual({
-        courseId: 'c1',
-        moduleId: 'm1'
-      });
-      // The entered values are kept so the reopened Add Task popup is restored.
-      expect(readTaskDraft()).toEqual({
-        courseId: 'c1',
-        moduleId: 'm1',
-        taskName: 'Colour quiz',
-        taskDescription: 'Pick a colour.',
-        mode: 'QUIZ',
-        link: '',
-        file: null,
-        thumbnail: null
-      });
       expect(mockShowSuccessToast).toHaveBeenCalledWith(
-        'Quiz created successfully!'
+        'Quiz task added successfully!'
       );
-      expect(mockNavigate).toHaveBeenCalledWith(
-        '/acme/employee/dashboard/content-writer/quiz-questions'
-      );
+      expect(mockOnClose).toHaveBeenCalled();
     });
 
-    it('shows an error toast and stays put when creating the quiz fails', async () => {
-      mockAddTask.mockRejectedValueOnce({
-        isAxiosError: true,
-        response: { data: { message: 'Task name is already used.' } }
-      });
-
+    it('saves draft and popup state and navigates to quizzes page when Add Quiz Questions is clicked without adding task yet', () => {
       renderModal();
 
       typeTitle('Colour quiz');
@@ -931,13 +876,28 @@ describe('AddTaskModal', () => {
         screen.getByRole('button', { name: 'Add Quiz Questions' })
       );
 
-      await waitFor(() => {
-        expect(mockShowErrorToast).toHaveBeenCalledWith(
-          'Task name is already used.'
-        );
+      // Verify task was NOT added to the database yet
+      expect(mockAddTask).not.toHaveBeenCalled();
+
+      // Verify draft and popup state are parked for restoring on return
+      expect(readTaskPopupState()).toEqual({
+        courseId: 'c1',
+        moduleId: 'm1'
       });
-      expect(mockNavigate).not.toHaveBeenCalled();
-      expect(readQuizTaskState()).toBeNull();
+      expect(readTaskDraft()).toEqual({
+        courseId: 'c1',
+        moduleId: 'm1',
+        taskName: 'Colour quiz',
+        taskDescription: 'Pick a colour.',
+        mode: 'QUIZ',
+        link: '',
+        file: null,
+        thumbnail: null
+      });
+
+      expect(mockNavigate).toHaveBeenCalledWith(
+        '/acme/employee/dashboard/content-writer/quizzes'
+      );
     });
   });
 });

@@ -100,8 +100,13 @@ const fillOption = (index: number, value: string) =>
     target: { value }
   });
 
-const cardFor = (questionText: string) =>
-  screen.getByText(questionText).closest('.mantine-Card-root') as HTMLElement;
+const cardFor = (questionText: string) => {
+  const elements = screen.getAllByText(questionText);
+  const nonTextarea = elements.find(el => el.tagName !== 'TEXTAREA');
+  return (nonTextarea || elements[0]).closest(
+    '.mantine-Card-root'
+  ) as HTMLElement;
+};
 
 describe('validateQuizQuestion', () => {
   it('requires the question text', () => {

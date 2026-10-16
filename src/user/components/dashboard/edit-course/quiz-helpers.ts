@@ -1,3 +1,8 @@
+export {
+  isMultiAnswerType,
+  isTextAnswerType,
+  QUIZ_MIN_OPTIONS
+} from '@interfaces/quiz';
 import {
   QuizOption,
   QuizQuestion,
@@ -30,6 +35,39 @@ export const createQuizQuestion = (): QuizQuestion => ({
     createQuizOption(),
     createQuizOption()
   ]
+});
+
+export const TOGGLE_PRESETS = [
+  { label: 'True / False', opt1: 'True', opt2: 'False' },
+  { label: 'Yes / No', opt1: 'Yes', opt2: 'No' },
+  { label: 'Agree / Disagree', opt1: 'Agree', opt2: 'Disagree' },
+  { label: 'Pass / Fail', opt1: 'Pass', opt2: 'Fail' }
+];
+
+export const checkDuplicateQuestion = (
+  questionText: string,
+  questions: QuizQuestion[],
+  excludeId?: string | null
+): boolean => {
+  const trimmed = questionText.trim().toLowerCase();
+  if (!trimmed) return false;
+  return questions.some(
+    q => q.id !== excludeId && q.question.trim().toLowerCase() === trimmed
+  );
+};
+
+export const duplicateQuizQuestion = (
+  question: QuizQuestion
+): QuizQuestion => ({
+  id: createId('question'),
+  question: `${question.question.trim()} (Copy)`,
+  type: question.type,
+  status: question.status,
+  options: question.options.map(option => ({
+    id: createId('option'),
+    text: option.text,
+    isCorrect: option.isCorrect
+  }))
 });
 
 export const adjustOptionsForType = (
@@ -142,7 +180,7 @@ export const fromQuizQuestionApi = (
   status: model.status ?? 'SHOW',
   options: (model.options ?? []).map((option, index) => ({
     id: `${model._id}-option-${index}`,
-    text: option.value,
+    text: option.value ?? (option as any).text ?? '',
     isCorrect: Boolean(option.isanswer)
   }))
 });

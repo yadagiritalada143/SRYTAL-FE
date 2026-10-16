@@ -87,3 +87,30 @@ export const quizAnswerTypeLabel = (type: QuizAnswerType): string =>
 
 export const quizQuestionStatusLabel = (status: QuizQuestionStatus): string =>
   QUIZ_QUESTION_STATUSES.find(entry => entry.value === status)?.label ?? status;
+
+export interface CourseQuizItem {
+  courseId: string;
+  courseName: string;
+  courseStatus: string;
+  moduleId: string;
+  moduleName: string;
+  taskId: string;
+  taskName: string;
+  taskDescription: string;
+  status: string;
+  updatedAt?: string;
+}
+
+export interface ModuleGroup {
+  moduleId: string;
+  moduleName: string;
+  quizzes: CourseQuizItem[];
+}
+
+export interface CourseGroup {
+  courseId: string;
+  courseName: string;
+  courseStatus: string;
+  modules: ModuleGroup[];
+  totalQuizzes: number;
+}

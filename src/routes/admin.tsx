@@ -86,6 +86,9 @@ const DepartmentTable = lazy(
 const ProgrammingLanguagesTable = lazy(
   () => import('@admin/components/dashboard/settings/ProgrammingLanguagesTable')
 );
+const QuizSettingsTab = lazy(
+  () => import('@admin/components/dashboard/settings/QuizSettingsTab')
+);
 const DateTableComponent = lazy(
   () => import('@components/common/timesheet/timesheet')
 );
@@ -614,6 +617,10 @@ const AdminRoutes = () => {
                 element={<ProgrammingLanguagesTable showBackButton />}
               />
               <Route
+                path='content-writer/quizzes'
+                element={<QuizSettingsTab showBackButton />}
+              />
+              <Route
                 path='content-writer/quiz-questions'
                 element={<QuizQuestionsPage />}
               />
@@ -629,6 +636,7 @@ const AdminRoutes = () => {
                   path='programming-languages'
                   element={<ProgrammingLanguagesTable />}
                 />
+                <Route path='quizzes' element={<QuizSettingsTab />} />
                 <Route path='feedback' element={<FeedbackTable />} />
                 <Route path='menu-access' element={<NavAccess />} />
               </Route>

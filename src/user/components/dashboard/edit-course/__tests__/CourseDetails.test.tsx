@@ -102,6 +102,7 @@ jest.mock('../AddTaskModal', () => (props: any) => (
     data-testid='add-task-modal'
     data-opened={String(!!props.opened)}
     data-module-id={props.moduleId}
+    data-initial-mode={props.initialMode}
   >
     {props.opened && <button onClick={props.onClose}>add-task-close</button>}
   </div>
@@ -426,6 +427,12 @@ describe('CourseDetails', () => {
         'data-module-id',
         'm1'
       );
+    });
+
+    it('provides a clean module header with Add Task and without redundant Add Quiz button', () => {
+      renderPage();
+      expect(screen.queryByText('Add Quiz')).not.toBeInTheDocument();
+      expect(screen.getAllByText('Add Task').length).toBeGreaterThan(0);
     });
 
     it('reopens the Add Task modal for the stored module after managing languages', () => {

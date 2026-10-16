@@ -776,7 +776,7 @@ const WriterDashboard = () => {
         centered
         size='sm'
       >
-        <Stack gap='md'>
+        <Stack gap='md' mt='md'>
           <Text size='sm'>
             Are you sure you want to delete this course? This action cannot be
             undone.

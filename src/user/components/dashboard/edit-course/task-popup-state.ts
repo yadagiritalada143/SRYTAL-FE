@@ -29,6 +29,7 @@ export interface QuizTaskState {
   courseId: string;
   moduleId: string;
   taskId: string;
+  taskName?: string;
 }
 
 export const saveQuizTaskState = (state: QuizTaskState): void => {

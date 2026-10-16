@@ -14,8 +14,11 @@ jest.mock('react-router-dom', () => ({
 
 jest.mock('../task-content', () => ({
   resolveTaskContent: () => mockResolved,
-  isCodingTask: (task: any) => mockIsCodingTask(task)
+  isCodingTask: (task: any) => mockIsCodingTask(task),
+  isQuizTask: (task: any) => String(task?.type || '').toUpperCase() === 'QUIZ'
 }));
+
+jest.mock('../QuizPlayer', () => () => <div>QuizPlayer</div>);
 
 jest.mock('@services/user-services', () => ({
   getCourseTaskContentUrl: (taskId: string) =>
@@ -262,5 +265,10 @@ describe('TaskContentViewer', () => {
 
     expect(screen.queryByText('Open coding problem')).not.toBeInTheDocument();
     expect(screen.getByText('External resource')).toBeInTheDocument();
+  });
+
+  it('renders QuizPlayer for quiz tasks', () => {
+    renderViewer(makeTask({ type: 'QUIZ' }));
+    expect(screen.getByText('QuizPlayer')).toBeInTheDocument();
   });
 });
