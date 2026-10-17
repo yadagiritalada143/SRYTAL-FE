@@ -422,6 +422,33 @@ describe('CoursePlayer', () => {
     });
   });
 
+  it('hides the curriculum panel when the active task is a quiz', async () => {
+    mockCourse = makeCourse({
+      modules: [
+        {
+          _id: 'm1',
+          moduleName: 'Quiz module',
+          moduleDescription: '',
+          totalTasks: 1,
+          completedTasks: 0,
+          tasks: [
+            makeTask({ _id: 'q1', taskName: 'Python quiz', type: 'QUIZ' })
+          ]
+        }
+      ]
+    });
+
+    renderPlayer();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('task-viewer')).toHaveTextContent(
+        'Python quiz'
+      );
+    });
+    expect(screen.queryByTestId('curriculum')).not.toBeInTheDocument();
+    expect(screen.queryByText('Course content')).not.toBeInTheDocument();
+  });
+
   it('shows an empty state message when the course has no tasks', async () => {
     mockCourse = makeCourse({
       modules: [

@@ -32,7 +32,12 @@ import {
   QuizQuestionApiModel,
   QuizQuestionApiPayload,
   QuizQuestionApiUpdatePayload,
-  QuizQuestionStatus
+  QuizQuestionStatus,
+  QuizAttempt,
+  QuizValidatePayload,
+  QuizValidationResult,
+  QuizSubmitPayload,
+  QuizSubmitResult
 } from '@interfaces/quiz';
 
 export const getCompanyDetails = async () => {
@@ -404,6 +409,25 @@ export const updateQuizQuestionStatus = async (
 export const deleteQuizQuestion = async (questionId: string) => {
   const response = await apiClient.delete(`/deleteQuizQuestion/${questionId}`);
   return response.data;
+};
+
+export const getQuizById = async (taskId: string): Promise<QuizAttempt> => {
+  const response = await apiClient.get(`/getQuizById/${taskId}`);
+  return response.data.data;
+};
+
+export const validateQuiz = async (
+  data: QuizValidatePayload
+): Promise<QuizValidationResult> => {
+  const response = await apiClient.post('/validateQuiz', data);
+  return response.data.data;
+};
+
+export const submitQuiz = async (
+  data: QuizSubmitPayload
+): Promise<QuizSubmitResult> => {
+  const response = await apiClient.post('/submitQuiz', data);
+  return response.data.data;
 };
 
 // ── My Courses (assigned to the logged-in employee) ──────────────────────────

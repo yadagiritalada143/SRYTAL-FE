@@ -36,6 +36,7 @@ import TaskContentViewer from './TaskContentViewer';
 import TaskAcknowledgement from './TaskAcknowledgement';
 import {
   hasTaskAcknowledgement,
+  isQuizTask,
   requiresTaskAcknowledgement
 } from './task-content';
 import { formatDueDate, statusColor } from './course-status';
@@ -111,6 +112,7 @@ const CoursePlayer = () => {
   const showsAcknowledgement = active
     ? hasTaskAcknowledgement(active.task)
     : false;
+  const showCurriculum = !(active && isQuizTask(active.task));
 
   const selectTask = (task: AssignedTask, moduleId: string) => {
     if (needsAcknowledgement && task._id !== activeTaskId) {
@@ -212,7 +214,7 @@ const CoursePlayer = () => {
                 </Stack>
 
                 <Group gap='xs' align='center' wrap='nowrap'>
-                  {isMobile && (
+                  {isMobile && showCurriculum && (
                     <ActionIcon
                       variant='light'
                       size='lg'
@@ -376,37 +378,38 @@ const CoursePlayer = () => {
                           </Tooltip>
                         </Group>
 
-                        {active.task.isCompleted ? (
-                          <CommonButton
-                            variant='light'
-                            color='gray'
-                            loading={isPending}
-                            leftSection={<IconRotateClockwise size={16} />}
-                            onClick={() => setCompletion(false)}
-                          >
-                            Mark as incomplete
-                          </CommonButton>
-                        ) : (
-                          <Tooltip
-                            label='Acknowledge this document to continue'
-                            withArrow
-                            disabled={!needsAcknowledgement}
-                          >
+                        {!isQuizTask(active.task) &&
+                          (active.task.isCompleted ? (
                             <CommonButton
+                              variant='light'
+                              color='gray'
                               loading={isPending}
-                              disabled={needsAcknowledgement}
-                              leftSection={<IconChecks size={16} />}
-                              onClick={() =>
-                                setCompletion(
-                                  true,
-                                  activeIndex < flatTasks.length - 1
-                                )
-                              }
+                              leftSection={<IconRotateClockwise size={16} />}
+                              onClick={() => setCompletion(false)}
                             >
-                              Complete and continue
+                              Mark as incomplete
                             </CommonButton>
-                          </Tooltip>
-                        )}
+                          ) : (
+                            <Tooltip
+                              label='Acknowledge this document to continue'
+                              withArrow
+                              disabled={!needsAcknowledgement}
+                            >
+                              <CommonButton
+                                loading={isPending}
+                                disabled={needsAcknowledgement}
+                                leftSection={<IconChecks size={16} />}
+                                onClick={() =>
+                                  setCompletion(
+                                    true,
+                                    activeIndex < flatTasks.length - 1
+                                  )
+                                }
+                              >
+                                Complete and continue
+                              </CommonButton>
+                            </Tooltip>
+                          ))}
                       </Group>
                     </Stack>
                   </Card>
@@ -414,7 +417,7 @@ const CoursePlayer = () => {
               )}
             </Stack>
 
-            {!isMobile && (
+            {!isMobile && showCurriculum && (
               <Box
                 style={{
                   width: 360,
@@ -435,7 +438,7 @@ const CoursePlayer = () => {
         </Stack>
 
         <Drawer
-          opened={isMobile && curriculumOpen}
+          opened={isMobile && showCurriculum && curriculumOpen}
           onClose={() => setCurriculumOpen(false)}
           position='right'
           title='Course content'

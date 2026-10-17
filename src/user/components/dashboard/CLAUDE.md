@@ -145,14 +145,16 @@ CourseAssignment (course <-> employee)  ──<  TaskProgress (one row per compl
 | `course-portal/CoursePlayer.tsx` | The course experience: content pane + curriculum, progress header, prev/next, complete toggle. Route `/dashboard/course-assignments/:courseAssignmentId`. |
 | `course-portal/CurriculumSidebar.tsx` | Modules accordion with per-module progress and per-task completion ticks. A drawer under 768px. |
 | `course-portal/TaskContentViewer.tsx` | Renders one task's content — every authored type (see below). |
+| `course-portal/QuizTaskViewer.tsx` | The learner-facing QUIZ experience: questions + **Validate** → review with **Re-attempt** / **Submit**. Talks only to the employee quiz endpoints (no answer key until validation). |
+| `course-portal/quiz-attempt.ts` | Pure helpers: build the `validateQuiz` answers payload and recover the failed-submit result from the 400 response. Unit-tested in `quiz-attempt.test.ts`. |
 | `course-portal/task-content.ts` | Pure resolver: task -> how to render it. Unit-tested in `task-content.test.ts`. |
 | `course-portal/course-status.ts` | Shared status colour/label/due-date helpers used by both the list and the player. |
 
 Data layer:
-- Services: `src/services/user-services.ts` (`getMyAssignedCourses`, `getMyAssignedCourseById`, `updateMyTaskProgress`).
-- Query hooks: `useGetMyAssignedCourses`, `useGetMyAssignedCourse` (`hooks/queries/useUserQueries.ts`).
-- Mutation hook: `useUpdateMyTaskProgress` (`hooks/mutations/useUserMutations.ts`) — invalidates both `myCourse(id)` and `myCourses`.
-- Types: `src/interfaces/course-assignment.ts` (`AssignedCourse`, `AssignedCourseDetail`, `AssignedModule`, `AssignedTask`, `CourseProgress`, `CourseAssignmentStatus`). Deliberately **separate** from `contentwriter.ts` — those are the authoring shapes and carry S3 keys the employee never receives.
+- Services: `src/services/user-services.ts` (`getMyAssignedCourses`, `getMyAssignedCourseById`, `updateMyTaskProgress`, `getQuizById`, `validateQuiz`, `submitQuiz`).
+- Query hooks: `useGetMyAssignedCourses`, `useGetMyAssignedCourse`, `useGetQuiz` (`hooks/queries/useUserQueries.ts`).
+- Mutation hook: `useUpdateMyTaskProgress` (`hooks/mutations/useUserMutations.ts`) — invalidates both `myCourse(id)` and `myCourses`; plus `useValidateQuiz` / `useSubmitQuiz`.
+- Types: `src/interfaces/course-assignment.ts` (`AssignedCourse`, `AssignedCourseDetail`, `AssignedModule`, `AssignedTask`, `CourseProgress`, `CourseAssignmentStatus`) and — for quizzes — `src/interfaces/quiz.ts` (`QuizAttempt`, `QuizAttemptQuestion`, `QuizValidationResult`, `QuizSubmitResult`, …). Deliberately **separate** from `contentwriter.ts` — those are the authoring shapes and carry S3 keys the employee never receives.
 
 ## Backend contract (SRYTAL-BE, mounted at `/`)
 
@@ -161,6 +163,9 @@ Data layer:
 | `GET /getMyAssignedCourses` | `{ success, courses }`. Summary only (no module/task tree) — status, progress, `totalModules`, `isOverdue`, signed `thumbnailUrl`. |
 | `GET /getMyAssignedCourseById/:courseAssignmentId` | `{ success, course }` with the full `modules[] -> tasks[]` tree and per-task `isCompleted`. **404** if the assignment isn't the caller's. |
 | `PUT /updateMyTaskProgress` | JSON `{ courseAssignmentId, taskId, isCompleted }`. Upserts the progress row and returns the recomputed `{ courseStatus, progress }`. |
+| `GET /getQuizById/:taskId` | `{ success, data: { taskId, attemptId, taskName, totalQuestions, questions } }`. Employee-safe: questions/options are shuffled and carry **no** answer key (`optionId` + `value` only). **Every call mints a new `attemptId`** (pushed onto the progress row), so it must only run when a fresh attempt is actually wanted. |
+| `POST /validateQuiz` | JSON `{ taskId, attemptId, answers: [{ questionId, selectedOptionIds?, textAnswer? }] }` → `{ success, data }` with the score and a per-question `review` (reveals `correctOptionIds`). Must run before `submitQuiz`; revalidating the same attempt is allowed. |
+| `POST /submitQuiz` | JSON `{ taskId, attemptId }` → `{ success, data }`. A passing (or unscored) score finalizes the attempt and completes the task server-side. A **failing** score answers **400** with the result on `error.response.data.data` (`reattemptRequired: true`); the attempt is not finalized. A finalized attempt re-submits idempotently (`alreadySubmitted: true`); re-validating it answers **409**. |
 
 Task content still goes through the content-writer proxy:
 `GET /getCourseTaskContent/:id` (see `getCourseTaskContentUrl`).
@@ -201,3 +206,32 @@ place that talks to the progress API): the explicit **Complete and continue**
 button, and `onFinished` — fired when a video/audio ends or an external resource
 is opened. `onFinished` never *un*-completes and never re-fires on a task that
 is already complete.
+
+## Taking a QUIZ task
+
+`QUIZ` tasks render `QuizTaskViewer` instead of a media surface. The flow mirrors
+the backend's two-step contract:
+
+1. On mount it calls `useGetQuiz(task._id, !task.isCompleted)`, which fetches
+   `getQuizById` **once** and mints an `attemptId`. Because every fetch mints a
+   new attempt, that query is deliberately inert (`staleTime: Infinity`,
+   `refetchOnWindowFocus/Reconnect: false`, `retry: false`) and is only re-run by
+   an explicit `refetch()`.
+2. **Validate** sends the answers (`buildQuizAnswers`) to `validateQuiz` and
+   switches to a review state: each question shows a Correct/Incorrect badge and
+   each option is tagged `Correct` / `Your answer` (on the right; untouched
+   options are left untagged). A **validated** score summary is shown but the
+   passing threshold is intentionally hidden from the learner.
+3. **Submit** finalizes via `submitQuiz`. On a pass the viewer calls `onPassed`,
+   which flows into the player's normal `updateMyTaskProgress` completion path;
+   on a fail (400 with `reattemptRequired`) it shows the score and offers only
+   **Re-attempt**. **Re-attempt** clears local state and `refetch()`es to mint a
+   fresh attempt. After a *successful* submit both Re-attempt and Submit are
+   hidden.
+4. A quiz that is already `isCompleted` is not fetched at all — it shows a
+   "Quiz completed" card.
+
+The player hides its **Complete and continue** / **Mark as incomplete** toggle
+for `QUIZ` tasks: a quiz is completed by passing it, never by ticking it off. It
+also hides the **Course content** panel (and its mobile drawer trigger) while a
+quiz is the active task, so the quiz uses the full width.
