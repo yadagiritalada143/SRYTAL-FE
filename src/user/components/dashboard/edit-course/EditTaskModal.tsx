@@ -29,6 +29,7 @@ import { CommonButton } from '@components/common/button/CommonButton';
 import { useUpdateCourseTask } from '@hooks/mutations/useUserMutations';
 import { useCustomToast } from '@utils/common/toast';
 import { getErrorMessage } from '@utils/common/get-error-message';
+import { commonUrls } from '@utils/common/constants';
 import { useAppTheme } from '@hooks/use-app-theme';
 import { Task, CourseStatus, COURSE_STATUSES } from '@interfaces/contentwriter';
 import CourseThumbnail from '../content-writer/CourseThumbnail';
@@ -156,9 +157,8 @@ const EditTaskModal = ({
     clearTaskPopupState();
     clearTaskDraft();
     onClose();
-    const prefix = organization ? `/${organization}/employee` : '';
     navigate(
-      `${prefix}/dashboard/content-writer/quiz-questions?${params.toString()}`
+      `${commonUrls(organization)}/dashboard/content-writer/quiz-questions?${params.toString()}`
     );
   };
 

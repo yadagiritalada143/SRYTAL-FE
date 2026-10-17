@@ -33,6 +33,10 @@ jest.mock('@utils/common/get-error-message', () => ({
     error?.response?.data?.message || error?.message || fallback
 }));
 
+jest.mock('@utils/common/constants', () => ({
+  commonUrls: (org: string) => `/${org}/admin`
+}));
+
 jest.mock('@hooks/use-app-theme', () => ({
   useAppTheme: () => ({
     themeConfig: {
@@ -478,6 +482,28 @@ describe('EditTaskModal', () => {
       renderModal(makeTask());
       fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
       expect(mockOnClose).toHaveBeenCalled();
+    });
+  });
+
+  describe('Manage Quiz Questions', () => {
+    it('navigates using the role-aware prefix from commonUrls, never a hardcoded employee path', () => {
+      renderModal(
+        makeTask({ type: 'QUIZ', moduleId: 'm1', taskName: 'Safety quiz' })
+      );
+
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Manage Quiz Questions' })
+      );
+
+      // commonUrls is mocked to return the admin prefix here; the real bug was
+      // a hardcoded `/${organization}/employee` that bounced admins to the
+      // employee login page (ContentWriter-only guard).
+      expect(mockNavigate).toHaveBeenCalledTimes(1);
+      const target = mockNavigate.mock.calls[0][0] as string;
+      expect(target).toMatch(/^\/acme\/admin\/dashboard\/content-writer\/quiz-questions\?/);
+      expect(target).toContain('taskId=t1');
+      expect(target).toContain('courseId=c1');
+      expect(target).toContain('moduleId=m1');
     });
   });
 });
