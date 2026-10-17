@@ -140,10 +140,7 @@ const queryResult = (overrides: any = {}) => ({
   ...overrides
 });
 
-const renderViewer = (
-  task: AssignedTask = makeTask(),
-  onPassed?: () => void
-) =>
+const renderViewer = (task: AssignedTask = makeTask(), onPassed?: () => void) =>
   render(
     <MantineProvider>
       <QuizTaskViewer task={task} onPassed={onPassed} />
@@ -174,7 +171,9 @@ describe('QuizTaskViewer', () => {
     expect(screen.getByText('1. Pick one')).toBeInTheDocument();
     expect(screen.getByText('2. Explain')).toBeInTheDocument();
     expect(screen.getByLabelText('Red')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Validate' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Validate' })
+    ).toBeInTheDocument();
     expect(
       screen.queryByRole('button', { name: 'Submit' })
     ).not.toBeInTheDocument();
@@ -220,6 +219,7 @@ describe('QuizTaskViewer', () => {
     const onPassed = jest.fn();
     renderViewer(makeTask(), onPassed);
 
+    fireEvent.click(screen.getByLabelText('Red'));
     fireEvent.click(screen.getByRole('button', { name: 'Validate' }));
     await screen.findByRole('button', { name: 'Submit' });
 
@@ -261,6 +261,7 @@ describe('QuizTaskViewer', () => {
 
     renderViewer(makeTask(), onPassed);
 
+    fireEvent.click(screen.getByLabelText('Red'));
     fireEvent.click(screen.getByRole('button', { name: 'Validate' }));
     await screen.findByRole('button', { name: 'Submit' });
     fireEvent.click(screen.getByRole('button', { name: 'Submit' }));
@@ -281,6 +282,7 @@ describe('QuizTaskViewer', () => {
   it('starts a fresh attempt and clears the review on re-attempt', async () => {
     renderViewer();
 
+    fireEvent.click(screen.getByLabelText('Red'));
     fireEvent.click(screen.getByRole('button', { name: 'Validate' }));
     await screen.findByRole('button', { name: 'Re-attempt' });
 
@@ -289,9 +291,32 @@ describe('QuizTaskViewer', () => {
     await waitFor(() => expect(mockRefetch).toHaveBeenCalledTimes(1));
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Validate' })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'Validate' })
+      ).toBeInTheDocument();
     });
     expect(screen.queryByRole('button', { name: 'Submit' })).toBeNull();
+  });
+
+  it('shows validation error and prevents submission when clicking Validate without answering', async () => {
+    renderViewer();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Validate' }));
+
+    expect(mockValidateQuiz).not.toHaveBeenCalled();
+    expect(mockShowErrorToast).toHaveBeenCalledWith(
+      'Please select an answer before validating your quiz.'
+    );
+    expect(
+      screen.getByText('Please answer the quiz questions before validating.')
+    ).toBeInTheDocument();
+    expect(screen.getAllByText('Answer required').length).toBeGreaterThan(0);
+
+    // Real-time clearance upon answering
+    fireEvent.click(screen.getByLabelText('Red'));
+    expect(
+      screen.queryByText('Please answer the quiz questions before validating.')
+    ).not.toBeInTheDocument();
   });
 
   it('shows a completed state without fetching a completed quiz', () => {

@@ -6,6 +6,7 @@ import {
   Card,
   Checkbox,
   Group,
+  Progress,
   Radio,
   Select,
   Stack,
@@ -44,6 +45,7 @@ import {
   SelectedOptions,
   TextAnswers
 } from './quiz-attempt';
+import styles from './QuizTaskViewer.module.css';
 
 interface QuizTaskViewerProps {
   task: AssignedTask;
@@ -52,6 +54,8 @@ interface QuizTaskViewerProps {
 
 const scoreText = (value: number | null | undefined) =>
   typeof value === 'number' ? `${value}%` : '—';
+
+const optionLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 
 const QuizTaskViewer = ({ task, onPassed }: QuizTaskViewerProps) => {
   const { themeConfig } = useAppTheme();
@@ -66,6 +70,11 @@ const QuizTaskViewer = ({ task, onPassed }: QuizTaskViewerProps) => {
     null
   );
   const [errorText, setErrorText] = useState<string | null>(null);
+  const [validationErrorText, setValidationErrorText] = useState<string | null>(
+    null
+  );
+  const [attemptedValidateWithoutAnswers, setAttemptedValidateWithoutAnswers] =
+    useState(false);
 
   const quizQuery = useGetQuiz(task._id, !task.isCompleted);
   const { mutateAsync: validateMutation, isPending: isValidating } =
@@ -84,12 +93,41 @@ const QuizTaskViewer = ({ task, onPassed }: QuizTaskViewerProps) => {
   const busy = isValidating || isSubmitting || quizQuery.isFetching;
   const failedSubmit = submitResult?.passed === false;
 
+  const isQuestionAnswered = (q: QuizAttemptQuestion) => {
+    const type = String(q.type || '').toUpperCase();
+    if (type === 'TEXTAREA') {
+      return Boolean(textAnswers[q.questionId]?.trim());
+    }
+    return Boolean(selectedOptions[q.questionId]?.length);
+  };
+
+  const answeredCount = useMemo(() => {
+    return questions.filter(q => {
+      const type = String(q.type || '').toUpperCase();
+      if (type === 'TEXTAREA') {
+        return Boolean(textAnswers[q.questionId]?.trim());
+      }
+      return Boolean(selectedOptions[q.questionId]?.length);
+    }).length;
+  }, [questions, selectedOptions, textAnswers]);
+
+  const progressPercent =
+    questions.length > 0
+      ? Math.round((answeredCount / questions.length) * 100)
+      : 0;
+
   const setOptionAnswer = (questionId: string, optionIds: string[]) => {
     setSelectedOptions(current => ({ ...current, [questionId]: optionIds }));
+    if (validationErrorText) setValidationErrorText(null);
+    if (attemptedValidateWithoutAnswers)
+      setAttemptedValidateWithoutAnswers(false);
   };
 
   const setTextAnswer = (questionId: string, value: string) => {
     setTextAnswers(current => ({ ...current, [questionId]: value }));
+    if (validationErrorText) setValidationErrorText(null);
+    if (attemptedValidateWithoutAnswers)
+      setAttemptedValidateWithoutAnswers(false);
   };
 
   const clearAttemptState = () => {
@@ -98,11 +136,33 @@ const QuizTaskViewer = ({ task, onPassed }: QuizTaskViewerProps) => {
     setValidation(null);
     setSubmitResult(null);
     setErrorText(null);
+    setValidationErrorText(null);
+    setAttemptedValidateWithoutAnswers(false);
   };
 
   const handleValidate = async () => {
     if (!quiz?.attemptId) return;
     setErrorText(null);
+
+    const hasAnyAnswer =
+      Object.values(selectedOptions).some(
+        opts => Array.isArray(opts) && opts.length > 0
+      ) ||
+      Object.values(textAnswers).some(
+        txt => typeof txt === 'string' && txt.trim().length > 0
+      );
+
+    if (!hasAnyAnswer) {
+      const msg = 'Please answer the quiz questions before validating.';
+      setValidationErrorText(msg);
+      setAttemptedValidateWithoutAnswers(true);
+      showErrorToast('Please select an answer before validating your quiz.');
+      return;
+    }
+
+    setValidationErrorText(null);
+    setAttemptedValidateWithoutAnswers(false);
+
     try {
       const result = await validateMutation({
         taskId: task._id,
@@ -147,7 +207,7 @@ const QuizTaskViewer = ({ task, onPassed }: QuizTaskViewerProps) => {
       showSuccessToast(
         result.alreadySubmitted
           ? 'This quiz attempt was already submitted.'
-          : 'Quiz submitted successfully'
+          : 'Quiz submitted successfully.'
       );
       if (result.passed !== false) onPassed?.();
     } catch (error) {
@@ -228,34 +288,95 @@ const QuizTaskViewer = ({ task, onPassed }: QuizTaskViewerProps) => {
   const reviewing = Boolean(validation);
 
   return (
-    <Card withBorder radius='lg' p={{ base: 'md', sm: 'lg' }}>
+    <Card
+      withBorder
+      radius='lg'
+      p={{ base: 'md', sm: 'lg' }}
+      className={styles.quizContainer}
+    >
       <Stack gap='lg'>
-        <Group gap='xs' align='center'>
-          <ThemeIcon size={32} radius='md' variant='light' color='indigo'>
-            <IconListCheck size={18} />
-          </ThemeIcon>
-          <Stack gap={0}>
-            <Text fw={700}>{task.taskName || 'Quiz'}</Text>
-            <Text size='xs' c={themeConfig.mutedTextColor}>
-              {questions.length} question{questions.length === 1 ? '' : 's'}
-            </Text>
-          </Stack>
-        </Group>
+        {/* Quiz Header & Live Progress */}
+        <Stack gap='xs'>
+          <Group justify='space-between' align='center' wrap='wrap'>
+            <Group gap='sm' align='center'>
+              <ThemeIcon size={34} radius='md' variant='light' color='indigo'>
+                <IconListCheck size={20} />
+              </ThemeIcon>
+              <Stack gap={1}>
+                <Text fw={700}>{task.taskName || 'Quiz'}</Text>
+                <Text size='xs' c={themeConfig.mutedTextColor}>
+                  {questions.length} question{questions.length === 1 ? '' : 's'}{' '}
+                  total
+                </Text>
+              </Stack>
+            </Group>
 
-        {questions.map((question, index) => (
-          <QuizQuestionBlock
-            key={question.questionId}
-            index={index}
-            question={question}
-            review={reviewById.get(question.questionId)}
-            reviewing={reviewing}
-            selected={selectedOptions[question.questionId] ?? []}
-            textAnswer={textAnswers[question.questionId] ?? ''}
-            themeConfig={themeConfig}
-            onSelectOptions={ids => setOptionAnswer(question.questionId, ids)}
-            onTextChange={value => setTextAnswer(question.questionId, value)}
-          />
-        ))}
+            {!reviewing && (
+              <Badge
+                variant='light'
+                color={
+                  answeredCount === questions.length
+                    ? 'teal'
+                    : answeredCount > 0
+                      ? 'indigo'
+                      : 'gray'
+                }
+                size='sm'
+                radius='sm'
+              >
+                {answeredCount} of {questions.length} answered (
+                {progressPercent}
+                %)
+              </Badge>
+            )}
+          </Group>
+
+          {!reviewing && (
+            <Progress
+              value={progressPercent}
+              color={answeredCount === questions.length ? 'teal' : 'indigo'}
+              radius='xl'
+              size='xs'
+              animated={answeredCount > 0 && answeredCount < questions.length}
+            />
+          )}
+        </Stack>
+
+        {/* Question Blocks */}
+        {questions.map((question, index) => {
+          const isAnswered = isQuestionAnswered(question);
+          const isUnansweredHighlight =
+            attemptedValidateWithoutAnswers && !isAnswered;
+
+          return (
+            <QuizQuestionBlock
+              key={question.questionId}
+              index={index}
+              question={question}
+              review={reviewById.get(question.questionId)}
+              reviewing={reviewing}
+              selected={selectedOptions[question.questionId] ?? []}
+              textAnswer={textAnswers[question.questionId] ?? ''}
+              themeConfig={themeConfig}
+              isAnswered={isAnswered}
+              isUnansweredHighlight={isUnansweredHighlight}
+              onSelectOptions={ids => setOptionAnswer(question.questionId, ids)}
+              onTextChange={value => setTextAnswer(question.questionId, value)}
+            />
+          );
+        })}
+
+        {/* Validation & Feedback Alerts */}
+        {validationErrorText && (
+          <Alert
+            color='red'
+            variant='light'
+            icon={<IconAlertCircle size={18} />}
+            radius='md'
+          >
+            <Text size='sm'>{validationErrorText}</Text>
+          </Alert>
+        )}
 
         {validation && !submitResult && (
           <QuizSummary validation={validation} themeConfig={themeConfig} />
@@ -266,13 +387,14 @@ const QuizTaskViewer = ({ task, onPassed }: QuizTaskViewerProps) => {
         )}
 
         {errorText && (
-          <Alert color='red' icon={<IconAlertCircle size={18} />}>
+          <Alert color='red' icon={<IconAlertCircle size={18} />} radius='md'>
             <Text size='sm' style={{ whiteSpace: 'pre-wrap' }}>
               {errorText}
             </Text>
           </Alert>
         )}
 
+        {/* Action Buttons */}
         <Group justify='flex-end' gap='xs' wrap='wrap'>
           {!reviewing && (
             <CommonButton
@@ -332,6 +454,8 @@ interface QuizQuestionBlockProps {
     mutedTextColor: string;
     cardBackground: string;
   };
+  isAnswered: boolean;
+  isUnansweredHighlight: boolean;
   onSelectOptions: (ids: string[]) => void;
   onTextChange: (value: string) => void;
 }
@@ -344,6 +468,8 @@ const QuizQuestionBlock = ({
   selected,
   textAnswer,
   themeConfig,
+  isAnswered,
+  isUnansweredHighlight,
   onSelectOptions,
   onTextChange
 }: QuizQuestionBlockProps) => {
@@ -359,29 +485,71 @@ const QuizQuestionBlock = ({
     return { isSelected, isCorrect };
   };
 
+  const formatBadgeLabel = () => {
+    if (isText) return 'Text response';
+    if (isMulti) return 'Multiple choice';
+    if (type === 'DROPDOWN') return 'Dropdown';
+    return 'Single choice';
+  };
+
   return (
     <Box
       p='md'
+      className={`${styles.questionCard} ${
+        isUnansweredHighlight ? styles.questionCardUnanswered : ''
+      }`}
       style={{
-        borderRadius: 12,
-        border: `1px solid ${themeConfig.borderColor}`,
+        borderRadius: 14,
+        border: `1px solid ${
+          isUnansweredHighlight
+            ? 'var(--mantine-color-red-5)'
+            : themeConfig.borderColor
+        }`,
         backgroundColor: themeConfig.cardBackground
       }}
     >
       <Stack gap='sm'>
         <Group justify='space-between' align='flex-start' wrap='nowrap'>
-          <Text fw={600} style={{ minWidth: 0 }}>
-            {index + 1}. {question.question}
-          </Text>
-          {reviewing && !isText && (
-            <Badge
-              variant='light'
-              color={review?.isCorrect ? 'green' : 'red'}
-              size='sm'
-            >
-              {review?.isCorrect ? 'Correct' : 'Incorrect'}
+          <Group gap='xs' align='center' style={{ minWidth: 0, flex: 1 }}>
+            <Badge size='xs' variant='light' color='indigo' radius='sm'>
+              Q{index + 1}
             </Badge>
-          )}
+            <Text fw={600} style={{ minWidth: 0, flex: 1 }}>
+              {index + 1}. {question.question}
+            </Text>
+          </Group>
+
+          <Group gap='xs' align='center' style={{ flexShrink: 0 }}>
+            <Badge size='xs' variant='outline' color='gray'>
+              {formatBadgeLabel()}
+            </Badge>
+
+            {reviewing && !isText && (
+              <Badge
+                variant='light'
+                color={review?.isCorrect ? 'green' : 'red'}
+                size='sm'
+              >
+                {review?.isCorrect ? 'Correct' : 'Incorrect'}
+              </Badge>
+            )}
+
+            {!reviewing && (
+              <Badge
+                size='xs'
+                variant='light'
+                color={
+                  isUnansweredHighlight ? 'red' : isAnswered ? 'teal' : 'gray'
+                }
+              >
+                {isUnansweredHighlight
+                  ? 'Answer required'
+                  : isAnswered
+                    ? 'Answered'
+                    : 'Not answered'}
+              </Badge>
+            )}
+          </Group>
         </Group>
 
         {isText ? (
@@ -390,80 +558,272 @@ const QuizQuestionBlock = ({
               {review?.textAnswer || 'No answer provided.'}
             </Text>
           ) : (
-            <Textarea
-              value={textAnswer}
-              onChange={event => onTextChange(event.currentTarget.value)}
-              placeholder='Type your answer'
-              autosize
-              minRows={2}
-              radius='md'
-            />
+            <Stack gap={4}>
+              <Textarea
+                value={textAnswer}
+                onChange={event => onTextChange(event.currentTarget.value)}
+                placeholder='Type your answer'
+                autosize
+                minRows={3}
+                radius='md'
+              />
+              <Group justify='flex-end'>
+                <Text size='xs' c={themeConfig.mutedTextColor}>
+                  {textAnswer.trim().length} characters
+                </Text>
+              </Group>
+            </Stack>
           )
         ) : reviewing ? (
           <Stack gap='xs'>
-            {options.map(option => {
+            {options.map((option, optIdx) => {
               const { isSelected, isCorrect } = optionState(option.optionId);
+              const letter = optionLetters[optIdx % optionLetters.length];
               return (
-                <Group
+                <Box
                   key={option.optionId}
-                  gap='xs'
-                  wrap='nowrap'
-                  justify='space-between'
+                  p='xs'
+                  style={{
+                    borderRadius: 8,
+                    border: `1px solid ${
+                      isCorrect
+                        ? 'var(--mantine-color-teal-5)'
+                        : isSelected
+                          ? 'var(--mantine-color-red-4)'
+                          : themeConfig.borderColor
+                    }`,
+                    backgroundColor: isCorrect
+                      ? 'rgba(16, 185, 129, 0.08)'
+                      : isSelected
+                        ? 'rgba(239, 68, 68, 0.06)'
+                        : 'transparent'
+                  }}
                 >
-                  <Text size='sm'>{option.value}</Text>
-                  {(isCorrect || isSelected) && (
-                    <Badge
-                      variant='light'
-                      color={isCorrect ? 'green' : 'red'}
-                      size='sm'
-                      radius='sm'
-                      style={{ flexShrink: 0 }}
-                    >
-                      {isCorrect ? 'Correct' : 'Your answer'}
-                    </Badge>
-                  )}
-                </Group>
+                  <Group gap='xs' wrap='nowrap' justify='space-between'>
+                    <Group gap='xs' wrap='nowrap'>
+                      <Badge size='xs' variant='light' color='gray'>
+                        {letter}
+                      </Badge>
+                      <Text size='sm'>{option.value}</Text>
+                    </Group>
+                    <Group gap='xs' wrap='nowrap'>
+                      {isCorrect && (
+                        <span className={styles.animatedTick}>
+                          <IconCheck size={14} stroke={3} />
+                        </span>
+                      )}
+                      {(isCorrect || isSelected) && (
+                        <Badge
+                          variant='light'
+                          color={isCorrect ? 'green' : 'red'}
+                          size='sm'
+                          radius='sm'
+                          style={{ flexShrink: 0 }}
+                        >
+                          {isCorrect && isSelected
+                            ? 'Correct & Selected'
+                            : isCorrect
+                              ? 'Correct'
+                              : 'Your answer'}
+                        </Badge>
+                      )}
+                    </Group>
+                  </Group>
+                </Box>
               );
             })}
           </Stack>
         ) : isMulti ? (
           <Checkbox.Group value={selected} onChange={onSelectOptions}>
             <Stack gap='xs'>
-              {options.map(option => (
-                <Checkbox
-                  key={option.optionId}
-                  value={option.optionId}
-                  label={option.value}
-                />
-              ))}
+              {options.map((option, optIdx) => {
+                const isSelected = selected.includes(option.optionId);
+                const letter = optionLetters[optIdx % optionLetters.length];
+                const handleToggle = () => {
+                  const next = isSelected
+                    ? selected.filter(id => id !== option.optionId)
+                    : [...selected, option.optionId];
+                  onSelectOptions(next);
+                };
+
+                return (
+                  <Box
+                    key={option.optionId}
+                    className={`${styles.optionCard} ${
+                      isSelected ? styles.optionCardSelected : ''
+                    }`}
+                    onClick={handleToggle}
+                    role='button'
+                    tabIndex={0}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleToggle();
+                      }
+                    }}
+                  >
+                    <Group
+                      justify='space-between'
+                      align='center'
+                      w='100%'
+                      wrap='nowrap'
+                    >
+                      <Group
+                        gap='sm'
+                        align='center'
+                        wrap='nowrap'
+                        style={{ flex: 1 }}
+                      >
+                        <Badge
+                          size='sm'
+                          variant={isSelected ? 'filled' : 'light'}
+                          color={isSelected ? 'teal' : 'gray'}
+                          radius='sm'
+                          style={{ minWidth: 26, textAlign: 'center' }}
+                        >
+                          {letter}
+                        </Badge>
+                        <Checkbox
+                          value={option.optionId}
+                          label={option.value}
+                          checked={isSelected}
+                          onChange={handleToggle}
+                          styles={{
+                            root: { cursor: 'pointer', flex: 1 },
+                            label: {
+                              cursor: 'pointer',
+                              fontWeight: isSelected ? 600 : 400
+                            }
+                          }}
+                        />
+                      </Group>
+                      {isSelected ? (
+                        <span className={styles.animatedTick}>
+                          <IconCheck size={14} stroke={3} />
+                        </span>
+                      ) : (
+                        <span className={styles.tickCircleIdle} />
+                      )}
+                    </Group>
+                  </Box>
+                );
+              })}
             </Stack>
           </Checkbox.Group>
         ) : type === 'DROPDOWN' ? (
-          <Select
-            data={options.map(option => ({
-              value: option.optionId,
-              label: option.value
-            }))}
-            value={selected[0] ?? null}
-            onChange={value => onSelectOptions(value ? [value] : [])}
-            placeholder='Select an answer'
-            allowDeselect={false}
-            comboboxProps={{ withinPortal: true }}
-            radius='md'
-          />
+          <Stack gap='xs'>
+            <Select
+              data={options.map(option => ({
+                value: option.optionId,
+                label: option.value
+              }))}
+              value={selected[0] ?? null}
+              onChange={value => onSelectOptions(value ? [value] : [])}
+              placeholder='Select an answer'
+              allowDeselect={false}
+              comboboxProps={{ withinPortal: true }}
+              radius='md'
+              rightSection={
+                selected.length > 0 ? (
+                  <span
+                    className={styles.animatedTick}
+                    style={{ width: 20, height: 20 }}
+                  >
+                    <IconCheck size={12} stroke={3} />
+                  </span>
+                ) : undefined
+              }
+            />
+            {selected.length > 0 && (
+              <Group gap='xs' align='center'>
+                <Text size='xs' c={themeConfig.mutedTextColor}>
+                  Selected:
+                </Text>
+                <Badge
+                  size='sm'
+                  variant='light'
+                  color='teal'
+                  radius='sm'
+                  leftSection={<IconCheck size={12} />}
+                >
+                  {options.find(o => o.optionId === selected[0])?.value}
+                </Badge>
+              </Group>
+            )}
+          </Stack>
         ) : (
           <Radio.Group
             value={selected[0] ?? ''}
             onChange={value => onSelectOptions(value ? [value] : [])}
           >
             <Stack gap='xs'>
-              {options.map(option => (
-                <Radio
-                  key={option.optionId}
-                  value={option.optionId}
-                  label={option.value}
-                />
-              ))}
+              {options.map((option, optIdx) => {
+                const isSelected = selected.includes(option.optionId);
+                const letter = optionLetters[optIdx % optionLetters.length];
+                const handleSelect = () => onSelectOptions([option.optionId]);
+
+                return (
+                  <Box
+                    key={option.optionId}
+                    className={`${styles.optionCard} ${
+                      isSelected ? styles.optionCardSelected : ''
+                    }`}
+                    onClick={handleSelect}
+                    role='button'
+                    tabIndex={0}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleSelect();
+                      }
+                    }}
+                  >
+                    <Group
+                      justify='space-between'
+                      align='center'
+                      w='100%'
+                      wrap='nowrap'
+                    >
+                      <Group
+                        gap='sm'
+                        align='center'
+                        wrap='nowrap'
+                        style={{ flex: 1 }}
+                      >
+                        <Badge
+                          size='sm'
+                          variant={isSelected ? 'filled' : 'light'}
+                          color={isSelected ? 'teal' : 'gray'}
+                          radius='sm'
+                          style={{ minWidth: 26, textAlign: 'center' }}
+                        >
+                          {letter}
+                        </Badge>
+                        <Radio
+                          value={option.optionId}
+                          label={option.value}
+                          checked={isSelected}
+                          onChange={handleSelect}
+                          styles={{
+                            root: { cursor: 'pointer', flex: 1 },
+                            label: {
+                              cursor: 'pointer',
+                              fontWeight: isSelected ? 600 : 400
+                            }
+                          }}
+                        />
+                      </Group>
+                      {isSelected ? (
+                        <span className={styles.animatedTick}>
+                          <IconCheck size={14} stroke={3} />
+                        </span>
+                      ) : (
+                        <span className={styles.tickCircleIdle} />
+                      )}
+                    </Group>
+                  </Box>
+                );
+              })}
             </Stack>
           </Radio.Group>
         )}
@@ -512,7 +872,7 @@ interface SubmitOutcomeProps {
 const SubmitOutcome = ({ result, themeConfig }: SubmitOutcomeProps) => {
   if (result.passed === false) {
     return (
-      <Alert color='red' icon={<IconAlertCircle size={18} />}>
+      <Alert color='red' icon={<IconAlertCircle size={18} />} radius='md'>
         <Text size='sm'>
           You did not meet the passing percentage
           {typeof result.percentage === 'number'
@@ -525,18 +885,25 @@ const SubmitOutcome = ({ result, themeConfig }: SubmitOutcomeProps) => {
   }
 
   return (
-    <Alert color='green' icon={<IconCheck size={18} />}>
-      <Text size='sm'>
-        {result.alreadySubmitted
-          ? 'This quiz attempt was already submitted.'
-          : 'Quiz submitted successfully.'}
-      </Text>
-      {typeof result.percentage === 'number' && (
-        <Text size='xs' c={themeConfig.mutedTextColor} mt={4}>
-          Final score: {result.percentage}%
-        </Text>
-      )}
-    </Alert>
+    <Card className={styles.resultSuccessCard} radius='md' p='md'>
+      <Group gap='sm' align='center'>
+        <ThemeIcon size={36} radius='xl' color='teal' variant='filled'>
+          <IconCheck size={20} stroke={3} />
+        </ThemeIcon>
+        <Stack gap={2}>
+          <Text fw={700} c='teal'>
+            {result.alreadySubmitted
+              ? 'This quiz attempt was already submitted.'
+              : 'Quiz submitted successfully.'}
+          </Text>
+          {typeof result.percentage === 'number' && (
+            <Text size='xs' c={themeConfig.mutedTextColor}>
+              Final score: {result.percentage}%
+            </Text>
+          )}
+        </Stack>
+      </Group>
+    </Card>
   );
 };
 
