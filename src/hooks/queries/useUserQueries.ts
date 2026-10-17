@@ -11,6 +11,8 @@ import {
   getMyAssignedCourses,
   getMyAssignedCourseById,
   getCodingQuestion,
+  getAllQuizQuestions,
+  getQuizQuestionById,
   getUserOpenRouterKey
 } from '@services/user-services';
 import { getProfileImage } from '@services/common-services';
@@ -31,7 +33,9 @@ export const userQueryKeys = {
     ['myAssignedCourse', courseAssignmentId] as const,
   openRouterKey: (userId: string) => ['userOpenRouterKey', userId] as const,
   codingQuestion: (taskId: string, questionId: string, languageId: string) =>
-    ['codingQuestion', taskId, questionId, languageId] as const
+    ['codingQuestion', taskId, questionId, languageId] as const,
+  quizQuestions: (taskId: string) => ['quizQuestions', taskId] as const,
+  quizQuestion: (questionId: string) => ['quizQuestion', questionId] as const
 };
 
 export const useGetCompanyDetails = () => {
@@ -137,5 +141,21 @@ export const useGetCodingQuestion = (
     queryKey: userQueryKeys.codingQuestion(taskId, questionId, languageId),
     queryFn: () => getCodingQuestion(taskId, questionId, languageId),
     enabled: !!taskId && !!languageId && enabled
+  });
+};
+
+export const useGetAllQuizQuestions = (taskId: string, enabled = true) => {
+  return useQuery({
+    queryKey: userQueryKeys.quizQuestions(taskId),
+    queryFn: () => getAllQuizQuestions(taskId),
+    enabled: !!taskId && enabled
+  });
+};
+
+export const useGetQuizQuestion = (questionId: string, enabled = true) => {
+  return useQuery({
+    queryKey: userQueryKeys.quizQuestion(questionId),
+    queryFn: () => getQuizQuestionById(questionId),
+    enabled: !!questionId && enabled
   });
 };

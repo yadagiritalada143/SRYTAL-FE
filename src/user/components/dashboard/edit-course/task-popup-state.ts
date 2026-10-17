@@ -1,4 +1,5 @@
 export const REOPEN_TASK_POPUP_KEY = 'srytal:reopen-add-task-popup';
+export const QUIZ_TASK_STATE_KEY = 'srytal:quiz-task-state';
 
 interface TaskPopupState {
   courseId: string;
@@ -24,7 +25,33 @@ export const clearTaskPopupState = (): void => {
   sessionStorage.removeItem(REOPEN_TASK_POPUP_KEY);
 };
 
-export type AddTaskContentMode = 'LINK' | 'FILE' | 'CODING';
+export interface QuizTaskState {
+  courseId: string;
+  moduleId: string;
+  taskId: string;
+  taskName?: string;
+}
+
+export const saveQuizTaskState = (state: QuizTaskState): void => {
+  sessionStorage.setItem(QUIZ_TASK_STATE_KEY, JSON.stringify(state));
+};
+
+export const readQuizTaskState = (): QuizTaskState | null => {
+  try {
+    const raw = sessionStorage.getItem(QUIZ_TASK_STATE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed?.courseId && parsed?.taskId ? parsed : null;
+  } catch {
+    return null;
+  }
+};
+
+export const clearQuizTaskState = (): void => {
+  sessionStorage.removeItem(QUIZ_TASK_STATE_KEY);
+};
+
+export type AddTaskContentMode = 'LINK' | 'FILE' | 'CODING' | 'QUIZ';
 
 export interface AddTaskDraft extends TaskPopupState {
   taskName: string;

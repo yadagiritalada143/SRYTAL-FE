@@ -68,6 +68,12 @@ const CodingTaskPage = lazy(
 const ProgrammingLanguagesTable = lazy(
   () => import('@admin/components/dashboard/settings/ProgrammingLanguagesTable')
 );
+const QuizQuestionsPage = lazy(
+  () => import('@user/components/dashboard/edit-course/QuizQuestionsPage')
+);
+const QuizSettingsTab = lazy(
+  () => import('@admin/components/dashboard/settings/QuizSettingsTab')
+);
 
 // Common components
 const Dashboard = lazy(() => import('@components/common/dashboard/dashboard'));
@@ -585,6 +591,22 @@ const EmployeeRoutes = () => {
                     path='content-writer/programming-languages'
                     element={<ProgrammingLanguagesTable showBackButton />}
                   />
+                  <Route
+                    path='quiz-questions'
+                    element={<QuizQuestionsPage />}
+                  />
+                  <Route
+                    path='quizzes'
+                    element={<QuizSettingsTab showBackButton />}
+                  />
+                  <Route
+                    path='content-writer/quizzes'
+                    element={<QuizSettingsTab showBackButton />}
+                  />
+                  <Route
+                    path='content-writer/quiz-questions'
+                    element={<QuizQuestionsPage />}
+                  />
                 </Route>
                 <Route path='add-course' element={<AddCourse />} />
                 <Route path='course/:id' element={<CourseDetails />} />
@@ -649,8 +671,14 @@ const ContentWriterProtectedRoutes = () => {
 
   const { organizationConfig } = useAppTheme();
 
+  const isAuthorized =
+    Boolean(token) &&
+    (userRole?.toLowerCase() === ROLES.CONTENT_WRITER.toLowerCase() ||
+      userRole?.toLowerCase() === 'content_writer' ||
+      userRole?.toLowerCase() === ROLES.ADMIN.toLowerCase());
+
   useEffect(() => {
-    if (!userRole || !token || userRole !== ROLES.CONTENT_WRITER) {
+    if (!isAuthorized) {
       toast.error('Not authorized to access');
       setTimeout(() => {
         navigate(
@@ -660,9 +688,9 @@ const ContentWriterProtectedRoutes = () => {
         );
       }, 500);
     }
-  }, [navigate, userRole, token, organizationConfig.organization_name]);
+  }, [navigate, isAuthorized, organizationConfig.organization_name]);
 
-  if (!userRole || !token || userRole !== ROLES.CONTENT_WRITER) {
+  if (!isAuthorized) {
     return null;
   }
 

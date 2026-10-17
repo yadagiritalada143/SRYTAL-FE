@@ -22,6 +22,9 @@ export const isCodingTask = (
 ): boolean =>
   task.isCoding === true || String(task.type || '').toUpperCase() === 'CODE';
 
+export const isQuizTask = (task: Pick<AssignedTask, 'type'>): boolean =>
+  String(task.type || '').toUpperCase() === 'QUIZ';
+
 const EXTENSION_MIME_TYPES: Record<string, string> = {
   mp4: 'video/mp4',
   webm: 'video/webm',

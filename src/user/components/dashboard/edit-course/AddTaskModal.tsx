@@ -20,7 +20,8 @@ import {
   IconCheck,
   IconLink,
   IconFile,
-  IconCode
+  IconCode,
+  IconListCheck
 } from '@tabler/icons-react';
 import { CommonButton } from '@components/common/button/CommonButton';
 import { useAddCourseTask } from '@hooks/mutations/useUserMutations';
@@ -42,6 +43,7 @@ interface AddTaskModalProps {
   onClose: () => void;
   moduleId: string;
   courseId: string;
+  initialMode?: AddTaskContentMode;
 }
 
 type ContentMode = AddTaskContentMode;
@@ -83,14 +85,15 @@ const AddTaskModal = ({
   opened,
   onClose,
   moduleId,
-  courseId
+  courseId,
+  initialMode
 }: AddTaskModalProps) => {
   const { organization = '' } = useParams();
   const navigate = useNavigate();
   const { themeConfig: currentThemeConfig } = useAppTheme();
   const [taskName, setTaskName] = useState('');
   const [taskDescription, setTaskDescription] = useState('');
-  const [mode, setMode] = useState<ContentMode>('LINK');
+  const [mode, setMode] = useState<ContentMode>(initialMode || 'LINK');
   const [link, setLink] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [thumbnail, setThumbnail] = useState<File | null>(null);
@@ -105,12 +108,21 @@ const AddTaskModal = ({
     thumbnail: false
   });
   const [draftResetKey, setDraftResetKey] = useState(0);
+  const [submittingAction, setSubmittingAction] = useState<
+    'save' | 'saveAndQuestions' | null
+  >(null);
 
   const { mutateAsync: addTask, isPending } = useAddCourseTask(courseId);
   const { showSuccessToast, showErrorToast } = useCustomToast();
 
   const touch = (field: TaskField) =>
     setTouched(prev => ({ ...prev, [field]: true }));
+
+  useEffect(() => {
+    if (opened && initialMode) {
+      setMode(initialMode);
+    }
+  }, [opened, initialMode]);
 
   useEffect(() => {
     const draft = readTaskDraft();
@@ -129,9 +141,10 @@ const AddTaskModal = ({
 
   const reset = () => {
     clearTaskDraft();
+    setSubmittingAction(null);
     setTaskName('');
     setTaskDescription('');
-    setMode('LINK');
+    setMode(initialMode || 'LINK');
     setLink('');
     setFile(null);
     setThumbnail(null);
@@ -196,8 +209,9 @@ const AddTaskModal = ({
   const fieldError = (field: TaskField) =>
     touched[field] ? errors[field] : undefined;
 
-  const handleSubmit = async () => {
-    if (!isValid) return;
+  const handleSubmit = async (openQuestions = false) => {
+    if (!isValid || isPending) return;
+    setSubmittingAction(openQuestions ? 'saveAndQuestions' : 'save');
     try {
       const response = await addTask({
         moduleId,
@@ -216,12 +230,32 @@ const AddTaskModal = ({
         thumbnail
       });
       showSuccessToast(response?.message || 'Task added successfully!');
+      const createdTaskId =
+        response?.task?._id || response?.data?._id || response?._id || '';
       reset();
       onClose();
+
+      if (openQuestions && createdTaskId) {
+        const params = new URLSearchParams({
+          taskId: createdTaskId,
+          courseId,
+          moduleId,
+          taskName: taskName.trim()
+        });
+        navigate(
+          `${commonUrls(organization)}/dashboard/quiz-questions?${params.toString()}`
+        );
+      }
     } catch (error) {
       showErrorToast(getErrorMessage(error, 'Failed to add task'));
+    } finally {
+      setSubmittingAction(null);
     }
   };
+
+  const isSavingAndAddingQuestions =
+    isPending && submittingAction === 'saveAndQuestions';
+  const isSavingTask = isPending && submittingAction === 'save';
 
   return (
     <Modal
@@ -253,7 +287,11 @@ const AddTaskModal = ({
       <Stack gap='md' className='mt-4'>
         <TextInput
           label='Title'
-          placeholder='e.g. Introduction video, Reading material'
+          placeholder={
+            mode === 'QUIZ'
+              ? 'e.g. Module 1 Knowledge Check, Final Assessment'
+              : 'e.g. Introduction video, Reading material'
+          }
           required
           value={taskName}
           onChange={e => setTaskName(e.target.value)}
@@ -263,7 +301,11 @@ const AddTaskModal = ({
         />
         <Box onBlur={() => touch('taskDescription')}>
           <DescriptionEditor
-            label='Description'
+            label={
+              mode === 'QUIZ'
+                ? 'Quiz Description & Instructions'
+                : 'Description'
+            }
             value={taskDescription}
             onChange={setTaskDescription}
             resetKey={draftResetKey}
@@ -313,6 +355,15 @@ const AddTaskModal = ({
                     <span>Coding</span>
                   </Group>
                 )
+              },
+              {
+                value: 'QUIZ',
+                label: (
+                  <Group gap={6} justify='center'>
+                    <IconListCheck size={16} />
+                    <span>Quiz</span>
+                  </Group>
+                )
               }
             ]}
           />
@@ -345,6 +396,37 @@ const AddTaskModal = ({
             description='Any file type is supported'
             radius='md'
           />
+        ) : mode === 'QUIZ' ? (
+          <Paper
+            p='sm'
+            radius='md'
+            withBorder
+            style={{
+              backgroundColor: 'rgba(6, 182, 212, 0.05)',
+              borderColor: 'rgba(6, 182, 212, 0.25)'
+            }}
+          >
+            <Group gap='xs' wrap='nowrap' align='flex-start'>
+              <ThemeIcon size={26} radius='md' variant='light' color='cyan'>
+                <IconListCheck size={15} />
+              </ThemeIcon>
+              <Stack gap={2}>
+                <Text
+                  size='xs'
+                  fw={600}
+                  style={{ color: currentThemeConfig.color }}
+                >
+                  Quiz Assessment Task
+                </Text>
+                <Text size='xs' c='dimmed'>
+                  Enter the quiz title and instructions above. Click{' '}
+                  <strong>Save &amp; Add Questions</strong> to immediately
+                  compose questions, or <strong>Save Quiz Task</strong> to add
+                  questions later.
+                </Text>
+              </Stack>
+            </Group>
+          </Paper>
         ) : (
           <Stack gap='xs'>
             <Paper
@@ -418,21 +500,50 @@ const AddTaskModal = ({
         />
 
         <Group justify='flex-end' mt='sm'>
-          <CommonButton variant='default' onClick={handleClose}>
+          <CommonButton
+            variant='default'
+            onClick={handleClose}
+            disabled={isPending}
+          >
             Cancel
           </CommonButton>
+          {mode === 'QUIZ' && (
+            <CommonButton
+              variant='filled'
+              color='cyan'
+              leftSection={
+                isSavingAndAddingQuestions ? (
+                  <Loader size='xs' color='white' />
+                ) : (
+                  <IconListCheck size={16} />
+                )
+              }
+              disabled={!isValid || isPending}
+              onClick={() => handleSubmit(true)}
+            >
+              {isSavingAndAddingQuestions
+                ? 'Saving...'
+                : 'Save & Add Questions'}
+            </CommonButton>
+          )}
           <CommonButton
             leftSection={
-              isPending ? (
+              isSavingTask ? (
                 <Loader size='xs' color='white' />
               ) : (
                 <IconCheck size={16} />
               )
             }
             disabled={!isValid || isPending}
-            onClick={handleSubmit}
+            onClick={() => handleSubmit(false)}
           >
-            {isPending ? 'Adding...' : 'Add Task'}
+            {isSavingTask
+              ? mode === 'QUIZ'
+                ? 'Saving...'
+                : 'Adding...'
+              : mode === 'QUIZ'
+                ? 'Save Quiz Task'
+                : 'Add Task'}
           </CommonButton>
         </Group>
       </Stack>

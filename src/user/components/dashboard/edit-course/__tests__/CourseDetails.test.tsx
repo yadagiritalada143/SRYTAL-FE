@@ -15,7 +15,7 @@ let mockIsLoading = false;
 
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
-  useParams: () => ({ id: 'c1' }),
+  useParams: () => ({ id: 'c1', organization: 'acme' }),
   useNavigate: () => mockNavigate
 }));
 
@@ -102,6 +102,7 @@ jest.mock('../AddTaskModal', () => (props: any) => (
     data-testid='add-task-modal'
     data-opened={String(!!props.opened)}
     data-module-id={props.moduleId}
+    data-initial-mode={props.initialMode}
   >
     {props.opened && <button onClick={props.onClose}>add-task-close</button>}
   </div>
@@ -428,6 +429,12 @@ describe('CourseDetails', () => {
       );
     });
 
+    it('provides a clean module header with Add Task and without redundant Add Quiz button', () => {
+      renderPage();
+      expect(screen.queryByText('Add Quiz')).not.toBeInTheDocument();
+      expect(screen.getAllByText('Add Task').length).toBeGreaterThan(0);
+    });
+
     it('reopens the Add Task modal for the stored module after managing languages', () => {
       saveTaskPopupState({ courseId: 'c1', moduleId: 'm2' });
       renderPage();
@@ -515,6 +522,75 @@ describe('CourseDetails', () => {
       expect(openSpy).not.toHaveBeenCalled();
 
       openSpy.mockRestore();
+    });
+
+    it('shows a Manage Questions action for quiz tasks instead of Open', () => {
+      mockCourse = makeCourse({
+        modules: [
+          {
+            _id: 'm1',
+            moduleName: 'Quiz Module',
+            moduleDescription: '',
+            status: 'ACTIVE',
+            tasks: [
+              {
+                _id: 'q1',
+                taskName: 'Colour quiz',
+                taskDescription: 'Pick a colour.',
+                status: 'ACTIVE',
+                type: 'QUIZ',
+                thumbnailUrl: '',
+                thumbnail: ''
+              }
+            ]
+          }
+        ]
+      });
+      renderPage();
+
+      expect(screen.queryByText('Open')).not.toBeInTheDocument();
+      expect(screen.getByText('Manage Questions')).toBeInTheDocument();
+    });
+
+    it('navigates to the quiz editor with the task and course ids', () => {
+      mockCourse = makeCourse({
+        modules: [
+          {
+            _id: 'm1',
+            moduleName: 'Quiz Module',
+            moduleDescription: '',
+            status: 'ACTIVE',
+            tasks: [
+              {
+                _id: 'q1',
+                taskName: 'Colour quiz',
+                taskDescription: 'Pick a colour.',
+                status: 'ACTIVE',
+                type: 'QUIZ',
+                thumbnailUrl: '',
+                thumbnail: ''
+              }
+            ]
+          }
+        ]
+      });
+      renderPage();
+
+      fireEvent.click(
+        screen
+          .getByText('Manage Questions')
+          .closest('button') as HTMLButtonElement
+      );
+
+      const params = new URLSearchParams({
+        taskId: 'q1',
+        courseId: 'c1',
+        moduleId: '',
+        taskName: 'Colour quiz'
+      });
+      expect(mockNavigate).toHaveBeenCalledWith(
+        `/acme/employee/dashboard/quiz-questions?${params.toString()}`
+      );
     });
   });
 

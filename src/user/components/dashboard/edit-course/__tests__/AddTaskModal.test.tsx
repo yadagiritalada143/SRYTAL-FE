@@ -9,10 +9,13 @@ import {
   clearTaskDraft
 } from '../task-popup-state';
 
+let mockIsPending = false;
 jest.mock('@hooks/mutations/useUserMutations', () => ({
   useAddCourseTask: () => ({
     mutateAsync: mockAddTask,
-    isPending: false
+    get isPending() {
+      return mockIsPending;
+    }
   })
 }));
 
@@ -100,7 +103,9 @@ jest.mock('@mantine/core', () => {
               ? 'Link'
               : d.value === 'FILE'
                 ? 'File'
-                : 'Coding'}
+                : d.value === 'QUIZ'
+                  ? 'Quiz'
+                  : 'Coding'}
           </button>
         ))}
       </div>
@@ -124,10 +129,7 @@ const renderModal = (opened = true, moduleId = 'm1', courseId = 'c1') => {
 };
 
 const typeTitle = (value: string) => {
-  fireEvent.change(
-    screen.getByPlaceholderText('e.g. Introduction video, Reading material'),
-    { target: { value } }
-  );
+  fireEvent.change(screen.getByLabelText(/Title/), { target: { value } });
 };
 
 const typeLink = (value: string) => {
@@ -135,7 +137,9 @@ const typeLink = (value: string) => {
 };
 
 const typeDescription = (value: string) => {
-  fireEvent.change(screen.getByLabelText('Description'), { target: { value } });
+  fireEvent.change(screen.getByLabelText(/Description/), {
+    target: { value }
+  });
 };
 
 const clickFileMode = () => {
@@ -144,6 +148,10 @@ const clickFileMode = () => {
 
 const clickCodingMode = () => {
   fireEvent.click(screen.getByRole('button', { name: 'Coding' }));
+};
+
+const clickQuizMode = () => {
+  fireEvent.click(screen.getByRole('button', { name: 'Quiz' }));
 };
 
 const typeAcknowledgement = (value: string) => {
@@ -169,6 +177,7 @@ describe('AddTaskModal', () => {
     sessionStorage.clear();
     clearTaskDraft();
     mockAddTask.mockResolvedValue({});
+    mockIsPending = false;
   });
 
   describe('Rendering', () => {
@@ -263,9 +272,7 @@ describe('AddTaskModal', () => {
       ).not.toBeInTheDocument();
 
       fireEvent.click(screen.getByLabelText(/Require acknowledgement/));
-      expect(
-        screen.getByLabelText(/Acknowledgement text/)
-      ).toBeInTheDocument();
+      expect(screen.getByLabelText(/Acknowledgement text/)).toBeInTheDocument();
     });
   });
 
@@ -808,6 +815,184 @@ describe('AddTaskModal', () => {
       renderModal();
       fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
       expect(mockOnClose).toHaveBeenCalled();
+    });
+  });
+
+  describe('Quiz tasks', () => {
+    it('shows quiz guidance and action buttons in Quiz mode', () => {
+      renderModal();
+      expect(
+        screen.getByRole('button', { name: 'Add Task' })
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: 'Save Quiz Task' })
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: 'Save & Add Questions' })
+      ).not.toBeInTheDocument();
+
+      clickQuizMode();
+
+      expect(
+        screen.getByRole('button', { name: 'Save & Add Questions' })
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'Save Quiz Task' })
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: 'Add Task' })
+      ).not.toBeInTheDocument();
+      expect(screen.getByText(/Quiz Assessment Task/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/Enter the quiz title and instructions above/i)
+      ).toBeInTheDocument();
+    });
+
+    it('creates the quiz task via Save Quiz Task button and closes modal without redirect', async () => {
+      mockAddTask.mockResolvedValueOnce({
+        data: { _id: 'task-quiz-1' },
+        message: 'Quiz task added successfully!'
+      });
+
+      renderModal();
+
+      typeTitle('Colour quiz');
+      clickQuizMode();
+      typeDescription('Pick a colour.');
+
+      fireEvent.click(screen.getByRole('button', { name: 'Save Quiz Task' }));
+
+      await waitFor(() => {
+        expect(mockAddTask).toHaveBeenCalledWith({
+          moduleId: 'm1',
+          taskName: 'Colour quiz',
+          taskDescription: 'Pick a colour.',
+          type: 'QUIZ',
+          thumbnail: null
+        });
+      });
+
+      expect(mockShowSuccessToast).toHaveBeenCalledWith(
+        'Quiz task added successfully!'
+      );
+      expect(mockOnClose).toHaveBeenCalled();
+      expect(mockNavigate).not.toHaveBeenCalled();
+    });
+
+    it('creates the quiz task and redirects to quiz-questions when Save & Add Questions is clicked', async () => {
+      mockAddTask.mockResolvedValueOnce({
+        task: { _id: 'task-quiz-2' },
+        message: 'Quiz task created successfully!'
+      });
+
+      renderModal();
+
+      typeTitle('Colour quiz');
+      clickQuizMode();
+      typeDescription('Pick a colour.');
+
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Save & Add Questions' })
+      );
+
+      await waitFor(() => {
+        expect(mockAddTask).toHaveBeenCalledWith({
+          moduleId: 'm1',
+          taskName: 'Colour quiz',
+          taskDescription: 'Pick a colour.',
+          type: 'QUIZ',
+          thumbnail: null
+        });
+      });
+
+      expect(mockShowSuccessToast).toHaveBeenCalledWith(
+        'Quiz task created successfully!'
+      );
+      expect(mockOnClose).toHaveBeenCalled();
+
+      const params = new URLSearchParams({
+        taskId: 'task-quiz-2',
+        courseId: 'c1',
+        moduleId: 'm1',
+        taskName: 'Colour quiz'
+      });
+      expect(mockNavigate).toHaveBeenCalledWith(
+        `/acme/employee/dashboard/quiz-questions?${params.toString()}`
+      );
+    });
+
+    it('shows Saving... only on Save & Add Questions when clicked during pending state', async () => {
+      let resolveTask: any;
+      mockAddTask.mockImplementation(
+        () =>
+          new Promise(resolve => {
+            resolveTask = resolve;
+          })
+      );
+
+      renderModal();
+      typeTitle('Colour quiz');
+      clickQuizMode();
+      typeDescription('Pick a colour.');
+
+      mockIsPending = true;
+
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Save & Add Questions' })
+      );
+
+      expect(
+        screen.getByRole('button', { name: 'Saving...' })
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'Save Quiz Task' })
+      ).toBeInTheDocument();
+
+      mockIsPending = false;
+      resolveTask?.({
+        data: { _id: 'task-123' },
+        message: 'Task added successfully!'
+      });
+
+      await waitFor(() => {
+        expect(mockOnClose).toHaveBeenCalled();
+      });
+    });
+
+    it('shows Saving... only on Save Quiz Task when clicked during pending state', async () => {
+      let resolveTask: any;
+      mockAddTask.mockImplementation(
+        () =>
+          new Promise(resolve => {
+            resolveTask = resolve;
+          })
+      );
+
+      renderModal();
+      typeTitle('Colour quiz');
+      clickQuizMode();
+      typeDescription('Pick a colour.');
+
+      mockIsPending = true;
+
+      fireEvent.click(screen.getByRole('button', { name: 'Save Quiz Task' }));
+
+      expect(
+        screen.getByRole('button', { name: 'Saving...' })
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'Save & Add Questions' })
+      ).toBeInTheDocument();
+
+      mockIsPending = false;
+      resolveTask?.({
+        data: { _id: 'task-123' },
+        message: 'Task added successfully!'
+      });
+
+      await waitFor(() => {
+        expect(mockOnClose).toHaveBeenCalled();
+      });
     });
   });
 });

@@ -280,6 +280,7 @@ const CoursePlayer = () => {
                     >
                       <TaskContentViewer
                         task={active.task}
+                        courseAssignmentId={courseAssignmentId}
                         onFinished={handleContentFinished}
                         embedded
                       />
@@ -292,6 +293,7 @@ const CoursePlayer = () => {
                   ) : (
                     <TaskContentViewer
                       task={active.task}
+                      courseAssignmentId={courseAssignmentId}
                       onFinished={handleContentFinished}
                     />
                   )}

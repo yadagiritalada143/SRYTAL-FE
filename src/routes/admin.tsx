@@ -86,6 +86,9 @@ const DepartmentTable = lazy(
 const ProgrammingLanguagesTable = lazy(
   () => import('@admin/components/dashboard/settings/ProgrammingLanguagesTable')
 );
+const QuizSettingsTab = lazy(
+  () => import('@admin/components/dashboard/settings/QuizSettingsTab')
+);
 const DateTableComponent = lazy(
   () => import('@components/common/timesheet/timesheet')
 );
@@ -119,6 +122,9 @@ const AddCourse = lazy(
 );
 const CourseDetails = lazy(
   () => import('@user/components/dashboard/edit-course/CourseDetails')
+);
+const QuizQuestionsPage = lazy(
+  () => import('@user/components/dashboard/edit-course/QuizQuestionsPage')
 );
 // User domain components reused in Admin
 const Companies = lazy(
@@ -609,6 +615,19 @@ const AdminRoutes = () => {
               <Route
                 path='content-writer/programming-languages'
                 element={<ProgrammingLanguagesTable showBackButton />}
+              />
+              <Route path='quiz-questions' element={<QuizQuestionsPage />} />
+              <Route
+                path='quizzes'
+                element={<QuizSettingsTab showBackButton />}
+              />
+              <Route
+                path='content-writer/quizzes'
+                element={<QuizSettingsTab showBackButton />}
+              />
+              <Route
+                path='content-writer/quiz-questions'
+                element={<QuizQuestionsPage />}
               />
               <Route path='add-course' element={<AddCourse />} />
               <Route path='course/:id' element={<CourseDetails />} />

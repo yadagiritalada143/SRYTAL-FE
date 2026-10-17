@@ -15,10 +15,13 @@ import {
   FileInput,
   Image
 } from '@mantine/core';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
+  IconArrowRight,
   IconCheck,
-  IconLink,
   IconFile,
+  IconLink,
+  IconListCheck,
   IconUpload,
   IconX
 } from '@tabler/icons-react';
@@ -26,11 +29,17 @@ import { CommonButton } from '@components/common/button/CommonButton';
 import { useUpdateCourseTask } from '@hooks/mutations/useUserMutations';
 import { useCustomToast } from '@utils/common/toast';
 import { getErrorMessage } from '@utils/common/get-error-message';
+import { commonUrls } from '@utils/common/constants';
 import { useAppTheme } from '@hooks/use-app-theme';
 import { Task, CourseStatus, COURSE_STATUSES } from '@interfaces/contentwriter';
 import CourseThumbnail from '../content-writer/CourseThumbnail';
 import DescriptionEditor from './DescriptionEditor';
-import { taskRequiresAcknowledgement } from './task-popup-state';
+import {
+  saveQuizTaskState,
+  taskRequiresAcknowledgement,
+  clearTaskPopupState,
+  clearTaskDraft
+} from './task-popup-state';
 
 const hasVisibleText = (html: string): boolean =>
   html
@@ -123,11 +132,35 @@ const EditTaskModal = ({
     }
   };
 
+  const { organization = '' } = useParams();
+  const navigate = useNavigate();
+
   const isCoding = task?.isCoding || task?.type === 'CODE';
-
   const isLink = task?.type === 'LINK';
+  const isQuiz = task?.type === 'QUIZ';
+  const isFile = !isCoding && !isQuiz && task?.type === 'FILE';
 
-  const isFile = !isCoding && task?.type === 'FILE';
+  const handleManageQuizQuestions = () => {
+    if (!task?._id) return;
+    const params = new URLSearchParams({
+      taskId: task._id,
+      courseId: courseId || '',
+      moduleId: task.moduleId || '',
+      taskName: taskName || task?.taskName || ''
+    });
+    saveQuizTaskState({
+      courseId: courseId || '',
+      moduleId: task.moduleId || '',
+      taskId: task._id,
+      taskName: taskName || task?.taskName || ''
+    });
+    clearTaskPopupState();
+    clearTaskDraft();
+    onClose();
+    navigate(
+      `${commonUrls(organization)}/dashboard/quiz-questions?${params.toString()}`
+    );
+  };
 
   return (
     <Modal
@@ -275,7 +308,44 @@ const EditTaskModal = ({
           radius='md'
         />
 
-        {!isCoding && (
+        {isQuiz && (
+          <Paper
+            p='md'
+            radius='md'
+            withBorder
+            style={{
+              borderColor: 'var(--mantine-color-indigo-3)',
+              backgroundColor: 'rgba(99, 102, 241, 0.05)'
+            }}
+          >
+            <Group justify='space-between' align='center' wrap='wrap' gap='sm'>
+              <Group gap='sm'>
+                <ThemeIcon size={36} radius='md' variant='light' color='indigo'>
+                  <IconListCheck size={20} />
+                </ThemeIcon>
+                <Stack gap={2}>
+                  <Text size='sm' fw={600}>
+                    Quiz Questions
+                  </Text>
+                  <Text size='xs' c='dimmed'>
+                    Manage, edit, or add questions for this quiz
+                  </Text>
+                </Stack>
+              </Group>
+              <CommonButton
+                variant='light'
+                size='xs'
+                leftSection={<IconListCheck size={14} />}
+                rightSection={<IconArrowRight size={14} />}
+                onClick={handleManageQuizQuestions}
+              >
+                Manage Quiz Questions
+              </CommonButton>
+            </Group>
+          </Paper>
+        )}
+
+        {!isCoding && !isQuiz && (
           <>
             <Stack gap={6}>
               <Text size='sm' fw={500}>

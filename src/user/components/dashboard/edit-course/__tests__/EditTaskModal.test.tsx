@@ -3,6 +3,13 @@ import '@testing-library/jest-dom';
 import { MantineProvider } from '@mantine/core';
 import EditTaskModal from '../EditTaskModal';
 
+const mockNavigate = jest.fn();
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  useNavigate: () => mockNavigate,
+  useParams: () => ({ organization: 'acme' })
+}));
+
 jest.mock('@hooks/mutations/useUserMutations', () => ({
   useUpdateCourseTask: () => ({
     mutateAsync: mockUpdateTask,
@@ -24,6 +31,10 @@ jest.mock('@utils/common/toast', () => ({
 jest.mock('@utils/common/get-error-message', () => ({
   getErrorMessage: (error: any, fallback: string) =>
     error?.response?.data?.message || error?.message || fallback
+}));
+
+jest.mock('@utils/common/constants', () => ({
+  commonUrls: (org: string) => `/${org}/admin`
 }));
 
 jest.mock('@hooks/use-app-theme', () => ({
@@ -186,9 +197,7 @@ describe('EditTaskModal', () => {
     });
 
     it('shows the coding task hint only for coding tasks, never a Question textarea', () => {
-      renderModal(
-        makeTask({ isCoding: true, question: 'Reverse a string.' })
-      );
+      renderModal(makeTask({ isCoding: true, question: 'Reverse a string.' }));
       // The title is the question, so no Question field is editable.
       expect(screen.queryByLabelText(/Question/)).not.toBeInTheDocument();
       expect(screen.queryByText('Attached File')).not.toBeInTheDocument();
@@ -473,6 +482,28 @@ describe('EditTaskModal', () => {
       renderModal(makeTask());
       fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
       expect(mockOnClose).toHaveBeenCalled();
+    });
+  });
+
+  describe('Manage Quiz Questions', () => {
+    it('navigates using the role-aware prefix from commonUrls, never a hardcoded employee path', () => {
+      renderModal(
+        makeTask({ type: 'QUIZ', moduleId: 'm1', taskName: 'Safety quiz' })
+      );
+
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Manage Quiz Questions' })
+      );
+
+      // commonUrls is mocked to return the admin prefix here; the real bug was
+      // a hardcoded `/${organization}/employee` that bounced admins to the
+      // employee login page (ContentWriter-only guard).
+      expect(mockNavigate).toHaveBeenCalledTimes(1);
+      const target = mockNavigate.mock.calls[0][0] as string;
+      expect(target).toMatch(/^\/acme\/admin\/dashboard\/quiz-questions\?/);
+      expect(target).toContain('taskId=t1');
+      expect(target).toContain('courseId=c1');
+      expect(target).toContain('moduleId=m1');
     });
   });
 });

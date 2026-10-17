@@ -10,16 +10,19 @@ import { useAppTheme } from '@hooks/use-app-theme';
 import { CommonButton } from '@components/common/button/CommonButton';
 import { AssignedTask } from '@interfaces/course-assignment';
 import { getCourseTaskContentUrl } from '@services/user-services';
-import { resolveTaskContent, isCodingTask } from './task-content';
+import { resolveTaskContent, isCodingTask, isQuizTask } from './task-content';
+import QuizPlayer from './QuizPlayer';
 
 interface TaskContentViewerProps {
   task: AssignedTask;
+  courseAssignmentId?: string;
   onFinished?: () => void;
   embedded?: boolean;
 }
 
 const TaskContentViewer = ({
   task,
+  courseAssignmentId,
   onFinished,
   embedded = false
 }: TaskContentViewerProps) => {
@@ -64,6 +67,16 @@ const TaskContentViewer = ({
           </CommonButton>
         </Stack>
       </Center>
+    );
+  }
+
+  if (isQuizTask(task)) {
+    return (
+      <QuizPlayer
+        task={task}
+        courseAssignmentId={courseAssignmentId}
+        onFinished={onFinished}
+      />
     );
   }
 

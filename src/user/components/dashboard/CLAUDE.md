@@ -25,12 +25,47 @@ content is shown in a new browser tab.
 | `edit-course/EditModuleModal.tsx` | Modal to edit module name, description and status. |
 | `edit-course/EditTaskModal.tsx` | Modal to edit a content item's title, description and status. |
 | `edit-course/DescriptionEditor.tsx` | Shared rich-text (tiptap) editor for HTML descriptions. |
+| `edit-course/QuizQuestionsPage.tsx` | Quiz question authoring page (`/dashboard/content-writer/quiz-questions`) — create, edit, show/hide and delete the questions of one QUIZ task. The task id comes from the `?taskId=`/`?courseId=` URL params (how a course owner opens an existing quiz from Course Details), falling back to sessionStorage for the just-created flow. |
+| `edit-course/QuizBuilder.tsx` | Presentational question editor + existing-question list with per-question edit / show-hide / delete actions. |
+| `edit-course/quiz-helpers.ts` | Pure helpers: draft factories, per-type option rules, validation and local ↔ API mappers. |
+| `edit-course/task-popup-state.ts` | sessionStorage bridge that points the quiz page at the QUIZ task just created (used as a fallback when the URL carries no `taskId`). |
 
 Data layer (shared, not in this folder):
 - Services: `src/services/user-services.ts` (`getCourseByIdContentWriter`, `addCourseContentWriter`, `addCourseModuleContentWriter`, `addCourseTaskContentWriter`, `updateCourseContentWriter`, `updateCourseModuleContentWriter`, `updateCourseTaskContentWriter`, `getCourseTaskContentUrl`).
 - Query hooks: `src/hooks/queries/useUserQueries.ts` (`useGetAllCoursesByUser`, `useGetCourseById`).
 - Mutation hooks: `src/hooks/mutations/useUserMutations.ts` (`useAddCourse`, `useAddCourseModule`, `useAddCourseTask`, `useUpdateCourse`, `useUpdateCourseModule`, `useUpdateCourseTask`).
 - Types: `src/interfaces/contentwriter.ts` (`Course`, `Module`, `Task`, `CourseStatus`, `AddModulePayload`, `AddTaskPayload`, `UpdateCoursePayload`, `UpdateModulePayload`, `UpdateTaskPayload`).
+
+## Quiz questions (SRYTAL-BE, mounted at `/`)
+
+A `QUIZ` task owns a list of questions. The authoring page
+(`QuizQuestionsPage`) is opened right after a QUIZ task is created, or from a
+quiz task card in Course Details (its `Edit questions` action navigates to
+`/dashboard/content-writer/quiz-questions?taskId=<id>&courseId=<id>`); a question
+is made of a `question`, a `type` (`RADIO` | `CHECKBOX` | `TOGGLE` | `DROPDOWN` |
+`TEXTAREA`), a `status` (`SHOW`/`HIDE`) and — except for `TEXTAREA` — a list of
+`{ value, isanswer }` options.
+
+| Endpoint | Notes |
+| --- | --- |
+| `POST /createQuizQuestion` | JSON `{ taskId, question, type, status, options? }`. |
+| `GET /getAllQuizQuestions/:taskId` | `{ success, data: questions }` (non-deleted, oldest first). |
+| `GET /getQuizQuestion/:id` | `{ success, data: question }` — single question. |
+| `PUT /updateQuizQuestion/:questionId` | JSON partial `{ question?, type?, options?, status? }`; `taskId` is never reassigned. |
+| `PATCH /updateQuizQuestionStatus/:questionId` | JSON `{ status: 'SHOW' \| 'HIDE' }`. |
+| `DELETE /deleteQuizQuestion/:questionId` | Soft delete (`isDeleted = true`). |
+
+Data layer:
+- Services: `src/services/user-services.ts` (`getAllQuizQuestions`, `createQuizQuestion`, `getQuizQuestionById`, `updateQuizQuestion`, `updateQuizQuestionStatus`, `deleteQuizQuestion`).
+- Query hooks: `useGetAllQuizQuestions`, `useGetQuizQuestion` (`hooks/queries/useUserQueries.ts`; key `quizQuestions(taskId)` / `quizQuestion(questionId)`).
+- Mutation hooks: `useCreateQuizQuestion`, `useUpdateQuizQuestion`, `useUpdateQuizQuestionStatus`, `useDeleteQuizQuestion` (`hooks/mutations/useUserMutations.ts`) — all invalidate `quizQuestions(taskId)` when a task id is supplied.
+- Types: `src/interfaces/quiz.ts` (`QuizQuestionApiModel`, `QuizQuestionApiPayload`, `QuizQuestionApiUpdatePayload`, …).
+
+Per-type rules (enforced server-side, mirrored client-side by
+`validateQuizQuestion` in `quiz-helpers.ts`): `RADIO`/`DROPDOWN`/`CHECKBOX` need
+**at least 4** options (`RADIO`/`DROPDOWN` exactly one correct, `CHECKBOX` at
+least one); `TOGGLE` needs exactly 2 options with exactly one correct;
+`TEXTAREA` has no options.
 
 ## Backend contract (SRYTAL-BE `/contentwriter`)
 
@@ -68,6 +103,11 @@ file or link cannot be swapped from the edit modal.
 never holds the raw file/link; the backend decides whether to redirect (links)
 or stream (files). The token is in the query string because a new tab cannot
 send custom headers.
+
+`QUIZ` tasks have no `content` to proxy, so their card shows an **Edit questions**
+action that routes to the quiz authoring page (carrying `taskId`/`courseId`)
+instead of opening the proxy — hitting `/getCourseTaskContent/:id` for a quiz
+otherwise 404s with `Task not found !`.
 
 ## Conventions to follow here
 

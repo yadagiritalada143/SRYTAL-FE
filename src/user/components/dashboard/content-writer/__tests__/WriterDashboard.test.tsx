@@ -474,21 +474,33 @@ describe('WriterDashboard', () => {
 
     it('switches between Active and Archived courses tabs', () => {
       mockCourses = [
-        makeCourse({ _id: 'c1', courseName: 'Active Course', status: 'ACTIVE' }),
-        makeCourse({ _id: 'c2', courseName: 'Archived Course', status: 'ARCHIVE' })
+        makeCourse({
+          _id: 'c1',
+          courseName: 'Active Course',
+          status: 'ACTIVE'
+        }),
+        makeCourse({
+          _id: 'c2',
+          courseName: 'Archived Course',
+          status: 'ARCHIVE'
+        })
       ];
       renderDashboard();
 
       const activeCards = screen.getAllByTestId('course-card');
       expect(activeCards.length).toBe(1);
-      expect(within(activeCards[0]).getByText('Active Course')).toBeInTheDocument();
+      expect(
+        within(activeCards[0]).getByText('Active Course')
+      ).toBeInTheDocument();
 
       // Click Archived Courses tab
       fireEvent.click(screen.getByRole('tab', { name: /Archived Courses/i }));
 
       const archivedCards = screen.getAllByTestId('course-card');
       expect(archivedCards.length).toBe(1);
-      expect(within(archivedCards[0]).getByText('Archived Course')).toBeInTheDocument();
+      expect(
+        within(archivedCards[0]).getByText('Archived Course')
+      ).toBeInTheDocument();
     });
 
     it('opens and confirms the clone course modal for archived courses', async () => {
@@ -505,7 +517,9 @@ describe('WriterDashboard', () => {
       expect(modal).toHaveAttribute('data-opened', 'true');
       expect(modal).toHaveAttribute('data-course', 'c1');
 
-      fireEvent.click(within(modal).getByRole('button', { name: 'Confirm Clone' }));
+      fireEvent.click(
+        within(modal).getByRole('button', { name: 'Confirm Clone' })
+      );
 
       expect(modal).toHaveAttribute('data-opened', 'false');
     });
@@ -550,6 +564,14 @@ describe('WriterDashboard', () => {
       fireEvent.click(screen.getByRole('button', { name: 'New Course' }));
       expect(mockNavigate).toHaveBeenCalledWith(
         '/srytal/employee/dashboard/add-course'
+      );
+    });
+
+    it('navigates to quizzes from the Quizzes button', () => {
+      renderDashboard();
+      fireEvent.click(screen.getByRole('button', { name: 'Quizzes' }));
+      expect(mockNavigate).toHaveBeenCalledWith(
+        '/srytal/employee/dashboard/quizzes'
       );
     });
 

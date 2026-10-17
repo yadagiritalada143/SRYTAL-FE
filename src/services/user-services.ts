@@ -28,6 +28,12 @@ import {
   UpdateTaskProgressPayload,
   UpdateTaskProgressResponse
 } from '@interfaces/course-assignment';
+import {
+  QuizQuestionApiModel,
+  QuizQuestionApiPayload,
+  QuizQuestionApiUpdatePayload,
+  QuizQuestionStatus
+} from '@interfaces/quiz';
 
 export const getCompanyDetails = async () => {
   try {
@@ -352,6 +358,52 @@ export const getCourseTaskContentUrl = (taskId: string) => {
   const token = localStorage.getItem('token');
   const base = (BASE_URL || '').replace(/\/+$/, '');
   return `${base}/getCourseTaskContent/${taskId}?auth_token=${token}`;
+};
+
+export const getAllQuizQuestions = async (
+  taskId: string
+): Promise<QuizQuestionApiModel[]> => {
+  const response = await apiClient.get(`/getAllQuizQuestions/${taskId}`);
+  return response.data.data ?? [];
+};
+
+export const createQuizQuestion = async (data: QuizQuestionApiPayload) => {
+  const response = await apiClient.post('/createQuizQuestion', data);
+  return response.data;
+};
+
+export const getQuizQuestionById = async (
+  questionId: string
+): Promise<QuizQuestionApiModel | null> => {
+  const response = await apiClient.get(`/getQuizQuestion/${questionId}`);
+  return response.data.data ?? null;
+};
+
+export const updateQuizQuestion = async (
+  questionId: string,
+  data: QuizQuestionApiUpdatePayload
+) => {
+  const response = await apiClient.put(
+    `/updateQuizQuestion/${questionId}`,
+    data
+  );
+  return response.data;
+};
+
+export const updateQuizQuestionStatus = async (
+  questionId: string,
+  status: QuizQuestionStatus
+) => {
+  const response = await apiClient.patch(
+    `/updateQuizQuestionStatus/${questionId}`,
+    { status }
+  );
+  return response.data;
+};
+
+export const deleteQuizQuestion = async (questionId: string) => {
+  const response = await apiClient.delete(`/deleteQuizQuestion/${questionId}`);
+  return response.data;
 };
 
 // ── My Courses (assigned to the logged-in employee) ──────────────────────────
