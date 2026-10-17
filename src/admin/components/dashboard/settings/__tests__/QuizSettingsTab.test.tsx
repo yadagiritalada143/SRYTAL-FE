@@ -404,4 +404,130 @@ describe('QuizSettingsTab', () => {
     expect(snoBadges[2]).toHaveTextContent('1');
     expect(snoBadges[3]).toHaveTextContent('2');
   });
+
+  it('paginates by courses count in curriculum view, keeping all modules of each course intact on the same page', () => {
+    // 3 courses: Course A has 3 modules, Course B has 2 modules, Course C has 1 module
+    mockCourses = [
+      {
+        _id: 'c1',
+        courseName: 'Course Alpha',
+        status: 'ACTIVE',
+        modules: [
+          {
+            _id: 'm1_1',
+            moduleName: 'Alpha Mod 1',
+            tasks: [
+              {
+                _id: 'q1_1',
+                taskName: 'Alpha Quiz 1',
+                type: 'QUIZ',
+                status: 'ACTIVE'
+              }
+            ]
+          },
+          {
+            _id: 'm1_2',
+            moduleName: 'Alpha Mod 2',
+            tasks: [
+              {
+                _id: 'q1_2',
+                taskName: 'Alpha Quiz 2',
+                type: 'QUIZ',
+                status: 'ACTIVE'
+              }
+            ]
+          },
+          {
+            _id: 'm1_3',
+            moduleName: 'Alpha Mod 3',
+            tasks: [
+              {
+                _id: 'q1_3',
+                taskName: 'Alpha Quiz 3',
+                type: 'QUIZ',
+                status: 'ACTIVE'
+              }
+            ]
+          }
+        ]
+      },
+      {
+        _id: 'c2',
+        courseName: 'Course Beta',
+        status: 'ACTIVE',
+        modules: [
+          {
+            _id: 'm2_1',
+            moduleName: 'Beta Mod 1',
+            tasks: [
+              {
+                _id: 'q2_1',
+                taskName: 'Beta Quiz 1',
+                type: 'QUIZ',
+                status: 'ACTIVE'
+              }
+            ]
+          },
+          {
+            _id: 'm2_2',
+            moduleName: 'Beta Mod 2',
+            tasks: [
+              {
+                _id: 'q2_2',
+                taskName: 'Beta Quiz 2',
+                type: 'QUIZ',
+                status: 'ACTIVE'
+              }
+            ]
+          }
+        ]
+      },
+      {
+        _id: 'c3',
+        courseName: 'Course Gamma',
+        status: 'ACTIVE',
+        modules: [
+          {
+            _id: 'm3_1',
+            moduleName: 'Gamma Mod 1',
+            tasks: [
+              {
+                _id: 'q3_1',
+                taskName: 'Gamma Quiz 1',
+                type: 'QUIZ',
+                status: 'ACTIVE'
+              }
+            ]
+          }
+        ]
+      }
+    ];
+
+    renderTab();
+
+    // In curriculum view, label shows "Courses per page:"
+    expect(screen.getByText('Courses per page:')).toBeInTheDocument();
+    // With 3 courses and default itemsPerPage 10, totalPages is 1 (all 3 courses shown with all their modules)
+    expect(screen.getAllByText('Course Alpha').length).toBeGreaterThan(0);
+    expect(screen.getByText('Module: Alpha Mod 1')).toBeInTheDocument();
+    expect(screen.getByText('Module: Alpha Mod 2')).toBeInTheDocument();
+    expect(screen.getByText('Module: Alpha Mod 3')).toBeInTheDocument();
+    expect(screen.getAllByText('Course Beta').length).toBeGreaterThan(0);
+    expect(screen.getByText('Module: Beta Mod 1')).toBeInTheDocument();
+    expect(screen.getByText('Module: Beta Mod 2')).toBeInTheDocument();
+    expect(screen.getAllByText('Course Gamma').length).toBeGreaterThan(0);
+    expect(screen.getByText('Module: Gamma Mod 1')).toBeInTheDocument();
+    expect(screen.getByText('Showing all 3 courses')).toBeInTheDocument();
+  });
+
+  it('switches to table view and displays quizzes per page with quiz rows', () => {
+    renderTab();
+
+    const tableModeButton = screen.getByText('Table');
+    fireEvent.click(tableModeButton);
+
+    expect(screen.getByText('Quizzes per page:')).toBeInTheDocument();
+    expect(screen.getByText('S.No')).toBeInTheDocument();
+    expect(screen.getByText('Quiz Title')).toBeInTheDocument();
+  });
 });

@@ -38,12 +38,11 @@ export const QuizCurriculumView: React.FC<QuizCurriculumViewProps> = ({
 }) => {
   const { themeConfig, isDarkTheme } = useAppTheme();
 
-  const defaultExpanded = courseGroups.map(g => g.courseId);
-
   return (
     <Accordion
+      key={courseGroups.map(g => g.courseId).join('-')}
       multiple
-      defaultValue={defaultExpanded}
+      defaultValue={[]}
       variant='separated'
       radius='md'
       styles={{

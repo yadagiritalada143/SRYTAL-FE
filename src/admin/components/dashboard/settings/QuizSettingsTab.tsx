@@ -43,7 +43,8 @@ import QuizCurriculumView from './QuizCurriculumView';
 import QuizTableView from './QuizTableView';
 
 const ITEMS_PER_PAGE_OPTIONS = ['5', '10', '20', '50', '100'];
-const DEFAULT_ITEMS_PER_PAGE = 10;
+const DEFAULT_COURSES_PER_PAGE = 5;
+const DEFAULT_QUIZZES_PER_PAGE = 10;
 
 export interface QuizSettingsTabProps {
   showBackButton?: boolean;
@@ -80,7 +81,12 @@ export default function QuizSettingsTab({
     'curriculum'
   );
   const [activePage, setActivePage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(DEFAULT_ITEMS_PER_PAGE);
+  const [coursesPerPage, setCoursesPerPage] = useState(
+    DEFAULT_COURSES_PER_PAGE
+  );
+  const [quizzesPerPage, setQuizzesPerPage] = useState(
+    DEFAULT_QUIZZES_PER_PAGE
+  );
 
   const allQuizzes = useMemo(() => {
     const courseList: Course[] = Array.isArray(courses)
@@ -149,20 +155,21 @@ export default function QuizSettingsTab({
     });
   }, [allQuizzes, searchQuery, courseFilter]);
 
-  const { paginatedData, totalPages } = useMemo(() => {
-    const start = (activePage - 1) * itemsPerPage;
-    const end = start + itemsPerPage;
-    return {
-      paginatedData: filteredQuizzes.slice(start, end),
-      totalPages: Math.ceil(filteredQuizzes.length / itemsPerPage)
-    };
-  }, [filteredQuizzes, activePage, itemsPerPage]);
+  const isCurriculumView = viewMode === 'curriculum' || isMobile;
+  const itemsPerPage = isCurriculumView ? coursesPerPage : quizzesPerPage;
+  const setItemsPerPage = (val: number) => {
+    if (isCurriculumView) {
+      setCoursesPerPage(val);
+    } else {
+      setQuizzesPerPage(val);
+    }
+  };
 
-  const paginatedCourseGroups = useMemo(() => {
+  const allFilteredCourseGroups = useMemo(() => {
     const groups: CourseGroup[] = [];
     const courseMap = new Map<string, CourseGroup>();
 
-    paginatedData.forEach(item => {
+    filteredQuizzes.forEach(item => {
       let cGroup = courseMap.get(item.courseId);
       if (!cGroup) {
         cGroup = {
@@ -190,12 +197,55 @@ export default function QuizSettingsTab({
     });
 
     return groups;
-  }, [paginatedData]);
+  }, [filteredQuizzes]);
 
-  // Reset page on filter changes
+  const totalPages = useMemo(() => {
+    const totalCount = isCurriculumView
+      ? allFilteredCourseGroups.length
+      : filteredQuizzes.length;
+    return Math.ceil(totalCount / itemsPerPage);
+  }, [
+    isCurriculumView,
+    allFilteredCourseGroups.length,
+    filteredQuizzes.length,
+    itemsPerPage
+  ]);
+
+  const paginatedCourseGroups = useMemo(() => {
+    const start = (activePage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    return allFilteredCourseGroups.slice(start, end);
+  }, [allFilteredCourseGroups, activePage, itemsPerPage]);
+
+  const paginatedTableQuizzes = useMemo(() => {
+    const start = (activePage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    return filteredQuizzes.slice(start, end);
+  }, [filteredQuizzes, activePage, itemsPerPage]);
+
   useEffect(() => {
     setActivePage(1);
-  }, [searchQuery, courseFilter, itemsPerPage]);
+  }, [searchQuery, courseFilter, itemsPerPage, viewMode]);
+
+  useEffect(() => {
+    if (totalPages > 0 && activePage > totalPages) {
+      setActivePage(totalPages);
+    }
+  }, [activePage, totalPages]);
+
+  const totalItemsCount = isCurriculumView
+    ? allFilteredCourseGroups.length
+    : filteredQuizzes.length;
+  const startItemNumber =
+    totalItemsCount > 0 ? (activePage - 1) * itemsPerPage + 1 : 0;
+  const endItemNumber = Math.min(activePage * itemsPerPage, totalItemsCount);
+  const itemTypeLabel = isCurriculumView
+    ? totalItemsCount === 1
+      ? 'course'
+      : 'courses'
+    : totalItemsCount === 1
+      ? 'quiz'
+      : 'quizzes';
 
   const handleSelectQuiz = (quiz: CourseQuizItem) => {
     setActiveQuiz(quiz);
@@ -529,13 +579,20 @@ export default function QuizSettingsTab({
 
                     <Group gap='xs'>
                       <Text size='sm' c='dimmed'>
-                        Per page:
+                        {isCurriculumView
+                          ? 'Courses per page:'
+                          : 'Quizzes per page:'}
                       </Text>
                       <Select
                         data={ITEMS_PER_PAGE_OPTIONS}
                         value={String(itemsPerPage)}
                         onChange={val =>
-                          setItemsPerPage(Number(val) || DEFAULT_ITEMS_PER_PAGE)
+                          setItemsPerPage(
+                            Number(val) ||
+                              (isCurriculumView
+                                ? DEFAULT_COURSES_PER_PAGE
+                                : DEFAULT_QUIZZES_PER_PAGE)
+                          )
                         }
                         w={75}
                         radius='md'
@@ -553,7 +610,7 @@ export default function QuizSettingsTab({
               >
                 {viewMode === 'table' && !isMobile ? (
                   <QuizTableView
-                    quizzes={paginatedData}
+                    quizzes={paginatedTableQuizzes}
                     onSelectQuiz={handleSelectQuiz}
                     onSimulateQuiz={quiz => setQuickSimulatingQuiz(quiz)}
                     activePage={activePage}
@@ -574,15 +631,35 @@ export default function QuizSettingsTab({
               </DataView>
 
               {/* Pagination */}
-              {totalPages > 1 && (
-                <Flex justify='center' mt='md'>
+              {totalPages > 1 ? (
+                <Flex
+                  direction={{ base: 'column', sm: 'row' }}
+                  justify='space-between'
+                  align='center'
+                  gap='sm'
+                  mt='md'
+                >
+                  <Text size='xs' c='dimmed'>
+                    Showing {startItemNumber}–{endItemNumber} of{' '}
+                    {totalItemsCount} {itemTypeLabel}
+                  </Text>
                   <Pagination
                     total={totalPages}
                     value={activePage}
                     onChange={setActivePage}
                     color={currentThemeConfig.button.color}
+                    radius='md'
+                    size='sm'
                   />
                 </Flex>
+              ) : (
+                totalItemsCount > 0 && (
+                  <Flex justify='flex-end' mt='xs'>
+                    <Text size='xs' c='dimmed'>
+                      Showing all {totalItemsCount} {itemTypeLabel}
+                    </Text>
+                  </Flex>
+                )
               )}
             </>
           )}

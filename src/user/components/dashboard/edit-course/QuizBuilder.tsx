@@ -40,8 +40,8 @@ import {
   IconPlus,
   IconSearch,
   IconSelect,
-  IconSparkles,
   IconSwitchHorizontal,
+  IconTextCaption,
   IconTrash
 } from '@tabler/icons-react';
 import { CommonButton } from '@components/common/button/CommonButton';
@@ -129,11 +129,12 @@ const QuestionEditor = ({
   onSave,
   onCancel
 }: QuestionEditorProps) => {
-  const { themeConfig } = useAppTheme();
+  const { themeConfig, isDarkTheme } = useAppTheme();
 
   const isMulti = isMultiAnswerType(value.type);
   const isToggle = value.type === 'TOGGLE';
   const isText = isTextAnswerType(value.type);
+  const isDropdown = value.type === 'DROPDOWN';
   const isEditing = mode === 'edit';
   const correctOptionId =
     value.options.find(option => option.isCorrect)?.id ?? '';
@@ -185,6 +186,8 @@ const QuestionEditor = ({
   };
 
   const answerControl = (option: QuizOption, index: number) => {
+    const isThisCorrect = option.isCorrect;
+
     if (isToggle) {
       return (
         <Switch
@@ -196,68 +199,206 @@ const QuestionEditor = ({
         />
       );
     }
+
     if (isMulti) {
       return (
         <Checkbox
           checked={option.isCorrect}
           onChange={() => toggleCorrect(option.id)}
+          color='teal'
+          size='sm'
           aria-label={`Mark option ${index + 1} as answer`}
-          label='Correct'
-          styles={{ label: { whiteSpace: 'nowrap', fontWeight: 500 } }}
+          label={
+            <Group gap={6} wrap='nowrap' align='center'>
+              {isThisCorrect ? (
+                <span
+                  className={`${styles.animatedTick} ${styles.tickBadgeActive}`}
+                >
+                  <IconCheck
+                    size={14}
+                    stroke={3}
+                    color='var(--mantine-color-teal-6)'
+                  />
+                </span>
+              ) : (
+                <IconCheck size={14} stroke={2} style={{ opacity: 0.3 }} />
+              )}
+              <Text
+                size='xs'
+                fw={isThisCorrect ? 700 : 500}
+                c={isThisCorrect ? 'teal.7' : 'dimmed'}
+              >
+                {isThisCorrect ? 'Correct Answer' : 'Correct'}
+              </Text>
+            </Group>
+          }
+          styles={{
+            root: {
+              cursor: 'pointer',
+              padding: '4px 10px',
+              borderRadius: '8px',
+              border: isThisCorrect
+                ? '1px solid var(--mantine-color-teal-4)'
+                : '1px solid rgba(0, 0, 0, 0.08)',
+              backgroundColor: isThisCorrect
+                ? 'rgba(16, 185, 129, 0.1)'
+                : 'transparent',
+              transition: 'all 0.2s cubic-bezier(0.2, 0, 0, 1)'
+            },
+            input: {
+              cursor: 'pointer',
+              borderColor: isThisCorrect
+                ? 'var(--mantine-color-teal-6)'
+                : undefined,
+              transition: 'all 0.2s ease',
+              ...(isThisCorrect
+                ? { boxShadow: '0 0 0 3px rgba(16, 185, 129, 0.25)' }
+                : {})
+            }
+          }}
         />
       );
     }
-    return <Radio value={option.id} label='Correct' />;
+
+    // Single Choice (RADIO) and Dropdown (DROPDOWN)
+    return (
+      <Radio
+        value={option.id}
+        color='teal'
+        size='sm'
+        aria-label='Correct'
+        label={
+          <Group gap={6} wrap='nowrap' align='center'>
+            {isThisCorrect ? (
+              <span
+                className={`${styles.animatedTick} ${styles.tickBadgeActive}`}
+              >
+                <IconCheck
+                  size={14}
+                  stroke={3}
+                  color='var(--mantine-color-teal-6)'
+                />
+              </span>
+            ) : (
+              <IconCheck size={14} stroke={2} style={{ opacity: 0.3 }} />
+            )}
+            <Text
+              size='xs'
+              fw={isThisCorrect ? 700 : 500}
+              c={isThisCorrect ? 'teal.7' : 'dimmed'}
+            >
+              {isThisCorrect
+                ? isDropdown
+                  ? 'Correct Option'
+                  : 'Correct Answer'
+                : 'Correct'}
+            </Text>
+          </Group>
+        }
+        styles={{
+          root: {
+            cursor: 'pointer',
+            padding: '4px 10px',
+            borderRadius: '8px',
+            border: isThisCorrect
+              ? '1px solid var(--mantine-color-teal-4)'
+              : '1px solid rgba(0, 0, 0, 0.08)',
+            backgroundColor: isThisCorrect
+              ? 'rgba(16, 185, 129, 0.1)'
+              : 'transparent',
+            transition: 'all 0.2s cubic-bezier(0.2, 0, 0, 1)'
+          },
+          radio: {
+            cursor: 'pointer',
+            borderColor: isThisCorrect
+              ? 'var(--mantine-color-teal-6)'
+              : undefined,
+            transition: 'all 0.2s ease',
+            ...(isThisCorrect
+              ? { boxShadow: '0 0 0 3px rgba(16, 185, 129, 0.25)' }
+              : {})
+          }
+        }}
+      />
+    );
   };
 
   const optionRow = (option: QuizOption, index: number) => {
     const isThisCorrect = option.isCorrect;
     return (
-      <Group
+      <Paper
         key={option.id}
-        gap='xs'
-        wrap='nowrap'
-        align='center'
-        p={4}
-        className={styles.optionRow}
+        p='xs'
+        radius='md'
+        withBorder
+        className={`${styles.optionRow} ${isThisCorrect ? styles.optionRowCorrect : ''}`}
         style={{
           backgroundColor: isThisCorrect
-            ? 'rgba(16, 185, 129, 0.05)'
-            : 'transparent',
-          border: isThisCorrect
-            ? '1px solid rgba(16, 185, 129, 0.25)'
-            : '1px solid transparent',
-          borderRadius: 8
+            ? 'rgba(16, 185, 129, 0.06)'
+            : isDarkTheme
+              ? 'rgba(255, 255, 255, 0.02)'
+              : 'rgba(0, 0, 0, 0.01)',
+          borderColor: isThisCorrect
+            ? 'var(--mantine-color-teal-5)'
+            : themeConfig.borderColor,
+          boxShadow: isThisCorrect
+            ? '0 2px 8px rgba(16, 185, 129, 0.15)'
+            : 'none',
+          transition: 'all 0.25s cubic-bezier(0.2, 0, 0, 1)'
         }}
       >
-        <Badge
-          size='sm'
-          variant='light'
-          color={isThisCorrect ? 'teal' : 'gray'}
-          radius='sm'
-          style={{ width: 26, padding: 0, textAlign: 'center' }}
-        >
-          {String.fromCharCode(65 + index)}
-        </Badge>
-        {answerControl(option, index)}
-        <TextInput
-          aria-label={`Option ${index + 1}`}
-          placeholder={`Option ${index + 1}`}
-          value={option.text}
-          onChange={event => updateOption(option.id, event.currentTarget.value)}
-          style={{ flex: 1 }}
-          radius='md'
-        />
-        <ActionIcon
-          variant='subtle'
-          color='red'
-          aria-label={`Remove option ${index + 1}`}
-          onClick={() => removeOption(option.id)}
-          disabled={isToggle && value.options.length <= 2}
-        >
-          <IconTrash size={16} />
-        </ActionIcon>
-      </Group>
+        <Group gap='sm' wrap='nowrap' align='center'>
+          <Badge
+            size='md'
+            variant={isThisCorrect ? 'filled' : 'light'}
+            color={isThisCorrect ? 'teal' : 'gray'}
+            radius='md'
+            style={{
+              width: 28,
+              height: 28,
+              padding: 0,
+              textAlign: 'center',
+              fontWeight: 700,
+              fontSize: '0.82rem',
+              flexShrink: 0,
+              transition: 'all 0.2s ease'
+            }}
+          >
+            {String.fromCharCode(65 + index)}
+          </Badge>
+
+          {answerControl(option, index)}
+
+          <TextInput
+            aria-label={`Option ${index + 1}`}
+            placeholder={`Option ${index + 1}`}
+            value={option.text}
+            onChange={event =>
+              updateOption(option.id, event.currentTarget.value)
+            }
+            style={{ flex: 1 }}
+            radius='md'
+            styles={{
+              input: {
+                borderColor: isThisCorrect
+                  ? 'rgba(16, 185, 129, 0.4)'
+                  : undefined
+              }
+            }}
+          />
+
+          <ActionIcon
+            variant='subtle'
+            color='red'
+            aria-label={`Remove option ${index + 1}`}
+            onClick={() => removeOption(option.id)}
+            disabled={isToggle && value.options.length <= 2}
+            radius='md'
+          >
+            <IconTrash size={16} />
+          </ActionIcon>
+        </Group>
+      </Paper>
     );
   };
 
@@ -517,7 +658,7 @@ const QuestionEditor = ({
           >
             <Group gap='sm'>
               <ThemeIcon size={32} radius='md' variant='light' color='indigo'>
-                <IconSparkles size={18} />
+                <IconTextCaption size={18} />
               </ThemeIcon>
               <Stack gap={2}>
                 <Text size='xs' fw={600}>
