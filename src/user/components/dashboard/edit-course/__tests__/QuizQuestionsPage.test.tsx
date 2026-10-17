@@ -102,12 +102,16 @@ const fillOption = (index: number, value: string) =>
     target: { value }
   });
 
-const renderPage = () =>
-  render(
+const renderPage = (search = '') => {
+  if (search) {
+    mockSearchParams = new URLSearchParams(search);
+  }
+  return render(
     <MantineProvider>
       <QuizQuestionsPage />
     </MantineProvider>
   );
+};
 
 describe('QuizQuestionsPage', () => {
   beforeEach(() => {
@@ -400,5 +404,15 @@ describe('QuizQuestionsPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /Back/i }));
 
     expect(mockNavigate).toHaveBeenCalledWith(-1);
+  });
+
+  it('navigates back to quizzes when from=quizzes is in searchParams', () => {
+    renderPage('taskId=task-1&from=quizzes');
+
+    fireEvent.click(screen.getByRole('button', { name: /Back/i }));
+
+    expect(mockNavigate).toHaveBeenCalledWith(
+      '/acme/employee/dashboard/quizzes'
+    );
   });
 });

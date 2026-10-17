@@ -161,6 +161,11 @@ const QuizQuestionsPage = () => {
       );
       return;
     }
+    const from = searchParams.get('from');
+    if (from === 'quizzes') {
+      navigate(`${commonUrls(organization)}/dashboard/quizzes`);
+      return;
+    }
     navigate(-1);
   };
 
@@ -184,7 +189,7 @@ const QuizQuestionsPage = () => {
                   leftSection={<IconArrowLeft size={16} />}
                   onClick={handleBack}
                 >
-                  Back to Course
+                  {courseId ? 'Back to Course' : 'Back'}
                 </CommonButton>
                 <Group gap='xs' align='center'>
                   <Title order={3} style={{ color: themeConfig.color }}>

@@ -66,6 +66,9 @@ export const CreateQuizTaskModal: React.FC<CreateQuizTaskModalProps> = ({
     taskName: false,
     taskDescription: false
   });
+  const [submittingAction, setSubmittingAction] = useState<
+    'create' | 'createAndQuestions' | null
+  >(null);
 
   const { mutateAsync: addTask, isPending } = useAddCourseTask(courseId);
 
@@ -75,6 +78,7 @@ export const CreateQuizTaskModal: React.FC<CreateQuizTaskModalProps> = ({
       setModuleId(initialModuleId);
       setTaskName('');
       setTaskDescription('');
+      setSubmittingAction(null);
       setTouched({
         courseId: false,
         moduleId: false,
@@ -148,7 +152,9 @@ export const CreateQuizTaskModal: React.FC<CreateQuizTaskModalProps> = ({
       taskDescription: true
     });
 
-    if (!isFormValid) return;
+    if (!isFormValid || isPending) return;
+
+    setSubmittingAction(openQuestionsBuilder ? 'createAndQuestions' : 'create');
 
     try {
       const response = await addTask({
@@ -182,8 +188,14 @@ export const CreateQuizTaskModal: React.FC<CreateQuizTaskModalProps> = ({
       onClose();
     } catch (error) {
       showErrorToast(getErrorMessage(error, 'Failed to create quiz task'));
+    } finally {
+      setSubmittingAction(null);
     }
   };
+
+  const isCreatingOnly = isPending && submittingAction === 'create';
+  const isCreatingAndQuestions =
+    isPending && submittingAction === 'createAndQuestions';
 
   return (
     <Modal
@@ -326,24 +338,24 @@ export const CreateQuizTaskModal: React.FC<CreateQuizTaskModalProps> = ({
             variant='light'
             color='indigo'
             onClick={() => handleCreate(false)}
-            loading={isPending}
+            loading={isCreatingOnly}
             disabled={isPending || !isFormValid}
             size='sm'
             leftSection={<IconCheck size={16} />}
           >
-            Create Quiz Task
+            {isCreatingOnly ? 'Creating...' : 'Create Quiz Task'}
           </CommonButton>
 
           <CommonButton
             variant='filled'
             color='indigo'
             onClick={() => handleCreate(true)}
-            loading={isPending}
+            loading={isCreatingAndQuestions}
             disabled={isPending || !isFormValid}
             size='sm'
             rightSection={<IconArrowRight size={16} />}
           >
-            Create & Add Questions
+            {isCreatingAndQuestions ? 'Creating...' : 'Create & Add Questions'}
           </CommonButton>
         </Group>
       </Stack>

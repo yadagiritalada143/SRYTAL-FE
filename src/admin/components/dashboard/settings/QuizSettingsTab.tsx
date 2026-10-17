@@ -45,11 +45,15 @@ import QuizTableView from './QuizTableView';
 const ITEMS_PER_PAGE_OPTIONS = ['5', '10', '20', '50', '100'];
 const DEFAULT_ITEMS_PER_PAGE = 10;
 
-export default function QuizSettingsTab({
-  showBackButton = false
-}: {
+export interface QuizSettingsTabProps {
   showBackButton?: boolean;
-}) {
+  onBack?: () => void;
+}
+
+export default function QuizSettingsTab({
+  showBackButton = false,
+  onBack
+}: QuizSettingsTabProps) {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const {
@@ -114,6 +118,8 @@ export default function QuizSettingsTab({
       if (match) {
         setActiveQuiz(match);
       }
+    } else if (!urlTaskId) {
+      setActiveQuiz(null);
     }
   }, [urlTaskId, allQuizzes]);
 
@@ -193,7 +199,7 @@ export default function QuizSettingsTab({
 
   const handleSelectQuiz = (quiz: CourseQuizItem) => {
     setActiveQuiz(quiz);
-    setSearchParams({ taskId: quiz.taskId });
+    setSearchParams({ taskId: quiz.taskId }, { replace: true });
   };
 
   const handleQuizCreated = (
@@ -224,7 +230,34 @@ export default function QuizSettingsTab({
 
   const handleBackToTable = () => {
     setActiveQuiz(null);
-    setSearchParams({});
+    setSearchParams({}, { replace: true });
+  };
+
+  const handleBackToCourse = () => {
+    if (!activeQuiz?.courseId) return;
+    const query = activeQuiz.moduleId
+      ? `?expandedModuleId=${activeQuiz.moduleId}`
+      : '';
+    navigate(
+      `${commonUrls(organization)}/dashboard/course/${activeQuiz.courseId}${query}`
+    );
+  };
+
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+      return;
+    }
+    const fromCourseId = searchParams.get('courseId');
+    if (fromCourseId) {
+      const fromModuleId = searchParams.get('moduleId');
+      const query = fromModuleId ? `?expandedModuleId=${fromModuleId}` : '';
+      navigate(
+        `${commonUrls(organization)}/dashboard/course/${fromCourseId}${query}`
+      );
+      return;
+    }
+    navigate(-1);
   };
 
   const totalActiveQuizzes = useMemo(
@@ -259,6 +292,9 @@ export default function QuizSettingsTab({
               moduleName={activeQuiz.moduleName}
               onBack={handleBackToTable}
               backLabel='All Quizzes'
+              onBackToCourse={
+                activeQuiz.courseId ? handleBackToCourse : undefined
+              }
             />
           ) : (
             <>
@@ -273,7 +309,7 @@ export default function QuizSettingsTab({
                       <CommonButton
                         variant='default'
                         leftSection={<IconArrowLeft size={16} />}
-                        onClick={() => navigate(-1)}
+                        onClick={handleBack}
                         fullWidth={isMobile}
                         size={isMobile ? 'md' : 'sm'}
                       >

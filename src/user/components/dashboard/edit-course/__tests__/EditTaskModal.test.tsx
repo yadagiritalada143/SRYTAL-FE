@@ -500,7 +500,7 @@ describe('EditTaskModal', () => {
       // employee login page (ContentWriter-only guard).
       expect(mockNavigate).toHaveBeenCalledTimes(1);
       const target = mockNavigate.mock.calls[0][0] as string;
-      expect(target).toMatch(/^\/acme\/admin\/dashboard\/content-writer\/quiz-questions\?/);
+      expect(target).toMatch(/^\/acme\/admin\/dashboard\/quiz-questions\?/);
       expect(target).toContain('taskId=t1');
       expect(target).toContain('courseId=c1');
       expect(target).toContain('moduleId=m1');

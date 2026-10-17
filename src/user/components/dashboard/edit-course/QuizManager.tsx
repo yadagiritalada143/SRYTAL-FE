@@ -16,7 +16,8 @@ import {
   IconEye,
   IconEyeOff,
   IconPlayerPlay,
-  IconArrowLeft
+  IconArrowLeft,
+  IconBook
 } from '@tabler/icons-react';
 import { useAppTheme } from '@hooks/use-app-theme';
 import { useCustomToast } from '@utils/common/toast';
@@ -46,6 +47,7 @@ export interface QuizManagerProps {
   moduleName?: string;
   onBack?: () => void;
   backLabel?: string;
+  onBackToCourse?: () => void;
 }
 
 export const QuizManager: React.FC<QuizManagerProps> = ({
@@ -54,7 +56,8 @@ export const QuizManager: React.FC<QuizManagerProps> = ({
   courseName,
   moduleName,
   onBack,
-  backLabel = 'All Quizzes'
+  backLabel = 'All Quizzes',
+  onBackToCourse
 }) => {
   const { themeConfig } = useAppTheme();
   const { showSuccessToast, showErrorToast } = useCustomToast();
@@ -160,6 +163,17 @@ export const QuizManager: React.FC<QuizManagerProps> = ({
                   onClick={onBack}
                 >
                   {backLabel}
+                </CommonButton>
+              )}
+              {onBackToCourse && (
+                <CommonButton
+                  variant='light'
+                  color='cyan'
+                  size='xs'
+                  leftSection={<IconBook size={14} />}
+                  onClick={onBackToCourse}
+                >
+                  Back to Course
                 </CommonButton>
               )}
               <Stack gap={2}>

@@ -297,6 +297,19 @@ describe('QuizSettingsTab', () => {
     expect(screen.getByText('Hooks Assessment')).toBeInTheDocument();
   });
 
+  it('allows navigating directly back to course from active quiz view', async () => {
+    renderTab();
+    const manageButtons = screen.getAllByText('Manage Questions');
+    fireEvent.click(manageButtons[0]);
+
+    expect(await screen.findByText('Back to Course')).toBeInTheDocument();
+    fireEvent.click(screen.getByText('Back to Course'));
+
+    expect(mockNavigate).toHaveBeenCalledWith(
+      '/srytal/admin/dashboard/course/c1?expandedModuleId=m1'
+    );
+  });
+
   it('handles question creation inside the active quiz manager', async () => {
     mockCreateQuestion.mockResolvedValueOnce({ message: 'Question added!' });
     renderTab();

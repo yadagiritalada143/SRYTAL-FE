@@ -366,12 +366,26 @@ const WriterDashboard = () => {
               Create and manage your courses, modules, and tasks
             </Text>
           </Stack>
-          <CommonButton
-            leftSection={<IconPlus size={16} />}
-            onClick={handleAddCourse}
-          >
-            New Course
-          </CommonButton>
+          <Group gap='sm' wrap='wrap'>
+            <CommonButton
+              variant='light'
+              color='cyan'
+              leftSection={<IconListCheck size={16} />}
+              onClick={() =>
+                navigate(
+                  `${commonUrls(organizationConfig.organization_name)}/dashboard/quizzes`
+                )
+              }
+            >
+              Quizzes
+            </CommonButton>
+            <CommonButton
+              leftSection={<IconPlus size={16} />}
+              onClick={handleAddCourse}
+            >
+              New Course
+            </CommonButton>
+          </Group>
         </Group>
       </Box>
 

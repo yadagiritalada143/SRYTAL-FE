@@ -7,8 +7,7 @@ import {
   IconUserCheck,
   IconBuildingBank,
   IconLock,
-  IconCode,
-  IconListCheck
+  IconCode
 } from '@tabler/icons-react';
 import { useMediaQuery } from '@mantine/hooks';
 import { useAppTheme } from '@hooks/use-app-theme';
@@ -107,13 +106,6 @@ const SettingsLayout = () => {
               leftSection={<IconCode size={16} stroke={1.8} />}
             >
               Programming Languages
-            </Tabs.Tab>
-
-            <Tabs.Tab
-              value='quizzes'
-              leftSection={<IconListCheck size={16} stroke={1.8} />}
-            >
-              Quizzes
             </Tabs.Tab>
           </Tabs.List>
         </Tabs>

@@ -524,7 +524,7 @@ describe('CourseDetails', () => {
       openSpy.mockRestore();
     });
 
-    it('shows an Edit questions action for quiz tasks instead of Open', () => {
+    it('shows a Manage Questions action for quiz tasks instead of Open', () => {
       mockCourse = makeCourse({
         modules: [
           {
@@ -549,7 +549,7 @@ describe('CourseDetails', () => {
       renderPage();
 
       expect(screen.queryByText('Open')).not.toBeInTheDocument();
-      expect(screen.getByText('Edit questions')).toBeInTheDocument();
+      expect(screen.getByText('Manage Questions')).toBeInTheDocument();
     });
 
     it('navigates to the quiz editor with the task and course ids', () => {
@@ -578,12 +578,18 @@ describe('CourseDetails', () => {
 
       fireEvent.click(
         screen
-          .getByText('Edit questions')
+          .getByText('Manage Questions')
           .closest('button') as HTMLButtonElement
       );
 
+      const params = new URLSearchParams({
+        taskId: 'q1',
+        courseId: 'c1',
+        moduleId: '',
+        taskName: 'Colour quiz'
+      });
       expect(mockNavigate).toHaveBeenCalledWith(
-        '/acme/employee/dashboard/content-writer/quiz-questions?taskId=q1&courseId=c1'
+        `/acme/employee/dashboard/quiz-questions?${params.toString()}`
       );
     });
   });

@@ -158,7 +158,7 @@ const EditTaskModal = ({
     clearTaskDraft();
     onClose();
     navigate(
-      `${commonUrls(organization)}/dashboard/content-writer/quiz-questions?${params.toString()}`
+      `${commonUrls(organization)}/dashboard/quiz-questions?${params.toString()}`
     );
   };
 

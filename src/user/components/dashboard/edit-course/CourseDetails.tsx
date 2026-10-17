@@ -142,10 +142,12 @@ const CourseDetails = () => {
   const handleManageQuizQuestions = (task: Task) => {
     const params = new URLSearchParams({
       taskId: task._id,
-      courseId: id
+      courseId: id,
+      moduleId: task.moduleId || '',
+      taskName: task.taskName || ''
     });
     navigate(
-      `${commonUrls(organization)}/dashboard/content-writer/quiz-questions?${params.toString()}`
+      `${commonUrls(organization)}/dashboard/quiz-questions?${params.toString()}`
     );
   };
 
@@ -1007,11 +1009,12 @@ const TaskRow = ({
             {isQuiz ? (
               <CommonButton
                 variant='light'
+                color='cyan'
                 size='xs'
-                leftSection={<IconListCheck size={12} />}
+                leftSection={<IconListCheck size={14} />}
                 onClick={onManageQuestions}
               >
-                Edit questions
+                Manage Questions
               </CommonButton>
             ) : (
               <CommonButton

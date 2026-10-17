@@ -377,10 +377,10 @@ describe('AdminRoutes', () => {
     expect(await screen.findByText('NavAccess')).toBeInTheDocument();
   });
 
-  it('renders settings quizzes route', async () => {
+  it('renders quizzes route', async () => {
     localStorage.setItem('token', 'token-123');
     localStorage.setItem('userRole', 'admin');
-    renderRoutes('/srytal/admin/dashboard/settings/quizzes');
+    renderRoutes('/srytal/admin/dashboard/quizzes');
     expect(await screen.findByText('QuizSettingsTab')).toBeInTheDocument();
   });
 });

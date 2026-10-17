@@ -616,6 +616,11 @@ const AdminRoutes = () => {
                 path='content-writer/programming-languages'
                 element={<ProgrammingLanguagesTable showBackButton />}
               />
+              <Route path='quiz-questions' element={<QuizQuestionsPage />} />
+              <Route
+                path='quizzes'
+                element={<QuizSettingsTab showBackButton />}
+              />
               <Route
                 path='content-writer/quizzes'
                 element={<QuizSettingsTab showBackButton />}
@@ -636,7 +641,6 @@ const AdminRoutes = () => {
                   path='programming-languages'
                   element={<ProgrammingLanguagesTable />}
                 />
-                <Route path='quizzes' element={<QuizSettingsTab />} />
                 <Route path='feedback' element={<FeedbackTable />} />
                 <Route path='menu-access' element={<NavAccess />} />
               </Route>

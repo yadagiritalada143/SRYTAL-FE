@@ -18,11 +18,14 @@ jest.mock('@utils/common/toast', () => ({
   })
 }));
 
+let mockIsPending = false;
 const mockAddTask = jest.fn();
 jest.mock('@hooks/mutations/useUserMutations', () => ({
   useAddCourseTask: () => ({
     mutateAsync: mockAddTask,
-    isPending: false
+    get isPending() {
+      return mockIsPending;
+    }
   })
 }));
 
@@ -81,6 +84,7 @@ describe('CreateQuizTaskModal', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockIsPending = false;
   });
 
   afterEach(() => {
@@ -221,6 +225,94 @@ describe('CreateQuizTaskModal', () => {
         }),
         true
       );
+      expect(defaultProps.onClose).toHaveBeenCalled();
+    });
+  });
+
+  it('shows Creating... only on Create Quiz Task button when clicked during pending state', async () => {
+    let resolveTask: any;
+    mockAddTask.mockImplementation(
+      () =>
+        new Promise(resolve => {
+          resolveTask = resolve;
+        })
+    );
+
+    renderModal({ initialCourseId: 'c1', initialModuleId: 'm1' });
+
+    const titleInput = screen.getByPlaceholderText(
+      'e.g. JavaScript Async & Promises Assessment'
+    );
+    const descInput = screen.getByPlaceholderText(
+      'e.g. Test understanding of async/await, Promise chaining, and microtask queues.'
+    );
+
+    fireEvent.change(titleInput, { target: { value: 'Frontend Quiz' } });
+    fireEvent.change(descInput, { target: { value: 'Description' } });
+
+    mockIsPending = true;
+
+    fireEvent.click(screen.getByRole('button', { name: /create quiz task/i }));
+
+    expect(
+      screen.getByRole('button', { name: /creating\.\.\./i })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /create & add questions/i })
+    ).toBeInTheDocument();
+
+    mockIsPending = false;
+    resolveTask?.({
+      message: 'Quiz created successfully!',
+      task: { _id: 'task-new-3' }
+    });
+
+    await waitFor(() => {
+      expect(defaultProps.onClose).toHaveBeenCalled();
+    });
+  });
+
+  it('shows Creating... only on Create & Add Questions button when clicked during pending state', async () => {
+    let resolveTask: any;
+    mockAddTask.mockImplementation(
+      () =>
+        new Promise(resolve => {
+          resolveTask = resolve;
+        })
+    );
+
+    renderModal({ initialCourseId: 'c1', initialModuleId: 'm1' });
+
+    const titleInput = screen.getByPlaceholderText(
+      'e.g. JavaScript Async & Promises Assessment'
+    );
+    const descInput = screen.getByPlaceholderText(
+      'e.g. Test understanding of async/await, Promise chaining, and microtask queues.'
+    );
+
+    fireEvent.change(titleInput, { target: { value: 'Frontend Quiz 2' } });
+    fireEvent.change(descInput, { target: { value: 'Description' } });
+
+    mockIsPending = true;
+
+    fireEvent.click(
+      screen.getByRole('button', { name: /create & add questions/i })
+    );
+
+    expect(
+      screen.getByRole('button', { name: /creating\.\.\./i })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /create quiz task/i })
+    ).toBeInTheDocument();
+
+    mockIsPending = false;
+    resolveTask?.({
+      message: 'Quiz created successfully!',
+      task: { _id: 'task-new-4' }
+    });
+
+    await waitFor(() => {
       expect(defaultProps.onClose).toHaveBeenCalled();
     });
   });
