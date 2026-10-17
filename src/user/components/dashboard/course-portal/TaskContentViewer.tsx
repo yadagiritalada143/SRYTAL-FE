@@ -11,7 +11,7 @@ import { CommonButton } from '@components/common/button/CommonButton';
 import { AssignedTask } from '@interfaces/course-assignment';
 import { getCourseTaskContentUrl } from '@services/user-services';
 import { resolveTaskContent, isCodingTask, isQuizTask } from './task-content';
-import QuizPlayer from './QuizPlayer';
+import QuizTaskViewer from './QuizTaskViewer';
 
 interface TaskContentViewerProps {
   task: AssignedTask;
@@ -22,7 +22,6 @@ interface TaskContentViewerProps {
 
 const TaskContentViewer = ({
   task,
-  courseAssignmentId,
   onFinished,
   embedded = false
 }: TaskContentViewerProps) => {
@@ -71,13 +70,7 @@ const TaskContentViewer = ({
   }
 
   if (isQuizTask(task)) {
-    return (
-      <QuizPlayer
-        task={task}
-        courseAssignmentId={courseAssignmentId}
-        onFinished={onFinished}
-      />
-    );
+    return <QuizTaskViewer task={task} onPassed={onFinished} />;
   }
 
   const content = resolveTaskContent(task, getCourseTaskContentUrl(task._id));

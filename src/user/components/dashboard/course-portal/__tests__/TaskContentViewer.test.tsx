@@ -18,7 +18,7 @@ jest.mock('../task-content', () => ({
   isQuizTask: (task: any) => String(task?.type || '').toUpperCase() === 'QUIZ'
 }));
 
-jest.mock('../QuizPlayer', () => () => <div>QuizPlayer</div>);
+jest.mock('../QuizTaskViewer', () => () => <div>QuizTaskViewer</div>);
 
 jest.mock('@services/user-services', () => ({
   getCourseTaskContentUrl: (taskId: string) =>
@@ -267,8 +267,8 @@ describe('TaskContentViewer', () => {
     expect(screen.getByText('External resource')).toBeInTheDocument();
   });
 
-  it('renders QuizPlayer for quiz tasks', () => {
+  it('renders QuizTaskViewer for quiz tasks', () => {
     renderViewer(makeTask({ type: 'QUIZ' }));
-    expect(screen.getByText('QuizPlayer')).toBeInTheDocument();
+    expect(screen.getByText('QuizTaskViewer')).toBeInTheDocument();
   });
 });

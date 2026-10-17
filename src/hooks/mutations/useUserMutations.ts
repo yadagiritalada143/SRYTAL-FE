@@ -22,6 +22,8 @@ import {
   updateQuizQuestion,
   updateQuizQuestionStatus,
   deleteQuizQuestion,
+  validateQuiz,
+  submitQuiz,
   saveUserOpenRouterKey
 } from '@services/user-services';
 import { userQueryKeys } from '../queries/useUserQueries';
@@ -48,7 +50,9 @@ import {
 import {
   QuizQuestionApiPayload,
   QuizQuestionApiUpdatePayload,
-  QuizQuestionStatus
+  QuizQuestionStatus,
+  QuizValidatePayload,
+  QuizSubmitPayload
 } from '@interfaces/quiz';
 
 export const useAddCompany = () => {
@@ -250,6 +254,18 @@ export const useDeleteQuizQuestion = (taskId?: string) => {
         });
       }
     }
+  });
+};
+
+export const useValidateQuiz = () => {
+  return useMutation({
+    mutationFn: (data: QuizValidatePayload) => validateQuiz(data)
+  });
+};
+
+export const useSubmitQuiz = () => {
+  return useMutation({
+    mutationFn: (data: QuizSubmitPayload) => submitQuiz(data)
   });
 };
 

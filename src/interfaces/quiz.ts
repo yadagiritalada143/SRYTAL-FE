@@ -114,3 +114,88 @@ export interface CourseGroup {
   modules: ModuleGroup[];
   totalQuizzes: number;
 }
+
+export interface QuizAttemptOption {
+  optionId: string;
+  value: string;
+}
+
+export interface QuizAttemptQuestion {
+  questionId: string;
+  question: string;
+  type: string;
+  options?: QuizAttemptOption[];
+}
+
+export interface QuizAttempt {
+  taskId: string;
+  attemptId?: string;
+  taskName?: string;
+  totalQuestions?: number;
+  questions: QuizAttemptQuestion[];
+}
+
+export interface QuizAnswerSubmission {
+  questionId: string;
+  selectedOptionIds?: string[];
+  textAnswer?: string;
+}
+
+export interface QuizValidatePayload {
+  taskId: string;
+  attemptId: string;
+  answers: QuizAnswerSubmission[];
+}
+
+export interface QuizReviewQuestion {
+  questionId: string;
+  question: string;
+  type: string;
+  isCorrect?: boolean | null;
+  correctOptionIds?: string[];
+  correctOptionValues?: string[];
+  selectedOptionIds?: string[];
+  selectedOptionValues?: string[];
+  textAnswer?: string;
+}
+
+export interface QuizValidationResult {
+  taskId: string;
+  attemptId: string;
+  totalScoredQuestions: number;
+  correctAnswers: number;
+  incorrectAnswers: number;
+  percentage: number | null;
+  passingPercentage: number;
+  passed: boolean | null;
+  review: QuizReviewQuestion[];
+}
+
+export interface QuizProgress {
+  totalTasks: number;
+  completedTasks: number;
+  percentComplete: number;
+}
+
+export interface QuizSubmitPayload {
+  taskId: string;
+  attemptId: string;
+}
+
+export interface QuizSubmitResult {
+  taskId: string;
+  attemptId: string;
+  attemptNumber?: number;
+  totalScoredQuestions?: number;
+  correctAnswers?: number;
+  incorrectAnswers?: number;
+  percentage?: number | null;
+  passingPercentage?: number;
+  passed?: boolean | null;
+  alreadySubmitted?: boolean;
+  reattemptRequired?: boolean;
+  courseStatus?: string;
+  progress?: QuizProgress;
+  isCompleted?: boolean;
+  completedAt?: string | null;
+}
