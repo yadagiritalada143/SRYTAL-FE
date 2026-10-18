@@ -1,10 +1,17 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { configure, render, screen, waitFor } from '@testing-library/react';
 import { MantineProvider } from '@mantine/core';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { RecoilRoot } from 'recoil';
 import React, { Suspense } from 'react';
 import AdminRoutes from '../admin';
+
+// Rendering these routes resolves several `React.lazy` layers. During the full
+// parallel test run the worker can be CPU-starved long enough that the default
+// 1s async timeout elapses before the lazy routes settle (leaving the
+// `loading-routes` Suspense fallback on screen), so allow more headroom.
+configure({ asyncUtilTimeout: 5000 });
+jest.setTimeout(15000);
 
 jest.mock('@constants', () => ({
   BASE_URL: 'http://localhost:3000/',
