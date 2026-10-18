@@ -117,6 +117,7 @@ interface QuestionEditorProps {
   onChange: (question: QuizQuestion) => void;
   onSave: () => void;
   onCancel: () => void;
+  onDelete?: () => void;
 }
 
 const QuestionEditor = ({
@@ -127,7 +128,8 @@ const QuestionEditor = ({
   mode,
   onChange,
   onSave,
-  onCancel
+  onCancel,
+  onDelete
 }: QuestionEditorProps) => {
   const { themeConfig, isDarkTheme } = useAppTheme();
 
@@ -728,25 +730,42 @@ const QuestionEditor = ({
 
         {/* Action Buttons */}
         <Divider my={4} />
-        <Group justify='flex-end' gap='xs'>
-          <CommonButton variant='default' size='xs' onClick={onCancel}>
-            Cancel
-          </CommonButton>
-          <CommonButton
-            size='xs'
-            leftSection={
-              isEditing ? (
-                <IconDeviceFloppy size={14} />
-              ) : (
-                <IconCheck size={14} />
-              )
-            }
-            loading={isSubmitting}
-            disabled={isSubmitting}
-            onClick={onSave}
-          >
-            {isEditing ? 'Save changes' : 'Add question'}
-          </CommonButton>
+        <Group
+          justify={isEditing && onDelete ? 'space-between' : 'flex-end'}
+          gap='xs'
+        >
+          {isEditing && onDelete && (
+            <CommonButton
+              variant='light'
+              color='red'
+              size='xs'
+              leftSection={<IconTrash size={14} />}
+              onClick={onDelete}
+              disabled={isSubmitting}
+            >
+              Delete question
+            </CommonButton>
+          )}
+          <Group gap='xs'>
+            <CommonButton variant='default' size='xs' onClick={onCancel}>
+              Cancel
+            </CommonButton>
+            <CommonButton
+              size='xs'
+              leftSection={
+                isEditing ? (
+                  <IconDeviceFloppy size={14} />
+                ) : (
+                  <IconCheck size={14} />
+                )
+              }
+              loading={isSubmitting}
+              disabled={isSubmitting}
+              onClick={onSave}
+            >
+              {isEditing ? 'Save changes' : 'Add question'}
+            </CommonButton>
+          </Group>
         </Group>
       </Stack>
     </Paper>
@@ -1002,6 +1021,15 @@ const QuizBuilder = ({
           onChange={setDraft}
           onSave={handleSave}
           onCancel={resetDraft}
+          onDelete={
+            editingId
+              ? () => {
+                  const target =
+                    questions.find(q => q.id === editingId) || draft;
+                  setDeleteTarget(target);
+                }
+              : undefined
+          }
         />
 
         <Stack gap='sm'>
@@ -1085,17 +1113,39 @@ const QuizBuilder = ({
       <Modal
         opened={!!deleteTarget}
         onClose={closeDeleteModal}
-        title='Delete question'
+        title={
+          <Group gap='xs'>
+            <ThemeIcon color='red' variant='light' size={26} radius='sm'>
+              <IconTrash size={15} />
+            </ThemeIcon>
+            <Text fw={700} size='sm'>
+              Delete Quiz Question
+            </Text>
+          </Group>
+        }
         centered
         radius='md'
         transitionProps={{ duration: 0 }}
       >
-        <Stack gap='md'>
-          <Text size='sm' mt='sm'>
-            Delete &ldquo;{deleteTarget?.question || 'this question'}&rdquo;?
-            This cannot be undone.
+        <Stack gap='md' className='mt-5'>
+          <Text size='sm'>
+            Are you sure you want to delete this quiz question? This will remove
+            the question from the quiz.
           </Text>
-          <Group justify='flex-end'>
+          <Paper
+            p='sm'
+            radius='md'
+            withBorder
+            style={{
+              borderColor: themeConfig.borderColor,
+              backgroundColor: 'rgba(239, 68, 68, 0.03)'
+            }}
+          >
+            <Text fw={600} size='sm' lineClamp={3}>
+              &ldquo;{deleteTarget?.question || 'Untitled question'}&rdquo;
+            </Text>
+          </Paper>
+          <Group justify='flex-end' gap='xs'>
             <CommonButton
               variant='default'
               size='xs'
@@ -1107,6 +1157,7 @@ const QuizBuilder = ({
             <CommonButton
               color='red'
               size='xs'
+              leftSection={<IconTrash size={14} />}
               loading={isDeleting}
               disabled={isDeleting}
               onClick={handleConfirmDelete}

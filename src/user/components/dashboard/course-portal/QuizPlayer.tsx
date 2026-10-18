@@ -71,7 +71,10 @@ const QuizPlayer = ({
         ? (apiQuestions as any).data
         : [];
     return list
-      .filter((q: any) => (q.status || 'SHOW').toUpperCase() === 'SHOW')
+      .filter(
+        (q: any) =>
+          !q.isDeleted && (q.status || 'SHOW').toUpperCase() === 'SHOW'
+      )
       .map(fromQuizQuestionApi);
   }, [apiQuestions]);
 

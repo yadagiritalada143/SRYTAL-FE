@@ -546,6 +546,34 @@ describe('user-services', () => {
       expect(mock.delete).toHaveBeenCalledWith('/deleteQuizQuestion/q1');
       expect(result).toEqual({ success: true, message: 'deleted' });
     });
+
+    it('deleteQuizQuestion deletes by object with questionId', async () => {
+      mock.delete.mockResolvedValue({
+        data: { success: true, message: 'deleted' }
+      });
+
+      const result = await deleteQuizQuestion({ questionId: 'q2' });
+
+      expect(mock.delete).toHaveBeenCalledWith('/deleteQuizQuestion/q2');
+      expect(result).toEqual({ success: true, message: 'deleted' });
+    });
+
+    it('getAllQuizQuestions filters out soft-deleted questions', async () => {
+      mock.get.mockResolvedValue({
+        data: {
+          success: true,
+          data: [
+            { _id: 'q1', isDeleted: false },
+            { _id: 'q2', isDeleted: true },
+            { _id: 'q3' }
+          ]
+        }
+      });
+
+      const result = await getAllQuizQuestions('task1');
+
+      expect(result).toEqual([{ _id: 'q1', isDeleted: false }, { _id: 'q3' }]);
+    });
   });
 
   describe('assigned course services', () => {

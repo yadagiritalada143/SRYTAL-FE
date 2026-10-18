@@ -24,7 +24,7 @@ export const QuickSimulationModal: React.FC<QuickSimulationModalProps> = ({
   );
 
   const questions = useMemo(
-    () => apiQuestions.map(fromQuizQuestionApi),
+    () => apiQuestions.filter(q => !q.isDeleted).map(fromQuizQuestionApi),
     [apiQuestions]
   );
 

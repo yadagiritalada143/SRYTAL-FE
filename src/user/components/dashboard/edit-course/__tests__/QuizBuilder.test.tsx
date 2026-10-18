@@ -492,4 +492,30 @@ describe('QuizBuilder', () => {
       screen.getByText('What is your favourite colour?')
     ).toBeInTheDocument();
   }, 15000);
+
+  it('allows deleting a question directly from the edit form', async () => {
+    const onDeleteQuestion = jest.fn().mockResolvedValue(undefined);
+    render(
+      <Harness initial={[baseQuestion()]} onDeleteQuestion={onDeleteQuestion} />
+    );
+
+    fireEvent.click(screen.getByLabelText('Edit question'));
+    expect(
+      screen.getByRole('button', { name: 'Save changes' })
+    ).toBeInTheDocument();
+
+    const deleteInFormBtn = screen
+      .getByText('Delete question')
+      .closest('button')!;
+    expect(deleteInFormBtn).toBeInTheDocument();
+    fireEvent.click(deleteInFormBtn);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Yes, delete' }));
+
+    await waitFor(() =>
+      expect(onDeleteQuestion).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'q1' })
+      )
+    );
+  }, 15000);
 });

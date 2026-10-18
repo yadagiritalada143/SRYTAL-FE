@@ -173,14 +173,17 @@ export const toQuizQuestionUpdatePayload = (
 
 export const fromQuizQuestionApi = (
   model: QuizQuestionApiModel
-): QuizQuestion => ({
-  id: model._id,
-  question: model.question,
-  type: model.type,
-  status: model.status ?? 'SHOW',
-  options: (model.options ?? []).map((option, index) => ({
-    id: `${model._id}-option-${index}`,
-    text: option.value ?? (option as any).text ?? '',
-    isCorrect: Boolean(option.isanswer)
-  }))
-});
+): QuizQuestion => {
+  const qId = model._id || (model as any).id || (model as any).questionId || '';
+  return {
+    id: qId,
+    question: model.question,
+    type: model.type,
+    status: model.status ?? 'SHOW',
+    options: (model.options ?? []).map((option, index) => ({
+      id: `${qId}-option-${index}`,
+      text: option.value ?? (option as any).text ?? '',
+      isCorrect: Boolean(option.isanswer)
+    }))
+  };
+};
