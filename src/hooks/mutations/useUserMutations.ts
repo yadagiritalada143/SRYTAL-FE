@@ -48,6 +48,7 @@ import {
   UpdateTaskProgressPayload
 } from '@interfaces/course-assignment';
 import {
+  QuizQuestionApiModel,
   QuizQuestionApiPayload,
   QuizQuestionApiUpdatePayload,
   QuizQuestionStatus,
@@ -247,10 +248,17 @@ export const useDeleteQuizQuestion = (taskId?: string) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (questionId: string) => deleteQuizQuestion(questionId),
-    onSuccess: () => {
+    onSuccess: (_, questionId) => {
       if (taskId) {
+        queryClient.setQueryData<QuizQuestionApiModel[]>(
+          userQueryKeys.quizQuestions(taskId),
+          old => (old ? old.filter(q => q._id !== questionId) : [])
+        );
         queryClient.invalidateQueries({
           queryKey: userQueryKeys.quizQuestions(taskId)
+        });
+        queryClient.invalidateQueries({
+          queryKey: userQueryKeys.courses
         });
       }
     }

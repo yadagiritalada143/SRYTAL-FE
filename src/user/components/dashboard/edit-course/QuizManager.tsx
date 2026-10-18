@@ -78,7 +78,7 @@ export const QuizManager: React.FC<QuizManagerProps> = ({
   const { mutateAsync: deleteQuestion } = useDeleteQuizQuestion(taskId);
 
   const questions = useMemo(
-    () => apiQuestions.map(fromQuizQuestionApi),
+    () => apiQuestions.filter(q => !q.isDeleted).map(fromQuizQuestionApi),
     [apiQuestions]
   );
 
@@ -131,8 +131,13 @@ export const QuizManager: React.FC<QuizManagerProps> = ({
   };
 
   const handleDeleteQuestion = async (question: QuizQuestion) => {
+    const qId = question.id || (question as any)._id;
+    if (!qId) {
+      showErrorToast('Question ID is missing.');
+      return;
+    }
     try {
-      const response = await deleteQuestion(question.id);
+      const response = await deleteQuestion(qId);
       showSuccessToast(response?.message || 'Question deleted successfully!');
     } catch (error) {
       showErrorToast(getErrorMessage(error, 'Failed to delete question'));

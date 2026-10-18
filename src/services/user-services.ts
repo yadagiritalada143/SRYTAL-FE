@@ -369,7 +369,8 @@ export const getAllQuizQuestions = async (
   taskId: string
 ): Promise<QuizQuestionApiModel[]> => {
   const response = await apiClient.get(`/getAllQuizQuestions/${taskId}`);
-  return response.data.data ?? [];
+  const list: QuizQuestionApiModel[] = response.data.data ?? [];
+  return Array.isArray(list) ? list.filter(q => !q.isDeleted) : [];
 };
 
 export const createQuizQuestion = async (data: QuizQuestionApiPayload) => {
@@ -406,7 +407,13 @@ export const updateQuizQuestionStatus = async (
   return response.data;
 };
 
-export const deleteQuizQuestion = async (questionId: string) => {
+export const deleteQuizQuestion = async (
+  questionIdOrObj: string | { questionId: string }
+) => {
+  const questionId =
+    typeof questionIdOrObj === 'string'
+      ? questionIdOrObj
+      : questionIdOrObj?.questionId;
   const response = await apiClient.delete(`/deleteQuizQuestion/${questionId}`);
   return response.data;
 };
