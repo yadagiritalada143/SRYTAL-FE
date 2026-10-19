@@ -65,6 +65,36 @@
   animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+.quizScrollArea {
+  max-height: min(72vh, 760px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(99, 102, 241, 0.55) transparent;
+}
+
+.quizScrollArea::-webkit-scrollbar {
+  width: 10px;
+}
+
+.quizScrollArea::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 999px;
+}
+
+.quizScrollArea::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #818cf8 0%, #6366f1 100%);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.quizScrollArea::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #6366f1 0%, #4f46e5 100%);
+  background-clip: padding-box;
+}
+
 .questionCard {
   transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
   border-radius: 14px;

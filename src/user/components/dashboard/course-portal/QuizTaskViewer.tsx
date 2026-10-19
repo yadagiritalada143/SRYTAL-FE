@@ -294,149 +294,155 @@ const QuizTaskViewer = ({ task, onPassed }: QuizTaskViewerProps) => {
       p={{ base: 'md', sm: 'lg' }}
       className={styles.quizContainer}
     >
-      <Stack gap='lg'>
-        {/* Quiz Header & Live Progress */}
-        <Stack gap='xs'>
-          <Group justify='space-between' align='center' wrap='wrap'>
-            <Group gap='sm' align='center'>
-              <ThemeIcon size={34} radius='md' variant='light' color='indigo'>
-                <IconListCheck size={20} />
-              </ThemeIcon>
-              <Stack gap={1}>
-                <Text fw={700}>{task.taskName || 'Quiz'}</Text>
-                <Text size='xs' c={themeConfig.mutedTextColor}>
-                  {questions.length} question{questions.length === 1 ? '' : 's'}{' '}
-                  total
-                </Text>
-              </Stack>
+      <Box className={styles.quizScrollArea}>
+        <Stack gap='lg'>
+          {/* Quiz Header & Live Progress */}
+          <Stack gap='xs'>
+            <Group justify='space-between' align='center' wrap='wrap'>
+              <Group gap='sm' align='center'>
+                <ThemeIcon size={34} radius='md' variant='light' color='indigo'>
+                  <IconListCheck size={20} />
+                </ThemeIcon>
+                <Stack gap={1}>
+                  <Text fw={700}>{task.taskName || 'Quiz'}</Text>
+                  <Text size='xs' c={themeConfig.mutedTextColor}>
+                    {questions.length} question
+                    {questions.length === 1 ? '' : 's'} total
+                  </Text>
+                </Stack>
+              </Group>
+
+              {!reviewing && (
+                <Badge
+                  variant='light'
+                  color={
+                    answeredCount === questions.length
+                      ? 'teal'
+                      : answeredCount > 0
+                        ? 'indigo'
+                        : 'gray'
+                  }
+                  size='sm'
+                  radius='sm'
+                >
+                  {answeredCount} of {questions.length} answered (
+                  {progressPercent}
+                  %)
+                </Badge>
+              )}
             </Group>
 
             {!reviewing && (
-              <Badge
-                variant='light'
-                color={
-                  answeredCount === questions.length
-                    ? 'teal'
-                    : answeredCount > 0
-                      ? 'indigo'
-                      : 'gray'
+              <Progress
+                value={progressPercent}
+                color={answeredCount === questions.length ? 'teal' : 'indigo'}
+                radius='xl'
+                size='xs'
+                animated={answeredCount > 0 && answeredCount < questions.length}
+              />
+            )}
+          </Stack>
+
+          {/* Question Blocks */}
+          {questions.map((question, index) => {
+            const isAnswered = isQuestionAnswered(question);
+            const isUnansweredHighlight =
+              attemptedValidateWithoutAnswers && !isAnswered;
+
+            return (
+              <QuizQuestionBlock
+                key={question.questionId}
+                index={index}
+                question={question}
+                review={reviewById.get(question.questionId)}
+                reviewing={reviewing}
+                selected={selectedOptions[question.questionId] ?? []}
+                textAnswer={textAnswers[question.questionId] ?? ''}
+                themeConfig={themeConfig}
+                isAnswered={isAnswered}
+                isUnansweredHighlight={isUnansweredHighlight}
+                onSelectOptions={ids =>
+                  setOptionAnswer(question.questionId, ids)
                 }
-                size='sm'
-                radius='sm'
+                onTextChange={value =>
+                  setTextAnswer(question.questionId, value)
+                }
+              />
+            );
+          })}
+
+          {/* Validation & Feedback Alerts */}
+          {validationErrorText && (
+            <Alert
+              color='red'
+              variant='light'
+              icon={<IconAlertCircle size={18} />}
+              radius='md'
+            >
+              <Text size='sm'>{validationErrorText}</Text>
+            </Alert>
+          )}
+
+          {validation && !submitResult && (
+            <QuizSummary validation={validation} themeConfig={themeConfig} />
+          )}
+
+          {submitResult && (
+            <SubmitOutcome result={submitResult} themeConfig={themeConfig} />
+          )}
+
+          {errorText && (
+            <Alert color='red' icon={<IconAlertCircle size={18} />} radius='md'>
+              <Text size='sm' style={{ whiteSpace: 'pre-wrap' }}>
+                {errorText}
+              </Text>
+            </Alert>
+          )}
+
+          {/* Action Buttons */}
+          <Group justify='flex-end' gap='xs' wrap='wrap'>
+            {!reviewing && (
+              <CommonButton
+                leftSection={<IconClipboardCheck size={16} />}
+                loading={isValidating}
+                disabled={busy}
+                onClick={handleValidate}
               >
-                {answeredCount} of {questions.length} answered (
-                {progressPercent}
-                %)
-              </Badge>
+                Validate
+              </CommonButton>
+            )}
+
+            {reviewing && !submitResult?.passed && (
+              <CommonButton
+                variant='default'
+                leftSection={<IconRotateClockwise size={16} />}
+                loading={quizQuery.isFetching}
+                disabled={busy}
+                onClick={handleReattempt}
+              >
+                Re-attempt
+              </CommonButton>
+            )}
+
+            {reviewing && !submitResult && (
+              <CommonButton
+                leftSection={<IconSend size={16} />}
+                loading={isSubmitting}
+                disabled={busy}
+                onClick={handleSubmit}
+              >
+                Submit
+              </CommonButton>
             )}
           </Group>
 
-          {!reviewing && (
-            <Progress
-              value={progressPercent}
-              color={answeredCount === questions.length ? 'teal' : 'indigo'}
-              radius='xl'
-              size='xs'
-              animated={answeredCount > 0 && answeredCount < questions.length}
-            />
+          {failedSubmit && (
+            <Text size='xs' c={themeConfig.mutedTextColor} ta='right'>
+              Start a new attempt to try again.
+            </Text>
           )}
         </Stack>
-
-        {/* Question Blocks */}
-        {questions.map((question, index) => {
-          const isAnswered = isQuestionAnswered(question);
-          const isUnansweredHighlight =
-            attemptedValidateWithoutAnswers && !isAnswered;
-
-          return (
-            <QuizQuestionBlock
-              key={question.questionId}
-              index={index}
-              question={question}
-              review={reviewById.get(question.questionId)}
-              reviewing={reviewing}
-              selected={selectedOptions[question.questionId] ?? []}
-              textAnswer={textAnswers[question.questionId] ?? ''}
-              themeConfig={themeConfig}
-              isAnswered={isAnswered}
-              isUnansweredHighlight={isUnansweredHighlight}
-              onSelectOptions={ids => setOptionAnswer(question.questionId, ids)}
-              onTextChange={value => setTextAnswer(question.questionId, value)}
-            />
-          );
-        })}
-
-        {/* Validation & Feedback Alerts */}
-        {validationErrorText && (
-          <Alert
-            color='red'
-            variant='light'
-            icon={<IconAlertCircle size={18} />}
-            radius='md'
-          >
-            <Text size='sm'>{validationErrorText}</Text>
-          </Alert>
-        )}
-
-        {validation && !submitResult && (
-          <QuizSummary validation={validation} themeConfig={themeConfig} />
-        )}
-
-        {submitResult && (
-          <SubmitOutcome result={submitResult} themeConfig={themeConfig} />
-        )}
-
-        {errorText && (
-          <Alert color='red' icon={<IconAlertCircle size={18} />} radius='md'>
-            <Text size='sm' style={{ whiteSpace: 'pre-wrap' }}>
-              {errorText}
-            </Text>
-          </Alert>
-        )}
-
-        {/* Action Buttons */}
-        <Group justify='flex-end' gap='xs' wrap='wrap'>
-          {!reviewing && (
-            <CommonButton
-              leftSection={<IconClipboardCheck size={16} />}
-              loading={isValidating}
-              disabled={busy}
-              onClick={handleValidate}
-            >
-              Validate
-            </CommonButton>
-          )}
-
-          {reviewing && !submitResult?.passed && (
-            <CommonButton
-              variant='default'
-              leftSection={<IconRotateClockwise size={16} />}
-              loading={quizQuery.isFetching}
-              disabled={busy}
-              onClick={handleReattempt}
-            >
-              Re-attempt
-            </CommonButton>
-          )}
-
-          {reviewing && !submitResult && (
-            <CommonButton
-              leftSection={<IconSend size={16} />}
-              loading={isSubmitting}
-              disabled={busy}
-              onClick={handleSubmit}
-            >
-              Submit
-            </CommonButton>
-          )}
-        </Group>
-
-        {failedSubmit && (
-          <Text size='xs' c={themeConfig.mutedTextColor} ta='right'>
-            Start a new attempt to try again.
-          </Text>
-        )}
-      </Stack>
+      </Box>
     </Card>
   );
 };
