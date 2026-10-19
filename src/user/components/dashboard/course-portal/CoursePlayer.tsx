@@ -112,7 +112,7 @@ const CoursePlayer = () => {
   const showsAcknowledgement = active
     ? hasTaskAcknowledgement(active.task)
     : false;
-  const showCurriculum = !(active && isQuizTask(active.task));
+  const showCurriculum = true;
 
   const selectTask = (task: AssignedTask, moduleId: string) => {
     if (needsAcknowledgement && task._id !== activeTaskId) {
