@@ -2,8 +2,8 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 import './index.css';
-import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import './styles/sonner-toast.css';
 import '@mantine/dates/styles.css';
 import '@mantine/core/styles.css';
 import '@mantine/tiptap/styles.css';
@@ -11,6 +11,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
 import { RecoilRoot } from 'recoil';
+import SonnerToastContainer from '@components/common/toast/SonnerToastContainer';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -27,7 +28,7 @@ createRoot(document.getElementById('root')!).render(
     <RecoilRoot>
       <QueryClientProvider client={queryClient}>
         <App />
-        <ToastContainer />
+        <SonnerToastContainer />
         <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
     </RecoilRoot>
