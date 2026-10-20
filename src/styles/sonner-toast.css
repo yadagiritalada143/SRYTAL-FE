@@ -1,0 +1,553 @@
+/* ==========================================================================
+   Sonner-Inspired Modern Animated Toast Notification System
+   ========================================================================== */
+
+:root {
+  /* Surface & Border Colors */
+  --sonner-toast-bg-light: rgba(255, 255, 255, 0.94);
+  --sonner-toast-border-light: rgba(226, 232, 240, 0.9);
+  --sonner-toast-text-light: #0f172a;
+  --sonner-toast-desc-light: #475569;
+  --sonner-toast-shadow-light:
+    0 16px 32px -4px rgba(15, 23, 42, 0.08),
+    0 6px 14px -2px rgba(15, 23, 42, 0.04), 0 0 0 1px rgba(15, 23, 42, 0.05);
+
+  --sonner-toast-bg-dark: rgba(15, 23, 42, 0.94);
+  --sonner-toast-border-dark: rgba(51, 65, 85, 0.7);
+  --sonner-toast-text-dark: #f8fafc;
+  --sonner-toast-desc-dark: #94a3b8;
+  --sonner-toast-shadow-dark:
+    0 20px 38px -4px rgba(0, 0, 0, 0.55), 0 8px 18px -2px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.08);
+
+  /* Status Colors */
+  --sonner-success-main: #10b981;
+  --sonner-success-bg: rgba(16, 185, 129, 0.12);
+  --sonner-success-border: rgba(16, 185, 129, 0.28);
+  --sonner-success-pulse: rgba(16, 185, 129, 0.35);
+
+  --sonner-error-main: #ef4444;
+  --sonner-error-bg: rgba(239, 68, 68, 0.12);
+  --sonner-error-border: rgba(239, 68, 68, 0.28);
+  --sonner-error-pulse: rgba(239, 68, 68, 0.35);
+
+  --sonner-warning-main: #f59e0b;
+  --sonner-warning-bg: rgba(245, 158, 11, 0.12);
+  --sonner-warning-border: rgba(245, 158, 11, 0.28);
+  --sonner-warning-pulse: rgba(245, 158, 11, 0.35);
+
+  --sonner-info-main: #3b82f6;
+  --sonner-info-bg: rgba(59, 130, 246, 0.12);
+  --sonner-info-border: rgba(59, 130, 246, 0.28);
+  --sonner-info-pulse: rgba(59, 130, 246, 0.35);
+
+  /* React-toastify Variable Overrides */
+  --toastify-toast-width: 400px;
+  --toastify-toast-min-height: 56px;
+  --toastify-toast-max-height: 600px;
+  --toastify-toast-bd-radius: 14px;
+  --toastify-font-family: inherit;
+  --toastify-z-index: 99999;
+}
+
+/* --------------------------------------------------------------------------
+   Toast Container Positioning & Floating Island
+   -------------------------------------------------------------------------- */
+.Toastify__toast-container {
+  width: var(--toastify-toast-width) !important;
+  max-width: calc(100vw - 32px) !important;
+  padding: 16px !important;
+  z-index: var(--toastify-z-index) !important;
+  box-sizing: border-box !important;
+  pointer-events: none !important;
+}
+
+.Toastify__toast-container * {
+  pointer-events: auto;
+}
+
+/* --------------------------------------------------------------------------
+   Toast Card Base Styles (Sonner Design)
+   -------------------------------------------------------------------------- */
+.Toastify__toast {
+  position: relative !important;
+  min-height: 56px !important;
+  border-radius: 14px !important;
+  padding: 12px 14px !important;
+  margin-bottom: 10px !important;
+  backdrop-filter: blur(18px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(180%) !important;
+  font-family: inherit !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: center !important;
+  overflow: hidden !important;
+  cursor: default !important;
+  transition:
+    transform 0.24s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.24s cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 0.2s ease,
+    border-color 0.2s ease !important;
+}
+
+/* Light Theme Card */
+.Toastify__toast-theme--light,
+.Toastify__toast {
+  background: var(--sonner-toast-bg-light) !important;
+  border: 1px solid var(--sonner-toast-border-light) !important;
+  color: var(--sonner-toast-text-light) !important;
+  box-shadow: var(--sonner-toast-shadow-light) !important;
+}
+
+/* Dark Theme Card */
+.Toastify__toast-theme--dark,
+[data-mantine-color-scheme='dark'] .Toastify__toast,
+.dark .Toastify__toast {
+  background: var(--sonner-toast-bg-dark) !important;
+  border: 1px solid var(--sonner-toast-border-dark) !important;
+  color: var(--sonner-toast-text-dark) !important;
+  box-shadow: var(--sonner-toast-shadow-dark) !important;
+}
+
+/* Hover Micro-Lift */
+.Toastify__toast:hover {
+  transform: translateY(-2px) scale(1.006) !important;
+  box-shadow:
+    0 22px 40px -4px rgba(15, 23, 42, 0.12),
+    0 8px 18px -2px rgba(15, 23, 42, 0.06),
+    0 0 0 1px rgba(15, 23, 42, 0.06) !important;
+}
+
+[data-mantine-color-scheme='dark'] .Toastify__toast:hover,
+.dark .Toastify__toast:hover {
+  box-shadow:
+    0 26px 48px -4px rgba(0, 0, 0, 0.65),
+    0 12px 24px -2px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.12) !important;
+}
+
+/* Active Touch / Click */
+.Toastify__toast:active {
+  transform: scale(0.99) !important;
+}
+
+/* Stacked mode support */
+.Toastify__toast--stacked {
+  border-radius: 14px !important;
+}
+
+/* --------------------------------------------------------------------------
+   Sonner Toast Entrance & Exit Keyframe Animations
+   -------------------------------------------------------------------------- */
+.sonner-toast-enter {
+  animation: sonnerSpringIn 0.36s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+}
+
+.sonner-toast-exit {
+  animation: sonnerSpringOut 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+}
+
+@keyframes sonnerSpringIn {
+  0% {
+    opacity: 0;
+    transform: translate3d(28px, -10px, 0) scale(0.92);
+  }
+  60% {
+    opacity: 1;
+    transform: translate3d(-3px, 2px, 0) scale(1.015);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes sonnerSpringOut {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(20px, -6px, 0) scale(0.93);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Micro-Animations: Badge Pop, Pulse Glow & Checkmark Draw
+   -------------------------------------------------------------------------- */
+@keyframes sonnerBadgePop {
+  0% {
+    transform: scale(0.35) rotate(-10deg);
+    opacity: 0;
+  }
+  65% {
+    transform: scale(1.15) rotate(3deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes sonnerPulseSuccess {
+  0% {
+    box-shadow: 0 0 0 0 var(--sonner-success-pulse);
+  }
+  70% {
+    box-shadow: 0 0 0 7px transparent;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+@keyframes sonnerPulseError {
+  0% {
+    box-shadow: 0 0 0 0 var(--sonner-error-pulse);
+  }
+  70% {
+    box-shadow: 0 0 0 7px transparent;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+@keyframes sonnerPulseWarning {
+  0% {
+    box-shadow: 0 0 0 0 var(--sonner-warning-pulse);
+  }
+  70% {
+    box-shadow: 0 0 0 7px transparent;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+@keyframes sonnerPulseInfo {
+  0% {
+    box-shadow: 0 0 0 0 var(--sonner-info-pulse);
+  }
+  70% {
+    box-shadow: 0 0 0 7px transparent;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+@keyframes sonnerCheckmarkDraw {
+  0% {
+    stroke-dashoffset: 24;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes sonnerShake {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  20%,
+  60% {
+    transform: scale(1.08) rotate(-6deg);
+  }
+  40%,
+  80% {
+    transform: scale(1.08) rotate(6deg);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Sonner Custom Content Component Layout
+   -------------------------------------------------------------------------- */
+.sonner-toast-inner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+}
+
+/* Badge Icon Container */
+.sonner-badge {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.sonner-badge--success {
+  background: var(--sonner-success-bg);
+  border: 1px solid var(--sonner-success-border);
+  color: var(--sonner-success-main);
+  animation:
+    sonnerBadgePop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
+    sonnerPulseSuccess 2.4s ease-in-out infinite 0.4s;
+}
+
+.sonner-badge--error {
+  background: var(--sonner-error-bg);
+  border: 1px solid var(--sonner-error-border);
+  color: var(--sonner-error-main);
+  animation:
+    sonnerBadgePop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
+    sonnerPulseError 2.4s ease-in-out infinite 0.4s;
+}
+
+.sonner-badge--warning {
+  background: var(--sonner-warning-bg);
+  border: 1px solid var(--sonner-warning-border);
+  color: var(--sonner-warning-main);
+  animation:
+    sonnerBadgePop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
+    sonnerPulseWarning 2.4s ease-in-out infinite 0.4s;
+}
+
+.sonner-badge--info {
+  background: var(--sonner-info-bg);
+  border: 1px solid var(--sonner-info-border);
+  color: var(--sonner-info-main);
+  animation:
+    sonnerBadgePop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
+    sonnerPulseInfo 2.4s ease-in-out infinite 0.4s;
+}
+
+.sonner-svg-check polyline {
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  animation: sonnerCheckmarkDraw 0.42s cubic-bezier(0.16, 1, 0.3, 1) forwards
+    0.12s;
+}
+
+.sonner-svg-error {
+  animation: sonnerShake 0.42s ease-in-out 0.12s;
+}
+
+/* Toast Text Body */
+.sonner-body {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  min-width: 0;
+  padding-top: 2px;
+}
+
+.sonner-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  color: var(--sonner-toast-text-light);
+  margin-bottom: 2px;
+}
+
+[data-mantine-color-scheme='dark'] .sonner-title,
+.dark .sonner-title {
+  color: var(--sonner-toast-text-dark);
+}
+
+.sonner-description {
+  font-size: 12.5px;
+  font-weight: 450;
+  line-height: 1.45;
+  color: var(--sonner-toast-desc-light);
+  word-break: break-word;
+}
+
+[data-mantine-color-scheme='dark'] .sonner-description,
+.dark .sonner-description {
+  color: var(--sonner-toast-desc-dark);
+}
+
+/* Interactive Close Button */
+.sonner-close-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+  margin-left: 4px;
+  margin-top: 1px;
+  padding: 0;
+}
+
+.sonner-close-btn:hover {
+  background: rgba(15, 23, 42, 0.06);
+  color: #0f172a;
+  transform: scale(1.08) rotate(4deg);
+}
+
+[data-mantine-color-scheme='dark'] .sonner-close-btn:hover,
+.dark .sonner-close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #f8fafc;
+}
+
+/* Optional Action Button */
+.sonner-action-btn {
+  margin-top: 8px;
+  align-self: flex-start;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 6px;
+  background: rgba(15, 23, 42, 0.06);
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  color: var(--sonner-toast-text-light);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sonner-action-btn:hover {
+  background: rgba(15, 23, 42, 0.12);
+  transform: translateY(-1px);
+}
+
+[data-mantine-color-scheme='dark'] .sonner-action-btn,
+.dark .sonner-action-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--sonner-toast-text-dark);
+}
+
+[data-mantine-color-scheme='dark'] .sonner-action-btn:hover,
+.dark .sonner-action-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+/* --------------------------------------------------------------------------
+   Ultra-Sleek Glowing Progress Bar
+   -------------------------------------------------------------------------- */
+.Toastify__progress-bar {
+  height: 2.5px !important;
+  border-radius: 0 0 14px 14px !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  opacity: 0.9 !important;
+}
+
+.Toastify__progress-bar--success,
+.Toastify__progress-bar[style*='background: var(--toastify-color-success)'],
+.Toastify__progress-bar[style*='background: #07bc0c'] {
+  background: linear-gradient(
+    90deg,
+    #10b981 0%,
+    #34d399 50%,
+    #6ee7b7 100%
+  ) !important;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.45) !important;
+}
+
+.Toastify__progress-bar--error,
+.Toastify__progress-bar[style*='background: var(--toastify-color-error)'],
+.Toastify__progress-bar[style*='background: red'] {
+  background: linear-gradient(
+    90deg,
+    #ef4444 0%,
+    #f87171 50%,
+    #fca5a5 100%
+  ) !important;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.45) !important;
+}
+
+.Toastify__progress-bar--warning,
+.Toastify__progress-bar[style*='background: var(--toastify-color-warning)'] {
+  background: linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%) !important;
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.45) !important;
+}
+
+.Toastify__progress-bar--info,
+.Toastify__progress-bar[style*='background: var(--toastify-color-info)'] {
+  background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%) !important;
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.45) !important;
+}
+
+.Toastify__progress-bar--default {
+  background: linear-gradient(90deg, #7c3aed 0%, #a78bfa 100%) !important;
+  box-shadow: 0 0 8px rgba(124, 58, 237, 0.45) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Styling for Direct react-toastify Calls (toast.success, toast.error, etc.)
+   -------------------------------------------------------------------------- */
+.Toastify__toast-body {
+  padding: 0 !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  line-height: 1.4 !important;
+}
+
+.Toastify__toast-icon {
+  width: 32px !important;
+  height: 32px !important;
+  margin-right: 12px !important;
+  margin-inline-end: 12px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 9px !important;
+}
+
+.Toastify__toast--success .Toastify__toast-icon {
+  background: var(--sonner-success-bg) !important;
+  border: 1px solid var(--sonner-success-border) !important;
+  animation: sonnerBadgePop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards !important;
+}
+
+.Toastify__toast--error .Toastify__toast-icon {
+  background: var(--sonner-error-bg) !important;
+  border: 1px solid var(--sonner-error-border) !important;
+  animation: sonnerBadgePop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards !important;
+}
+
+.Toastify__toast--warning .Toastify__toast-icon {
+  background: var(--sonner-warning-bg) !important;
+  border: 1px solid var(--sonner-warning-border) !important;
+  animation: sonnerBadgePop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards !important;
+}
+
+.Toastify__toast--info .Toastify__toast-icon {
+  background: var(--sonner-info-bg) !important;
+  border: 1px solid var(--sonner-info-border) !important;
+  animation: sonnerBadgePop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards !important;
+}
+
+.Toastify__close-button {
+  align-self: center !important;
+  opacity: 0.6 !important;
+  transition: all 0.18s ease !important;
+  border-radius: 6px !important;
+  padding: 4px !important;
+}
+
+.Toastify__close-button:hover {
+  opacity: 1 !important;
+  background: rgba(15, 23, 42, 0.06) !important;
+  transform: scale(1.1) !important;
+}
+
+[data-mantine-color-scheme='dark'] .Toastify__close-button:hover,
+.dark .Toastify__close-button:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
