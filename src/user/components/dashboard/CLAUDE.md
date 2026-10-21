@@ -8,9 +8,9 @@ Course ──< Module ──< Task (a "content item")
 ```
 
 A **Task** is the actual learning content and is intentionally flexible: it is
-either an uploaded **file** (PDF, Word, or any type) or an external **link**
-(YouTube, blog post, article, any public URL). Viewers open a task and the
-content is shown in a new browser tab.
+either an uploaded **file** (PDF, Word, Excel, PowerPoint, TXT, CSV, or image —
+PNG/JPG/WEBP) or an external **link** (YouTube, blog post, article, any public
+URL). Viewers open a task and the content is shown in a new browser tab.
 
 ## Files
 

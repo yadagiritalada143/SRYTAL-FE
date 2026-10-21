@@ -317,12 +317,80 @@ describe('QuizBuilder', () => {
     expect(screen.getByLabelText(/Question/)).toHaveValue('Pick one');
   });
 
-  it('validates the question before saving', () => {
+  it('keeps Add question disabled while mandatory fields are missing', () => {
     render(<Harness />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Add question' }));
+    expect(screen.getByRole('button', { name: 'Add question' })).toBeDisabled();
+  });
+
+  it('keeps Add question disabled when only the question text is provided', () => {
+    render(<Harness />);
+
+    fireEvent.change(screen.getByLabelText(/Question/), {
+      target: { value: 'What best describes your role?' }
+    });
+
+    expect(screen.getByRole('button', { name: 'Add question' })).toBeDisabled();
+  });
+
+  it('shows the question validation message after the field is blurred', () => {
+    render(<Harness />);
+
+    fireEvent.blur(screen.getByLabelText(/Question/));
 
     expect(screen.getByText('Question is required.')).toBeInTheDocument();
+  });
+
+  it('shows the missing answer options message once an option is edited', () => {
+    render(<Harness />);
+
+    fireEvent.change(screen.getByLabelText(/Question/), {
+      target: { value: 'What best describes your role?' }
+    });
+    fillOption(1, 'Engineer');
+    fireEvent.blur(screen.getByLabelText('Option 1'));
+
+    expect(
+      screen.getByText('Add at least 4 answer options.')
+    ).toBeInTheDocument();
+  });
+
+  it('shows the missing correct answer message once an answer is marked', () => {
+    render(<Harness />);
+
+    fireEvent.click(screen.getAllByRole('radio', { name: 'Correct' })[0]);
+
+    expect(
+      screen.getByText('Mark at least one option as the answer.')
+    ).toBeInTheDocument();
+  });
+
+  it('enables Add question when the question, options, and correct answer are provided', () => {
+    render(<Harness />);
+
+    fireEvent.change(screen.getByLabelText(/Question/), {
+      target: { value: 'What best describes your role?' }
+    });
+    fillOption(1, 'Engineer');
+    fillOption(2, 'Manager');
+    fillOption(3, 'Designer');
+    fillOption(4, 'Sales');
+    fireEvent.click(screen.getAllByRole('radio', { name: 'Correct' })[0]);
+
+    expect(
+      screen.getByRole('button', { name: 'Add question' })
+    ).not.toBeDisabled();
+  });
+
+  it('keeps Save changes disabled while the edited question is invalid', () => {
+    render(<Harness initial={[baseQuestion()]} />);
+
+    fireEvent.click(screen.getByLabelText('Edit question'));
+    fireEvent.change(screen.getByLabelText(/Question/), {
+      target: { value: '   ' }
+    });
+
+    expect(screen.getByRole('button', { name: 'Save changes' })).toBeDisabled();
   });
 
   it('hides the answer options for a short text question', async () => {

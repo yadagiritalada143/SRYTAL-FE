@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   ActionIcon,
   Alert,
@@ -63,6 +63,8 @@ import {
   createQuizOption,
   createQuizQuestion,
   duplicateQuizQuestion,
+  getQuizQuestionFieldErrors,
+  QuizQuestionField,
   TOGGLE_PRESETS,
   validateQuizQuestion
 } from './quiz-helpers';
@@ -147,11 +149,33 @@ const QuestionEditor = ({
     isEditing ? value.id : null
   );
 
+  const [touched, setTouched] = useState<Record<QuizQuestionField, boolean>>({
+    question: false,
+    options: false,
+    correctAnswer: false
+  });
+
+  useEffect(() => {
+    setTouched({ question: false, options: false, correctAnswer: false });
+  }, [value.id, mode]);
+
+  const touch = (field: QuizQuestionField) =>
+    setTouched(prev => ({ ...prev, [field]: true }));
+
+  const fieldErrors = getQuizQuestionFieldErrors(value);
+  const fieldError = (field: QuizQuestionField) =>
+    touched[field] ? fieldErrors[field] : undefined;
+  const isValid =
+    !fieldErrors.question && !fieldErrors.options && !fieldErrors.correctAnswer;
+
   const patch = (partial: Partial<QuizQuestion>) =>
     onChange({ ...value, ...partial });
 
-  const handleTypeChange = (type: QuizAnswerType) =>
+  const handleTypeChange = (type: QuizAnswerType) => {
+    touch('options');
+    touch('correctAnswer');
     patch({ type, options: adjustOptionsForType(value.options, type) });
+  };
 
   const updateOption = (id: string, text: string) =>
     patch({
@@ -160,28 +184,38 @@ const QuestionEditor = ({
       )
     });
 
-  const setSingleCorrect = (id: string) =>
+  const setSingleCorrect = (id: string) => {
+    touch('correctAnswer');
     patch({
       options: value.options.map(option => ({
         ...option,
         isCorrect: option.id === id
       }))
     });
+  };
 
-  const toggleCorrect = (id: string) =>
+  const toggleCorrect = (id: string) => {
+    touch('correctAnswer');
     patch({
       options: value.options.map(option =>
         option.id === id ? { ...option, isCorrect: !option.isCorrect } : option
       )
     });
+  };
 
-  const addOption = () =>
+  const addOption = () => {
+    touch('options');
     patch({ options: [...value.options, createQuizOption()] });
+  };
 
-  const removeOption = (id: string) =>
+  const removeOption = (id: string) => {
+    touch('options');
     patch({ options: value.options.filter(option => option.id !== id) });
+  };
 
   const applyTogglePreset = (opt1: string, opt2: string) => {
+    touch('options');
+    touch('correctAnswer');
     patch({
       options: [createQuizOption(opt1, true), createQuizOption(opt2, false)]
     });
@@ -378,6 +412,7 @@ const QuestionEditor = ({
             onChange={event =>
               updateOption(option.id, event.currentTarget.value)
             }
+            onBlur={() => touch('options')}
             style={{ flex: 1 }}
             radius='md'
             styles={{
@@ -457,6 +492,8 @@ const QuestionEditor = ({
           maxRows={6}
           value={value.question}
           onChange={event => patch({ question: event.currentTarget.value })}
+          onBlur={() => touch('question')}
+          error={fieldError('question')}
           radius='md'
           description='Be specific and descriptive so learners understand the context.'
         />
@@ -711,6 +748,17 @@ const QuestionEditor = ({
                 Add option
               </CommonButton>
             )}
+
+            {fieldError('options') && (
+              <Text size='xs' c='red' role='alert'>
+                {fieldErrors.options}
+              </Text>
+            )}
+            {fieldError('correctAnswer') && (
+              <Text size='xs' c='red' role='alert'>
+                {fieldErrors.correctAnswer}
+              </Text>
+            )}
           </Stack>
         )}
 
@@ -760,7 +808,7 @@ const QuestionEditor = ({
                 )
               }
               loading={isSubmitting}
-              disabled={isSubmitting}
+              disabled={isSubmitting || !isValid}
               onClick={onSave}
             >
               {isEditing ? 'Save changes' : 'Add question'}
