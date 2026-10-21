@@ -59,12 +59,65 @@ const VALIDATION_MESSAGES = {
   taskName: 'Task name is required.',
   link: 'A valid HTTP or HTTPS link is required for LINK tasks.',
   file: 'A file is required for FILE tasks.',
+  fileType:
+    'Unsupported file format. Upload a PDF, Office document, TXT, CSV, or image file.',
   taskDescription: 'Task description is required.',
   acknowledgementText: 'Acknowledgement text is required.',
   thumbnail: 'Thumbnail must be a JPG, PNG, or WEBP image.'
 } as const;
 
 const THUMBNAIL_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const TASK_FILE_EXTENSIONS = [
+  '.pdf',
+  '.doc',
+  '.docx',
+  '.ppt',
+  '.pptx',
+  '.xls',
+  '.xlsx',
+  '.txt',
+  '.csv',
+  '.png',
+  '.jpg',
+  '.jpeg',
+  '.webp'
+];
+const TASK_FILE_MIME_TYPES = [
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-powerpoint',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'text/plain',
+  'text/csv',
+  'application/csv',
+  'text/comma-separated-values',
+  'image/png',
+  'image/jpeg',
+  'image/webp'
+];
+const TASK_FILE_GENERIC_MIME_TYPES = ['application/octet-stream'];
+const TASK_FILE_ACCEPT = TASK_FILE_EXTENSIONS.join(',');
+const TASK_FILE_FORMATS_LABEL =
+  'Supported formats: PDF, Word, Excel, PowerPoint, TXT, CSV, PNG, JPG, WEBP';
+
+const isSupportedTaskFile = (file: File): boolean => {
+  const dotIndex = file.name.lastIndexOf('.');
+  const extension =
+    dotIndex >= 0 ? file.name.slice(dotIndex).toLowerCase() : '';
+  if (!TASK_FILE_EXTENSIONS.includes(extension)) return false;
+
+  // An empty file.type reaches the backend as application/octet-stream.
+  const mimeType = String(
+    file.type || 'application/octet-stream'
+  ).toLowerCase();
+  return (
+    TASK_FILE_MIME_TYPES.includes(mimeType) ||
+    TASK_FILE_GENERIC_MIME_TYPES.includes(mimeType)
+  );
+};
 
 const isHttpUrl = (value: string): boolean => {
   try {
@@ -190,6 +243,8 @@ const AddTaskModal = ({
       errors.link = VALIDATION_MESSAGES.link;
   } else if (mode === 'FILE') {
     if (!file) errors.file = VALIDATION_MESSAGES.file;
+    else if (!isSupportedTaskFile(file))
+      errors.file = VALIDATION_MESSAGES.fileType;
   }
   if (!hasVisibleText(taskDescription)) {
     errors.taskDescription = VALIDATION_MESSAGES.taskDescription;
@@ -385,7 +440,7 @@ const AddTaskModal = ({
         ) : mode === 'FILE' ? (
           <FileInput
             label='File'
-            placeholder='Upload a PDF, Word, or any file'
+            placeholder='Upload a supported file'
             leftSection={<IconUpload size={16} />}
             value={file}
             onChange={setFile}
@@ -393,7 +448,8 @@ const AddTaskModal = ({
             error={fieldError('file')}
             required
             clearable
-            description='Any file type is supported'
+            accept={TASK_FILE_ACCEPT}
+            description={TASK_FILE_FORMATS_LABEL}
             radius='md'
           />
         ) : mode === 'QUIZ' ? (

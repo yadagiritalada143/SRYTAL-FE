@@ -14,6 +14,12 @@ import {
   QUIZ_MIN_OPTIONS
 } from '@interfaces/quiz';
 
+export type QuizQuestionField = 'question' | 'options' | 'correctAnswer';
+
+export type QuizQuestionFieldErrors = Partial<
+  Record<QuizQuestionField, string>
+>;
+
 let quizIdCounter = 0;
 
 const createId = (prefix: string): string => `${prefix}-${++quizIdCounter}`;
@@ -101,30 +107,48 @@ export const adjustOptionsForType = (
   }));
 };
 
-export const validateQuizQuestion = (question: QuizQuestion): string | null => {
-  if (!question.question.trim()) return 'Question is required.';
-  if (isTextAnswerType(question.type)) return null;
+export const getQuizQuestionFieldErrors = (
+  question: QuizQuestion
+): QuizQuestionFieldErrors => {
+  const errors: QuizQuestionFieldErrors = {};
+
+  if (!question.question.trim()) {
+    errors.question = 'Question is required.';
+  }
+
+  if (isTextAnswerType(question.type)) return errors;
 
   const filledOptions = question.options.filter(option => option.text.trim());
   const correctOptions = filledOptions.filter(option => option.isCorrect);
 
   if (question.type === 'TOGGLE') {
-    if (filledOptions.length !== 2)
-      return 'Toggle questions must have exactly two options.';
-    if (correctOptions.length !== 1)
-      return 'Toggle questions must have exactly one correct option.';
-    return null;
+    if (filledOptions.length !== 2) {
+      errors.options = 'Toggle questions must have exactly two options.';
+    }
+    if (correctOptions.length !== 1) {
+      errors.correctAnswer =
+        'Toggle questions must have exactly one correct option.';
+    }
+    return errors;
   }
 
-  if (filledOptions.length < QUIZ_MIN_OPTIONS)
-    return `Add at least ${QUIZ_MIN_OPTIONS} answer options.`;
+  if (filledOptions.length < QUIZ_MIN_OPTIONS) {
+    errors.options = `Add at least ${QUIZ_MIN_OPTIONS} answer options.`;
+  }
 
-  if (correctOptions.length === 0)
-    return 'Mark at least one option as the answer.';
-  if (!isMultiAnswerType(question.type) && correctOptions.length > 1)
-    return 'Only one option can be the correct answer for this type.';
+  if (correctOptions.length === 0) {
+    errors.correctAnswer = 'Mark at least one option as the answer.';
+  } else if (!isMultiAnswerType(question.type) && correctOptions.length > 1) {
+    errors.correctAnswer =
+      'Only one option can be the correct answer for this type.';
+  }
 
-  return null;
+  return errors;
+};
+
+export const validateQuizQuestion = (question: QuizQuestion): string | null => {
+  const errors = getQuizQuestionFieldErrors(question);
+  return errors.question ?? errors.options ?? errors.correctAnswer ?? null;
 };
 
 export const toQuizQuestionPayload = (

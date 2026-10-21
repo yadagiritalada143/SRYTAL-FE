@@ -200,17 +200,52 @@ describe('AddTaskModal', () => {
       renderModal();
       expect(screen.getByLabelText(/Link URL/)).toBeInTheDocument();
       expect(
-        screen.queryByText('Upload a PDF, Word, or any file')
+        screen.queryByText('Upload a supported file')
       ).not.toBeInTheDocument();
     });
 
     it('shows the file input when File mode is selected', () => {
       renderModal();
       clickFileMode();
-      expect(
-        screen.getByText('Upload a PDF, Word, or any file')
-      ).toBeInTheDocument();
+      expect(screen.getByText('Upload a supported file')).toBeInTheDocument();
       expect(screen.queryByLabelText(/Link URL/)).not.toBeInTheDocument();
+    });
+
+    it('lists only the supported formats for File tasks', () => {
+      renderModal();
+      clickFileMode();
+
+      expect(
+        screen.getByText(
+          'Supported formats: PDF, Word, Excel, PowerPoint, TXT, CSV, PNG, JPG, WEBP'
+        )
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByText('Any file type is supported')
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByText('Upload a PDF, Word, or any file')
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByText('Upload a PDF or Word document')
+      ).not.toBeInTheDocument();
+    });
+
+    it('restricts the file picker to the supported formats', () => {
+      const { container } = renderModal();
+      clickFileMode();
+
+      const accept = getMainFileInput(container).accept;
+      expect(accept).toContain('.pdf');
+      expect(accept).toContain('.doc');
+      expect(accept).toContain('.docx');
+      expect(accept).toContain('.pptx');
+      expect(accept).toContain('.xlsx');
+      expect(accept).toContain('.txt');
+      expect(accept).toContain('.csv');
+      expect(accept).toContain('.png');
+      expect(accept).toContain('.webp');
+      expect(accept).not.toContain('*/*');
     });
 
     it('hides the Add Programming Language button for Link and File tasks', () => {
@@ -240,7 +275,7 @@ describe('AddTaskModal', () => {
       ).not.toBeInTheDocument();
       expect(screen.queryByLabelText(/Link URL/)).not.toBeInTheDocument();
       expect(
-        screen.queryByText('Upload a PDF, Word, or any file')
+        screen.queryByText('Upload a supported file')
       ).not.toBeInTheDocument();
     });
 
@@ -369,6 +404,90 @@ describe('AddTaskModal', () => {
       expect(
         screen.getByText('A file is required for FILE tasks.')
       ).toBeInTheDocument();
+    });
+
+    it('rejects files outside the supported formats', () => {
+      const { container } = renderModal();
+      typeTitle('Reading material');
+      typeDescription('Read the attached policy.');
+      clickFileMode();
+
+      fireEvent.change(getMainFileInput(container), {
+        target: {
+          files: [
+            new File(['x'], 'setup.exe', { type: 'application/x-msdownload' })
+          ]
+        }
+      });
+
+      expect(screen.getByRole('button', { name: 'Add Task' })).toBeDisabled();
+      fireEvent.blur(getFileControl(container, 0));
+      expect(
+        screen.getByText(
+          'Unsupported file format. Upload a PDF, Office document, TXT, CSV, or image file.'
+        )
+      ).toBeInTheDocument();
+
+      // Allowed-looking archives are still outside the allow-list.
+      fireEvent.change(getMainFileInput(container), {
+        target: {
+          files: [new File(['x'], 'archive.zip', { type: 'application/zip' })]
+        }
+      });
+
+      expect(screen.getByRole('button', { name: 'Add Task' })).toBeDisabled();
+    });
+
+    it('accepts Word documents in File mode', () => {
+      const { container } = renderModal();
+      typeTitle('Reading material');
+      typeDescription('Read the attached policy.');
+      clickFileMode();
+
+      fireEvent.change(getMainFileInput(container), {
+        target: {
+          files: [
+            new File(['x'], 'policy.docx', {
+              type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            })
+          ]
+        }
+      });
+
+      expect(
+        screen.getByRole('button', { name: 'Add Task' })
+      ).not.toBeDisabled();
+    });
+
+    it('accepts presentation, spreadsheet, and image files in File mode', () => {
+      const { container } = renderModal();
+      typeTitle('Reading material');
+      typeDescription('Read the attached policy.');
+      clickFileMode();
+
+      fireEvent.change(getMainFileInput(container), {
+        target: {
+          files: [
+            new File(['x'], 'slides.pptx', {
+              type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+            })
+          ]
+        }
+      });
+
+      expect(
+        screen.getByRole('button', { name: 'Add Task' })
+      ).not.toBeDisabled();
+
+      fireEvent.change(getMainFileInput(container), {
+        target: {
+          files: [new File(['x'], 'diagram.png', { type: 'image/png' })]
+        }
+      });
+
+      expect(
+        screen.getByRole('button', { name: 'Add Task' })
+      ).not.toBeDisabled();
     });
 
     it('rejects thumbnails the backend will not accept', () => {
