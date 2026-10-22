@@ -30,13 +30,11 @@ import {
   IconCheckbox,
   IconCircleDot,
   IconCopy,
-  IconDeviceFloppy,
   IconEye,
   IconEyeOff,
   IconFileText,
   IconHelpCircle,
   IconListCheck,
-  IconPencil,
   IconPlus,
   IconSearch,
   IconSelect,
@@ -108,18 +106,14 @@ const QUESTION_TYPE_CARDS = [
   }
 ];
 
-type EditorMode = 'create' | 'edit';
-
 interface QuestionEditorProps {
   value: QuizQuestion;
   existingQuestions: QuizQuestion[];
   error: string | null;
   isSubmitting: boolean;
-  mode: EditorMode;
   onChange: (question: QuizQuestion) => void;
   onSave: () => void;
   onCancel: () => void;
-  onDelete?: () => void;
 }
 
 const QuestionEditor = ({
@@ -127,11 +121,9 @@ const QuestionEditor = ({
   existingQuestions,
   error,
   isSubmitting,
-  mode,
   onChange,
   onSave,
-  onCancel,
-  onDelete
+  onCancel
 }: QuestionEditorProps) => {
   const { themeConfig, isDarkTheme } = useAppTheme();
 
@@ -139,14 +131,13 @@ const QuestionEditor = ({
   const isToggle = value.type === 'TOGGLE';
   const isText = isTextAnswerType(value.type);
   const isDropdown = value.type === 'DROPDOWN';
-  const isEditing = mode === 'edit';
   const correctOptionId =
     value.options.find(option => option.isCorrect)?.id ?? '';
 
   const isDuplicate = checkDuplicateQuestion(
     value.question,
     existingQuestions,
-    isEditing ? value.id : null
+    null
   );
 
   const [touched, setTouched] = useState<Record<QuizQuestionField, boolean>>({
@@ -157,7 +148,7 @@ const QuestionEditor = ({
 
   useEffect(() => {
     setTouched({ question: false, options: false, correctAnswer: false });
-  }, [value.id, mode]);
+  }, [value.id]);
 
   const touch = (field: QuizQuestionField) =>
     setTouched(prev => ({ ...prev, [field]: true }));
@@ -444,11 +435,9 @@ const QuestionEditor = ({
       p='lg'
       radius='md'
       withBorder
-      className={`${styles.questionCard} ${isEditing ? styles.questionCardEditing : ''}`}
+      className={styles.questionCard}
       style={{
-        borderColor: isEditing
-          ? 'var(--mantine-color-indigo-5)'
-          : themeConfig.borderColor,
+        borderColor: themeConfig.borderColor,
         backgroundColor: themeConfig.cardBackground
       }}
     >
@@ -456,31 +445,18 @@ const QuestionEditor = ({
         {/* Editor Header */}
         <Group justify='space-between' align='center'>
           <Group gap='xs' align='center'>
-            <ThemeIcon
-              size={32}
-              radius='md'
-              variant='light'
-              color={isEditing ? 'indigo' : 'teal'}
-            >
-              {isEditing ? <IconPencil size={18} /> : <IconPlus size={18} />}
+            <ThemeIcon size={32} radius='md' variant='light' color='teal'>
+              <IconPlus size={18} />
             </ThemeIcon>
             <Stack gap={1}>
               <Text fw={700} size='sm' style={{ color: themeConfig.color }}>
-                {isEditing ? 'Edit question' : 'Add a question'}
+                Add a question
               </Text>
               <Text size='xs' c='dimmed'>
-                {isEditing
-                  ? 'Update question details, options, and visibility'
-                  : 'Compose a scenario-based question and set the answer key'}
+                Compose a scenario-based question and set the answer key
               </Text>
             </Stack>
           </Group>
-
-          {isEditing && (
-            <Badge variant='light' color='indigo' size='sm'>
-              Editing Q#{value.id}
-            </Badge>
-          )}
         </Group>
 
         <Textarea
@@ -778,42 +754,19 @@ const QuestionEditor = ({
 
         {/* Action Buttons */}
         <Divider my={4} />
-        <Group
-          justify={isEditing && onDelete ? 'space-between' : 'flex-end'}
-          gap='xs'
-        >
-          {isEditing && onDelete && (
-            <CommonButton
-              variant='light'
-              color='red'
-              size='xs'
-              leftSection={<IconTrash size={14} />}
-              onClick={onDelete}
-              disabled={isSubmitting}
-            >
-              Delete question
-            </CommonButton>
-          )}
-          <Group gap='xs'>
-            <CommonButton variant='default' size='xs' onClick={onCancel}>
-              Cancel
-            </CommonButton>
-            <CommonButton
-              size='xs'
-              leftSection={
-                isEditing ? (
-                  <IconDeviceFloppy size={14} />
-                ) : (
-                  <IconCheck size={14} />
-                )
-              }
-              loading={isSubmitting}
-              disabled={isSubmitting || !isValid}
-              onClick={onSave}
-            >
-              {isEditing ? 'Save changes' : 'Add question'}
-            </CommonButton>
-          </Group>
+        <Group justify='flex-end' gap='xs'>
+          <CommonButton variant='default' size='xs' onClick={onCancel}>
+            Cancel
+          </CommonButton>
+          <CommonButton
+            size='xs'
+            leftSection={<IconCheck size={14} />}
+            loading={isSubmitting}
+            disabled={isSubmitting || !isValid}
+            onClick={onSave}
+          >
+            Add question
+          </CommonButton>
         </Group>
       </Stack>
     </Paper>
@@ -828,17 +781,12 @@ interface QuizBuilderProps {
   onDeleteQuestion?: (question: QuizQuestion) => Promise<void> | void;
   isLoading?: boolean;
   isSubmitting?: boolean;
+  allowEdit?: boolean;
 }
-
-const cloneQuestion = (question: QuizQuestion): QuizQuestion => ({
-  ...question,
-  options: question.options.map(option => ({ ...option }))
-});
 
 const QuizBuilder = ({
   questions,
   onAddQuestion,
-  onUpdateQuestion,
   onToggleStatus,
   onDeleteQuestion,
   isLoading = false,
@@ -847,7 +795,6 @@ const QuizBuilder = ({
   const { themeConfig } = useAppTheme();
   const [draft, setDraft] = useState<QuizQuestion>(() => createQuizQuestion());
   const [error, setError] = useState<string | null>(null);
-  const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<QuizQuestion | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -855,20 +802,12 @@ const QuizBuilder = ({
 
   const resetDraft = () => {
     setDraft(createQuizQuestion());
-    setEditingId(null);
-    setError(null);
-  };
-
-  const startEditing = (question: QuizQuestion) => {
-    setDraft(cloneQuestion(question));
-    setEditingId(question.id);
     setError(null);
   };
 
   const handleDuplicate = (question: QuizQuestion) => {
     const cloned = duplicateQuizQuestion(question);
     setDraft(cloned);
-    setEditingId(null);
     setError(null);
   };
 
@@ -879,11 +818,7 @@ const QuizBuilder = ({
       return;
     }
     try {
-      if (editingId) {
-        await onUpdateQuestion?.(cloneQuestion(draft));
-      } else {
-        await onAddQuestion(draft);
-      }
+      await onAddQuestion(draft);
       resetDraft();
     } catch {
       // The page surfaces the request error; keep the draft so it can retry.
@@ -900,7 +835,6 @@ const QuizBuilder = ({
     setIsDeleting(true);
     try {
       await onDeleteQuestion?.(deleteTarget);
-      if (editingId === deleteTarget.id) resetDraft();
       setDeleteTarget(null);
     } catch {
       // Handled upstream by mutation toast handler
@@ -918,18 +852,15 @@ const QuizBuilder = ({
   }, [questions, searchQuery]);
 
   const renderQuestionCard = (question: QuizQuestion, index: number) => {
-    const isEditingThis = editingId === question.id;
     return (
       <Card
         key={question.id}
         withBorder
         radius='md'
         p='md'
-        className={`${styles.questionCard} ${isEditingThis ? styles.questionCardEditing : ''}`}
+        className={styles.questionCard}
         style={{
-          borderColor: isEditingThis
-            ? 'var(--mantine-color-indigo-5)'
-            : themeConfig.borderColor,
+          borderColor: themeConfig.borderColor,
           backgroundColor: themeConfig.cardBackground
         }}
       >
@@ -964,15 +895,6 @@ const QuizBuilder = ({
                   onClick={() => handleDuplicate(question)}
                 >
                   <IconCopy size={16} />
-                </ActionIcon>
-              </Tooltip>
-              <Tooltip label='Edit' withArrow>
-                <ActionIcon
-                  variant='subtle'
-                  aria-label='Edit question'
-                  onClick={() => startEditing(question)}
-                >
-                  <IconPencil size={16} />
                 </ActionIcon>
               </Tooltip>
               <Tooltip
@@ -1065,19 +987,9 @@ const QuizBuilder = ({
           existingQuestions={questions}
           error={error}
           isSubmitting={isSubmitting}
-          mode={editingId ? 'edit' : 'create'}
           onChange={setDraft}
           onSave={handleSave}
           onCancel={resetDraft}
-          onDelete={
-            editingId
-              ? () => {
-                  const target =
-                    questions.find(q => q.id === editingId) || draft;
-                  setDeleteTarget(target);
-                }
-              : undefined
-          }
         />
 
         <Stack gap='sm'>

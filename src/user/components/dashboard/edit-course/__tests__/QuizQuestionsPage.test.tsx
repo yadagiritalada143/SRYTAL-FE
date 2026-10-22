@@ -275,11 +275,7 @@ describe('QuizQuestionsPage', () => {
     });
   });
 
-  it('edits an existing question', async () => {
-    const mutateAsync = jest
-      .fn()
-      .mockResolvedValue({ message: 'Quiz question updated successfully !' });
-    userMutationsMock().useUpdateQuizQuestion.mockReturnValue({ mutateAsync });
+  it('does not display an edit option for existing quiz questions', () => {
     saveQuizTaskState({ courseId: 'c1', moduleId: 'm1', taskId: 't1' });
     useGetAllQuizQuestionsMock().mockReturnValue({
       data: [editableQuestion()],
@@ -289,27 +285,10 @@ describe('QuizQuestionsPage', () => {
 
     renderPage();
 
-    fireEvent.click(screen.getByLabelText('Edit question'));
-    expect(screen.getByText('Edit question')).toBeInTheDocument();
-
-    fireEvent.change(screen.getByLabelText(/Question/), {
-      target: { value: 'What is your favourite colour now?' }
-    });
-    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
-
-    await waitFor(() => {
-      expect(mutateAsync).toHaveBeenCalledWith({
-        questionId: 'q1',
-        data: expect.objectContaining({
-          question: 'What is your favourite colour now?',
-          type: 'RADIO',
-          status: 'SHOW'
-        })
-      });
-    });
-    expect(mockShowSuccessToast).toHaveBeenCalledWith(
-      'Quiz question updated successfully !'
-    );
+    expect(screen.queryByLabelText('Edit question')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Duplicate question')).toBeInTheDocument();
+    expect(screen.getByLabelText('Hide question')).toBeInTheDocument();
+    expect(screen.getByLabelText('Delete question')).toBeInTheDocument();
   });
 
   it('hides a question by toggling its status', async () => {
