@@ -9,6 +9,7 @@ import {
   UnstyledButton
 } from '@mantine/core';
 import {
+  IconChevronDown,
   IconCircleCheckFilled,
   IconCircleDashed,
   IconCode,
@@ -32,7 +33,7 @@ interface CurriculumSidebarProps {
   onSelectTask: (task: AssignedTask, moduleId: string) => void;
 }
 
-export const getTaskTypeMeta = (task: AssignedTask) => {
+const getTaskTypeMeta = (task: AssignedTask) => {
   if (isCodingTask(task)) {
     return {
       label: 'Coding Challenge',
@@ -127,6 +128,7 @@ const CurriculumSidebar = ({
       multiple
       value={openModuleIds}
       onChange={onOpenModulesChange}
+      chevron={<IconChevronDown size={18} />}
       variant='separated'
       radius='md'
       styles={{
