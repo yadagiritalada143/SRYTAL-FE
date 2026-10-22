@@ -595,12 +595,41 @@ describe('CourseDetails', () => {
   });
 
   describe('Navigation', () => {
-    it('navigates back when the back button is clicked', () => {
+    it('navigates to the courses list when the back button is clicked', () => {
+      window.history.pushState({}, '', '/acme/employee/dashboard/course/c1');
       renderPage();
       const button = screen.getByRole('button', { name: /back/i });
       expect(button).toBeTruthy();
       fireEvent.click(button);
-      expect(mockNavigate).toHaveBeenCalledWith(-1);
+      expect(mockNavigate).toHaveBeenCalledWith(
+        '/acme/employee/dashboard/content-writer'
+      );
+    });
+
+    it('navigates to quizzes if from=quizzes is present in searchParams', () => {
+      window.history.pushState(
+        {},
+        '',
+        '/acme/employee/dashboard/course/c1?from=quizzes'
+      );
+      renderPage();
+      const button = screen.getByRole('button', { name: /back/i });
+      fireEvent.click(button);
+      expect(mockNavigate).toHaveBeenCalledWith(
+        '/acme/employee/dashboard/quizzes'
+      );
+    });
+
+    it('navigates to custom from path if from is present in searchParams', () => {
+      window.history.pushState(
+        {},
+        '',
+        '/acme/employee/dashboard/course/c1?from=/custom/path'
+      );
+      renderPage();
+      const button = screen.getByRole('button', { name: /back/i });
+      fireEvent.click(button);
+      expect(mockNavigate).toHaveBeenCalledWith('/custom/path');
     });
   });
 });

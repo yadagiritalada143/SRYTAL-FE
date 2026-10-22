@@ -72,7 +72,7 @@ export const QUIZ_QUESTION_STATUSES: Array<{
   { value: 'HIDE', label: 'Hide' }
 ];
 
-export const QUIZ_MIN_OPTIONS = 4;
+export const QUIZ_MIN_OPTIONS = 2;
 
 export const QUIZ_MULTI_ANSWER_TYPES: QuizAnswerType[] = ['CHECKBOX'];
 

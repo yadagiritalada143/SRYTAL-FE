@@ -17,12 +17,20 @@ interface TaskContentViewerProps {
   task: AssignedTask;
   courseAssignmentId?: string;
   onFinished?: () => void;
+  onNext?: () => void;
+  hasNext?: boolean;
+  nextTaskName?: string;
+  onBackToCourse?: () => void;
   embedded?: boolean;
 }
 
 const TaskContentViewer = ({
   task,
   onFinished,
+  onNext,
+  hasNext,
+  nextTaskName,
+  onBackToCourse,
   embedded = false
 }: TaskContentViewerProps) => {
   const { themeConfig } = useAppTheme();
@@ -70,7 +78,16 @@ const TaskContentViewer = ({
   }
 
   if (isQuizTask(task)) {
-    return <QuizTaskViewer task={task} onPassed={onFinished} />;
+    return (
+      <QuizTaskViewer
+        task={task}
+        onPassed={onFinished}
+        onNext={onNext}
+        hasNext={hasNext}
+        nextTaskName={nextTaskName}
+        onBackToCourse={onBackToCourse}
+      />
+    );
   }
 
   const content = resolveTaskContent(task, getCourseTaskContentUrl(task._id));

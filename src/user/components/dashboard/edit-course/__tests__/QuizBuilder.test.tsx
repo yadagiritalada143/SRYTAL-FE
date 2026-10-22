@@ -58,7 +58,17 @@ const Harness = ({
     | ((question: QuizQuestion) => Promise<void> | void)
     | undefined,
   isLoading = false,
-  isSubmitting = false
+  isSubmitting = false,
+  allowEdit = false
+}: {
+  initial?: QuizQuestion[];
+  onAddQuestion?: (question: QuizQuestion) => Promise<void> | void;
+  onUpdateQuestion?: (question: QuizQuestion) => Promise<void> | void;
+  onToggleStatus?: (question: QuizQuestion) => Promise<void> | void;
+  onDeleteQuestion?: (question: QuizQuestion) => Promise<void> | void;
+  isLoading?: boolean;
+  isSubmitting?: boolean;
+  allowEdit?: boolean;
 }) => {
   const [questions, setQuestions] = useState<QuizQuestion[]>(initial);
   return (
@@ -67,6 +77,7 @@ const Harness = ({
         questions={questions}
         isLoading={isLoading}
         isSubmitting={isSubmitting}
+        allowEdit={allowEdit}
         onUpdateQuestion={onUpdateQuestion}
         onToggleStatus={onToggleStatus}
         onDeleteQuestion={
@@ -121,17 +132,14 @@ describe('validateQuizQuestion', () => {
     ).toBeNull();
   });
 
-  it('requires at least four filled options for choice types', () => {
+  it('requires at least two filled options for choice types', () => {
     expect(
       validateQuizQuestion(
         baseQuestion({
-          options: [
-            { id: 'o1', text: 'Red', isCorrect: true },
-            { id: 'o2', text: 'Green', isCorrect: false }
-          ]
+          options: [{ id: 'o1', text: 'Red', isCorrect: true }]
         })
       )
-    ).toBe('Add at least 4 answer options.');
+    ).toBe('Add at least 2 answer options.');
   });
 
   it('requires at least one correct answer', () => {
@@ -351,7 +359,7 @@ describe('QuizBuilder', () => {
     fireEvent.blur(screen.getByLabelText('Option 1'));
 
     expect(
-      screen.getByText('Add at least 4 answer options.')
+      screen.getByText('Add at least 2 answer options.')
     ).toBeInTheDocument();
   });
 
@@ -382,15 +390,12 @@ describe('QuizBuilder', () => {
     ).not.toBeDisabled();
   });
 
-  it('keeps Save changes disabled while the edited question is invalid', () => {
+  it('does not render an edit button for existing questions', () => {
     render(<Harness initial={[baseQuestion()]} />);
-
-    fireEvent.click(screen.getByLabelText('Edit question'));
-    fireEvent.change(screen.getByLabelText(/Question/), {
-      target: { value: '   ' }
-    });
-
-    expect(screen.getByRole('button', { name: 'Save changes' })).toBeDisabled();
+    expect(screen.queryByLabelText('Edit question')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Duplicate question')).toBeInTheDocument();
+    expect(screen.getByLabelText('Hide question')).toBeInTheDocument();
+    expect(screen.getByLabelText('Delete question')).toBeInTheDocument();
   });
 
   it('hides the answer options for a short text question', async () => {
@@ -474,39 +479,6 @@ describe('QuizBuilder', () => {
     expect(screen.getByRole('button', { name: 'Add question' })).toBeDisabled();
   });
 
-  it('loads a saved question into the editor in edit mode', () => {
-    render(<Harness initial={[baseQuestion()]} />);
-
-    fireEvent.click(screen.getByLabelText('Edit question'));
-
-    expect(screen.getByText('Edit question')).toBeInTheDocument();
-    expect(screen.getByLabelText(/Question/)).toHaveValue(
-      'What is your favourite colour?'
-    );
-    expect(
-      screen.getByRole('button', { name: 'Save changes' })
-    ).toBeInTheDocument();
-  });
-
-  it('passes the edited question to onUpdateQuestion', async () => {
-    const onUpdateQuestion = jest.fn().mockResolvedValue(undefined);
-    render(
-      <Harness initial={[baseQuestion()]} onUpdateQuestion={onUpdateQuestion} />
-    );
-
-    fireEvent.click(screen.getByLabelText('Edit question'));
-    fireEvent.change(screen.getByLabelText(/Question/), {
-      target: { value: 'Updated question?' }
-    });
-    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
-
-    await waitFor(() =>
-      expect(onUpdateQuestion).toHaveBeenCalledWith(
-        expect.objectContaining({ id: 'q1', question: 'Updated question?' })
-      )
-    );
-  });
-
   it('requests a status change when the visibility action is used', () => {
     const onToggleStatus = jest.fn();
     render(
@@ -559,31 +531,5 @@ describe('QuizBuilder', () => {
     expect(
       screen.getByText('What is your favourite colour?')
     ).toBeInTheDocument();
-  }, 15000);
-
-  it('allows deleting a question directly from the edit form', async () => {
-    const onDeleteQuestion = jest.fn().mockResolvedValue(undefined);
-    render(
-      <Harness initial={[baseQuestion()]} onDeleteQuestion={onDeleteQuestion} />
-    );
-
-    fireEvent.click(screen.getByLabelText('Edit question'));
-    expect(
-      screen.getByRole('button', { name: 'Save changes' })
-    ).toBeInTheDocument();
-
-    const deleteInFormBtn = screen
-      .getByText('Delete question')
-      .closest('button')!;
-    expect(deleteInFormBtn).toBeInTheDocument();
-    fireEvent.click(deleteInFormBtn);
-
-    fireEvent.click(await screen.findByRole('button', { name: 'Yes, delete' }));
-
-    await waitFor(() =>
-      expect(onDeleteQuestion).toHaveBeenCalledWith(
-        expect.objectContaining({ id: 'q1' })
-      )
-    );
   }, 15000);
 });

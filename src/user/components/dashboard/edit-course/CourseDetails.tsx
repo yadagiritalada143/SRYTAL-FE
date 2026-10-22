@@ -139,6 +139,19 @@ const CourseDetails = () => {
     window.open(getCourseTaskContentUrl(task._id), '_blank', 'noopener');
   };
 
+  const handleBack = () => {
+    const from = searchParams.get('from');
+    if (from === 'quizzes') {
+      navigate(`${commonUrls(organization)}/dashboard/quizzes`);
+      return;
+    }
+    if (from) {
+      navigate(from);
+      return;
+    }
+    navigate(`${commonUrls(organization)}/dashboard/content-writer`);
+  };
+
   const handleManageQuizQuestions = (task: Task) => {
     const params = new URLSearchParams({
       taskId: task._id,
@@ -271,7 +284,7 @@ const CourseDetails = () => {
                   leftSection={<IconArrowLeft size={16} />}
                   variant='default'
                   size='xs'
-                  onClick={() => navigate(-1)}
+                  onClick={handleBack}
                 >
                   Back
                 </CommonButton>

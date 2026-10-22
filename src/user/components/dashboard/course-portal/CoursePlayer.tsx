@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
   ActionIcon,
   Badge,
   Box,
   Card,
+  Divider,
   Drawer,
   Group,
   Paper,
@@ -58,6 +59,7 @@ interface FlatTask {
 const CoursePlayer = () => {
   const { courseAssignmentId = '' } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const isMobile = useMediaQuery('(max-width: 768px)');
   const { themeConfig } = useAppTheme();
   const { showSuccessToast, showErrorToast } = useCustomToast();
@@ -92,13 +94,29 @@ const CoursePlayer = () => {
   );
 
   // Resume where the learner left off: the first task they haven't finished.
+  const nextUp = useMemo(
+    () => flatTasks.find(entry => !entry.task.isCompleted) ?? flatTasks[0],
+    [flatTasks]
+  );
+
+  const initialAutoSelectDone = useRef(false);
+
   useEffect(() => {
-    if (activeTaskId || flatTasks.length === 0) return;
-    const nextUp =
-      flatTasks.find(entry => !entry.task.isCompleted) ?? flatTasks[0];
-    setActiveTaskId(nextUp.task._id);
-    setOpenModuleIds([nextUp.moduleId]);
-  }, [flatTasks, activeTaskId]);
+    if (initialAutoSelectDone.current || flatTasks.length === 0) return;
+    const fromUrl = searchParams.get('taskId');
+    if (fromUrl) {
+      setActiveTaskId(fromUrl);
+      const matched = flatTasks.find(entry => entry.task._id === fromUrl);
+      if (matched) setOpenModuleIds([matched.moduleId]);
+      initialAutoSelectDone.current = true;
+      return;
+    }
+    if (nextUp) {
+      setActiveTaskId(nextUp.task._id);
+      setOpenModuleIds([nextUp.moduleId]);
+    }
+    initialAutoSelectDone.current = true;
+  }, [flatTasks, nextUp, searchParams]);
 
   const activeIndex = flatTasks.findIndex(
     entry => entry.task._id === activeTaskId
@@ -112,7 +130,29 @@ const CoursePlayer = () => {
   const showsAcknowledgement = active
     ? hasTaskAcknowledgement(active.task)
     : false;
-  const showCurriculum = active ? !isQuizTask(active.task) : true;
+  const showCurriculum = true;
+
+  const hasNext = activeIndex >= 0 && activeIndex < flatTasks.length - 1;
+  const nextTaskEntry = hasNext ? flatTasks[activeIndex + 1] : undefined;
+  const nextTaskName = nextTaskEntry?.task.taskName;
+
+  const handleNext = () => {
+    if (hasNext) {
+      goTo(activeIndex + 1);
+    }
+  };
+
+  const handleBackToCourseContent = () => {
+    setActiveTaskId(null);
+  };
+
+  const handleBack = () => {
+    if (activeTaskId) {
+      setActiveTaskId(null);
+      return;
+    }
+    navigate('../course-assignments');
+  };
 
   const selectTask = (task: AssignedTask, moduleId: string) => {
     if (needsAcknowledgement && task._id !== activeTaskId) {
@@ -227,7 +267,7 @@ const CoursePlayer = () => {
                   <CommonButton
                     variant='default'
                     leftSection={<IconArrowLeft size={16} />}
-                    onClick={() => navigate('../course-assignments')}
+                    onClick={handleBack}
                   >
                     Back
                   </CommonButton>
@@ -266,11 +306,57 @@ const CoursePlayer = () => {
           >
             <Stack gap='md' style={{ flex: 1, minWidth: 0, width: '100%' }}>
               {!active ? (
-                <Card withBorder radius='lg' p='xl'>
-                  <Text ta='center' c={themeConfig.mutedTextColor}>
-                    This course has no published content yet. Check back soon.
-                  </Text>
-                </Card>
+                flatTasks.length === 0 ? (
+                  <Card withBorder radius='lg' p='xl'>
+                    <Text ta='center' c={themeConfig.mutedTextColor}>
+                      This course has no published content yet. Check back soon.
+                    </Text>
+                  </Card>
+                ) : (
+                  <Card withBorder radius='lg' p={{ base: 'md', sm: 'xl' }}>
+                    <Stack gap='md'>
+                      <Group justify='space-between' align='center' wrap='wrap'>
+                        <Stack gap={2}>
+                          <Title order={isMobile ? 4 : 3}>Course Content</Title>
+                          <Text size='xs' c={themeConfig.mutedTextColor}>
+                            {modules.length}{' '}
+                            {modules.length === 1 ? 'module' : 'modules'} ·{' '}
+                            {flatTasks.length}{' '}
+                            {flatTasks.length === 1 ? 'task' : 'tasks'}
+                          </Text>
+                        </Stack>
+
+                        {nextUp && (
+                          <CommonButton
+                            color='teal'
+                            rightSection={<IconChevronRight size={16} />}
+                            onClick={() =>
+                              selectTask(nextUp.task, nextUp.moduleId)
+                            }
+                          >
+                            {nextUp.task.isCompleted
+                              ? `Review: ${nextUp.task.taskName}`
+                              : `Next Task: ${nextUp.task.taskName}`}
+                          </CommonButton>
+                        )}
+                      </Group>
+
+                      <Divider />
+
+                      <CurriculumSidebar
+                        modules={modules}
+                        activeTaskId={undefined}
+                        openModuleIds={
+                          openModuleIds.length > 0
+                            ? openModuleIds
+                            : modules.map(m => m._id)
+                        }
+                        onOpenModulesChange={setOpenModuleIds}
+                        onSelectTask={selectTask}
+                      />
+                    </Stack>
+                  </Card>
+                )
               ) : (
                 <>
                   {showsAcknowledgement ? (
@@ -284,6 +370,10 @@ const CoursePlayer = () => {
                         task={active.task}
                         courseAssignmentId={courseAssignmentId}
                         onFinished={handleContentFinished}
+                        onNext={hasNext ? handleNext : undefined}
+                        hasNext={hasNext}
+                        nextTaskName={nextTaskName}
+                        onBackToCourse={handleBackToCourseContent}
                         embedded
                       />
                       <TaskAcknowledgement
@@ -297,6 +387,10 @@ const CoursePlayer = () => {
                       task={active.task}
                       courseAssignmentId={courseAssignmentId}
                       onFinished={handleContentFinished}
+                      onNext={hasNext ? handleNext : undefined}
+                      hasNext={hasNext}
+                      nextTaskName={nextTaskName}
+                      onBackToCourse={handleBackToCourseContent}
                     />
                   )}
 
@@ -378,38 +472,48 @@ const CoursePlayer = () => {
                           </Tooltip>
                         </Group>
 
-                        {!isQuizTask(active.task) &&
-                          (active.task.isCompleted ? (
+                        {isQuizTask(active.task) ? (
+                          active.task.isCompleted &&
+                          hasNext && (
                             <CommonButton
-                              variant='light'
-                              color='gray'
-                              loading={isPending}
-                              leftSection={<IconRotateClockwise size={16} />}
-                              onClick={() => setCompletion(false)}
+                              color='teal'
+                              rightSection={<IconChevronRight size={16} />}
+                              onClick={handleNext}
                             >
-                              Mark as incomplete
+                              Next Task{nextTaskName ? `: ${nextTaskName}` : ''}
                             </CommonButton>
-                          ) : (
-                            <Tooltip
-                              label='Acknowledge this document to continue'
-                              withArrow
-                              disabled={!needsAcknowledgement}
+                          )
+                        ) : active.task.isCompleted ? (
+                          <CommonButton
+                            variant='light'
+                            color='gray'
+                            loading={isPending}
+                            leftSection={<IconRotateClockwise size={16} />}
+                            onClick={() => setCompletion(false)}
+                          >
+                            Mark as incomplete
+                          </CommonButton>
+                        ) : (
+                          <Tooltip
+                            label='Acknowledge this document to continue'
+                            withArrow
+                            disabled={!needsAcknowledgement}
+                          >
+                            <CommonButton
+                              loading={isPending}
+                              disabled={needsAcknowledgement}
+                              leftSection={<IconChecks size={16} />}
+                              onClick={() =>
+                                setCompletion(
+                                  true,
+                                  activeIndex < flatTasks.length - 1
+                                )
+                              }
                             >
-                              <CommonButton
-                                loading={isPending}
-                                disabled={needsAcknowledgement}
-                                leftSection={<IconChecks size={16} />}
-                                onClick={() =>
-                                  setCompletion(
-                                    true,
-                                    activeIndex < flatTasks.length - 1
-                                  )
-                                }
-                              >
-                                Complete and continue
-                              </CommonButton>
-                            </Tooltip>
-                          ))}
+                              Complete and continue
+                            </CommonButton>
+                          </Tooltip>
+                        )}
                       </Group>
                     </Stack>
                   </Card>
@@ -417,7 +521,7 @@ const CoursePlayer = () => {
               )}
             </Stack>
 
-            {!isMobile && showCurriculum && (
+            {!isMobile && active && showCurriculum && (
               <Box
                 style={{
                   width: 360,
