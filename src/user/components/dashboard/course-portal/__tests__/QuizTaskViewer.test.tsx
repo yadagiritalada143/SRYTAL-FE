@@ -241,6 +241,44 @@ describe('QuizTaskViewer', () => {
     expect(screen.queryByRole('button', { name: 'Submit' })).toBeNull();
   });
 
+  it('renders Next Task button and handles click when quiz is submitted successfully', async () => {
+    const onNextMock = jest.fn();
+    mockSubmitQuiz.mockResolvedValue({
+      attemptId: 'att-1',
+      score: 10,
+      total: 10,
+      percentage: 100,
+      passed: true,
+      alreadySubmitted: false,
+      submittedAt: '2026-03-30T10:05:00Z'
+    });
+
+    render(
+      <MantineProvider>
+        <QuizTaskViewer
+          task={makeTask()}
+          onNext={onNextMock}
+          hasNext={true}
+          nextTaskName='Next Module Lesson'
+        />
+      </MantineProvider>
+    );
+
+    await screen.findByRole('button', { name: 'Validate' });
+    fireEvent.click(screen.getByLabelText('Red'));
+    fireEvent.click(screen.getByRole('button', { name: 'Validate' }));
+
+    await screen.findByRole('button', { name: 'Submit' });
+    fireEvent.click(screen.getByRole('button', { name: 'Submit' }));
+
+    const nextButtons = await screen.findAllByRole('button', {
+      name: /Next Task/i
+    });
+    expect(nextButtons.length).toBeGreaterThan(0);
+    fireEvent.click(nextButtons[0]);
+    expect(onNextMock).toHaveBeenCalled();
+  });
+
   it('keeps a failed submit in a re-attempt-only state', async () => {
     const onPassed = jest.fn();
     mockSubmitQuiz.mockRejectedValue({

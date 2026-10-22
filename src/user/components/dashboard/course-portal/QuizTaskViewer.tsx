@@ -16,7 +16,9 @@ import {
 } from '@mantine/core';
 import {
   IconAlertCircle,
+  IconArrowLeft,
   IconCheck,
+  IconChevronRight,
   IconCircleCheck,
   IconClipboardCheck,
   IconListCheck,
@@ -50,6 +52,10 @@ import styles from './QuizTaskViewer.module.css';
 interface QuizTaskViewerProps {
   task: AssignedTask;
   onPassed?: () => void;
+  onNext?: () => void;
+  hasNext?: boolean;
+  nextTaskName?: string;
+  onBackToCourse?: () => void;
 }
 
 const scoreText = (value: number | null | undefined) =>
@@ -57,7 +63,14 @@ const scoreText = (value: number | null | undefined) =>
 
 const optionLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 
-const QuizTaskViewer = ({ task, onPassed }: QuizTaskViewerProps) => {
+const QuizTaskViewer = ({
+  task,
+  onPassed,
+  onNext,
+  hasNext,
+  nextTaskName,
+  onBackToCourse
+}: QuizTaskViewerProps) => {
   const { themeConfig } = useAppTheme();
   const { showSuccessToast, showErrorToast } = useCustomToast();
 
@@ -270,6 +283,28 @@ const QuizTaskViewer = ({ task, onPassed }: QuizTaskViewerProps) => {
           <Text size='sm' c={themeConfig.mutedTextColor} ta='center' maw={420}>
             You’ve already passed this quiz.
           </Text>
+          <Group gap='xs' mt='sm' wrap='wrap' justify='center'>
+            {onBackToCourse && (
+              <CommonButton
+                variant='default'
+                size='sm'
+                leftSection={<IconArrowLeft size={16} />}
+                onClick={onBackToCourse}
+              >
+                Back to Course
+              </CommonButton>
+            )}
+            {hasNext && onNext && (
+              <CommonButton
+                color='teal'
+                size='sm'
+                rightSection={<IconChevronRight size={16} />}
+                onClick={onNext}
+              >
+                Next Task{nextTaskName ? `: ${nextTaskName}` : ''}
+              </CommonButton>
+            )}
+          </Group>
         </Stack>
       </Card>
     );
@@ -388,7 +423,14 @@ const QuizTaskViewer = ({ task, onPassed }: QuizTaskViewerProps) => {
           )}
 
           {submitResult && (
-            <SubmitOutcome result={submitResult} themeConfig={themeConfig} />
+            <SubmitOutcome
+              result={submitResult}
+              themeConfig={themeConfig}
+              onNext={onNext}
+              hasNext={hasNext}
+              nextTaskName={nextTaskName}
+              onBackToCourse={onBackToCourse}
+            />
           )}
 
           {errorText && (
@@ -433,6 +475,31 @@ const QuizTaskViewer = ({ task, onPassed }: QuizTaskViewerProps) => {
               >
                 Submit
               </CommonButton>
+            )}
+
+            {submitResult && submitResult.passed !== false && (
+              <Group gap='xs'>
+                {onBackToCourse && (
+                  <CommonButton
+                    variant='default'
+                    size='sm'
+                    leftSection={<IconArrowLeft size={16} />}
+                    onClick={onBackToCourse}
+                  >
+                    Back to Course
+                  </CommonButton>
+                )}
+                {hasNext && onNext && (
+                  <CommonButton
+                    color='teal'
+                    size='sm'
+                    rightSection={<IconChevronRight size={16} />}
+                    onClick={onNext}
+                  >
+                    Next Task{nextTaskName ? `: ${nextTaskName}` : ''}
+                  </CommonButton>
+                )}
+              </Group>
             )}
           </Group>
 
@@ -873,9 +940,20 @@ interface SubmitOutcomeProps {
   themeConfig: {
     mutedTextColor: string;
   };
+  onNext?: () => void;
+  hasNext?: boolean;
+  nextTaskName?: string;
+  onBackToCourse?: () => void;
 }
 
-const SubmitOutcome = ({ result, themeConfig }: SubmitOutcomeProps) => {
+const SubmitOutcome = ({
+  result,
+  themeConfig,
+  onNext,
+  hasNext,
+  nextTaskName,
+  onBackToCourse
+}: SubmitOutcomeProps) => {
   if (result.passed === false) {
     return (
       <Alert color='red' icon={<IconAlertCircle size={18} />} radius='md'>
@@ -892,23 +970,50 @@ const SubmitOutcome = ({ result, themeConfig }: SubmitOutcomeProps) => {
 
   return (
     <Card className={styles.resultSuccessCard} radius='md' p='md'>
-      <Group gap='sm' align='center'>
-        <ThemeIcon size={36} radius='xl' color='teal' variant='filled'>
-          <IconCheck size={20} stroke={3} />
-        </ThemeIcon>
-        <Stack gap={2}>
-          <Text fw={700} c='teal'>
-            {result.alreadySubmitted
-              ? 'This quiz attempt was already submitted.'
-              : 'Quiz submitted successfully.'}
-          </Text>
-          {typeof result.percentage === 'number' && (
-            <Text size='xs' c={themeConfig.mutedTextColor}>
-              Final score: {result.percentage}%
-            </Text>
-          )}
-        </Stack>
-      </Group>
+      <Stack gap='sm'>
+        <Group justify='space-between' align='center' wrap='wrap'>
+          <Group gap='sm' align='center'>
+            <ThemeIcon size={36} radius='xl' color='teal' variant='filled'>
+              <IconCheck size={20} stroke={3} />
+            </ThemeIcon>
+            <Stack gap={2}>
+              <Text fw={700} c='teal'>
+                {result.alreadySubmitted
+                  ? 'This quiz attempt was already submitted.'
+                  : 'Quiz submitted successfully.'}
+              </Text>
+              {typeof result.percentage === 'number' && (
+                <Text size='xs' c={themeConfig.mutedTextColor}>
+                  Final score: {result.percentage}%
+                </Text>
+              )}
+            </Stack>
+          </Group>
+
+          <Group gap='xs' wrap='wrap'>
+            {onBackToCourse && (
+              <CommonButton
+                variant='default'
+                size='xs'
+                leftSection={<IconArrowLeft size={14} />}
+                onClick={onBackToCourse}
+              >
+                Course Content
+              </CommonButton>
+            )}
+            {hasNext && onNext && (
+              <CommonButton
+                color='teal'
+                size='xs'
+                rightSection={<IconChevronRight size={14} />}
+                onClick={onNext}
+              >
+                Next Task{nextTaskName ? `: ${nextTaskName}` : ''}
+              </CommonButton>
+            )}
+          </Group>
+        </Group>
+      </Stack>
     </Card>
   );
 };

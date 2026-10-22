@@ -196,6 +196,7 @@ const ACKNOWLEDGEMENT_LABEL = 'I have read the acceptable use policy.';
 
 describe('CoursePlayer', () => {
   beforeEach(() => {
+    window.history.pushState({}, '', '/');
     mockCourse = makeCourse();
     mockIsLoading = false;
     mockError = null;
@@ -225,10 +226,18 @@ describe('CoursePlayer', () => {
     expect(screen.getByText(/Due/)).toBeInTheDocument();
   });
 
-  it('navigates back to the courses list', () => {
+  it('returns to course content view on first Back, then navigates back to courses list', async () => {
     renderPlayer();
-    fireEvent.click(screen.getByRole('button', { name: 'Back' }));
+    await waitFor(() => {
+      expect(screen.getByTestId('task-viewer')).toHaveTextContent('Intro');
+    });
 
+    // First click from a task returns to the Course Content view
+    fireEvent.click(screen.getByRole('button', { name: 'Back' }));
+    expect(screen.getByText('Course Content')).toBeInTheDocument();
+
+    // Second click from Course Content view navigates back to courses list
+    fireEvent.click(screen.getByRole('button', { name: 'Back' }));
     expect(mockNavigate).toHaveBeenCalledWith('../course-assignments');
   });
 
@@ -422,7 +431,7 @@ describe('CoursePlayer', () => {
     });
   });
 
-  it('hides the curriculum panel when the active task is a quiz', async () => {
+  it('displays the curriculum panel when the active task is a quiz', async () => {
     mockCourse = makeCourse({
       modules: [
         {
@@ -445,8 +454,40 @@ describe('CoursePlayer', () => {
         'Python quiz'
       );
     });
-    expect(screen.queryByTestId('curriculum')).not.toBeInTheDocument();
-    expect(screen.queryByText('Course content')).not.toBeInTheDocument();
+    expect(screen.getByTestId('curriculum')).toBeInTheDocument();
+    expect(screen.getByText('Course content')).toBeInTheDocument();
+  });
+
+  it('displays Next Task button when quiz task is completed and has a next task', async () => {
+    window.history.pushState({}, '', '/course-assignments/ca1?taskId=q1');
+    mockCourse = makeCourse({
+      modules: [
+        {
+          _id: 'm1',
+          moduleName: 'Quiz module',
+          moduleDescription: '',
+          totalTasks: 2,
+          completedTasks: 1,
+          tasks: [
+            makeTask({
+              _id: 'q1',
+              taskName: 'Python quiz',
+              type: 'QUIZ',
+              isCompleted: true
+            }),
+            makeTask({ _id: 't2', taskName: 'Advanced Patterns', type: 'LINK' })
+          ]
+        }
+      ]
+    });
+
+    renderPlayer();
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('button', { name: /Next Task/i })
+      ).toBeInTheDocument();
+    });
   });
 
   it('shows an empty state message when the course has no tasks', async () => {
