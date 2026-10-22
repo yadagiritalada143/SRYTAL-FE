@@ -113,10 +113,10 @@ const CoursePlayer = () => {
     }
     if (nextUp) {
       setActiveTaskId(nextUp.task._id);
-      setOpenModuleIds([nextUp.moduleId]);
+      setOpenModuleIds(modules.map(m => m._id));
     }
     initialAutoSelectDone.current = true;
-  }, [flatTasks, nextUp, searchParams]);
+  }, [flatTasks, nextUp, searchParams, modules]);
 
   const activeIndex = flatTasks.findIndex(
     entry => entry.task._id === activeTaskId
@@ -235,25 +235,20 @@ const CoursePlayer = () => {
           {/* Course header + overall progress */}
           <Card withBorder radius='lg' p={{ base: 'md', sm: 'lg' }}>
             <Stack gap='sm'>
-              <Group justify='space-between' align='flex-start' wrap='nowrap'>
-                <Stack gap={4} style={{ minWidth: 0 }}>
-                  <Title order={isMobile ? 4 : 3} lineClamp={2}>
-                    {course?.courseName}
-                  </Title>
-                  <Group gap='xs' wrap='wrap'>
-                    <Badge
-                      variant='light'
-                      color={statusColor(course?.status, course?.isOverdue)}
-                    >
-                      {course?.isOverdue ? 'Overdue' : course?.status}
-                    </Badge>
-                    <Text size='xs' c={themeConfig.mutedTextColor}>
-                      Due {formatDueDate(course?.dueDate)}
-                    </Text>
-                  </Group>
-                </Stack>
-
-                <Group gap='xs' align='center' wrap='nowrap'>
+              <Group
+                justify='space-between'
+                align='center'
+                wrap='wrap'
+                gap='xs'
+              >
+                <Group gap='xs' align='center'>
+                  <CommonButton
+                    variant='default'
+                    leftSection={<IconArrowLeft size={16} />}
+                    onClick={handleBack}
+                  >
+                    Back
+                  </CommonButton>
                   {isMobile && showCurriculum && (
                     <ActionIcon
                       variant='light'
@@ -264,15 +259,29 @@ const CoursePlayer = () => {
                       <IconListCheck size={20} />
                     </ActionIcon>
                   )}
-                  <CommonButton
-                    variant='default'
-                    leftSection={<IconArrowLeft size={16} />}
-                    onClick={handleBack}
+                </Group>
+
+                <Group
+                  gap='xs'
+                  wrap='wrap'
+                  align='center'
+                  pr={{ base: 0, sm: '80px', md: '120px' }}
+                >
+                  <Badge
+                    variant='light'
+                    color={statusColor(course?.status, course?.isOverdue)}
                   >
-                    Back
-                  </CommonButton>
+                    {course?.isOverdue ? 'Overdue' : course?.status}
+                  </Badge>
+                  <Text size='xs' c={themeConfig.mutedTextColor}>
+                    Due {formatDueDate(course?.dueDate)}
+                  </Text>
                 </Group>
               </Group>
+
+              <Title order={isMobile ? 4 : 3} lineClamp={2}>
+                {course?.courseName}
+              </Title>
 
               <Stack gap={4}>
                 <Group justify='space-between'>
@@ -346,11 +355,7 @@ const CoursePlayer = () => {
                       <CurriculumSidebar
                         modules={modules}
                         activeTaskId={undefined}
-                        openModuleIds={
-                          openModuleIds.length > 0
-                            ? openModuleIds
-                            : modules.map(m => m._id)
-                        }
+                        openModuleIds={openModuleIds}
                         onOpenModulesChange={setOpenModuleIds}
                         onSelectTask={selectTask}
                       />

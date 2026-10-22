@@ -2,7 +2,7 @@ import React from 'react';
 import { ToastContainer, cssTransition } from 'react-toastify';
 import { useAppTheme } from '@hooks/use-app-theme';
 
-export const sonnerTransition = cssTransition({
+const sonnerTransition = cssTransition({
   enter: 'sonner-toast-enter',
   exit: 'sonner-toast-exit',
   appendPosition: false,
@@ -26,7 +26,8 @@ export const SonnerToastContainer: React.FC = () => {
       pauseOnHover={true}
       theme={isDarkTheme ? 'dark' : 'light'}
       transition={sonnerTransition}
-      stacked
+      stacked={false}
+      limit={5}
     />
   );
 };

@@ -193,10 +193,20 @@ describe('sonnerToast and useCustomToast hook', () => {
       expect.objectContaining({ type: 'info' })
     );
   });
+
+  it('supports firing multiple distinct toast notifications simultaneously', () => {
+    const { result } = renderHook(() => useCustomToast());
+
+    result.current.showSuccessToast('Task 1 completed');
+    result.current.showInfoToast('Task 2 in progress');
+    result.current.showErrorToast('Task 3 failed');
+
+    expect(toast).toHaveBeenCalledTimes(3);
+  });
 });
 
 describe('SonnerToastContainer', () => {
-  it('renders container with stacked option enabled', () => {
+  it('renders container with multiple visible toasts support (stacked disabled)', () => {
     render(
       <RecoilRoot>
         <SonnerToastContainer />
@@ -205,6 +215,6 @@ describe('SonnerToastContainer', () => {
 
     const container = screen.getByTestId('mock-toast-container');
     expect(container).toBeInTheDocument();
-    expect(container).toHaveAttribute('data-stacked', 'true');
+    expect(container).toHaveAttribute('data-stacked', 'false');
   });
 });
