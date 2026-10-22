@@ -44,6 +44,14 @@ jest.mock('@utils/common/toast', () => ({
   })
 }));
 
+const mockCopyQuizQuestionsToTask = jest.fn();
+jest.mock('@services/user-services', () => ({
+  // Resolved lazily: the factory runs while the module is imported, before the
+  // mock variable above is initialised.
+  copyQuizQuestionsToTask: (...args: any[]) =>
+    mockCopyQuizQuestionsToTask(...args)
+}));
+
 jest.mock('@utils/common/get-error-message', () => ({
   getErrorMessage: (error: any, fallback: string) =>
     error?.response?.data?.message || error?.message || fallback
@@ -96,7 +104,9 @@ const makeCourse = (overrides: any = {}) => ({
       makeTask('t1', 'Task One'),
       makeTask('t2', 'Task Two', { isCoding: true, type: 'CODE' })
     ]),
-    makeModule('m2', 'Module Two', [makeTask('t3', 'Task Three', { type: 'FILE' })]),
+    makeModule('m2', 'Module Two', [
+      makeTask('t3', 'Task Three', { type: 'FILE' })
+    ]),
     makeModule('m3', 'Module Three', [])
   ],
   ...overrides
@@ -115,6 +125,48 @@ const renderModal = (props: any = {}) =>
     </MantineProvider>
   );
 
+// A course that mixes a regular task with a QUIZ task.
+const makeQuizCourse = () =>
+  makeCourse({
+    modules: [
+      makeModule('m1', 'Module One', [
+        makeTask('t1', 'Task One'),
+        makeTask('tq1', 'Quiz One', { type: 'QUIZ' })
+      ])
+    ]
+  });
+
+// The clone endpoint echoes the cloned modules/tasks in the requested order.
+const makeClonedQuizResponse = () => ({
+  message: 'Cloned just fine',
+  data: {
+    courseId: 'c9',
+    courseName: 'Cloned',
+    status: 'ACTIVE',
+    modules: [
+      {
+        moduleId: 'cm1',
+        moduleName: 'Module One',
+        status: 'ACTIVE',
+        tasks: [
+          {
+            taskId: 'ct1',
+            taskName: 'Task One',
+            type: 'LINK',
+            status: 'ACTIVE'
+          },
+          {
+            taskId: 'ctq1',
+            taskName: 'Quiz One',
+            type: 'QUIZ',
+            status: 'ACTIVE'
+          }
+        ]
+      }
+    ]
+  }
+});
+
 const renderOpenModal = async (props: any = {}) => {
   renderModal(props);
   await screen.findByRole('dialog');
@@ -124,7 +176,9 @@ const checkboxAt = (index: number) =>
   screen.getAllByRole('checkbox')[index] as HTMLInputElement;
 
 const getCloneButton = () =>
-  screen.getByRole('button', { name: /Clone Course|Cloning Course\.\.\./ });
+  screen.getByRole('button', {
+    name: /Clone Course|Cloning Course\.\.\.|Copying Quiz Questions\.\.\./
+  });
 
 // The component re-renders after its init effect, so the query hook can be
 // invoked more than once — every call must receive the same arguments.
@@ -147,6 +201,7 @@ describe('CloneCourseModal', () => {
     mockIsFetching = false;
     mockIsPending = false;
     mockCloneCourse.mockResolvedValue({});
+    mockCopyQuizQuestionsToTask.mockResolvedValue(0);
   });
 
   describe('Rendering', () => {
@@ -159,11 +214,11 @@ describe('CloneCourseModal', () => {
       await renderOpenModal();
 
       expect(nameInput().value).toBe(DEFAULT_NAME);
-      expect(screen.getByText(`${DEFAULT_NAME.length}/150`)).toBeInTheDocument();
-      expect(screen.getByText('Archived Source Course')).toBeInTheDocument();
       expect(
-        screen.getByText(/3\/3 Modules • 3\/3 Tasks/)
+        screen.getByText(`${DEFAULT_NAME.length}/150`)
       ).toBeInTheDocument();
+      expect(screen.getByText('Archived Source Course')).toBeInTheDocument();
+      expect(screen.getByText(/3\/3 Modules • 3\/3 Tasks/)).toBeInTheDocument();
 
       // every module and task is selected by default
       const boxes = screen.getAllByRole('checkbox');
@@ -212,7 +267,9 @@ describe('CloneCourseModal', () => {
     it('uses the fetched course details when the passed course has no modules', async () => {
       mockFullCourse = makeCourse({
         courseName: 'Fetched Course',
-        modules: [makeModule('fm1', 'Fetched Module', [makeTask('ft1', 'Fetched Task')])]
+        modules: [
+          makeModule('fm1', 'Fetched Module', [makeTask('ft1', 'Fetched Task')])
+        ]
       });
 
       await renderOpenModal({
@@ -265,9 +322,7 @@ describe('CloneCourseModal', () => {
 
       expect(master).not.toBeChecked();
       expect(master).not.toHaveProperty('indeterminate', true);
-      expect(
-        screen.getByText(/0\/3 Modules • 0\/3 Tasks/)
-      ).toBeInTheDocument();
+      expect(screen.getByText(/0\/3 Modules • 0\/3 Tasks/)).toBeInTheDocument();
       expect(
         screen.getByText(
           'Select at least one module above to enable course cloning'
@@ -278,9 +333,7 @@ describe('CloneCourseModal', () => {
 
       fireEvent.click(master);
       expect(master).toBeChecked();
-      expect(
-        screen.getByText(/3\/3 Modules • 3\/3 Tasks/)
-      ).toBeInTheDocument();
+      expect(screen.getByText(/3\/3 Modules • 3\/3 Tasks/)).toBeInTheDocument();
       expect(getCloneButton()).toBeEnabled();
     });
 
@@ -293,9 +346,7 @@ describe('CloneCourseModal', () => {
       expect(checkboxAt(2)).not.toBeChecked(); // Task One
       expect(checkboxAt(3)).not.toBeChecked(); // Task Two
       expect(checkboxAt(4)).toBeChecked(); // Module Two untouched
-      expect(
-        screen.getByText(/2\/3 Modules • 1\/3 Tasks/)
-      ).toBeInTheDocument();
+      expect(screen.getByText(/2\/3 Modules • 1\/3 Tasks/)).toBeInTheDocument();
       expect(
         screen.getByRole('checkbox', { name: /Select All Curriculum/ })
       ).toHaveProperty('indeterminate', true);
@@ -308,32 +359,24 @@ describe('CloneCourseModal', () => {
 
       expect(checkboxAt(1)).toHaveProperty('indeterminate', true);
       expect(checkboxAt(1)).not.toBeChecked();
-      expect(
-        screen.getByText(/3\/3 Modules • 2\/3 Tasks/)
-      ).toBeInTheDocument();
+      expect(screen.getByText(/3\/3 Modules • 2\/3 Tasks/)).toBeInTheDocument();
 
       fireEvent.click(checkboxAt(2)); // Task One back on
       expect(checkboxAt(1)).toBeChecked();
       expect(checkboxAt(1)).not.toHaveProperty('indeterminate', true);
-      expect(
-        screen.getByText(/3\/3 Modules • 3\/3 Tasks/)
-      ).toBeInTheDocument();
+      expect(screen.getByText(/3\/3 Modules • 3\/3 Tasks/)).toBeInTheDocument();
     });
 
     it('re-selects the parent module when a task inside it is checked', async () => {
       await renderOpenModal();
 
       fireEvent.click(checkboxAt(1)); // deselect Module One (and its tasks)
-      expect(
-        screen.getByText(/2\/3 Modules • 1\/3 Tasks/)
-      ).toBeInTheDocument();
+      expect(screen.getByText(/2\/3 Modules • 1\/3 Tasks/)).toBeInTheDocument();
 
       fireEvent.click(checkboxAt(2)); // check Task One again
       // the module is re-selected but stays indeterminate: Task Two is off
       expect(checkboxAt(1)).toHaveProperty('indeterminate', true);
-      expect(
-        screen.getByText(/3\/3 Modules • 2\/3 Tasks/)
-      ).toBeInTheDocument();
+      expect(screen.getByText(/3\/3 Modules • 2\/3 Tasks/)).toBeInTheDocument();
     });
 
     it('toggles a module that has no tasks', async () => {
@@ -341,15 +384,11 @@ describe('CloneCourseModal', () => {
 
       fireEvent.click(checkboxAt(6)); // Module Three (no tasks)
       expect(checkboxAt(6)).not.toBeChecked();
-      expect(
-        screen.getByText(/2\/3 Modules • 3\/3 Tasks/)
-      ).toBeInTheDocument();
+      expect(screen.getByText(/2\/3 Modules • 3\/3 Tasks/)).toBeInTheDocument();
 
       fireEvent.click(checkboxAt(6));
       expect(checkboxAt(6)).toBeChecked();
-      expect(
-        screen.getByText(/3\/3 Modules • 3\/3 Tasks/)
-      ).toBeInTheDocument();
+      expect(screen.getByText(/3\/3 Modules • 3\/3 Tasks/)).toBeInTheDocument();
     });
   });
 
@@ -419,9 +458,7 @@ describe('CloneCourseModal', () => {
 
       fireEvent.change(nameInput(), { target: { value: '' } });
 
-      expect(
-        screen.getByText('Course name is required.')
-      ).toBeInTheDocument();
+      expect(screen.getByText('Course name is required.')).toBeInTheDocument();
       expect(getCloneButton()).toBeDisabled();
       expect(screen.getByText('0/150')).toBeInTheDocument();
     });
@@ -432,9 +469,7 @@ describe('CloneCourseModal', () => {
       fireEvent.change(nameInput(), { target: { value: '   ' } });
       fireEvent.blur(nameInput());
 
-      expect(
-        screen.getByText('Course name is required.')
-      ).toBeInTheDocument();
+      expect(screen.getByText('Course name is required.')).toBeInTheDocument();
       expect(getCloneButton()).toBeDisabled();
     });
 
@@ -456,9 +491,7 @@ describe('CloneCourseModal', () => {
       await renderOpenModal();
 
       fireEvent.change(nameInput(), { target: { value: '' } });
-      expect(
-        screen.getByText('Course name is required.')
-      ).toBeInTheDocument();
+      expect(screen.getByText('Course name is required.')).toBeInTheDocument();
 
       fireEvent.change(nameInput(), { target: { value: 'Fresh Clone' } });
       expect(
@@ -507,9 +540,7 @@ describe('CloneCourseModal', () => {
       fireEvent.click(getCloneButton());
 
       await waitFor(() => expect(mockCloneCourse).toHaveBeenCalledTimes(1));
-      expect(mockCloneCourse.mock.calls[0][0].courseName).toBe(
-        'Trimmed Clone'
-      );
+      expect(mockCloneCourse.mock.calls[0][0].courseName).toBe('Trimmed Clone');
       expect(mockShowSuccessToast).toHaveBeenCalledWith(
         'Course cloned successfully into an active course!'
       );
@@ -557,14 +588,87 @@ describe('CloneCourseModal', () => {
 
       expect(screen.getByText('Cloning Course...')).toBeInTheDocument();
       expect(getCloneButton()).toBeDisabled();
-      expect(
-        screen.getByRole('button', { name: 'Cancel' })
-      ).toBeDisabled();
+      expect(screen.getByRole('button', { name: 'Cancel' })).toBeDisabled();
 
       fireEvent.click(
         document.querySelector('.mantine-Modal-close') as HTMLElement
       );
       expect(mockOnClose).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Quiz tasks', () => {
+    it('labels a quiz task as Quiz instead of Link', async () => {
+      await renderOpenModal({ course: makeQuizCourse() });
+
+      expect(screen.getByText('Quiz')).toBeInTheDocument();
+      // the regular task in the same module is still a Link
+      expect(screen.getByText('Link')).toBeInTheDocument();
+    });
+
+    it('copies the questions of every cloned quiz task', async () => {
+      mockCloneCourse.mockResolvedValue(makeClonedQuizResponse());
+      await renderOpenModal({ course: makeQuizCourse() });
+
+      fireEvent.click(getCloneButton());
+
+      await waitFor(() =>
+        expect(mockCopyQuizQuestionsToTask).toHaveBeenCalledTimes(1)
+      );
+      // source task -> cloned task
+      expect(mockCopyQuizQuestionsToTask).toHaveBeenCalledWith('tq1', 'ctq1');
+      expect(mockShowSuccessToast).toHaveBeenCalledWith('Cloned just fine');
+      expect(mockOnClose).toHaveBeenCalled();
+    });
+
+    it('does not copy anything when the course has no quiz task', async () => {
+      mockCloneCourse.mockResolvedValue({
+        message: 'Cloned just fine',
+        data: {
+          courseId: 'c9',
+          courseName: 'Cloned',
+          status: 'ACTIVE',
+          modules: [
+            {
+              moduleId: 'cm1',
+              moduleName: 'Module One',
+              status: 'ACTIVE',
+              tasks: [
+                {
+                  taskId: 'ct1',
+                  taskName: 'Task One',
+                  type: 'LINK',
+                  status: 'ACTIVE'
+                }
+              ]
+            }
+          ]
+        }
+      });
+      await renderOpenModal();
+
+      fireEvent.click(getCloneButton());
+
+      await waitFor(() => expect(mockOnClose).toHaveBeenCalled());
+      expect(mockCopyQuizQuestionsToTask).not.toHaveBeenCalled();
+      expect(mockShowSuccessToast).toHaveBeenCalledWith('Cloned just fine');
+    });
+
+    it('reports the quizzes whose questions could not be copied', async () => {
+      mockCloneCourse.mockResolvedValue(makeClonedQuizResponse());
+      mockCopyQuizQuestionsToTask.mockRejectedValue(new Error('boom'));
+      await renderOpenModal({ course: makeQuizCourse() });
+
+      fireEvent.click(getCloneButton());
+
+      await waitFor(() =>
+        expect(mockShowErrorToast).toHaveBeenCalledWith(
+          'Course cloned, but the questions could not be copied for: Quiz One.'
+        )
+      );
+      expect(mockShowSuccessToast).not.toHaveBeenCalled();
+      // the course itself was cloned, so the modal still closes
+      expect(mockOnClose).toHaveBeenCalled();
     });
   });
 

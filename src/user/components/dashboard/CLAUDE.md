@@ -29,6 +29,7 @@ URL). Viewers open a task and the content is shown in a new browser tab.
 | `edit-course/QuizBuilder.tsx` | Presentational question editor + existing-question list with per-question edit / show-hide / delete actions. |
 | `edit-course/quiz-helpers.ts` | Pure helpers: draft factories, per-type option rules, validation and local ↔ API mappers. |
 | `edit-course/task-popup-state.ts` | sessionStorage bridge that points the quiz page at the QUIZ task just created (used as a fallback when the URL carries no `taskId`). |
+| `content-writer/CloneCourseModal.tsx` | Clones an **archived** course into a new ACTIVE one: picks modules/tasks, calls `POST /clonecourse`, and copies the quiz questions of every cloned QUIZ task. |
 
 Data layer (shared, not in this folder):
 - Services: `src/services/user-services.ts` (`getCourseByIdContentWriter`, `addCourseContentWriter`, `addCourseModuleContentWriter`, `addCourseTaskContentWriter`, `updateCourseContentWriter`, `updateCourseModuleContentWriter`, `updateCourseTaskContentWriter`, `getCourseTaskContentUrl`).
@@ -61,11 +62,34 @@ Data layer:
 - Mutation hooks: `useCreateQuizQuestion`, `useUpdateQuizQuestion`, `useUpdateQuizQuestionStatus`, `useDeleteQuizQuestion` (`hooks/mutations/useUserMutations.ts`) — all invalidate `quizQuestions(taskId)` when a task id is supplied.
 - Types: `src/interfaces/quiz.ts` (`QuizQuestionApiModel`, `QuizQuestionApiPayload`, `QuizQuestionApiUpdatePayload`, …).
 
-Per-type rules (enforced server-side, mirrored client-side by
-`validateQuizQuestion` in `quiz-helpers.ts`): `RADIO`/`DROPDOWN`/`CHECKBOX` need
-**at least 4** options (`RADIO`/`DROPDOWN` exactly one correct, `CHECKBOX` at
-least one); `TOGGLE` needs exactly 2 options with exactly one correct;
-`TEXTAREA` has no options.
+Per-type rules (mirrored client-side by `validateQuizQuestion` in
+`quiz-helpers.ts`): `RADIO`/`DROPDOWN`/`CHECKBOX` need **at least 2** options
+(`RADIO`/`DROPDOWN` exactly one correct, `CHECKBOX` at least two correct);
+`TOGGLE` needs exactly 2 options with exactly one correct; `TEXTAREA` has no
+options.
+
+The `CHECKBOX` rule (a multiple-choice question needs **at least two** correct
+answers) is enforced in three places on the frontend:
+
+1. `getQuizQuestionFieldErrors` (`quiz-helpers.ts`) produces the
+   `correctAnswer` field error, which keeps the **Add question** button
+   disabled and shows *"Mark at least 2 options as the correct answers."*.
+2. The `QuestionEditor` in `QuizBuilder.tsx` shows that message for
+   multiple-choice questions as soon as the type is picked (it does not wait
+   for a blur) and renders a live *"N correct answers marked (minimum 2)"*
+   badge next to the options.
+3. `assertQuizQuestionIsSubmittable` (`quiz-helpers.ts`) is called by
+   `toQuizQuestionPayload` / `toQuizQuestionUpdatePayload` and throws a
+   `QuizQuestionValidationError` when a multiple-choice question with fewer
+   than two correct answers is about to be sent to the API.
+
+> **Known backend gap.** The backend's `validateOptions`
+> (`src/controllers/contentwriter/createQuizQuestionController.ts`) still only
+> requires `correctCount >= 1` for `CHECKBOX`, so a request sent straight to
+> `POST /createQuizQuestion` (or `PUT /updateQuizQuestion/:id`) bypasses the
+> frontend guard and can still create a multiple-choice question with a single
+> correct answer. Closing that gap needs a backend change; until then the
+> guard in point 3 is what keeps the authoring UI honest.
 
 ## Backend contract (SRYTAL-BE `/contentwriter`)
 
@@ -80,6 +104,33 @@ least one); `TOGGLE` needs exactly 2 options with exactly one correct;
 | `PUT /updatecoursemodule` | JSON `{ id, moduleName, moduleDescription, thumbnail, status }`. |
 | `PUT /updatecoursetask` | JSON `{ id, taskName, taskDescription, thumbnail, status }`. |
 | `GET /getCourseTaskContent/:id` | **Content proxy.** `LINK` → 302 redirect to the URL; `FILE` → streams the S3 object inline. Accepts the JWT via `auth_token` header **or query param** so it can be opened in a new tab. |
+
+| `POST /clonecourse` | JSON `{ courseId, courseName, modules: [{ moduleId, taskIds }] }`. The source course must be `ARCHIVE`; the clone is created as `ACTIVE`. Returns `{ success, data: { courseId, modules: [{ moduleId, tasks: [{ taskId, taskName, type, status }] }] } }` — the modules/tasks are echoed in the **requested order**. |
+
+## Cloning an archived course
+
+`content-writer/CloneCourseModal.tsx` clones an archived course into a new
+active one.
+
+The backend clone only duplicates the course/module/task **shells**. A `QUIZ`
+task's questions live in their own collection and are therefore **not** copied —
+without extra work the cloned quiz opens empty for the assigned employee. The
+modal compensates on the frontend:
+
+1. The task rows are labelled by type, so a `QUIZ` task shows a **Quiz** badge
+   (not `Link`).
+2. After `POST /clonecourse` succeeds, every cloned `QUIZ` task is paired with
+   its source task (the response echoes the modules/tasks in the requested
+   order, so they are paired by position and cross-checked by `type`).
+3. For each pair, `copyQuizQuestionsToTask(sourceTaskId, targetTaskId)`
+   (`src/services/user-services.ts`) reads the source questions with
+   `GET /getAllQuizQuestions/:taskId` and re-creates them on the cloned task
+   with `POST /createQuizQuestion` — the same endpoints the authoring page
+   uses, so no backend change is needed.
+
+While the copy runs the modal stays locked (`Copying Quiz Questions...`). If a
+question cannot be copied, the course is still reported as cloned but the toast
+names the quizzes that need attention.
 
 ## Editing rules
 

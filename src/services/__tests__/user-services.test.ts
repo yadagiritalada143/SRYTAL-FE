@@ -22,6 +22,7 @@ import {
   getCourseTaskContentUrl,
   getAllQuizQuestions,
   createQuizQuestion,
+  copyQuizQuestionsToTask,
   getQuizQuestionById,
   updateQuizQuestion,
   updateQuizQuestionStatus,
@@ -484,6 +485,63 @@ describe('user-services', () => {
         message: 'created',
         data: { _id: 'q1' }
       });
+    });
+
+    it('copyQuizQuestionsToTask re-creates every question on the target task', async () => {
+      mock.get.mockResolvedValue({
+        data: {
+          success: true,
+          data: [
+            {
+              _id: 'q1',
+              question: 'Pick one',
+              type: 'RADIO',
+              status: 'SHOW',
+              options: [
+                { value: 'A', isanswer: true },
+                { value: 'B', isanswer: false }
+              ]
+            },
+            {
+              _id: 'q2',
+              question: 'Describe it',
+              type: 'TEXTAREA',
+              status: 'HIDE'
+            }
+          ]
+        }
+      });
+      mock.post.mockResolvedValue({ data: { success: true } });
+
+      const copied = await copyQuizQuestionsToTask('sourceTask', 'targetTask');
+
+      expect(mock.get).toHaveBeenCalledWith('/getAllQuizQuestions/sourceTask');
+      expect(mock.post).toHaveBeenCalledTimes(2);
+      expect(mock.post).toHaveBeenNthCalledWith(1, '/createQuizQuestion', {
+        taskId: 'targetTask',
+        question: 'Pick one',
+        type: 'RADIO',
+        status: 'SHOW',
+        options: [
+          { value: 'A', isanswer: true },
+          { value: 'B', isanswer: false }
+        ]
+      });
+      // a free-text question never carries an options array
+      expect(mock.post).toHaveBeenNthCalledWith(2, '/createQuizQuestion', {
+        taskId: 'targetTask',
+        question: 'Describe it',
+        type: 'TEXTAREA',
+        status: 'HIDE'
+      });
+      expect(copied).toBe(2);
+    });
+
+    it('copyQuizQuestionsToTask does nothing when the source has no questions', async () => {
+      mock.get.mockResolvedValue({ data: { success: true, data: [] } });
+
+      expect(await copyQuizQuestionsToTask('sourceTask', 'targetTask')).toBe(0);
+      expect(mock.post).not.toHaveBeenCalled();
     });
 
     it('getQuizQuestionById returns the single question', async () => {
