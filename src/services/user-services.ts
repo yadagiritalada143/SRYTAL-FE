@@ -418,6 +418,37 @@ export const deleteQuizQuestion = async (
   return response.data;
 };
 
+export const copyQuizQuestionsToTask = async (
+  sourceTaskId: string,
+  targetTaskId: string
+): Promise<number> => {
+  const questions = await getAllQuizQuestions(sourceTaskId);
+  if (questions.length === 0) return 0;
+
+  let copied = 0;
+
+  for (const question of questions) {
+    const payload: QuizQuestionApiPayload = {
+      taskId: targetTaskId,
+      question: question.question,
+      type: question.type,
+      status: question.status ?? 'SHOW'
+    };
+
+    if (question.type !== 'TEXTAREA') {
+      payload.options = (question.options ?? []).map(option => ({
+        value: option.value,
+        isanswer: Boolean(option.isanswer)
+      }));
+    }
+
+    await createQuizQuestion(payload);
+    copied += 1;
+  }
+
+  return copied;
+};
+
 export const getQuizById = async (taskId: string): Promise<QuizAttempt> => {
   const response = await apiClient.get(`/getQuizById/${taskId}`);
   return response.data.data;

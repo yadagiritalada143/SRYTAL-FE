@@ -53,16 +53,19 @@ import {
   isMultiAnswerType,
   isTextAnswerType,
   quizAnswerTypeLabel,
+  quizMinCorrectOptions,
   quizQuestionStatusLabel
 } from '@interfaces/quiz';
 import {
   adjustOptionsForType,
   checkDuplicateQuestion,
+  countCorrectOptions,
   createQuizOption,
   createQuizQuestion,
   duplicateQuizQuestion,
   getQuizQuestionFieldErrors,
   QuizQuestionField,
+  QuizQuestionValidationError,
   TOGGLE_PRESETS,
   validateQuizQuestion
 } from './quiz-helpers';
@@ -79,7 +82,7 @@ const QUESTION_TYPE_CARDS = [
   {
     type: 'CHECKBOX' as QuizAnswerType,
     label: 'Multiple choice',
-    subtitle: 'Multiple correct answers allowed',
+    subtitle: 'At least 2 correct answers required',
     icon: IconCheckbox,
     color: 'teal'
   },
@@ -158,6 +161,21 @@ const QuestionEditor = ({
     touched[field] ? fieldErrors[field] : undefined;
   const isValid =
     !fieldErrors.question && !fieldErrors.options && !fieldErrors.correctAnswer;
+
+  // Number of options that are filled in and flagged as correct, and how many
+  // of them this question type requires (multiple choice needs at least two).
+  const correctCount = countCorrectOptions(value);
+  const minCorrect = quizMinCorrectOptions(value.type);
+  const isCorrectCountMet = correctCount >= minCorrect;
+  const correctCountLabel = `${correctCount} correct answer${
+    correctCount === 1 ? '' : 's'
+  } marked (minimum ${minCorrect})`;
+
+  // For multiple choice the "at least two correct answers" rule is a hard
+  // requirement, so its message stays on screen instead of waiting for a blur.
+  const correctAnswerError = isMulti
+    ? fieldErrors.correctAnswer
+    : fieldError('correctAnswer');
 
   const patch = (partial: Partial<QuizQuestion>) =>
     onChange({ ...value, ...partial });
@@ -688,14 +706,30 @@ const QuestionEditor = ({
           </Paper>
         ) : (
           <Stack gap='xs'>
-            <Group justify='space-between' align='center'>
+            <Group justify='space-between' align='center' wrap='wrap' gap='xs'>
               <Text size='sm' fw={600}>
                 Answer options
               </Text>
-              <Text size='xs' c='dimmed'>
-                Select the checkbox/radio next to an option to mark it as the
-                correct answer key.
-              </Text>
+              {isMulti ? (
+                <Group gap={6} wrap='wrap' justify='flex-end'>
+                  <Badge
+                    size='xs'
+                    variant='light'
+                    color={isCorrectCountMet ? 'teal' : 'red'}
+                  >
+                    {correctCountLabel}
+                  </Badge>
+                  <Text size='xs' c='dimmed'>
+                    Tick every option that is correct.
+                  </Text>
+                </Group>
+              ) : (
+                <Text size='xs' c='dimmed'>
+                  {isToggle
+                    ? 'Switch on the correct option.'
+                    : 'Select the option that is the correct answer key.'}
+                </Text>
+              )}
             </Group>
 
             {isMulti || isToggle ? (
@@ -730,9 +764,9 @@ const QuestionEditor = ({
                 {fieldErrors.options}
               </Text>
             )}
-            {fieldError('correctAnswer') && (
+            {correctAnswerError && (
               <Text size='xs' c='red' role='alert'>
-                {fieldErrors.correctAnswer}
+                {correctAnswerError}
               </Text>
             )}
           </Stack>
@@ -763,6 +797,13 @@ const QuestionEditor = ({
             leftSection={<IconCheck size={14} />}
             loading={isSubmitting}
             disabled={isSubmitting || !isValid}
+            title={
+              isValid
+                ? undefined
+                : (fieldErrors.question ??
+                  fieldErrors.options ??
+                  fieldErrors.correctAnswer)
+            }
             onClick={onSave}
           >
             Add question
@@ -820,8 +861,10 @@ const QuizBuilder = ({
     try {
       await onAddQuestion(draft);
       resetDraft();
-    } catch {
-      // The page surfaces the request error; keep the draft so it can retry.
+    } catch (requestError) {
+      if (requestError instanceof QuizQuestionValidationError) {
+        setError(requestError.message);
+      }
     }
   };
 

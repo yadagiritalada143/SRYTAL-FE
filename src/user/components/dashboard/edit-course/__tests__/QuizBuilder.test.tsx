@@ -9,8 +9,18 @@ import {
 import '@testing-library/jest-dom';
 import { MantineProvider } from '@mantine/core';
 import QuizBuilder from '../QuizBuilder';
-import { validateQuizQuestion } from '../quiz-helpers';
+import {
+  countCorrectOptions,
+  QuizQuestionValidationError,
+  toQuizQuestionPayload,
+  toQuizQuestionUpdatePayload,
+  validateQuizQuestion
+} from '../quiz-helpers';
 import { QuizQuestion } from '@interfaces/quiz';
+
+// The editor renders a lot of Mantine widgets, so a single render is slow on
+// CI. Give the assertions of this file room to breathe.
+jest.setTimeout(30000);
 
 jest.mock('@hooks/use-app-theme', () => ({
   useAppTheme: () => ({
@@ -182,6 +192,20 @@ describe('validateQuizQuestion', () => {
     ).toBeNull();
   });
 
+  it('requires at least two correct answers for checkbox types', () => {
+    expect(
+      validateQuizQuestion(
+        baseQuestion({
+          type: 'CHECKBOX',
+          options: baseQuestion().options.map(option => ({
+            ...option,
+            isCorrect: option.id === 'o1'
+          }))
+        })
+      )
+    ).toBe('Mark at least 2 options as the correct answers.');
+  });
+
   it('requires exactly two options for toggle questions', () => {
     expect(
       validateQuizQuestion(
@@ -209,6 +233,62 @@ describe('validateQuizQuestion', () => {
         })
       )
     ).toBe('Toggle questions must have exactly one correct option.');
+  });
+});
+
+describe('countCorrectOptions', () => {
+  it('counts only filled options that are flagged as correct', () => {
+    expect(
+      countCorrectOptions(
+        baseQuestion({
+          type: 'CHECKBOX',
+          options: [
+            { id: 'o1', text: 'Red', isCorrect: true },
+            { id: 'o2', text: 'Green', isCorrect: true },
+            { id: 'o3', text: '  ', isCorrect: true },
+            { id: 'o4', text: 'Blue', isCorrect: false }
+          ]
+        })
+      )
+    ).toBe(2);
+  });
+});
+
+describe('question payload guards', () => {
+  it('refuses to build a payload for a multiple choice question with one correct answer', () => {
+    const draft = baseQuestion({
+      type: 'CHECKBOX',
+      options: baseQuestion().options.map(option => ({
+        ...option,
+        isCorrect: option.id === 'o1'
+      }))
+    });
+
+    expect(() => toQuizQuestionPayload(draft, 'task-1')).toThrow(
+      QuizQuestionValidationError
+    );
+    expect(() => toQuizQuestionPayload(draft, 'task-1')).toThrow(
+      'Mark at least 2 options as the correct answers.'
+    );
+    expect(() => toQuizQuestionUpdatePayload(draft)).toThrow(
+      QuizQuestionValidationError
+    );
+  });
+
+  it('builds a payload for a multiple choice question with two correct answers', () => {
+    const draft = baseQuestion({
+      type: 'CHECKBOX',
+      options: baseQuestion().options.map(option => ({
+        ...option,
+        isCorrect: option.id === 'o1' || option.id === 'o2'
+      }))
+    });
+
+    const payload = toQuizQuestionPayload(draft, 'task-1');
+
+    expect(payload.taskId).toBe('task-1');
+    expect(payload.type).toBe('CHECKBOX');
+    expect(payload.options?.filter(option => option.isanswer)).toHaveLength(2);
   });
 });
 
@@ -371,6 +451,78 @@ describe('QuizBuilder', () => {
     expect(
       screen.getByText('Mark at least one option as the answer.')
     ).toBeInTheDocument();
+  });
+
+  it('keeps Add question disabled for multiple choice until two answers are correct', () => {
+    render(<Harness />);
+
+    chooseSelectOption('Type', 'Multiple choice');
+    fireEvent.change(screen.getByLabelText(/Question/), {
+      target: { value: 'Which are primary colours?' }
+    });
+    fillOption(1, 'Red');
+    fillOption(2, 'Green');
+    fillOption(3, 'Blue');
+    fillOption(4, 'Yellow');
+
+    const checkboxes = screen.getAllByRole('checkbox');
+    fireEvent.click(checkboxes[0]);
+
+    expect(
+      screen.getByText('Mark at least 2 options as the correct answers.')
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Add question' })).toBeDisabled();
+
+    fireEvent.click(checkboxes[2]);
+    expect(
+      screen.queryByText('Mark at least 2 options as the correct answers.')
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Add question' })).toBeEnabled();
+  });
+
+  it('states the multiple choice requirement as soon as the type is picked', () => {
+    render(<Harness />);
+
+    chooseSelectOption('Type', 'Multiple choice');
+
+    expect(
+      screen.getByText('Mark at least 2 options as the correct answers.')
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('0 correct answers marked (minimum 2)')
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Add question' })).toBeDisabled();
+  });
+
+  it('counts the marked correct answers of a multiple choice question', () => {
+    render(<Harness />);
+
+    chooseSelectOption('Type', 'Multiple choice');
+    fireEvent.change(screen.getByLabelText(/Question/), {
+      target: { value: 'Which are primary colours?' }
+    });
+    fillOption(1, 'Red');
+    fillOption(2, 'Green');
+    fillOption(3, 'Blue');
+
+    const checkboxes = screen.getAllByRole('checkbox');
+    fireEvent.click(checkboxes[0]);
+
+    expect(
+      screen.getByText('1 correct answer marked (minimum 2)')
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText('Mark at least 2 options as the correct answers.')
+    ).toBeInTheDocument();
+
+    fireEvent.click(checkboxes[1]);
+
+    expect(
+      screen.getByText('2 correct answers marked (minimum 2)')
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText('Mark at least 2 options as the correct answers.')
+    ).not.toBeInTheDocument();
   });
 
   it('enables Add question when the question, options, and correct answer are provided', () => {

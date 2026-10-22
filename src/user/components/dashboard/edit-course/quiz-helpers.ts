@@ -1,6 +1,8 @@
 export {
   isMultiAnswerType,
   isTextAnswerType,
+  quizMinCorrectOptions,
+  QUIZ_MIN_CORRECT_OPTIONS,
   QUIZ_MIN_OPTIONS
 } from '@interfaces/quiz';
 import {
@@ -11,6 +13,7 @@ import {
   QuizQuestionApiUpdatePayload,
   isMultiAnswerType,
   isTextAnswerType,
+  quizMinCorrectOptions,
   QUIZ_MIN_OPTIONS
 } from '@interfaces/quiz';
 
@@ -107,6 +110,10 @@ export const adjustOptionsForType = (
   }));
 };
 
+export const countCorrectOptions = (question: QuizQuestion): number =>
+  question.options.filter(option => option.isCorrect && option.text.trim())
+    .length;
+
 export const getQuizQuestionFieldErrors = (
   question: QuizQuestion
 ): QuizQuestionFieldErrors => {
@@ -119,13 +126,13 @@ export const getQuizQuestionFieldErrors = (
   if (isTextAnswerType(question.type)) return errors;
 
   const filledOptions = question.options.filter(option => option.text.trim());
-  const correctOptions = filledOptions.filter(option => option.isCorrect);
+  const correctOptions = countCorrectOptions(question);
 
   if (question.type === 'TOGGLE') {
     if (filledOptions.length !== 2) {
       errors.options = 'Toggle questions must have exactly two options.';
     }
-    if (correctOptions.length !== 1) {
+    if (correctOptions !== 1) {
       errors.correctAnswer =
         'Toggle questions must have exactly one correct option.';
     }
@@ -136,9 +143,14 @@ export const getQuizQuestionFieldErrors = (
     errors.options = `Add at least ${QUIZ_MIN_OPTIONS} answer options.`;
   }
 
-  if (correctOptions.length === 0) {
+  if (isMultiAnswerType(question.type)) {
+    const minCorrect = quizMinCorrectOptions(question.type);
+    if (correctOptions < minCorrect) {
+      errors.correctAnswer = `Mark at least ${minCorrect} options as the correct answers.`;
+    }
+  } else if (correctOptions === 0) {
     errors.correctAnswer = 'Mark at least one option as the answer.';
-  } else if (!isMultiAnswerType(question.type) && correctOptions.length > 1) {
+  } else if (correctOptions > 1) {
     errors.correctAnswer =
       'Only one option can be the correct answer for this type.';
   }
@@ -151,10 +163,33 @@ export const validateQuizQuestion = (question: QuizQuestion): string | null => {
   return errors.question ?? errors.options ?? errors.correctAnswer ?? null;
 };
 
+export class QuizQuestionValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'QuizQuestionValidationError';
+    Object.setPrototypeOf(this, QuizQuestionValidationError.prototype);
+  }
+}
+
+export const assertQuizQuestionIsSubmittable = (
+  question: QuizQuestion
+): void => {
+  if (!isMultiAnswerType(question.type)) return;
+
+  const minCorrect = quizMinCorrectOptions(question.type);
+  if (countCorrectOptions(question) < minCorrect) {
+    throw new QuizQuestionValidationError(
+      `Mark at least ${minCorrect} options as the correct answers.`
+    );
+  }
+};
+
 export const toQuizQuestionPayload = (
   question: QuizQuestion,
   taskId: string
 ): QuizQuestionApiPayload => {
+  assertQuizQuestionIsSubmittable(question);
+
   const payload: QuizQuestionApiPayload = {
     taskId,
     question: question.question.trim(),
@@ -177,6 +212,8 @@ export const toQuizQuestionPayload = (
 export const toQuizQuestionUpdatePayload = (
   question: QuizQuestion
 ): QuizQuestionApiUpdatePayload => {
+  assertQuizQuestionIsSubmittable(question);
+
   const payload: QuizQuestionApiUpdatePayload = {
     question: question.question.trim(),
     type: question.type,

@@ -73,6 +73,7 @@ export const QUIZ_QUESTION_STATUSES: Array<{
 ];
 
 export const QUIZ_MIN_OPTIONS = 2;
+export const QUIZ_MIN_CORRECT_OPTIONS = 2;
 
 export const QUIZ_MULTI_ANSWER_TYPES: QuizAnswerType[] = ['CHECKBOX'];
 
@@ -81,6 +82,12 @@ export const isMultiAnswerType = (type: QuizAnswerType): boolean =>
 
 export const isTextAnswerType = (type: QuizAnswerType): boolean =>
   type === 'TEXTAREA';
+
+export const quizMinCorrectOptions = (type: QuizAnswerType): number => {
+  if (isTextAnswerType(type)) return 0;
+  if (isMultiAnswerType(type)) return QUIZ_MIN_CORRECT_OPTIONS;
+  return 1;
+};
 
 export const quizAnswerTypeLabel = (type: QuizAnswerType): string =>
   QUIZ_ANSWER_TYPES.find(entry => entry.value === type)?.label ?? type;

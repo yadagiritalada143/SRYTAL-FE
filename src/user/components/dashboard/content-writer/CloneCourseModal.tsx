@@ -21,7 +21,8 @@ import {
   IconFileText,
   IconExternalLink,
   IconInfoCircle,
-  IconCheck
+  IconCheck,
+  IconListCheck
 } from '@tabler/icons-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useAppTheme } from '@hooks/use-app-theme';
@@ -30,8 +31,62 @@ import { useGetCourseById } from '@hooks/queries/useUserQueries';
 import { useCustomToast } from '@utils/common/toast';
 import { getErrorMessage } from '@utils/common/get-error-message';
 import { CommonButton } from '@components/common/button/CommonButton';
-import { Course, Module, Task } from '@interfaces/contentwriter';
+import {
+  CloneCourseModuleSelection,
+  ClonedCourseData,
+  Course,
+  Module,
+  Task
+} from '@interfaces/contentwriter';
+import { copyQuizQuestionsToTask } from '@services/user-services';
 import CourseThumbnail from './CourseThumbnail';
+
+const isQuizTask = (task: Pick<Task, 'type'>): boolean =>
+  String(task.type || '').toUpperCase() === 'QUIZ';
+
+interface QuizTaskCopyPair {
+  sourceTaskId: string;
+  targetTaskId: string;
+  taskName: string;
+}
+
+const buildQuizTaskPairs = (
+  selections: CloneCourseModuleSelection[],
+  cloned: ClonedCourseData | undefined | null,
+  sourceModules: Module[]
+): QuizTaskCopyPair[] => {
+  const clonedModules = cloned?.modules;
+  if (!clonedModules?.length) return [];
+
+  const sourceTaskById = new Map<string, Task>();
+  sourceModules.forEach(module =>
+    (module.tasks || []).forEach(task => sourceTaskById.set(task._id, task))
+  );
+
+  const pairs: QuizTaskCopyPair[] = [];
+
+  selections.forEach((selection, moduleIndex) => {
+    const clonedModule = clonedModules[moduleIndex];
+    if (!clonedModule) return;
+
+    selection.taskIds.forEach((sourceTaskId, taskIndex) => {
+      const sourceTask = sourceTaskById.get(sourceTaskId);
+      if (!sourceTask || !isQuizTask(sourceTask)) return;
+
+      const clonedTask = clonedModule.tasks?.[taskIndex];
+      if (!clonedTask?.taskId) return;
+      if (clonedTask.type && !isQuizTask({ type: clonedTask.type })) return;
+
+      pairs.push({
+        sourceTaskId,
+        targetTaskId: clonedTask.taskId,
+        taskName: clonedTask.taskName || sourceTask.taskName
+      });
+    });
+  });
+
+  return pairs;
+};
 
 interface CloneCourseModalProps {
   opened: boolean;
@@ -67,6 +122,7 @@ const CloneCourseModal = ({
   const [expandedModules, setExpandedModules] = useState<
     Record<string, boolean>
   >({});
+  const [isCopyingQuestions, setIsCopyingQuestions] = useState(false);
 
   useEffect(() => {
     if (opened && effectiveCourse) {
@@ -234,10 +290,12 @@ const CloneCourseModal = ({
     courseName.trim().length <= 150 &&
     selectedModulesCount > 0;
 
+  const isBusy = isPending || isCopyingQuestions;
+
   // Submit Clone
   const handleSubmit = async () => {
     setCourseNameTouched(true);
-    if (!effectiveCourse || !isFormValid) return;
+    if (!effectiveCourse || !isFormValid || isBusy) return;
 
     const modulesPayload = modulesList
       .filter(m => selectedModules.has(m._id))
@@ -260,9 +318,39 @@ const CloneCourseModal = ({
         modules: modulesPayload
       });
 
-      showSuccessToast(
-        response?.message || 'Course cloned successfully into an active course!'
+      const quizPairs = buildQuizTaskPairs(
+        modulesPayload,
+        response?.data,
+        modulesList
       );
+
+      const failedQuizzes: string[] = [];
+
+      if (quizPairs.length > 0) {
+        setIsCopyingQuestions(true);
+        for (const pair of quizPairs) {
+          try {
+            await copyQuizQuestionsToTask(pair.sourceTaskId, pair.targetTaskId);
+          } catch {
+            failedQuizzes.push(pair.taskName);
+          }
+        }
+        setIsCopyingQuestions(false);
+      }
+
+      if (failedQuizzes.length > 0) {
+        showErrorToast(
+          `Course cloned, but the questions could not be copied for: ${failedQuizzes.join(
+            ', '
+          )}.`
+        );
+      } else {
+        showSuccessToast(
+          response?.message ||
+            'Course cloned successfully into an active course!'
+        );
+      }
+
       onSuccess?.(response?.data);
       onClose();
     } catch (error) {
@@ -275,7 +363,7 @@ const CloneCourseModal = ({
   return (
     <Modal
       opened={opened}
-      onClose={isPending ? () => {} : onClose}
+      onClose={isBusy ? () => {} : onClose}
       title='Clone Course'
       centered
       radius='lg'
@@ -326,7 +414,8 @@ const CloneCourseModal = ({
                   ACTIVE
                 </Text>{' '}
                 course will be created immediately. The original archived course
-                remains untouched.
+                remains untouched. Quiz tasks keep their type and are copied
+                together with every question and answer option.
               </Text>
             </Stack>
           </Group>
@@ -586,10 +675,14 @@ const CloneCourseModal = ({
                                   const isTaskSelected = selectedTasks.has(
                                     task._id
                                   );
+                                  const isQuiz = isQuizTask(task);
                                   const isCoding =
-                                    task.isCoding || task.type === 'CODE';
+                                    !isQuiz &&
+                                    (task.isCoding || task.type === 'CODE');
                                   const isFile =
-                                    !isCoding && task.type === 'FILE';
+                                    !isCoding &&
+                                    !isQuiz &&
+                                    task.type === 'FILE';
 
                                   return (
                                     <Group
@@ -633,14 +726,18 @@ const CloneCourseModal = ({
                                           radius='xs'
                                           variant='light'
                                           color={
-                                            isCoding
-                                              ? 'grape'
-                                              : isFile
-                                                ? 'blue'
-                                                : 'teal'
+                                            isQuiz
+                                              ? 'cyan'
+                                              : isCoding
+                                                ? 'grape'
+                                                : isFile
+                                                  ? 'blue'
+                                                  : 'teal'
                                           }
                                         >
-                                          {isCoding ? (
+                                          {isQuiz ? (
+                                            <IconListCheck size={12} />
+                                          ) : isCoding ? (
                                             <IconCode size={12} />
                                           ) : isFile ? (
                                             <IconFileText size={12} />
@@ -669,18 +766,22 @@ const CloneCourseModal = ({
                                         radius='sm'
                                         variant='light'
                                         color={
-                                          isCoding
-                                            ? 'grape'
-                                            : isFile
-                                              ? 'blue'
-                                              : 'teal'
+                                          isQuiz
+                                            ? 'cyan'
+                                            : isCoding
+                                              ? 'grape'
+                                              : isFile
+                                                ? 'blue'
+                                                : 'teal'
                                         }
                                       >
-                                        {isCoding
-                                          ? 'Coding'
-                                          : isFile
-                                            ? 'File'
-                                            : 'Link'}
+                                        {isQuiz
+                                          ? 'Quiz'
+                                          : isCoding
+                                            ? 'Coding'
+                                            : isFile
+                                              ? 'File'
+                                              : 'Link'}
                                       </Badge>
                                     </Group>
                                   );
@@ -762,7 +863,7 @@ const CloneCourseModal = ({
           <CommonButton
             variant='default'
             onClick={onClose}
-            disabled={isPending}
+            disabled={isBusy}
             size='sm'
             style={{ borderRadius: 'var(--mantine-radius-md)' }}
           >
@@ -772,12 +873,16 @@ const CloneCourseModal = ({
           <CommonButton
             leftSection={<IconCopy size={16} />}
             onClick={handleSubmit}
-            disabled={!isFormValid || isPending}
-            loading={isPending}
+            disabled={!isFormValid || isBusy}
+            loading={isBusy}
             size='sm'
             style={{ borderRadius: 'var(--mantine-radius-md)' }}
           >
-            {isPending ? 'Cloning Course...' : 'Clone Course'}
+            {isCopyingQuestions
+              ? 'Copying Quiz Questions...'
+              : isPending
+                ? 'Cloning Course...'
+                : 'Clone Course'}
           </CommonButton>
         </Group>
       </Stack>
