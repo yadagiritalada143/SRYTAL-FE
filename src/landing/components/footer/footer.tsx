@@ -2,9 +2,7 @@ import React from 'react';
 import { HashLink as Link } from 'react-router-hash-link';
 import {
   IconBrandLinkedin,
-  IconBrandFacebook,
   IconBrandX,
-  IconBrandGithub,
   IconChevronRight
 } from '@tabler/icons-react';
 
@@ -15,6 +13,13 @@ const SocialIcons = [
     link: 'https://www.linkedin.com/company/srytal-systems-india-pvt-ltd',
     hoverClass:
       'hover:text-blue-400 hover:border-blue-500/50 hover:bg-blue-500/10'
+  },
+  {
+    name: 'X',
+    icon: IconBrandX,
+    link: 'https://x.com/srytal_systems',
+    hoverClass:
+      'hover:text-slate-200 hover:border-slate-500/50 hover:bg-slate-500/10'
   }
   // {
   //   name: 'Facebook',
@@ -22,12 +27,6 @@ const SocialIcons = [
   //   link: 'https://www.facebook.com',
   //   hoverClass:
   //     'hover:text-blue-500 hover:border-blue-500/50 hover:bg-blue-500/10'
-  // },
-  // {
-  //   name: 'X (Twitter)',
-  //   icon: IconBrandX,
-  //   link: 'https://twitter.com',
-  //   hoverClass: 'hover:text-sky-400 hover:border-sky-500/50 hover:bg-sky-500/10'
   // },
   // {
   //   name: 'GitHub',
