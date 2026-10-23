@@ -74,7 +74,7 @@ describe('Header Component', () => {
     expect(contactLinks.length).toBeGreaterThanOrEqual(1);
   });
 
-  it('renders social media links including LinkedIn with correct external URL', () => {
+  it('renders social media links including LinkedIn and X with correct external URLs', () => {
     renderHeader();
 
     const linkedinLinks = screen.getAllByRole('link', {
@@ -86,6 +86,13 @@ describe('Header Component', () => {
       'https://www.linkedin.com/company/srytal-systems-india-pvt-ltd'
     );
     expect(linkedinLinks[0]).toHaveAttribute('target', '_blank');
+
+    const xLinks = screen.getAllByRole('link', {
+      name: /srytal on x/i
+    });
+    expect(xLinks.length).toBeGreaterThanOrEqual(1);
+    expect(xLinks[0]).toHaveAttribute('href', 'https://x.com/srytal_systems');
+    expect(xLinks[0]).toHaveAttribute('target', '_blank');
   });
 
   it('renders Login button with employee login redirect URL and removes consult now', () => {
@@ -122,12 +129,17 @@ describe('Header Component', () => {
     renderHeader();
 
     // Verify "Login" button is NOT displayed
-    expect(screen.queryByRole('link', { name: /^login$/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('link', { name: /^login$/i })
+    ).not.toBeInTheDocument();
 
     // Verify "Dashboard" button is displayed and links to /srytal/admin/dashboard
     const dashboardLinks = screen.getAllByRole('link', { name: /dashboard/i });
     expect(dashboardLinks.length).toBeGreaterThanOrEqual(1);
-    expect(dashboardLinks[0]).toHaveAttribute('href', '/srytal/admin/dashboard');
+    expect(dashboardLinks[0]).toHaveAttribute(
+      'href',
+      '/srytal/admin/dashboard'
+    );
   });
 
   it('renders Dashboard button linking to employee dashboard when Employee is logged in', () => {
@@ -136,10 +148,15 @@ describe('Header Component', () => {
 
     renderHeader();
 
-    expect(screen.queryByRole('link', { name: /^login$/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('link', { name: /^login$/i })
+    ).not.toBeInTheDocument();
     const dashboardLinks = screen.getAllByRole('link', { name: /dashboard/i });
     expect(dashboardLinks.length).toBeGreaterThanOrEqual(1);
-    expect(dashboardLinks[0]).toHaveAttribute('href', '/srytal/employee/dashboard');
+    expect(dashboardLinks[0]).toHaveAttribute(
+      'href',
+      '/srytal/employee/dashboard'
+    );
   });
 
   it('renders Dashboard button linking to superadmin dashboard when Superadmin is logged in', () => {
@@ -148,7 +165,9 @@ describe('Header Component', () => {
 
     renderHeader();
 
-    expect(screen.queryByRole('link', { name: /^login$/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('link', { name: /^login$/i })
+    ).not.toBeInTheDocument();
     const dashboardLinks = screen.getAllByRole('link', { name: /dashboard/i });
     expect(dashboardLinks.length).toBeGreaterThanOrEqual(1);
     expect(dashboardLinks[0]).toHaveAttribute('href', '/superadmin/dashboard');
@@ -167,6 +186,9 @@ describe('Header Component', () => {
 
     const dashboardLinks = screen.getAllByRole('link', { name: /dashboard/i });
     expect(dashboardLinks.length).toBe(2); // One in desktop nav, one in mobile drawer
-    expect(dashboardLinks[1]).toHaveAttribute('href', '/srytal/employee/dashboard');
+    expect(dashboardLinks[1]).toHaveAttribute(
+      'href',
+      '/srytal/employee/dashboard'
+    );
   });
 });

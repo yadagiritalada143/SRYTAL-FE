@@ -2,9 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Burger, HoverCard } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import {
-  IconBrandFacebook,
   IconBrandLinkedin,
-  IconBrandMeta,
+  IconBrandX,
   IconChevronDown,
   IconLayoutDashboard,
   IconLogin
@@ -194,6 +193,15 @@ const Header: React.FC = () => {
             >
               <IconBrandLinkedin size={20} />
             </a>
+            <a
+              href='https://x.com/srytal_systems'
+              target='_blank'
+              rel='noopener noreferrer'
+              aria-label='SRYTAL on X'
+              className='p-2 rounded-lg text-slate-400 hover:text-violet-300 hover:bg-slate-800/60 transition-colors'
+            >
+              <IconBrandX size={20} />
+            </a>
             {/* <a
               href='https://www.facebook.com'
               target='_blank'
@@ -298,6 +306,15 @@ const Header: React.FC = () => {
               className='p-2.5 rounded-xl text-slate-400 hover:text-violet-300 hover:bg-slate-800 transition-colors'
             >
               <IconBrandLinkedin size={20} />
+            </a>
+            <a
+              href='https://x.com/srytal_systems'
+              target='_blank'
+              rel='noopener noreferrer'
+              aria-label='SRYTAL on X'
+              className='p-2.5 rounded-xl text-slate-400 hover:text-violet-300 hover:bg-slate-800 transition-colors'
+            >
+              <IconBrandX size={20} />
             </a>
             {/* <a
               href='https://www.facebook.com'
