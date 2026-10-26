@@ -21,6 +21,7 @@ jest.mock('@services/user-services', () => {
   const mockUpdateCourseContentWriter = jest.fn();
   const mockUpdateCourseModuleContentWriter = jest.fn();
   const mockUpdateCourseTaskContentWriter = jest.fn();
+  const mockReorderCourseModulesContentWriter = jest.fn();
   const mockUpdateMyTaskProgress = jest.fn();
   const mockRunCode = jest.fn();
   const mockSubmitCode = jest.fn();
@@ -43,6 +44,7 @@ jest.mock('@services/user-services', () => {
     updateCourseContentWriter: mockUpdateCourseContentWriter,
     updateCourseModuleContentWriter: mockUpdateCourseModuleContentWriter,
     updateCourseTaskContentWriter: mockUpdateCourseTaskContentWriter,
+    reorderCourseModulesContentWriter: mockReorderCourseModulesContentWriter,
     updateMyTaskProgress: mockUpdateMyTaskProgress,
     runCode: mockRunCode,
     submitCode: mockSubmitCode,
@@ -93,6 +95,7 @@ import {
   useUpdateCourse,
   useUpdateCourseModule,
   useUpdateCourseTask,
+  useReorderCourseModules,
   useUpdateMyTaskProgress,
   useRunCode,
   useSubmitCode,
@@ -354,15 +357,57 @@ describe('useAddCourseModule', () => {
       await result.current.mutateAsync({
         courseId: 'course1',
         moduleName: 'Intro',
-        moduleDescription: 'First module'
+        moduleDescription: 'First module',
+        orderIdx: 1
       });
     });
 
     expectCalledWithArgs(getMock('addCourseModuleContentWriter'), {
       courseId: 'course1',
       moduleName: 'Intro',
-      moduleDescription: 'First module'
+      moduleDescription: 'First module',
+      orderIdx: 1
     });
+    await waitFor(() => {
+      expect(
+        queryClient
+          .getQueryCache()
+          .findAll({ queryKey: ['userCourse', 'course1'] })
+      ).toHaveLength(1);
+      expect(
+        queryClient.getQueryCache().findAll({ queryKey: ['userCourses'] })
+      ).toHaveLength(1);
+    });
+  });
+});
+
+describe('useReorderCourseModules', () => {
+  it('calls reorderCourseModulesContentWriter and invalidates course + courses', async () => {
+    const { queryClient, wrapper } = createWrapper();
+    getMock('reorderCourseModulesContentWriter').mockResolvedValue({
+      success: true
+    });
+    queryClient.setQueryData(['userCourse', 'course1'], { modules: [] });
+    queryClient.setQueryData(['userCourses'], ['old']);
+
+    const { result } = renderHook(() => useReorderCourseModules(), { wrapper });
+
+    const payload = {
+      courseId: 'course1',
+      modules: [
+        { moduleId: 'm2', orderIdx: 1 },
+        { moduleId: 'm1', orderIdx: 2 }
+      ]
+    };
+
+    await act(async () => {
+      await result.current.mutateAsync(payload);
+    });
+
+    expectCalledWithArgs(
+      getMock('reorderCourseModulesContentWriter'),
+      payload
+    );
     await waitFor(() => {
       expect(
         queryClient
@@ -391,7 +436,8 @@ describe('useAddCourseTask', () => {
         moduleId: 'm1',
         taskName: 'Task 1',
         taskDescription: 'Do it',
-        link: 'https://example.com'
+        link: 'https://example.com',
+        orderIdx: 1
       });
     });
 
@@ -399,7 +445,8 @@ describe('useAddCourseTask', () => {
       moduleId: 'm1',
       taskName: 'Task 1',
       taskDescription: 'Do it',
-      link: 'https://example.com'
+      link: 'https://example.com',
+      orderIdx: 1
     });
     await waitFor(() => {
       expect(
@@ -421,7 +468,8 @@ describe('useAddCourseTask', () => {
         moduleId: 'm1',
         taskName: 'Task 1',
         taskDescription: 'Do it',
-        link: 'https://example.com'
+        link: 'https://example.com',
+        orderIdx: 1
       });
     });
 
@@ -644,6 +692,7 @@ describe('useUpdateCourseModule', () => {
         id: 'm1',
         moduleName: 'Intro v2',
         moduleDescription: 'Updated',
+        orderIdx: 2,
         status: 'ACTIVE'
       });
     });
@@ -652,6 +701,7 @@ describe('useUpdateCourseModule', () => {
       id: 'm1',
       moduleName: 'Intro v2',
       moduleDescription: 'Updated',
+      orderIdx: 2,
       status: 'ACTIVE'
     });
     await waitFor(() => {

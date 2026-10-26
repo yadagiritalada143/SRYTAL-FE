@@ -10,6 +10,7 @@ import {
   AssignedCourseForEmployee
 } from '@interfaces/course-assignment';
 import { ProgrammingLanguage } from '@interfaces/programming-language';
+import { sortCourseContent } from '@utils/common/course-order';
 
 export const registerEmployee = async (employeeDetails: AddEmployeeForm) => {
   const token = localStorage.getItem('token');
@@ -914,7 +915,10 @@ export const updateNavUserAccessByAdmin = async (
 export const getAllCoursesByAdmin = async () => {
   try {
     const response = await apiClient.get('/getAllCourses');
-    return response.data.courses;
+    const courses = response.data.courses;
+    return Array.isArray(courses)
+      ? courses.map(course => sortCourseContent(course))
+      : courses;
   } catch (error) {
     throw error;
   }
@@ -923,7 +927,10 @@ export const getAllCoursesByAdmin = async () => {
 export const getAllActiveCoursesByAdmin = async () => {
   try {
     const response = await apiClient.get('/getAllActiveCourses');
-    return response.data.courses;
+    const courses = response.data.courses;
+    return Array.isArray(courses)
+      ? courses.map(course => sortCourseContent(course))
+      : courses;
   } catch (error) {
     throw error;
   }
@@ -932,7 +939,7 @@ export const getAllActiveCoursesByAdmin = async () => {
 export const getCourseByIdAdmin = async (id: string) => {
   try {
     const response = await apiClient.get(`/getCourseById/${id}`);
-    return response.data.coursedata;
+    return sortCourseContent(response.data.coursedata);
   } catch (error) {
     throw error;
   }

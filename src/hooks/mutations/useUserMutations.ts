@@ -14,6 +14,7 @@ import {
   updateCourseModuleContentWriter,
   updateCourseTaskContentWriter,
   cloneCourseContentWriter,
+  reorderCourseModulesContentWriter,
   updateMyTaskAcknowledgement,
   updateMyTaskProgress,
   runCode,
@@ -40,7 +41,8 @@ import {
   UpdateCoursePayload,
   UpdateModulePayload,
   UpdateTaskPayload,
-  CloneCoursePayload
+  CloneCoursePayload,
+  ReorderModulesPayload
 } from '@interfaces/contentwriter';
 import {
   RunCodePayload,
@@ -331,6 +333,20 @@ export const useCloneCourse = () => {
   return useMutation({
     mutationFn: (data: CloneCoursePayload) => cloneCourseContentWriter(data),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: userQueryKeys.courses });
+    }
+  });
+};
+
+export const useReorderCourseModules = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: ReorderModulesPayload) =>
+      reorderCourseModulesContentWriter(data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: userQueryKeys.course(variables.courseId)
+      });
       queryClient.invalidateQueries({ queryKey: userQueryKeys.courses });
     }
   });

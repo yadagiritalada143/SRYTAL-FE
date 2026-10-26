@@ -191,6 +191,7 @@ describe('EditModuleModal', () => {
         id: 'm1',
         moduleName: 'Updated Module',
         moduleDescription: '<p>New content</p>',
+        orderIdx: 1,
         thumbnail: null,
         status: 'ARCHIVE'
       });

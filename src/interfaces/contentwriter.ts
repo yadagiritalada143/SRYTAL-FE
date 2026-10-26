@@ -13,6 +13,7 @@ export interface Task {
   taskDescription: string;
   thumbnail?: string;
   status: string;
+  orderIdx?: number;
   // 'FILE' (uploaded file served from S3) or 'LINK' (external URL).
   type?: TaskContentType | string;
   content?: string;
@@ -34,6 +35,7 @@ export interface Module {
   thumbnailUrl?: string;
   tasks: Task[];
   status: string;
+  orderIdx?: number;
   updatedAt?: string;
 }
 
@@ -41,6 +43,7 @@ export interface AddModulePayload {
   courseId: string;
   moduleName: string;
   moduleDescription: string;
+  orderIdx: number;
   thumbnail?: File | null;
 }
 
@@ -58,6 +61,7 @@ export interface UpdateModulePayload {
   id: string;
   moduleName: string;
   moduleDescription: string;
+  orderIdx: number;
   // A new file uploads over the existing thumbnail (multer field `thumbnail`).
   // When omitted, the stored thumbnail is kept as-is.
   thumbnail?: File | null;
@@ -83,8 +87,19 @@ export interface AddTaskPayload {
   file?: File | null;
   link?: string;
   acknowledgementText?: string;
+  orderIdx: number;
   // Optional task thumbnail image (multer field `thumbnailFile`).
   thumbnail?: File | null;
+}
+
+export interface ReorderModuleItem {
+  moduleId: string;
+  orderIdx: number;
+}
+
+export interface ReorderModulesPayload {
+  courseId: string;
+  modules: ReorderModuleItem[];
 }
 
 export interface Course {

@@ -15,8 +15,10 @@ import {
   UpdateCoursePayload,
   UpdateModulePayload,
   UpdateTaskPayload,
-  CloneCoursePayload
+  CloneCoursePayload,
+  ReorderModulesPayload
 } from '@interfaces/contentwriter';
+import { sortCourseContent } from '@utils/common/course-order';
 import {
   AssignedCourse,
   AssignedCourseDetail,
@@ -190,7 +192,10 @@ export const getAllCoursesByUser = async () => {
   // The apiClient interceptor already attaches the auth_token header.
   try {
     const response = await apiClient.get('/getAllCourses');
-    return response.data.courses;
+    const courses = response.data.courses;
+    return Array.isArray(courses)
+      ? courses.map(course => sortCourseContent(course))
+      : courses;
   } catch (error) {
     throw error;
   }
@@ -200,7 +205,7 @@ export const getCourseByIdContentWriter = async (id: string) => {
   try {
     const response = await apiClient.get(`/getCourseById/${id}`);
     // Backend responds with { success, coursedata }.
-    return response.data.coursedata;
+    return sortCourseContent(response.data.coursedata);
   } catch (error) {
     throw error;
   }
@@ -233,6 +238,7 @@ export const addCourseModuleContentWriter = async (data: AddModulePayload) => {
     formData.append('courseId', data.courseId);
     formData.append('moduleName', data.moduleName);
     formData.append('moduleDescription', data.moduleDescription);
+    formData.append('orderIdx', String(data.orderIdx));
     if (data.thumbnail) {
       formData.append('coursemodulethumbnail', data.thumbnail);
     }
@@ -252,6 +258,7 @@ export const addCourseTaskContentWriter = async (data: AddTaskPayload) => {
     formData.append('taskName', data.taskName);
     formData.append('taskDescription', data.taskDescription);
     formData.append('type', data.type || 'LINK');
+    formData.append('orderIdx', String(data.orderIdx));
     if (data.acknowledgementText !== undefined) {
       formData.append('acknowledgementText', data.acknowledgementText);
     }
@@ -306,6 +313,8 @@ export const updateCourseModuleContentWriter = async (
     formData.append('moduleName', data.moduleName);
     formData.append('moduleDescription', data.moduleDescription);
     formData.append('status', data.status);
+    // The backend validates orderIdx on update too.
+    formData.append('orderIdx', String(data.orderIdx));
     if (data.thumbnail) {
       formData.append('thumbnail', data.thumbnail);
     }
@@ -348,6 +357,21 @@ export const updateCourseTaskContentWriter = async (
 export const cloneCourseContentWriter = async (data: CloneCoursePayload) => {
   try {
     const response = await apiClient.post('/clonecourse', data);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+/**
+ * Persists the position of every module in a course. The backend expects the
+ * complete list with unique, 1-based `orderIdx` values.
+ */
+export const reorderCourseModulesContentWriter = async (
+  data: ReorderModulesPayload
+) => {
+  try {
+    const response = await apiClient.put('/reordermodules', data);
     return response.data;
   } catch (error) {
     throw error;
@@ -483,7 +507,7 @@ export const getMyAssignedCourseById = async (
     `/getMyAssignedCourseById/${courseAssignmentId}`
   );
   // Backend responds with { success, course }.
-  return response.data.course;
+  return sortCourseContent(response.data.course);
 };
 
 /**

@@ -690,6 +690,7 @@ describe('AddTaskModal', () => {
         taskName: 'YouTube video',
         taskDescription: 'Watch the intro video.',
         type: 'LINK',
+        orderIdx: 1,
         link: 'https://youtube.com/watch?v=abc123',
         file: undefined,
         thumbnail: null
@@ -816,6 +817,7 @@ describe('AddTaskModal', () => {
         taskName: 'FizzBuzz problem',
         taskDescription: 'Write a function that returns FizzBuzz.',
         type: 'CODE',
+        orderIdx: 1,
         link: undefined,
         file: undefined,
         thumbnail: null
@@ -987,6 +989,7 @@ describe('AddTaskModal', () => {
           taskName: 'Colour quiz',
           taskDescription: 'Pick a colour.',
           type: 'QUIZ',
+          orderIdx: 1,
           thumbnail: null
         });
       });
@@ -1020,6 +1023,7 @@ describe('AddTaskModal', () => {
           taskName: 'Colour quiz',
           taskDescription: 'Pick a colour.',
           type: 'QUIZ',
+          orderIdx: 1,
           thumbnail: null
         });
       });
