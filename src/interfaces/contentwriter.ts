@@ -102,6 +102,16 @@ export interface ReorderModulesPayload {
   modules: ReorderModuleItem[];
 }
 
+export interface ReorderTaskItem {
+  taskId: string;
+  orderIdx: number;
+}
+
+export interface ReorderTasksPayload {
+  moduleId: string;
+  tasks: ReorderTaskItem[];
+}
+
 export interface Course {
   _id: string;
   courseName: string;

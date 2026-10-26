@@ -22,6 +22,7 @@ jest.mock('@services/user-services', () => {
   const mockUpdateCourseModuleContentWriter = jest.fn();
   const mockUpdateCourseTaskContentWriter = jest.fn();
   const mockReorderCourseModulesContentWriter = jest.fn();
+  const mockReorderCourseTasksContentWriter = jest.fn();
   const mockUpdateMyTaskProgress = jest.fn();
   const mockRunCode = jest.fn();
   const mockSubmitCode = jest.fn();
@@ -45,6 +46,7 @@ jest.mock('@services/user-services', () => {
     updateCourseModuleContentWriter: mockUpdateCourseModuleContentWriter,
     updateCourseTaskContentWriter: mockUpdateCourseTaskContentWriter,
     reorderCourseModulesContentWriter: mockReorderCourseModulesContentWriter,
+    reorderCourseTasksContentWriter: mockReorderCourseTasksContentWriter,
     updateMyTaskProgress: mockUpdateMyTaskProgress,
     runCode: mockRunCode,
     submitCode: mockSubmitCode,
@@ -96,6 +98,7 @@ import {
   useUpdateCourseModule,
   useUpdateCourseTask,
   useReorderCourseModules,
+  useReorderCourseTasks,
   useUpdateMyTaskProgress,
   useRunCode,
   useSubmitCode,
@@ -408,6 +411,45 @@ describe('useReorderCourseModules', () => {
       getMock('reorderCourseModulesContentWriter'),
       payload
     );
+    await waitFor(() => {
+      expect(
+        queryClient
+          .getQueryCache()
+          .findAll({ queryKey: ['userCourse', 'course1'] })
+      ).toHaveLength(1);
+      expect(
+        queryClient.getQueryCache().findAll({ queryKey: ['userCourses'] })
+      ).toHaveLength(1);
+    });
+  });
+});
+
+describe('useReorderCourseTasks', () => {
+  it('calls reorderCourseTasksContentWriter and invalidates course + courses', async () => {
+    const { queryClient, wrapper } = createWrapper();
+    getMock('reorderCourseTasksContentWriter').mockResolvedValue({
+      success: true
+    });
+    queryClient.setQueryData(['userCourse', 'course1'], { modules: [] });
+    queryClient.setQueryData(['userCourses'], ['old']);
+
+    const { result } = renderHook(() => useReorderCourseTasks('course1'), {
+      wrapper
+    });
+
+    const payload = {
+      moduleId: 'm1',
+      tasks: [
+        { taskId: 't2', orderIdx: 1 },
+        { taskId: 't1', orderIdx: 2 }
+      ]
+    };
+
+    await act(async () => {
+      await result.current.mutateAsync(payload);
+    });
+
+    expectCalledWithArgs(getMock('reorderCourseTasksContentWriter'), payload);
     await waitFor(() => {
       expect(
         queryClient

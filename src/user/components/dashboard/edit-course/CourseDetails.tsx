@@ -54,6 +54,7 @@ import EditCourseModal from './EditCourseModal';
 import EditModuleModal from './EditModuleModal';
 import EditTaskModal from './EditTaskModal';
 import ReorderModulesModal from './ReorderModulesModal';
+import ReorderTasksModal from './ReorderTasksModal';
 import CourseThumbnail from '../content-writer/CourseThumbnail';
 import {
   readTaskPopupState,
@@ -103,6 +104,9 @@ const CourseDetails = () => {
     Record<string, boolean>
   >({});
   const [reorderOpen, setReorderOpen] = useState(false);
+  const [reorderTasksModuleId, setReorderTasksModuleId] = useState<
+    string | null
+  >(null);
 
   const [searchParams] = useSearchParams();
 
@@ -725,6 +729,22 @@ const CourseDetails = () => {
                               </Group>
 
                               <Group gap='xs'>
+                                {moduleTasks.length >= 2 && (
+                                  <CommonButton
+                                    variant='filled'
+                                    color='indigo'
+                                    size='xs'
+                                    leftSection={
+                                      <IconArrowsSort size={12} />
+                                    }
+                                    aria-label={`Reorder tasks in ${module.moduleName}`}
+                                    onClick={() =>
+                                      setReorderTasksModuleId(module._id)
+                                    }
+                                  >
+                                    Reorder
+                                  </CommonButton>
+                                )}
                                 <CommonButton
                                   variant='light'
                                   size='xs'
@@ -865,6 +885,14 @@ const CourseDetails = () => {
         onClose={() => setReorderOpen(false)}
         courseId={id}
         modules={modules}
+      />
+      <ReorderTasksModal
+        opened={!!reorderTasksModuleId}
+        onClose={() => setReorderTasksModuleId(null)}
+        courseId={id}
+        module={modules.find(
+          module => module._id === reorderTasksModuleId
+        )}
       />
     </Container>
   );
