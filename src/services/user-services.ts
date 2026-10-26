@@ -16,7 +16,8 @@ import {
   UpdateModulePayload,
   UpdateTaskPayload,
   CloneCoursePayload,
-  ReorderModulesPayload
+  ReorderModulesPayload,
+  ReorderTasksPayload
 } from '@interfaces/contentwriter';
 import { sortCourseContent } from '@utils/common/course-order';
 import {
@@ -372,6 +373,17 @@ export const reorderCourseModulesContentWriter = async (
 ) => {
   try {
     const response = await apiClient.put('/reordermodules', data);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const reorderCourseTasksContentWriter = async (
+  data: ReorderTasksPayload
+) => {
+  try {
+    const response = await apiClient.put('/reordertasks', data);
     return response.data;
   } catch (error) {
     throw error;

@@ -71,6 +71,8 @@ jest.mock('@components/common/button/CommonButton', () => ({
     onClick,
     disabled,
     loading,
+    variant,
+    color,
     'aria-label': ariaLabel
   }: any) => (
     <button
@@ -78,6 +80,8 @@ jest.mock('@components/common/button/CommonButton', () => ({
       onClick={onClick}
       disabled={disabled}
       data-loading={loading}
+      data-variant={variant}
+      data-color={color}
       aria-label={ariaLabel}
     >
       {children}
@@ -170,6 +174,18 @@ jest.mock('../ReorderModulesModal', () => (props: any) => (
     data-module-count={String(props.modules?.length ?? 0)}
   >
     {props.opened && <button onClick={props.onClose}>reorder-close</button>}
+  </div>
+));
+
+jest.mock('../ReorderTasksModal', () => (props: any) => (
+  <div
+    data-testid='reorder-tasks-modal'
+    data-opened={String(!!props.opened)}
+    data-course-id={props.courseId}
+    data-module-id={props.module?._id}
+    data-task-count={String(props.module?.tasks?.length ?? 0)}
+  >
+    {props.opened && <button onClick={props.onClose}>reorder-tasks-close</button>}
   </div>
 ));
 
@@ -427,6 +443,25 @@ describe('CourseDetails', () => {
         screen.getByText('No tasks in this module yet.')
       ).toBeInTheDocument();
     });
+
+    it('shows a highlighted task Reorder button when a module has two tasks', () => {
+      renderPage();
+      fireEvent.click(screen.getByRole('button', { name: 'Fundamentals' }));
+      const reorderButton = screen.getByRole('button', {
+        name: 'Reorder tasks in Fundamentals'
+      });
+      expect(reorderButton).toBeInTheDocument();
+      expect(reorderButton).toHaveAttribute('data-variant', 'filled');
+      expect(reorderButton).toHaveAttribute('data-color', 'indigo');
+    });
+
+    it('hides the task Reorder button when a module has fewer than two tasks', () => {
+      renderPage();
+      fireEvent.click(screen.getByRole('button', { name: 'Advanced' }));
+      expect(
+        screen.queryByRole('button', { name: 'Reorder tasks in Advanced' })
+      ).not.toBeInTheDocument();
+    });
   });
 
   describe('Modal interactions', () => {
@@ -467,6 +502,28 @@ describe('CourseDetails', () => {
       );
       expect(screen.getByTestId('reorder-modules-modal')).toHaveAttribute(
         'data-module-count',
+        '2'
+      );
+    });
+
+    it('opens the Reorder Tasks modal for the module when its Reorder button is clicked', () => {
+      renderPage();
+      fireEvent.click(screen.getByRole('button', { name: 'Fundamentals' }));
+      fireEvent.click(
+        screen.getByRole('button', {
+          name: 'Reorder tasks in Fundamentals'
+        })
+      );
+      expect(screen.getByTestId('reorder-tasks-modal')).toHaveAttribute(
+        'data-opened',
+        'true'
+      );
+      expect(screen.getByTestId('reorder-tasks-modal')).toHaveAttribute(
+        'data-module-id',
+        'm1'
+      );
+      expect(screen.getByTestId('reorder-tasks-modal')).toHaveAttribute(
+        'data-task-count',
         '2'
       );
     });

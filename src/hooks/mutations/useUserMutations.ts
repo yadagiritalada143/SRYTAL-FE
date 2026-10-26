@@ -15,6 +15,7 @@ import {
   updateCourseTaskContentWriter,
   cloneCourseContentWriter,
   reorderCourseModulesContentWriter,
+  reorderCourseTasksContentWriter,
   updateMyTaskAcknowledgement,
   updateMyTaskProgress,
   runCode,
@@ -42,7 +43,8 @@ import {
   UpdateModulePayload,
   UpdateTaskPayload,
   CloneCoursePayload,
-  ReorderModulesPayload
+  ReorderModulesPayload,
+  ReorderTasksPayload
 } from '@interfaces/contentwriter';
 import {
   RunCodePayload,
@@ -347,6 +349,22 @@ export const useReorderCourseModules = () => {
       queryClient.invalidateQueries({
         queryKey: userQueryKeys.course(variables.courseId)
       });
+      queryClient.invalidateQueries({ queryKey: userQueryKeys.courses });
+    }
+  });
+};
+
+export const useReorderCourseTasks = (courseId?: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: ReorderTasksPayload) =>
+      reorderCourseTasksContentWriter(data),
+    onSuccess: () => {
+      if (courseId) {
+        queryClient.invalidateQueries({
+          queryKey: userQueryKeys.course(courseId)
+        });
+      }
       queryClient.invalidateQueries({ queryKey: userQueryKeys.courses });
     }
   });

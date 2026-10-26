@@ -20,6 +20,7 @@ import {
   updateCourseModuleContentWriter,
   updateCourseTaskContentWriter,
   reorderCourseModulesContentWriter,
+  reorderCourseTasksContentWriter,
   getCourseTaskContentUrl,
   getAllQuizQuestions,
   createQuizQuestion,
@@ -415,6 +416,22 @@ describe('user-services', () => {
       const result = await reorderCourseModulesContentWriter(payload);
 
       expect(mock.put).toHaveBeenCalledWith('/reordermodules', payload);
+      expect(result).toEqual({ success: true });
+    });
+
+    it('reorderCourseTasksContentWriter puts the reordered tasks', async () => {
+      mock.put.mockResolvedValue({ data: { success: true } });
+      const payload = {
+        moduleId: 'm1',
+        tasks: [
+          { taskId: 't2', orderIdx: 1 },
+          { taskId: 't1', orderIdx: 2 }
+        ]
+      };
+
+      const result = await reorderCourseTasksContentWriter(payload);
+
+      expect(mock.put).toHaveBeenCalledWith('/reordertasks', payload);
       expect(result).toEqual({ success: true });
     });
 
