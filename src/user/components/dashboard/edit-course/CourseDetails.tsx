@@ -44,10 +44,7 @@ import PremiumLoader from '@components/common/loaders/PremiumLoader';
 import DataView from '@components/common/loaders/DataView';
 import { Course, Module, Task } from '@interfaces/contentwriter';
 import { commonUrls } from '@utils/common/constants';
-import {
-  getNextOrderIdx,
-  sortByOrderIdx
-} from '@utils/common/course-order';
+import { getNextOrderIdx, sortByOrderIdx } from '@utils/common/course-order';
 import AddModuleModal from './AddModuleModal';
 import AddTaskModal from './AddTaskModal';
 import EditCourseModal from './EditCourseModal';
@@ -312,18 +309,6 @@ const CourseDetails = () => {
                   >
                     {course?.status || 'Draft'}
                   </Badge>
-                  {modules.length >= 2 && (
-                    <CommonButton
-                      leftSection={<IconArrowsSort size={14} />}
-                      variant='filled'
-                      color='indigo'
-                      onClick={() => setReorderOpen(true)}
-                      size='xs'
-                      aria-label='Reorder modules'
-                    >
-                      Reorder
-                    </CommonButton>
-                  )}
                   <CommonButton
                     leftSection={<IconEdit size={14} />}
                     onClick={() => setCourseEditOpen(true)}
@@ -469,13 +454,29 @@ const CourseDetails = () => {
                   Course curriculum modules and task breakdown
                 </Text>
               </Stack>
-              <CommonButton
-                leftSection={<IconPlus size={14} />}
-                onClick={() => setModuleModalOpen(true)}
-                size='xs'
-              >
-                Add Module
-              </CommonButton>
+
+              <Group gap='xs' wrap='wrap'>
+                {modules.length >= 2 && (
+                  <CommonButton
+                    leftSection={<IconArrowsSort size={14} />}
+                    variant='filled'
+                    color='indigo'
+                    onClick={() => setReorderOpen(true)}
+                    size='xs'
+                    aria-label='Reorder modules'
+                  >
+                    Reorder
+                  </CommonButton>
+                )}
+
+                <CommonButton
+                  leftSection={<IconPlus size={14} />}
+                  onClick={() => setModuleModalOpen(true)}
+                  size='xs'
+                >
+                  Add Module
+                </CommonButton>
+              </Group>
             </Group>
           </Paper>
 
@@ -723,8 +724,7 @@ const CourseDetails = () => {
                                   tt='uppercase'
                                   style={{ letterSpacing: '0.05em' }}
                                 >
-                                  Tasks in this Module (
-                                  {moduleTasks.length})
+                                  Tasks in this Module ({moduleTasks.length})
                                 </Text>
                               </Group>
 
@@ -734,9 +734,7 @@ const CourseDetails = () => {
                                     variant='filled'
                                     color='indigo'
                                     size='xs'
-                                    leftSection={
-                                      <IconArrowsSort size={12} />
-                                    }
+                                    leftSection={<IconArrowsSort size={12} />}
                                     aria-label={`Reorder tasks in ${module.moduleName}`}
                                     onClick={() =>
                                       setReorderTasksModuleId(module._id)
@@ -890,9 +888,7 @@ const CourseDetails = () => {
         opened={!!reorderTasksModuleId}
         onClose={() => setReorderTasksModuleId(null)}
         courseId={id}
-        module={modules.find(
-          module => module._id === reorderTasksModuleId
-        )}
+        module={modules.find(module => module._id === reorderTasksModuleId)}
       />
     </Container>
   );
