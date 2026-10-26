@@ -26,6 +26,23 @@ jest.mock('@hooks/queries/useUserQueries', () => ({
   })
 }));
 
+jest.mock('@tanstack/react-query', () => ({
+  ...jest.requireActual('@tanstack/react-query'),
+  useQueryClient: () => ({
+    invalidateQueries: jest.fn()
+  })
+}));
+
+const mockShowSuccessToast = jest.fn();
+const mockShowErrorToast = jest.fn();
+
+jest.mock('@utils/common/toast', () => ({
+  useCustomToast: () => ({
+    showSuccessToast: mockShowSuccessToast,
+    showErrorToast: mockShowErrorToast
+  })
+}));
+
 jest.mock('@services/user-services', () => ({
   getCourseTaskContentUrl: (taskId: string) =>
     `http://localhost:3000/getCourseTaskContent/${taskId}?auth_token=fake`
@@ -49,12 +66,19 @@ jest.mock('@mantine/hooks', () => ({
 }));
 
 jest.mock('@components/common/button/CommonButton', () => ({
-  CommonButton: ({ children, onClick, disabled, ...props }: any) => (
+  CommonButton: ({
+    children,
+    onClick,
+    disabled,
+    loading,
+    'aria-label': ariaLabel
+  }: any) => (
     <button
       type='button'
       onClick={onClick}
       disabled={disabled}
-      data-loading={props.loading}
+      data-loading={loading}
+      aria-label={ariaLabel}
     >
       {children}
     </button>
@@ -135,6 +159,17 @@ jest.mock('../EditTaskModal', () => (props: any) => (
     data-task-id={props.task?._id}
   >
     {props.opened && <button onClick={props.onClose}>edit-task-close</button>}
+  </div>
+));
+
+jest.mock('../ReorderModulesModal', () => (props: any) => (
+  <div
+    data-testid='reorder-modules-modal'
+    data-opened={String(!!props.opened)}
+    data-course-id={props.courseId}
+    data-module-count={String(props.modules?.length ?? 0)}
+  >
+    {props.opened && <button onClick={props.onClose}>reorder-close</button>}
   </div>
 ));
 
@@ -259,6 +294,21 @@ describe('CourseDetails', () => {
       expect(
         screen.getByRole('button', { name: 'Edit Course' })
       ).toBeInTheDocument();
+    });
+
+    it('shows the Reorder button beside Edit Course when there are two modules', () => {
+      renderPage();
+      expect(
+        screen.getByRole('button', { name: 'Reorder modules' })
+      ).toBeInTheDocument();
+    });
+
+    it('hides the Reorder button when there is only one module', () => {
+      mockCourse = makeCourse({ modules: [makeCourse().modules[0]] });
+      renderPage();
+      expect(
+        screen.queryByRole('button', { name: 'Reorder modules' })
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -399,6 +449,25 @@ describe('CourseDetails', () => {
       expect(screen.getByTestId('edit-course-modal')).toHaveAttribute(
         'data-course-id',
         'c1'
+      );
+    });
+
+    it('opens the Reorder Modules modal when Reorder is clicked', () => {
+      renderPage();
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Reorder modules' })
+      );
+      expect(screen.getByTestId('reorder-modules-modal')).toHaveAttribute(
+        'data-opened',
+        'true'
+      );
+      expect(screen.getByTestId('reorder-modules-modal')).toHaveAttribute(
+        'data-course-id',
+        'c1'
+      );
+      expect(screen.getByTestId('reorder-modules-modal')).toHaveAttribute(
+        'data-module-count',
+        '2'
       );
     });
 

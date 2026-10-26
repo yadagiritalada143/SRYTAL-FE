@@ -19,6 +19,7 @@ import {
   updateCourseContentWriter,
   updateCourseModuleContentWriter,
   updateCourseTaskContentWriter,
+  reorderCourseModulesContentWriter,
   getCourseTaskContentUrl,
   getAllQuizQuestions,
   createQuizQuestion,
@@ -298,6 +299,7 @@ describe('user-services', () => {
         courseId: 'c1',
         moduleName: 'M1',
         moduleDescription: 'desc',
+        orderIdx: 7,
         thumbnail: thumb
       } as any);
 
@@ -305,6 +307,7 @@ describe('user-services', () => {
       expect(mock.post.mock.calls[0][0]).toBe('/addCourseModule');
       expect(formData.get('courseId')).toBe('c1');
       expect(formData.get('moduleName')).toBe('M1');
+      expect(formData.get('orderIdx')).toBe('7');
       expect(formData.get('coursemodulethumbnail')).toBe(thumb);
     });
 
@@ -316,12 +319,14 @@ describe('user-services', () => {
         moduleId: 'm1',
         taskName: 'T1',
         taskDescription: 'desc',
+        orderIdx: 2,
         file
       } as any);
 
       const [, formData] = mock.post.mock.calls[0];
       expect(formData.get('moduleId')).toBe('m1');
       expect(formData.get('taskName')).toBe('T1');
+      expect(formData.get('orderIdx')).toBe('2');
       expect(formData.get('taskFile')).toBe(file);
       expect(formData.has('link')).toBe(false);
     });
@@ -386,13 +391,31 @@ describe('user-services', () => {
         id: 'm1',
         moduleName: 'New',
         moduleDescription: 'desc',
-        status: 'draft'
+        status: 'draft',
+        orderIdx: 3
       } as any);
 
       expect(mock.put.mock.calls[0][0]).toBe('/updatecoursemodule');
       const [, formData] = mock.put.mock.calls[0];
       expect(formData.get('id')).toBe('m1');
       expect(formData.get('status')).toBe('draft');
+      expect(formData.get('orderIdx')).toBe('3');
+    });
+
+    it('reorderCourseModulesContentWriter puts the reordered modules', async () => {
+      mock.put.mockResolvedValue({ data: { success: true } });
+      const payload = {
+        courseId: 'c1',
+        modules: [
+          { moduleId: 'm2', orderIdx: 1 },
+          { moduleId: 'm1', orderIdx: 2 }
+        ]
+      };
+
+      const result = await reorderCourseModulesContentWriter(payload);
+
+      expect(mock.put).toHaveBeenCalledWith('/reordermodules', payload);
+      expect(result).toEqual({ success: true });
     });
 
     it('updateCourseTaskContentWriter puts the updated task', async () => {

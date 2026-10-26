@@ -44,6 +44,7 @@ interface AddTaskModalProps {
   moduleId: string;
   courseId: string;
   initialMode?: AddTaskContentMode;
+  orderIdx?: number;
 }
 
 type ContentMode = AddTaskContentMode;
@@ -139,7 +140,8 @@ const AddTaskModal = ({
   onClose,
   moduleId,
   courseId,
-  initialMode
+  initialMode,
+  orderIdx = 1
 }: AddTaskModalProps) => {
   const { organization = '' } = useParams();
   const navigate = useNavigate();
@@ -273,6 +275,7 @@ const AddTaskModal = ({
         taskName: taskName.trim(),
         taskDescription: taskDescription.trim(),
         type: mode === 'CODING' ? 'CODE' : mode,
+        orderIdx,
         link: mode === 'LINK' ? link.trim() : undefined,
         file: mode === 'FILE' ? file : undefined,
         ...(mode === 'FILE'

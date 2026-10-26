@@ -30,7 +30,8 @@ import {
   IconChevronDown,
   IconChevronUp,
   IconCornerDownRight,
-  IconArchive
+  IconArchive,
+  IconArrowsSort
 } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 import { useMediaQuery } from '@mantine/hooks';
@@ -43,11 +44,16 @@ import PremiumLoader from '@components/common/loaders/PremiumLoader';
 import DataView from '@components/common/loaders/DataView';
 import { Course, Module, Task } from '@interfaces/contentwriter';
 import { commonUrls } from '@utils/common/constants';
+import {
+  getNextOrderIdx,
+  sortByOrderIdx
+} from '@utils/common/course-order';
 import AddModuleModal from './AddModuleModal';
 import AddTaskModal from './AddTaskModal';
 import EditCourseModal from './EditCourseModal';
 import EditModuleModal from './EditModuleModal';
 import EditTaskModal from './EditTaskModal';
+import ReorderModulesModal from './ReorderModulesModal';
 import CourseThumbnail from '../content-writer/CourseThumbnail';
 import {
   readTaskPopupState,
@@ -96,6 +102,7 @@ const CourseDetails = () => {
   const [expandedTaskModules, setExpandedTaskModules] = useState<
     Record<string, boolean>
   >({});
+  const [reorderOpen, setReorderOpen] = useState(false);
 
   const [searchParams] = useSearchParams();
 
@@ -129,11 +136,14 @@ const CourseDetails = () => {
     }));
   };
 
-  const modules: Module[] = course?.modules || [];
+  const modules: Module[] = sortByOrderIdx(course?.modules);
   const totalTasks = modules.reduce(
     (sum, m) => sum + (m.tasks?.length || 0),
     0
   );
+
+  const getModuleTasks = (module?: Module): Task[] =>
+    module ? sortByOrderIdx(module.tasks) : [];
 
   const handleViewContent = (task: Task) => {
     window.open(getCourseTaskContentUrl(task._id), '_blank', 'noopener');
@@ -298,6 +308,18 @@ const CourseDetails = () => {
                   >
                     {course?.status || 'Draft'}
                   </Badge>
+                  {modules.length >= 2 && (
+                    <CommonButton
+                      leftSection={<IconArrowsSort size={14} />}
+                      variant='filled'
+                      color='indigo'
+                      onClick={() => setReorderOpen(true)}
+                      size='xs'
+                      aria-label='Reorder modules'
+                    >
+                      Reorder
+                    </CommonButton>
+                  )}
                   <CommonButton
                     leftSection={<IconEdit size={14} />}
                     onClick={() => setCourseEditOpen(true)}
@@ -503,6 +525,22 @@ const CourseDetails = () => {
             <Stack gap='lg'>
               {modules.map((module, index) => {
                 const isExpanded = Boolean(expandedModules[module._id]);
+                const moduleTasks = getModuleTasks(module);
+
+                const renderTaskRow = (task: Task, taskIndex: number) => (
+                  <TaskRow
+                    key={task._id}
+                    task={task}
+                    moduleIndex={index + 1}
+                    taskIndex={taskIndex}
+                    onView={() => handleViewContent(task)}
+                    onEdit={() => setTaskToEdit(task)}
+                    onManageQuestions={() => handleManageQuizQuestions(task)}
+                    borderColor={currentThemeConfig.borderColor}
+                    cardBg={currentThemeConfig.cardBackground}
+                    textColor={currentThemeConfig.color}
+                  />
+                );
 
                 return (
                   <Card
@@ -593,7 +631,7 @@ const CourseDetails = () => {
                               size='sm'
                               leftSection={<IconListCheck size={12} />}
                             >
-                              {module.tasks?.length || 0} items
+                              {moduleTasks.length} items
                             </Badge>
                             <Tooltip label='Edit module' withArrow>
                               <ActionIcon
@@ -682,7 +720,7 @@ const CourseDetails = () => {
                                   style={{ letterSpacing: '0.05em' }}
                                 >
                                   Tasks in this Module (
-                                  {module.tasks?.length || 0})
+                                  {moduleTasks.length})
                                 </Text>
                               </Group>
 
@@ -701,37 +739,20 @@ const CourseDetails = () => {
                               </Group>
                             </Group>
 
-                            {module.tasks?.length ? (
+                            {moduleTasks.length ? (
                               <Stack gap='sm'>
                                 <SimpleGrid
                                   cols={{ base: 1, sm: 2, md: 3 }}
                                   spacing='sm'
                                 >
-                                  {module.tasks
+                                  {moduleTasks
                                     .slice(0, 6)
-                                    .map((task, taskIndex) => (
-                                      <TaskRow
-                                        key={task._id}
-                                        task={task}
-                                        moduleIndex={index + 1}
-                                        taskIndex={taskIndex + 1}
-                                        onView={() => handleViewContent(task)}
-                                        onEdit={() => setTaskToEdit(task)}
-                                        onManageQuestions={() =>
-                                          handleManageQuizQuestions(task)
-                                        }
-                                        borderColor={
-                                          currentThemeConfig.borderColor
-                                        }
-                                        cardBg={
-                                          currentThemeConfig.cardBackground
-                                        }
-                                        textColor={currentThemeConfig.color}
-                                      />
-                                    ))}
+                                    .map((task, taskIndex) =>
+                                      renderTaskRow(task, taskIndex + 1)
+                                    )}
                                 </SimpleGrid>
 
-                                {module.tasks.length > 6 && (
+                                {moduleTasks.length > 6 && (
                                   <>
                                     <Collapse
                                       in={Boolean(
@@ -746,32 +767,11 @@ const CourseDetails = () => {
                                         spacing='sm'
                                         pt='xs'
                                       >
-                                        {module.tasks
+                                        {moduleTasks
                                           .slice(6)
-                                          .map((task, taskIndex) => (
-                                            <TaskRow
-                                              key={task._id}
-                                              task={task}
-                                              moduleIndex={index + 1}
-                                              taskIndex={taskIndex + 7}
-                                              onView={() =>
-                                                handleViewContent(task)
-                                              }
-                                              onEdit={() => setTaskToEdit(task)}
-                                              onManageQuestions={() =>
-                                                handleManageQuizQuestions(task)
-                                              }
-                                              borderColor={
-                                                currentThemeConfig.borderColor
-                                              }
-                                              cardBg={
-                                                currentThemeConfig.cardBackground
-                                              }
-                                              textColor={
-                                                currentThemeConfig.color
-                                              }
-                                            />
-                                          ))}
+                                          .map((task, taskIndex) =>
+                                            renderTaskRow(task, taskIndex + 7)
+                                          )}
                                       </SimpleGrid>
                                     </Collapse>
 
@@ -792,7 +792,7 @@ const CourseDetails = () => {
                                       >
                                         {expandedTaskModules[module._id]
                                           ? 'Show Less Tasks'
-                                          : `Show More Tasks (+${module.tasks.length - 6} more)`}
+                                          : `Show More Tasks (+${moduleTasks.length - 6} more)`}
                                       </CommonButton>
                                     </Group>
                                   </>
@@ -831,6 +831,7 @@ const CourseDetails = () => {
         opened={moduleModalOpen}
         onClose={() => setModuleModalOpen(false)}
         courseId={id}
+        orderIdx={getNextOrderIdx(modules)}
       />
       <AddTaskModal
         opened={!!taskModalModuleId}
@@ -838,6 +839,9 @@ const CourseDetails = () => {
         moduleId={taskModalModuleId || ''}
         courseId={id}
         initialMode={taskModalInitialMode}
+        orderIdx={getNextOrderIdx(
+          getModuleTasks(modules.find(m => m._id === taskModalModuleId))
+        )}
       />
       <EditCourseModal
         opened={courseEditOpen}
@@ -855,6 +859,12 @@ const CourseDetails = () => {
         onClose={() => setTaskToEdit(null)}
         task={taskToEdit || undefined}
         courseId={id}
+      />
+      <ReorderModulesModal
+        opened={reorderOpen}
+        onClose={() => setReorderOpen(false)}
+        courseId={id}
+        modules={modules}
       />
     </Container>
   );
@@ -970,17 +980,19 @@ const TaskRow = ({
               {getStatusBadge()}
             </Group>
 
-            <Tooltip label='Edit task' withArrow>
-              <ActionIcon
-                variant='subtle'
-                color='gray'
-                size='sm'
-                aria-label={`Edit ${task.taskName}`}
-                onClick={onEdit}
-              >
-                <IconEdit size={14} />
-              </ActionIcon>
-            </Tooltip>
+            <Group gap={2} wrap='nowrap' style={{ flexShrink: 0 }}>
+              <Tooltip label='Edit task' withArrow>
+                <ActionIcon
+                  variant='subtle'
+                  color='gray'
+                  size='sm'
+                  aria-label={`Edit ${task.taskName}`}
+                  onClick={onEdit}
+                >
+                  <IconEdit size={14} />
+                </ActionIcon>
+              </Tooltip>
+            </Group>
           </Group>
 
           <Group

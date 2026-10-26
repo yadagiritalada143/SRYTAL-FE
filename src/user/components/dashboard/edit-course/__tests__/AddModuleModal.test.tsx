@@ -176,6 +176,7 @@ describe('AddModuleModal', () => {
         courseId: 'c1',
         moduleName: 'React Basics',
         moduleDescription: 'Core concepts',
+        orderIdx: 1,
         thumbnail: null
       });
 

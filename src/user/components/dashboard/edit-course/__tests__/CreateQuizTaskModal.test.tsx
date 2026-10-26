@@ -171,6 +171,7 @@ describe('CreateQuizTaskModal', () => {
         taskName: 'Frontend Mastery Quiz',
         taskDescription: 'Covers core concepts',
         type: 'QUIZ',
+        orderIdx: 1,
         thumbnail: null
       });
       expect(mockShowSuccessToast).toHaveBeenCalledWith(

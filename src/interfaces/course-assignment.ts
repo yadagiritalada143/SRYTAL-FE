@@ -23,6 +23,7 @@ export interface AssignedTask {
   acknowledgedAt?: string | null;
   isCompleted: boolean;
   completedAt?: string | null;
+  orderIdx?: number;
 }
 
 export interface CodingLanguageOption {
@@ -96,6 +97,8 @@ export interface AssignedModule {
   tasks: AssignedTask[];
   totalTasks: number;
   completedTasks: number;
+  // 1-based position of the module inside its course.
+  orderIdx?: number;
 }
 
 export interface AssignedCourse {

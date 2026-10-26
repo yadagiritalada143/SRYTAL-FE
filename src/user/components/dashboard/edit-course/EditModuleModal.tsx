@@ -84,6 +84,7 @@ const EditModuleModal = ({
         id: module._id,
         moduleName: moduleName.trim(),
         moduleDescription: moduleDescription.trim(),
+        orderIdx: module.orderIdx ?? 1,
         thumbnail,
         status
       });

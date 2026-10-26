@@ -25,6 +25,7 @@ import { useCustomToast } from '@utils/common/toast';
 import { getErrorMessage } from '@utils/common/get-error-message';
 import { Course } from '@interfaces/contentwriter';
 import { useAddCourseTask } from '@hooks/mutations/useUserMutations';
+import { getNextOrderIdx } from '@utils/common/course-order';
 
 export interface CreateQuizTaskModalProps {
   opened: boolean;
@@ -156,20 +157,22 @@ export const CreateQuizTaskModal: React.FC<CreateQuizTaskModalProps> = ({
 
     setSubmittingAction(openQuestionsBuilder ? 'createAndQuestions' : 'create');
 
+    const selectedModule = selectedCourse?.modules?.find(
+      m => m._id === moduleId
+    );
+
     try {
       const response = await addTask({
         moduleId,
         taskName: taskName.trim(),
         taskDescription: taskDescription.trim(),
         type: 'QUIZ',
+        orderIdx: getNextOrderIdx(selectedModule?.tasks),
         thumbnail: null
       });
 
       showSuccessToast(response?.message || 'Quiz task created successfully!');
 
-      const selectedModule = selectedCourse?.modules?.find(
-        m => m._id === moduleId
-      );
       const createdTaskId =
         response?.task?._id || response?.data?._id || response?._id || '';
 

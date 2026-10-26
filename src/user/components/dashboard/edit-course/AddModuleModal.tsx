@@ -11,9 +11,15 @@ interface AddModuleModalProps {
   opened: boolean;
   onClose: () => void;
   courseId: string;
+  orderIdx?: number;
 }
 
-const AddModuleModal = ({ opened, onClose, courseId }: AddModuleModalProps) => {
+const AddModuleModal = ({
+  opened,
+  onClose,
+  courseId,
+  orderIdx = 1
+}: AddModuleModalProps) => {
   const [moduleName, setModuleName] = useState('');
   const [moduleNameTouched, setModuleNameTouched] = useState(false);
   const [moduleDescription, setModuleDescription] = useState('');
@@ -48,6 +54,7 @@ const AddModuleModal = ({ opened, onClose, courseId }: AddModuleModalProps) => {
         courseId,
         moduleName: moduleName.trim(),
         moduleDescription: moduleDescription.trim(),
+        orderIdx,
         thumbnail
       });
       showSuccessToast('Module added successfully!');
