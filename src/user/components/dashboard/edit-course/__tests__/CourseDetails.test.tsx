@@ -3,6 +3,7 @@ import '@testing-library/jest-dom';
 import { MantineProvider } from '@mantine/core';
 import { BrowserRouter } from 'react-router-dom';
 import CourseDetails from '../CourseDetails';
+import { saveTaskPopupState } from '../task-popup-state';
 
 jest.mock('@constants', () => ({
   ROLES: { ADMIN: 'admin' },
@@ -14,7 +15,7 @@ let mockIsLoading = false;
 
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
-  useParams: () => ({ id: 'c1' }),
+  useParams: () => ({ id: 'c1', organization: 'acme' }),
   useNavigate: () => mockNavigate
 }));
 
@@ -25,9 +26,26 @@ jest.mock('@hooks/queries/useUserQueries', () => ({
   })
 }));
 
+jest.mock('@tanstack/react-query', () => ({
+  ...jest.requireActual('@tanstack/react-query'),
+  useQueryClient: () => ({
+    invalidateQueries: jest.fn()
+  })
+}));
+
+const mockShowSuccessToast = jest.fn();
+const mockShowErrorToast = jest.fn();
+
+jest.mock('@utils/common/toast', () => ({
+  useCustomToast: () => ({
+    showSuccessToast: mockShowSuccessToast,
+    showErrorToast: mockShowErrorToast
+  })
+}));
+
 jest.mock('@services/user-services', () => ({
   getCourseTaskContentUrl: (taskId: string) =>
-    `http://localhost:3000/contentwriter/getCourseTaskContent/${taskId}?auth_token=fake`
+    `http://localhost:3000/getCourseTaskContent/${taskId}?auth_token=fake`
 }));
 
 jest.mock('@hooks/use-app-theme', () => ({
@@ -48,12 +66,23 @@ jest.mock('@mantine/hooks', () => ({
 }));
 
 jest.mock('@components/common/button/CommonButton', () => ({
-  CommonButton: ({ children, onClick, disabled, ...props }: any) => (
+  CommonButton: ({
+    children,
+    onClick,
+    disabled,
+    loading,
+    variant,
+    color,
+    'aria-label': ariaLabel
+  }: any) => (
     <button
       type='button'
       onClick={onClick}
       disabled={disabled}
-      data-loading={props.loading}
+      data-loading={loading}
+      data-variant={variant}
+      data-color={color}
+      aria-label={ariaLabel}
     >
       {children}
     </button>
@@ -72,6 +101,20 @@ jest.mock('@components/common/loaders/DataView', () => (props: any) => (
   </div>
 ));
 
+jest.mock('@mantine/core', () => {
+  const actual = jest.requireActual('@mantine/core');
+  return {
+    ...actual,
+    Modal: ({ opened, children, title }: any) =>
+      opened ? (
+        <div data-testid='coding-question-modal'>
+          <div>{title}</div>
+          {children}
+        </div>
+      ) : null
+  };
+});
+
 jest.mock('../../content-writer/CourseThumbnail', () => (props: any) => (
   <span data-testid='course-thumbnail' aria-label={props.name} />
 ));
@@ -87,6 +130,7 @@ jest.mock('../AddTaskModal', () => (props: any) => (
     data-testid='add-task-modal'
     data-opened={String(!!props.opened)}
     data-module-id={props.moduleId}
+    data-initial-mode={props.initialMode}
   >
     {props.opened && <button onClick={props.onClose}>add-task-close</button>}
   </div>
@@ -119,6 +163,29 @@ jest.mock('../EditTaskModal', () => (props: any) => (
     data-task-id={props.task?._id}
   >
     {props.opened && <button onClick={props.onClose}>edit-task-close</button>}
+  </div>
+));
+
+jest.mock('../ReorderModulesModal', () => (props: any) => (
+  <div
+    data-testid='reorder-modules-modal'
+    data-opened={String(!!props.opened)}
+    data-course-id={props.courseId}
+    data-module-count={String(props.modules?.length ?? 0)}
+  >
+    {props.opened && <button onClick={props.onClose}>reorder-close</button>}
+  </div>
+));
+
+jest.mock('../ReorderTasksModal', () => (props: any) => (
+  <div
+    data-testid='reorder-tasks-modal'
+    data-opened={String(!!props.opened)}
+    data-course-id={props.courseId}
+    data-module-id={props.module?._id}
+    data-task-count={String(props.module?.tasks?.length ?? 0)}
+  >
+    {props.opened && <button onClick={props.onClose}>reorder-tasks-close</button>}
   </div>
 ));
 
@@ -201,6 +268,7 @@ const renderPage = () => {
 describe('CourseDetails', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    sessionStorage.clear();
     mockCourse = makeCourse();
     mockIsLoading = false;
   });
@@ -243,16 +311,32 @@ describe('CourseDetails', () => {
         screen.getByRole('button', { name: 'Edit Course' })
       ).toBeInTheDocument();
     });
+
+    it('shows the Reorder button beside Edit Course when there are two modules', () => {
+      renderPage();
+      expect(
+        screen.getByRole('button', { name: 'Reorder modules' })
+      ).toBeInTheDocument();
+    });
+
+    it('hides the Reorder button when there is only one module', () => {
+      mockCourse = makeCourse({ modules: [makeCourse().modules[0]] });
+      renderPage();
+      expect(
+        screen.queryByRole('button', { name: 'Reorder modules' })
+      ).not.toBeInTheDocument();
+    });
   });
 
   describe('Stats', () => {
-    it('shows module count, content item count and status', () => {
+    it('shows total and archived module and task counts', () => {
       renderPage();
-      expect(screen.getAllByText('Modules').length).toBeGreaterThanOrEqual(1);
+      expect(screen.getByText('Total Modules')).toBeInTheDocument();
+      expect(screen.getByText('Archived Modules')).toBeInTheDocument();
+      expect(screen.getByText('Total Tasks')).toBeInTheDocument();
+      expect(screen.getByText('Archived Tasks')).toBeInTheDocument();
       expect(screen.getByText('2')).toBeInTheDocument();
-      expect(screen.getByText('Content Items')).toBeInTheDocument();
       expect(screen.getByText('3')).toBeInTheDocument();
-      expect(screen.getByText('Status')).toBeInTheDocument();
     });
   });
 
@@ -300,6 +384,36 @@ describe('CourseDetails', () => {
       expect(archivedBadges.length).toBeGreaterThanOrEqual(1);
     });
 
+    it('shows a Coding badge for coding tasks', () => {
+      mockCourse = makeCourse({
+        modules: [
+          {
+            _id: 'm9',
+            moduleName: 'Coding Module',
+            moduleDescription: '',
+            status: 'ACTIVE',
+            tasks: [
+              {
+                _id: 't9',
+                taskName: 'FizzBuzz',
+                taskDescription: '',
+                status: 'ACTIVE',
+                type: 'LINK',
+                content: '',
+                isCoding: true,
+                question: 'Return fizz for multiples of three.',
+                thumbnailUrl: '',
+                thumbnail: ''
+              }
+            ]
+          }
+        ]
+      });
+      renderPage();
+      expect(screen.getByText('FizzBuzz')).toBeInTheDocument();
+      expect(screen.getByText('Coding')).toBeInTheDocument();
+    });
+
     it('shows task descriptions in task rows', () => {
       renderPage();
       expect(screen.getByText('Watch the intro')).toBeInTheDocument();
@@ -312,7 +426,7 @@ describe('CourseDetails', () => {
       expect(screen.getByText(/No modules yet/)).toBeInTheDocument();
     });
 
-    it('shows "No content in this module yet." for empty modules', () => {
+    it('shows "No tasks in this module yet." for empty modules', () => {
       mockCourse = makeCourse({
         modules: [
           {
@@ -326,8 +440,27 @@ describe('CourseDetails', () => {
       });
       renderPage();
       expect(
-        screen.getByText('No content in this module yet.')
+        screen.getByText('No tasks in this module yet.')
       ).toBeInTheDocument();
+    });
+
+    it('shows a highlighted task Reorder button when a module has two tasks', () => {
+      renderPage();
+      fireEvent.click(screen.getByRole('button', { name: 'Fundamentals' }));
+      const reorderButton = screen.getByRole('button', {
+        name: 'Reorder tasks in Fundamentals'
+      });
+      expect(reorderButton).toBeInTheDocument();
+      expect(reorderButton).toHaveAttribute('data-variant', 'filled');
+      expect(reorderButton).toHaveAttribute('data-color', 'indigo');
+    });
+
+    it('hides the task Reorder button when a module has fewer than two tasks', () => {
+      renderPage();
+      fireEvent.click(screen.getByRole('button', { name: 'Advanced' }));
+      expect(
+        screen.queryByRole('button', { name: 'Reorder tasks in Advanced' })
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -354,6 +487,47 @@ describe('CourseDetails', () => {
       );
     });
 
+    it('opens the Reorder Modules modal when Reorder is clicked', () => {
+      renderPage();
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Reorder modules' })
+      );
+      expect(screen.getByTestId('reorder-modules-modal')).toHaveAttribute(
+        'data-opened',
+        'true'
+      );
+      expect(screen.getByTestId('reorder-modules-modal')).toHaveAttribute(
+        'data-course-id',
+        'c1'
+      );
+      expect(screen.getByTestId('reorder-modules-modal')).toHaveAttribute(
+        'data-module-count',
+        '2'
+      );
+    });
+
+    it('opens the Reorder Tasks modal for the module when its Reorder button is clicked', () => {
+      renderPage();
+      fireEvent.click(screen.getByRole('button', { name: 'Fundamentals' }));
+      fireEvent.click(
+        screen.getByRole('button', {
+          name: 'Reorder tasks in Fundamentals'
+        })
+      );
+      expect(screen.getByTestId('reorder-tasks-modal')).toHaveAttribute(
+        'data-opened',
+        'true'
+      );
+      expect(screen.getByTestId('reorder-tasks-modal')).toHaveAttribute(
+        'data-module-id',
+        'm1'
+      );
+      expect(screen.getByTestId('reorder-tasks-modal')).toHaveAttribute(
+        'data-task-count',
+        '2'
+      );
+    });
+
     it('opens the Edit Module modal when the edit icon for a module is clicked', () => {
       renderPage();
       fireEvent.click(screen.getByLabelText('Edit Fundamentals'));
@@ -367,9 +541,9 @@ describe('CourseDetails', () => {
       );
     });
 
-    it('opens the Add Task modal with the correct module id when Add Content is clicked', () => {
+    it('opens the Add Task modal with the correct module id when Add Task is clicked', () => {
       renderPage();
-      const addContentButtons = screen.getAllByText('Add Content');
+      const addContentButtons = screen.getAllByText('Add Task');
       fireEvent.click(addContentButtons[0]);
       expect(screen.getByTestId('add-task-modal')).toHaveAttribute(
         'data-opened',
@@ -378,6 +552,34 @@ describe('CourseDetails', () => {
       expect(screen.getByTestId('add-task-modal')).toHaveAttribute(
         'data-module-id',
         'm1'
+      );
+    });
+
+    it('provides a clean module header with Add Task and without redundant Add Quiz button', () => {
+      renderPage();
+      expect(screen.queryByText('Add Quiz')).not.toBeInTheDocument();
+      expect(screen.getAllByText('Add Task').length).toBeGreaterThan(0);
+    });
+
+    it('reopens the Add Task modal for the stored module after managing languages', () => {
+      saveTaskPopupState({ courseId: 'c1', moduleId: 'm2' });
+      renderPage();
+      expect(screen.getByTestId('add-task-modal')).toHaveAttribute(
+        'data-opened',
+        'true'
+      );
+      expect(screen.getByTestId('add-task-modal')).toHaveAttribute(
+        'data-module-id',
+        'm2'
+      );
+    });
+
+    it('does not reopen the Add Task modal when the pending course does not match', () => {
+      saveTaskPopupState({ courseId: 'other-course', moduleId: 'm1' });
+      renderPage();
+      expect(screen.getByTestId('add-task-modal')).toHaveAttribute(
+        'data-opened',
+        'false'
       );
     });
 
@@ -406,25 +608,154 @@ describe('CourseDetails', () => {
       fireEvent.click(openButton);
 
       expect(openSpy).toHaveBeenCalledWith(
-        'http://localhost:3000/contentwriter/getCourseTaskContent/t1?auth_token=fake',
+        'http://localhost:3000/getCourseTaskContent/t1?auth_token=fake',
         '_blank',
         'noopener'
       );
 
       openSpy.mockRestore();
     });
+
+    it('does not show an Open action for coding tasks', () => {
+      const openSpy = jest.spyOn(window, 'open').mockImplementation(() => null);
+      mockCourse = makeCourse({
+        modules: [
+          {
+            _id: 'm9',
+            moduleName: 'Coding Module',
+            moduleDescription: '',
+            status: 'ACTIVE',
+            tasks: [
+              {
+                _id: 't9',
+                taskName: 'FizzBuzz',
+                taskDescription: 'Return fizz for multiples of three.',
+                status: 'ACTIVE',
+                type: 'CODE',
+                content: '',
+                isCoding: true,
+                question: 'Return fizz for multiples of three.',
+                thumbnailUrl: '',
+                thumbnail: ''
+              }
+            ]
+          }
+        ]
+      });
+      renderPage();
+
+      expect(screen.queryByText('Open')).not.toBeInTheDocument();
+      expect(openSpy).not.toHaveBeenCalled();
+
+      openSpy.mockRestore();
+    });
+
+    it('shows a Manage Questions action for quiz tasks instead of Open', () => {
+      mockCourse = makeCourse({
+        modules: [
+          {
+            _id: 'm1',
+            moduleName: 'Quiz Module',
+            moduleDescription: '',
+            status: 'ACTIVE',
+            tasks: [
+              {
+                _id: 'q1',
+                taskName: 'Colour quiz',
+                taskDescription: 'Pick a colour.',
+                status: 'ACTIVE',
+                type: 'QUIZ',
+                thumbnailUrl: '',
+                thumbnail: ''
+              }
+            ]
+          }
+        ]
+      });
+      renderPage();
+
+      expect(screen.queryByText('Open')).not.toBeInTheDocument();
+      expect(screen.getByText('Manage Questions')).toBeInTheDocument();
+    });
+
+    it('navigates to the quiz editor with the task and course ids', () => {
+      mockCourse = makeCourse({
+        modules: [
+          {
+            _id: 'm1',
+            moduleName: 'Quiz Module',
+            moduleDescription: '',
+            status: 'ACTIVE',
+            tasks: [
+              {
+                _id: 'q1',
+                taskName: 'Colour quiz',
+                taskDescription: 'Pick a colour.',
+                status: 'ACTIVE',
+                type: 'QUIZ',
+                thumbnailUrl: '',
+                thumbnail: ''
+              }
+            ]
+          }
+        ]
+      });
+      renderPage();
+
+      fireEvent.click(
+        screen
+          .getByText('Manage Questions')
+          .closest('button') as HTMLButtonElement
+      );
+
+      const params = new URLSearchParams({
+        taskId: 'q1',
+        courseId: 'c1',
+        moduleId: '',
+        taskName: 'Colour quiz'
+      });
+      expect(mockNavigate).toHaveBeenCalledWith(
+        `/acme/employee/dashboard/quiz-questions?${params.toString()}`
+      );
+    });
   });
 
   describe('Navigation', () => {
-    it('navigates back when the back arrow is clicked', () => {
+    it('navigates to the courses list when the back button is clicked', () => {
+      window.history.pushState({}, '', '/acme/employee/dashboard/course/c1');
       renderPage();
-      const svg = document.querySelector(
-        '.tabler-icon-arrow-left'
-      ) as HTMLElement;
-      const button = svg?.closest('button');
+      const button = screen.getByRole('button', { name: /back/i });
       expect(button).toBeTruthy();
-      fireEvent.click(button as HTMLButtonElement);
-      expect(mockNavigate).toHaveBeenCalledWith(-1);
+      fireEvent.click(button);
+      expect(mockNavigate).toHaveBeenCalledWith(
+        '/acme/employee/dashboard/content-writer'
+      );
+    });
+
+    it('navigates to quizzes if from=quizzes is present in searchParams', () => {
+      window.history.pushState(
+        {},
+        '',
+        '/acme/employee/dashboard/course/c1?from=quizzes'
+      );
+      renderPage();
+      const button = screen.getByRole('button', { name: /back/i });
+      fireEvent.click(button);
+      expect(mockNavigate).toHaveBeenCalledWith(
+        '/acme/employee/dashboard/quizzes'
+      );
+    });
+
+    it('navigates to custom from path if from is present in searchParams', () => {
+      window.history.pushState(
+        {},
+        '',
+        '/acme/employee/dashboard/course/c1?from=/custom/path'
+      );
+      renderPage();
+      const button = screen.getByRole('button', { name: /back/i });
+      fireEvent.click(button);
+      expect(mockNavigate).toHaveBeenCalledWith('/custom/path');
     });
   });
 });

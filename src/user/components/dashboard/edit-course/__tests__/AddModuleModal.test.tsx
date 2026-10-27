@@ -34,6 +34,19 @@ jest.mock('@components/common/button/CommonButton', () => ({
   )
 }));
 
+jest.mock('../DescriptionEditor', () => (props: any) => (
+  <div>
+    <label>{props.label}</label>
+    <input
+      aria-label={props.label}
+      value={props.value}
+      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+        props.onChange(e.target.value)
+      }
+    />
+  </div>
+));
+
 jest.mock('@mantine/core', () => {
   const actual = jest.requireActual('@mantine/core');
   return {
@@ -114,6 +127,32 @@ describe('AddModuleModal', () => {
         screen.getByRole('button', { name: 'Add Module' })
       ).not.toBeDisabled();
     });
+
+    it('shows a validation message when the empty name field loses focus', () => {
+      renderModal();
+      expect(
+        screen.queryByText('Module Name is required')
+      ).not.toBeInTheDocument();
+
+      fireEvent.blur(screen.getByPlaceholderText('Enter module name'));
+
+      expect(screen.getByText('Module Name is required')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Add Module' })).toBeDisabled();
+    });
+
+    it('clears the validation message once a name is typed', () => {
+      renderModal();
+      fireEvent.blur(screen.getByPlaceholderText('Enter module name'));
+      expect(screen.getByText('Module Name is required')).toBeInTheDocument();
+
+      fireEvent.change(screen.getByPlaceholderText('Enter module name'), {
+        target: { value: 'My Module' }
+      });
+
+      expect(
+        screen.queryByText('Module Name is required')
+      ).not.toBeInTheDocument();
+    });
   });
 
   describe('Submit', () => {
@@ -123,10 +162,9 @@ describe('AddModuleModal', () => {
       fireEvent.change(screen.getByPlaceholderText('Enter module name'), {
         target: { value: 'React Basics' }
       });
-      fireEvent.change(
-        screen.getByPlaceholderText('What does this module cover?'),
-        { target: { value: 'Core concepts' } }
-      );
+      fireEvent.change(screen.getByLabelText('Module Description'), {
+        target: { value: 'Core concepts' }
+      });
 
       fireEvent.click(screen.getByRole('button', { name: 'Add Module' }));
 
@@ -138,6 +176,7 @@ describe('AddModuleModal', () => {
         courseId: 'c1',
         moduleName: 'React Basics',
         moduleDescription: 'Core concepts',
+        orderIdx: 1,
         thumbnail: null
       });
 

@@ -18,7 +18,7 @@ jest.mock('@hooks/queries/useAdminQueries', () => ({
     data: mockEmployees,
     isLoading: mockEmployeeLoading
   }),
-  useGetAllCoursesByAdmin: () => ({
+  useGetAllActiveCoursesByAdmin: () => ({
     data: mockCourses,
     isLoading: mockCoursesLoading
   }),

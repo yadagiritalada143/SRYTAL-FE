@@ -62,6 +62,18 @@ const EmployeeCoursePortal = lazy(
 const CoursePlayer = lazy(
   () => import('@user/components/dashboard/course-portal/CoursePlayer')
 );
+const CodingTaskPage = lazy(
+  () => import('@user/components/dashboard/course-portal/CodingTaskPage')
+);
+const ProgrammingLanguagesTable = lazy(
+  () => import('@admin/components/dashboard/settings/ProgrammingLanguagesTable')
+);
+const QuizQuestionsPage = lazy(
+  () => import('@user/components/dashboard/edit-course/QuizQuestionsPage')
+);
+const QuizSettingsTab = lazy(
+  () => import('@admin/components/dashboard/settings/QuizSettingsTab')
+);
 
 // Common components
 const Dashboard = lazy(() => import('@components/common/dashboard/dashboard'));
@@ -237,22 +249,31 @@ const EmployeeRoutes = () => {
           })
         },
         Button: {
-          styles: () => ({
-            root: {
-              backgroundColor: currentThemeConfig.button.color,
-              color: currentThemeConfig.button.textColor,
-              borderColor: currentThemeConfig.borderColor,
-              transition:
-                'background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out',
-              '&:hover': {
-                backgroundColor:
-                  currentThemeConfig.button.hoverColor ||
-                  currentThemeConfig.button.color,
-                transform: 'translateY(-1px)',
-                transition: 'all 0.2s ease-in-out'
+          styles: (_theme, props) => {
+            const isDisabled =
+              Boolean(props?.disabled || props?.['data-disabled']) &&
+              !props?.loading;
+            return {
+              root: {
+                ...(isDisabled
+                  ? {}
+                  : {
+                      backgroundColor: currentThemeConfig.button.color,
+                      color: currentThemeConfig.button.textColor,
+                      borderColor: currentThemeConfig.borderColor
+                    }),
+                transition:
+                  'background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out',
+                '&:hover': {
+                  backgroundColor:
+                    currentThemeConfig.button.hoverColor ||
+                    currentThemeConfig.button.color,
+                  transform: 'translateY(-1px)',
+                  transition: 'all 0.2s ease-in-out'
+                }
               }
-            }
-          })
+            };
+          }
         },
         TextInput: {
           styles: () => ({
@@ -565,6 +586,28 @@ const EmployeeRoutes = () => {
                   element={<div>{<UpdateMenteeTasks />}</div>}
                 />
                 <Route path='content-writer' element={<WriterDashboard />} />
+                <Route element={<ContentWriterProtectedRoutes />}>
+                  <Route
+                    path='content-writer/programming-languages'
+                    element={<ProgrammingLanguagesTable showBackButton />}
+                  />
+                  <Route
+                    path='quiz-questions'
+                    element={<QuizQuestionsPage />}
+                  />
+                  <Route
+                    path='quizzes'
+                    element={<QuizSettingsTab showBackButton />}
+                  />
+                  <Route
+                    path='content-writer/quizzes'
+                    element={<QuizSettingsTab showBackButton />}
+                  />
+                  <Route
+                    path='content-writer/quiz-questions'
+                    element={<QuizQuestionsPage />}
+                  />
+                </Route>
                 <Route path='add-course' element={<AddCourse />} />
                 <Route path='course/:id' element={<CourseDetails />} />
                 <Route
@@ -574,6 +617,10 @@ const EmployeeRoutes = () => {
                 <Route
                   path='course-assignments/:courseAssignmentId'
                   element={<CoursePlayer />}
+                />
+                <Route
+                  path='course-assignments/:courseAssignmentId/task/:taskId'
+                  element={<CodingTaskPage />}
                 />
                 <Route
                   path='reports/salary-slip'
@@ -610,6 +657,40 @@ const RecruiterProtectedRoutes = () => {
   }, [navigate, userRole, token, organizationConfig.organization_name]);
 
   if (!userRole || !token || userRole !== ROLES.RECRUITER) {
+    return null;
+  }
+
+  return <Outlet />;
+};
+
+const ContentWriterProtectedRoutes = () => {
+  const token = localStorage.getItem('token');
+  const userRole = localStorage.getItem('userRole');
+
+  const navigate = useNavigate();
+
+  const { organizationConfig } = useAppTheme();
+
+  const isAuthorized =
+    Boolean(token) &&
+    (userRole?.toLowerCase() === ROLES.CONTENT_WRITER.toLowerCase() ||
+      userRole?.toLowerCase() === 'content_writer' ||
+      userRole?.toLowerCase() === ROLES.ADMIN.toLowerCase());
+
+  useEffect(() => {
+    if (!isAuthorized) {
+      toast.error('Not authorized to access');
+      setTimeout(() => {
+        navigate(
+          `${organizationEmployeeUrls(
+            organizationConfig.organization_name
+          )}/login`
+        );
+      }, 500);
+    }
+  }, [navigate, isAuthorized, organizationConfig.organization_name]);
+
+  if (!isAuthorized) {
     return null;
   }
 

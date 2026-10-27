@@ -14,6 +14,9 @@ import {
   useGetEmployeeDashboard,
   useGetMyAssignedCourses,
   useGetMyAssignedCourse,
+  useGetCodingQuestion,
+  useGetAllQuizQuestions,
+  useGetQuizQuestion,
   useGetUserOpenRouterKey
 } from '@hooks/queries/useUserQueries';
 
@@ -28,6 +31,9 @@ jest.mock('@services/user-services', () => ({
   getEmployeeDashboard: jest.fn(),
   getMyAssignedCourses: jest.fn(),
   getMyAssignedCourseById: jest.fn(),
+  getCodingQuestion: jest.fn(),
+  getAllQuizQuestions: jest.fn(),
+  getQuizQuestionById: jest.fn(),
   getUserOpenRouterKey: jest.fn()
 }));
 
@@ -118,19 +124,23 @@ describe('useUserQueries', () => {
     it('does not fetch when enabled is false', async () => {
       const { wrapper } = createWrapper();
 
-      const { result } = renderHook(() => useGetCompanyById('co1', false), {
+      renderHook(() => useGetCompanyById('co1', false), {
         wrapper
       });
 
-      expect(userService().getCompanyDetailsByIdByRecruiter).not.toHaveBeenCalled();
+      expect(
+        userService().getCompanyDetailsByIdByRecruiter
+      ).not.toHaveBeenCalled();
     });
 
     it('does not fetch when the id is an empty string', async () => {
       const { wrapper } = createWrapper();
 
-      const { result } = renderHook(() => useGetCompanyById(''), { wrapper });
+      renderHook(() => useGetCompanyById(''), { wrapper });
 
-      expect(userService().getCompanyDetailsByIdByRecruiter).not.toHaveBeenCalled();
+      expect(
+        userService().getCompanyDetailsByIdByRecruiter
+      ).not.toHaveBeenCalled();
     });
   });
 
@@ -146,9 +156,7 @@ describe('useUserQueries', () => {
       });
 
       expect(userService().getAllPoolCandidatesByEmployee).toHaveBeenCalled();
-      await waitFor(() =>
-        expect(result.current.data).toEqual([{ id: 'c1' }])
-      );
+      await waitFor(() => expect(result.current.data).toEqual([{ id: 'c1' }]));
     });
   });
 
@@ -170,10 +178,7 @@ describe('useUserQueries', () => {
     it('does not fetch when enabled is false', async () => {
       const { wrapper } = createWrapper();
 
-      const { result } = renderHook(
-        () => useGetPoolCandidateById('c1', false),
-        { wrapper }
-      );
+      renderHook(() => useGetPoolCandidateById('c1', false), { wrapper });
 
       expect(userService().getPoolCandidateByRecruiter).not.toHaveBeenCalled();
     });
@@ -181,7 +186,7 @@ describe('useUserQueries', () => {
     it('does not fetch when the id is an empty string', async () => {
       const { wrapper } = createWrapper();
 
-      const { result } = renderHook(() => useGetPoolCandidateById(''), {
+      renderHook(() => useGetPoolCandidateById(''), {
         wrapper
       });
 
@@ -232,7 +237,9 @@ describe('useUserQueries', () => {
 
   describe('useGetCourseById', () => {
     it('fetches the course with the given id', async () => {
-      userService().getCourseByIdContentWriter.mockResolvedValue({ id: 'crs1' });
+      userService().getCourseByIdContentWriter.mockResolvedValue({
+        id: 'crs1'
+      });
       const { wrapper } = createWrapper();
 
       const { result } = renderHook(() => useGetCourseById('crs1'), {
@@ -248,7 +255,7 @@ describe('useUserQueries', () => {
     it('does not fetch when enabled is false', async () => {
       const { wrapper } = createWrapper();
 
-      const { result } = renderHook(() => useGetCourseById('crs1', false), {
+      renderHook(() => useGetCourseById('crs1', false), {
         wrapper
       });
 
@@ -258,7 +265,7 @@ describe('useUserQueries', () => {
     it('does not fetch when the id is an empty string', async () => {
       const { wrapper } = createWrapper();
 
-      const { result } = renderHook(() => useGetCourseById(''), { wrapper });
+      renderHook(() => useGetCourseById(''), { wrapper });
 
       expect(userService().getCourseByIdContentWriter).not.toHaveBeenCalled();
     });
@@ -274,9 +281,7 @@ describe('useUserQueries', () => {
       });
 
       expect(userService().getEmployeeDashboard).toHaveBeenCalled();
-      await waitFor(() =>
-        expect(result.current.data).toEqual({ hours: 120 })
-      );
+      await waitFor(() => expect(result.current.data).toEqual({ hours: 120 }));
     });
   });
 
@@ -290,9 +295,7 @@ describe('useUserQueries', () => {
       });
 
       expect(userService().getMyAssignedCourses).toHaveBeenCalled();
-      await waitFor(() =>
-        expect(result.current.data).toEqual([{ id: 'ca1' }])
-      );
+      await waitFor(() => expect(result.current.data).toEqual([{ id: 'ca1' }]));
     });
   });
 
@@ -301,24 +304,18 @@ describe('useUserQueries', () => {
       userService().getMyAssignedCourseById.mockResolvedValue({ id: 'ca1' });
       const { wrapper } = createWrapper();
 
-      const { result } = renderHook(
-        () => useGetMyAssignedCourse('ca1'),
-        { wrapper }
-      );
+      const { result } = renderHook(() => useGetMyAssignedCourse('ca1'), {
+        wrapper
+      });
 
-      expect(userService().getMyAssignedCourseById).toHaveBeenCalledWith(
-        'ca1'
-      );
+      expect(userService().getMyAssignedCourseById).toHaveBeenCalledWith('ca1');
       await waitFor(() => expect(result.current.data).toEqual({ id: 'ca1' }));
     });
 
     it('does not fetch when enabled is false', async () => {
       const { wrapper } = createWrapper();
 
-      const { result } = renderHook(
-        () => useGetMyAssignedCourse('ca1', false),
-        { wrapper }
-      );
+      renderHook(() => useGetMyAssignedCourse('ca1', false), { wrapper });
 
       expect(userService().getMyAssignedCourseById).not.toHaveBeenCalled();
     });
@@ -326,11 +323,71 @@ describe('useUserQueries', () => {
     it('does not fetch when the id is an empty string', async () => {
       const { wrapper } = createWrapper();
 
-      const { result } = renderHook(() => useGetMyAssignedCourse(''), {
+      renderHook(() => useGetMyAssignedCourse(''), {
         wrapper
       });
 
       expect(userService().getMyAssignedCourseById).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('useGetAllQuizQuestions', () => {
+    it('fetches the questions for the given task', async () => {
+      userService().getAllQuizQuestions.mockResolvedValue([{ _id: 'q1' }]);
+      const { wrapper } = createWrapper();
+
+      const { result } = renderHook(() => useGetAllQuizQuestions('task1'), {
+        wrapper
+      });
+
+      expect(userService().getAllQuizQuestions).toHaveBeenCalledWith('task1');
+      await waitFor(() => expect(result.current.data).toEqual([{ _id: 'q1' }]));
+    });
+
+    it('does not fetch when enabled is false', () => {
+      const { wrapper } = createWrapper();
+
+      renderHook(() => useGetAllQuizQuestions('task1', false), { wrapper });
+
+      expect(userService().getAllQuizQuestions).not.toHaveBeenCalled();
+    });
+
+    it('does not fetch when the task id is an empty string', () => {
+      const { wrapper } = createWrapper();
+
+      renderHook(() => useGetAllQuizQuestions(''), { wrapper });
+
+      expect(userService().getAllQuizQuestions).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('useGetQuizQuestion', () => {
+    it('fetches a single question by id', async () => {
+      userService().getQuizQuestionById.mockResolvedValue({ _id: 'q1' });
+      const { wrapper } = createWrapper();
+
+      const { result } = renderHook(() => useGetQuizQuestion('q1'), {
+        wrapper
+      });
+
+      expect(userService().getQuizQuestionById).toHaveBeenCalledWith('q1');
+      await waitFor(() => expect(result.current.data).toEqual({ _id: 'q1' }));
+    });
+
+    it('does not fetch when enabled is false', () => {
+      const { wrapper } = createWrapper();
+
+      renderHook(() => useGetQuizQuestion('q1', false), { wrapper });
+
+      expect(userService().getQuizQuestionById).not.toHaveBeenCalled();
+    });
+
+    it('does not fetch when the question id is an empty string', () => {
+      const { wrapper } = createWrapper();
+
+      renderHook(() => useGetQuizQuestion(''), { wrapper });
+
+      expect(userService().getQuizQuestionById).not.toHaveBeenCalled();
     });
   });
 
@@ -355,10 +412,7 @@ describe('useUserQueries', () => {
     it('does not fetch when enabled is false', async () => {
       const { wrapper } = createWrapper();
 
-      const { result } = renderHook(
-        () => useGetUserOpenRouterKey('u1', false),
-        { wrapper }
-      );
+      renderHook(() => useGetUserOpenRouterKey('u1', false), { wrapper });
 
       expect(userService().getUserOpenRouterKey).not.toHaveBeenCalled();
     });
@@ -382,10 +436,74 @@ describe('useUserQueries', () => {
       );
 
       const cached = queryClient.getQueryCache().findAll();
-      expect(cached.map((q) => q.queryKey)).toContainEqual([
+      expect(cached.map(q => q.queryKey)).toContainEqual([
         'userOpenRouterKey',
         'current'
       ]);
+    });
+  });
+
+  describe('useGetCodingQuestion', () => {
+    it('fetches the coding question for the task and language', async () => {
+      userService().getCodingQuestion.mockResolvedValue({
+        questionId: 'q1',
+        language: 'python',
+        languageId: 'lang-123',
+        starterCode: 'def solve():'
+      });
+      const { wrapper } = createWrapper();
+
+      const { result } = renderHook(
+        () => useGetCodingQuestion('t1', 'q1', 'lang-123'),
+        {
+          wrapper
+        }
+      );
+
+      await waitFor(() =>
+        expect(result.current.data).toEqual({
+          questionId: 'q1',
+          language: 'python',
+          languageId: 'lang-123',
+          starterCode: 'def solve():'
+        })
+      );
+      expect(userService().getCodingQuestion).toHaveBeenCalledWith(
+        't1',
+        'q1',
+        'lang-123'
+      );
+    });
+
+    it('drives the query key off taskId, questionId and languageId', async () => {
+      const { queryClient, wrapper } = createWrapper();
+      userService().getCodingQuestion.mockResolvedValue({
+        questionId: 'q1',
+        language: 'python',
+        languageId: 'lang-123',
+        starterCode: 'def solve():'
+      });
+
+      renderHook(() => useGetCodingQuestion('t1', 'q1', 'lang-123'), {
+        wrapper
+      });
+
+      await waitFor(() =>
+        expect(
+          queryClient.getQueryState(['codingQuestion', 't1', 'q1', 'lang-123'])
+        ).toBeDefined()
+      );
+    });
+
+    it('stays disabled until a task and a language are available', async () => {
+      const { wrapper } = createWrapper();
+
+      const { result } = renderHook(() => useGetCodingQuestion('', '', ''), {
+        wrapper
+      });
+
+      expect(userService().getCodingQuestion).not.toHaveBeenCalled();
+      expect(result.current.data).toBeUndefined();
     });
   });
 });

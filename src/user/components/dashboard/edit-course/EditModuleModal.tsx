@@ -3,7 +3,6 @@ import {
   Modal,
   Stack,
   TextInput,
-  Textarea,
   Select,
   Group,
   Loader,
@@ -24,6 +23,7 @@ import {
   COURSE_STATUSES
 } from '@interfaces/contentwriter';
 import CourseThumbnail from '../content-writer/CourseThumbnail';
+import DescriptionEditor from './DescriptionEditor';
 
 interface EditModuleModalProps {
   opened: boolean;
@@ -84,8 +84,7 @@ const EditModuleModal = ({
         id: module._id,
         moduleName: moduleName.trim(),
         moduleDescription: moduleDescription.trim(),
-        // A selected file replaces the stored thumbnail; leaving it empty
-        // (the modal's default) keeps the existing image.
+        orderIdx: module.orderIdx ?? 1,
         thumbnail,
         status
       });
@@ -97,22 +96,47 @@ const EditModuleModal = ({
   };
 
   return (
-    <Modal opened={opened} onClose={handleClose} title='Edit Module' centered>
-      <Stack gap='md'>
+    <Modal
+      opened={opened}
+      onClose={handleClose}
+      title='Edit Module'
+      centered
+      size='lg'
+      radius='lg'
+      overlayProps={{ backgroundOpacity: 0.5, blur: 4 }}
+      transitionProps={{ transition: 'pop', duration: 200 }}
+      styles={{
+        header: {
+          backgroundColor: currentThemeConfig.cardBackground,
+          borderBottom: `1px solid ${currentThemeConfig.borderColor}`,
+          paddingBottom: '12px'
+        },
+        title: {
+          fontWeight: 700,
+          fontSize: '1.1rem',
+          color: currentThemeConfig.color
+        },
+        content: {
+          backgroundColor: currentThemeConfig.cardBackground,
+          color: currentThemeConfig.color,
+          borderRadius: '16px'
+        }
+      }}
+    >
+      <Stack gap='md' className='mt-4'>
         <TextInput
           label='Module Name'
           placeholder='Enter module name'
           required
           value={moduleName}
           onChange={e => setModuleName(e.target.value)}
+          radius='md'
         />
-        <Textarea
+        <DescriptionEditor
           label='Module Description'
-          placeholder='What does this module cover?'
-          autosize
-          minRows={3}
           value={moduleDescription}
-          onChange={e => setModuleDescription(e.target.value)}
+          onChange={setModuleDescription}
+          resetKey={seededFor ?? undefined}
         />
 
         <Stack gap={6}>
@@ -190,6 +214,7 @@ const EditModuleModal = ({
             value={thumbnail}
             onChange={setThumbnail}
             clearable
+            radius='md'
             description={
               !module?.thumbnailUrl && !module?.thumbnail && !thumbPreview
                 ? 'No thumbnail yet — optional, but recommended'
@@ -205,6 +230,7 @@ const EditModuleModal = ({
           onChange={value => setStatus((value as CourseStatus) || 'ACTIVE')}
           allowDeselect={false}
           comboboxProps={{ withinPortal: true }}
+          radius='md'
         />
 
         <Group justify='flex-end' mt='sm'>

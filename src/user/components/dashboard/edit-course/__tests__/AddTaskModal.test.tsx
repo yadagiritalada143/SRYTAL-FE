@@ -2,12 +2,28 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { MantineProvider } from '@mantine/core';
 import AddTaskModal from '../AddTaskModal';
+import {
+  REOPEN_TASK_POPUP_KEY,
+  saveTaskDraft,
+  readTaskDraft,
+  clearTaskDraft
+} from '../task-popup-state';
 
+let mockIsPending = false;
 jest.mock('@hooks/mutations/useUserMutations', () => ({
   useAddCourseTask: () => ({
     mutateAsync: mockAddTask,
-    isPending: false
+    get isPending() {
+      return mockIsPending;
+    }
   })
+}));
+
+const mockNavigate = jest.fn();
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  useNavigate: () => mockNavigate,
+  useParams: () => ({ organization: 'acme' })
 }));
 
 const mockAddTask = jest.fn();
@@ -21,9 +37,25 @@ jest.mock('@utils/common/toast', () => ({
   })
 }));
 
-jest.mock('@utils/common/get-error-message', () => ({
-  getErrorMessage: (error: any, fallback: string) =>
-    error?.response?.data?.message || error?.message || fallback
+jest.mock('@utils/common/constants', () => ({
+  commonUrls: (org: string) => `/${org}/employee`
+}));
+
+jest.mock('@hooks/use-app-theme', () => ({
+  useAppTheme: () => ({
+    themeConfig: {
+      color: '#212529',
+      backgroundColor: '#ffffff',
+      cardBackground: '#ffffff',
+      borderColor: '#dee2e6',
+      accentColor: '#1c7ed6',
+      iconColor: '#228be6',
+      successColor: '#2f9e44',
+      dangerColor: '#c92a2a',
+      mutedTextColor: '#6c757d'
+    },
+    isDarkTheme: false
+  })
 }));
 
 jest.mock('@components/common/button/CommonButton', () => ({
@@ -33,6 +65,19 @@ jest.mock('@components/common/button/CommonButton', () => ({
     </button>
   )
 }));
+
+jest.mock('../DescriptionEditor', () => (props: any) => (
+  <div>
+    <label>{props.label}</label>
+    <input
+      aria-label={props.label}
+      value={props.value}
+      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+        props.onChange(e.target.value)
+      }
+    />
+  </div>
+));
 
 jest.mock('@mantine/core', () => {
   const actual = jest.requireActual('@mantine/core');
@@ -54,7 +99,13 @@ jest.mock('@mantine/core', () => {
             aria-pressed={value === d.value}
             onClick={() => onChange(d.value)}
           >
-            {d.value === 'LINK' ? 'Link' : 'File'}
+            {d.value === 'LINK'
+              ? 'Link'
+              : d.value === 'FILE'
+                ? 'File'
+                : d.value === 'QUIZ'
+                  ? 'Quiz'
+                  : 'Coding'}
           </button>
         ))}
       </div>
@@ -78,27 +129,55 @@ const renderModal = (opened = true, moduleId = 'm1', courseId = 'c1') => {
 };
 
 const typeTitle = (value: string) => {
-  fireEvent.change(
-    screen.getByPlaceholderText('e.g. Introduction video, Reading material'),
-    { target: { value } }
-  );
+  fireEvent.change(screen.getByLabelText(/Title/), { target: { value } });
 };
 
 const typeLink = (value: string) => {
   fireEvent.change(screen.getByLabelText(/Link URL/), { target: { value } });
 };
 
+const typeDescription = (value: string) => {
+  fireEvent.change(screen.getByLabelText(/Description/), {
+    target: { value }
+  });
+};
+
 const clickFileMode = () => {
   fireEvent.click(screen.getByRole('button', { name: 'File' }));
+};
+
+const clickCodingMode = () => {
+  fireEvent.click(screen.getByRole('button', { name: 'Coding' }));
+};
+
+const clickQuizMode = () => {
+  fireEvent.click(screen.getByRole('button', { name: 'Quiz' }));
+};
+
+const typeAcknowledgement = (value: string) => {
+  fireEvent.change(screen.getByLabelText(/Acknowledgement text/), {
+    target: { value }
+  });
 };
 
 const getMainFileInput = (container: HTMLElement) =>
   container.querySelectorAll('input[type="file"]')[0] as HTMLInputElement;
 
+/**
+ * FileInput's visible control is a `<button>`; the hidden `<input type=file>`
+ * Mantine renders lives outside the field wrapper, so only the button blurs
+ * bubble up to the field's `onBlur`.
+ */
+const getFileControl = (container: HTMLElement, index = 0) =>
+  container.querySelectorAll('button.mantine-FileInput-input')[index];
+
 describe('AddTaskModal', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    sessionStorage.clear();
+    clearTaskDraft();
     mockAddTask.mockResolvedValue({});
+    mockIsPending = false;
   });
 
   describe('Rendering', () => {
@@ -107,67 +186,171 @@ describe('AddTaskModal', () => {
       expect(screen.queryByTestId('modal')).not.toBeInTheDocument();
     });
 
-    it('renders the dialog with Add Content title when opened', () => {
+    it('renders the dialog with Add Task title when opened', () => {
       renderModal();
       expect(
-        screen.getByRole('heading', { name: 'Add Content' })
+        screen.getByRole('heading', { name: 'Add Task' })
       ).toBeInTheDocument();
       expect(screen.getByText('Title')).toBeInTheDocument();
       expect(screen.getByText('Description')).toBeInTheDocument();
-      expect(screen.getByText('Content Type')).toBeInTheDocument();
+      expect(screen.getByText('Task Type')).toBeInTheDocument();
     });
 
     it('defaults to Link mode with a link URL input', () => {
       renderModal();
       expect(screen.getByLabelText(/Link URL/)).toBeInTheDocument();
       expect(
-        screen.queryByText('Upload a PDF, Word, or any file')
+        screen.queryByText('Upload a supported file')
       ).not.toBeInTheDocument();
     });
 
     it('shows the file input when File mode is selected', () => {
       renderModal();
       clickFileMode();
-      expect(
-        screen.getByText('Upload a PDF, Word, or any file')
-      ).toBeInTheDocument();
+      expect(screen.getByText('Upload a supported file')).toBeInTheDocument();
       expect(screen.queryByLabelText(/Link URL/)).not.toBeInTheDocument();
+    });
+
+    it('lists only the supported formats for File tasks', () => {
+      renderModal();
+      clickFileMode();
+
+      expect(
+        screen.getByText(
+          'Supported formats: PDF, Word, Excel, PowerPoint, TXT, CSV, PNG, JPG, WEBP'
+        )
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByText('Any file type is supported')
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByText('Upload a PDF, Word, or any file')
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByText('Upload a PDF or Word document')
+      ).not.toBeInTheDocument();
+    });
+
+    it('restricts the file picker to the supported formats', () => {
+      const { container } = renderModal();
+      clickFileMode();
+
+      const accept = getMainFileInput(container).accept;
+      expect(accept).toContain('.pdf');
+      expect(accept).toContain('.doc');
+      expect(accept).toContain('.docx');
+      expect(accept).toContain('.pptx');
+      expect(accept).toContain('.xlsx');
+      expect(accept).toContain('.txt');
+      expect(accept).toContain('.csv');
+      expect(accept).toContain('.png');
+      expect(accept).toContain('.webp');
+      expect(accept).not.toContain('*/*');
+    });
+
+    it('hides the Add Programming Language button for Link and File tasks', () => {
+      renderModal();
+      expect(
+        screen.queryByRole('button', {
+          name: 'Add Programming Language'
+        })
+      ).not.toBeInTheDocument();
+      clickFileMode();
+      expect(
+        screen.queryByRole('button', {
+          name: 'Add Programming Language'
+        })
+      ).not.toBeInTheDocument();
+    });
+
+    it('shows the Add Programming Language button for Coding tasks', () => {
+      renderModal();
+      clickCodingMode();
+      expect(screen.getByText('Add Programming Language')).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'Add Programming Language' })
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByPlaceholderText('Describe the coding problem to solve')
+      ).not.toBeInTheDocument();
+      expect(screen.queryByLabelText(/Link URL/)).not.toBeInTheDocument();
+      expect(
+        screen.queryByText('Upload a supported file')
+      ).not.toBeInTheDocument();
     });
 
     it('renders the thumbnail file input', () => {
       renderModal();
       expect(screen.getByText('Thumbnail (optional)')).toBeInTheDocument();
     });
+
+    it('does not show the acknowledgement switch for Link tasks', () => {
+      renderModal();
+      expect(
+        screen.queryByLabelText(/Require acknowledgement/)
+      ).not.toBeInTheDocument();
+    });
+
+    it('shows the acknowledgement switch for File tasks', () => {
+      renderModal();
+      clickFileMode();
+      expect(
+        screen.getByLabelText(/Require acknowledgement/)
+      ).toBeInTheDocument();
+    });
+
+    it('shows the acknowledgement text field only when the switch is on', () => {
+      renderModal();
+      clickFileMode();
+      expect(
+        screen.queryByLabelText(/Acknowledgement text/)
+      ).not.toBeInTheDocument();
+
+      fireEvent.click(screen.getByLabelText(/Require acknowledgement/));
+      expect(screen.getByLabelText(/Acknowledgement text/)).toBeInTheDocument();
+    });
   });
 
   describe('Validation', () => {
-    it('disables Add Content when the form is empty', () => {
+    it('disables Add Task when the form is empty', () => {
       renderModal();
-      expect(
-        screen.getByRole('button', { name: 'Add Content' })
-      ).toBeDisabled();
+      expect(screen.getByRole('button', { name: 'Add Task' })).toBeDisabled();
     });
 
-    it('keeps Add Content disabled when only the title is provided', () => {
+    it('keeps Add Task disabled when only the title is provided', () => {
       renderModal();
       typeTitle('Intro video');
-      expect(
-        screen.getByRole('button', { name: 'Add Content' })
-      ).toBeDisabled();
+      expect(screen.getByRole('button', { name: 'Add Task' })).toBeDisabled();
     });
 
-    it('enables Add Content when title and link are provided', () => {
+    it('enables Add Task when title, description, and link are provided', () => {
       renderModal();
       typeTitle('Intro video');
+      typeDescription('Watch the introduction video.');
       typeLink('https://youtube.com/watch?v=abc123');
       expect(
-        screen.getByRole('button', { name: 'Add Content' })
+        screen.getByRole('button', { name: 'Add Task' })
       ).not.toBeDisabled();
     });
 
-    it('enables Add Content when title and file are provided in File mode', () => {
+    it('keeps Add Task disabled until the description is provided', () => {
+      renderModal();
+      typeTitle('Intro video');
+      typeLink('https://youtube.com/watch?v=abc123');
+      // The description is mandatory for every task type.
+      expect(screen.getByRole('button', { name: 'Add Task' })).toBeDisabled();
+
+      typeDescription('Watch the introduction video.');
+
+      expect(
+        screen.getByRole('button', { name: 'Add Task' })
+      ).not.toBeDisabled();
+    });
+
+    it('enables Add Task when title, description, and file are provided in File mode', () => {
       const { container } = renderModal();
       typeTitle('Reading material');
+      typeDescription('Read the attached policy.');
       clickFileMode();
 
       fireEvent.change(getMainFileInput(container), {
@@ -177,8 +360,314 @@ describe('AddTaskModal', () => {
       });
 
       expect(
-        screen.getByRole('button', { name: 'Add Content' })
+        screen.getByRole('button', { name: 'Add Task' })
       ).not.toBeDisabled();
+    });
+
+    it('requires a parseable HTTP(S) link, not just any text', () => {
+      renderModal();
+      typeTitle('Intro video');
+      typeLink('youtube.com/watch?v=abc123');
+      expect(screen.getByRole('button', { name: 'Add Task' })).toBeDisabled();
+    });
+
+    it('shows the backend link message once the field is blurred', () => {
+      renderModal();
+      typeTitle('Intro video');
+      typeLink('not a url');
+
+      fireEvent.blur(screen.getByLabelText(/Link URL/));
+
+      expect(
+        screen.getByText(
+          'A valid HTTP or HTTPS link is required for LINK tasks.'
+        )
+      ).toBeInTheDocument();
+    });
+
+    it('shows the backend title message once the field is blurred', () => {
+      renderModal();
+      fireEvent.blur(
+        screen.getByPlaceholderText('e.g. Introduction video, Reading material')
+      );
+
+      expect(screen.getByText('Task name is required.')).toBeInTheDocument();
+    });
+
+    it('shows the backend file message once the file input is blurred', () => {
+      const { container } = renderModal();
+      typeTitle('Reading material');
+      clickFileMode();
+
+      fireEvent.blur(getFileControl(container, 0));
+
+      expect(
+        screen.getByText('A file is required for FILE tasks.')
+      ).toBeInTheDocument();
+    });
+
+    it('rejects files outside the supported formats', () => {
+      const { container } = renderModal();
+      typeTitle('Reading material');
+      typeDescription('Read the attached policy.');
+      clickFileMode();
+
+      fireEvent.change(getMainFileInput(container), {
+        target: {
+          files: [
+            new File(['x'], 'setup.exe', { type: 'application/x-msdownload' })
+          ]
+        }
+      });
+
+      expect(screen.getByRole('button', { name: 'Add Task' })).toBeDisabled();
+      fireEvent.blur(getFileControl(container, 0));
+      expect(
+        screen.getByText(
+          'Unsupported file format. Upload a PDF, Office document, TXT, CSV, or image file.'
+        )
+      ).toBeInTheDocument();
+
+      // Allowed-looking archives are still outside the allow-list.
+      fireEvent.change(getMainFileInput(container), {
+        target: {
+          files: [new File(['x'], 'archive.zip', { type: 'application/zip' })]
+        }
+      });
+
+      expect(screen.getByRole('button', { name: 'Add Task' })).toBeDisabled();
+    });
+
+    it('accepts Word documents in File mode', () => {
+      const { container } = renderModal();
+      typeTitle('Reading material');
+      typeDescription('Read the attached policy.');
+      clickFileMode();
+
+      fireEvent.change(getMainFileInput(container), {
+        target: {
+          files: [
+            new File(['x'], 'policy.docx', {
+              type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            })
+          ]
+        }
+      });
+
+      expect(
+        screen.getByRole('button', { name: 'Add Task' })
+      ).not.toBeDisabled();
+    });
+
+    it('accepts presentation, spreadsheet, and image files in File mode', () => {
+      const { container } = renderModal();
+      typeTitle('Reading material');
+      typeDescription('Read the attached policy.');
+      clickFileMode();
+
+      fireEvent.change(getMainFileInput(container), {
+        target: {
+          files: [
+            new File(['x'], 'slides.pptx', {
+              type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+            })
+          ]
+        }
+      });
+
+      expect(
+        screen.getByRole('button', { name: 'Add Task' })
+      ).not.toBeDisabled();
+
+      fireEvent.change(getMainFileInput(container), {
+        target: {
+          files: [new File(['x'], 'diagram.png', { type: 'image/png' })]
+        }
+      });
+
+      expect(
+        screen.getByRole('button', { name: 'Add Task' })
+      ).not.toBeDisabled();
+    });
+
+    it('rejects thumbnails the backend will not accept', () => {
+      const { container } = renderModal();
+      typeTitle('Intro video');
+      typeLink('https://youtube.com/watch?v=abc123');
+
+      // In Link mode the only file field on the form is the thumbnail.
+      fireEvent.change(getMainFileInput(container), {
+        target: {
+          files: [new File(['x'], 'sticker.gif', { type: 'image/gif' })]
+        }
+      });
+
+      expect(screen.getByRole('button', { name: 'Add Task' })).toBeDisabled();
+      fireEvent.blur(getFileControl(container, 0));
+      expect(
+        screen.getByText('Thumbnail must be a JPG, PNG, or WEBP image.')
+      ).toBeInTheDocument();
+    });
+
+    it('accepts a backend-approved thumbnail type', () => {
+      const { container } = renderModal();
+      typeTitle('Intro video');
+      typeDescription('Watch the introduction video.');
+      typeLink('https://youtube.com/watch?v=abc123');
+
+      fireEvent.change(getMainFileInput(container), {
+        target: {
+          files: [new File(['x'], 'thumb.png', { type: 'image/png' })]
+        }
+      });
+
+      expect(
+        screen.getByRole('button', { name: 'Add Task' })
+      ).not.toBeDisabled();
+    });
+  });
+
+  describe('Coding tasks', () => {
+    it('keeps Add Task disabled until the coding description is provided', () => {
+      renderModal();
+      typeTitle('FizzBuzz problem');
+      clickCodingMode();
+      // The backend requires a description for CODE tasks (the problem
+      // statement), so the title alone is not enough.
+      expect(screen.getByRole('button', { name: 'Add Task' })).toBeDisabled();
+
+      typeDescription('Write a function that returns FizzBuzz.');
+
+      expect(
+        screen.getByRole('button', { name: 'Add Task' })
+      ).not.toBeDisabled();
+    });
+
+    it('shows the backend coding description message once the editor is blurred', () => {
+      renderModal();
+      typeTitle('FizzBuzz problem');
+      clickCodingMode();
+
+      fireEvent.blur(screen.getByLabelText('Description'));
+
+      expect(
+        screen.getByText('Task description is required.')
+      ).toBeInTheDocument();
+    });
+
+    it('opens the programming languages page and remembers the module to reopen', () => {
+      renderModal();
+
+      clickCodingMode();
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Add Programming Language' })
+      );
+
+      expect(mockNavigate).toHaveBeenCalledWith(
+        '/acme/employee/dashboard/content-writer/programming-languages'
+      );
+      expect(
+        JSON.parse(sessionStorage.getItem(REOPEN_TASK_POPUP_KEY) || '{}')
+      ).toEqual({ courseId: 'c1', moduleId: 'm1' });
+    });
+  });
+
+  describe('Programming languages draft', () => {
+    it('parks the whole form as a draft before leaving for languages', () => {
+      renderModal();
+
+      typeTitle('FizzBuzz problem');
+      clickCodingMode();
+      typeDescription('Write a function that returns FizzBuzz.');
+
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Add Programming Language' })
+      );
+
+      expect(readTaskDraft()).toEqual({
+        courseId: 'c1',
+        moduleId: 'm1',
+        taskName: 'FizzBuzz problem',
+        taskDescription: 'Write a function that returns FizzBuzz.',
+        mode: 'CODING',
+        link: '',
+        file: null,
+        thumbnail: null
+      });
+    });
+
+    it('restores the parked draft when the modal comes back', () => {
+      saveTaskDraft({
+        courseId: 'c1',
+        moduleId: 'm1',
+        taskName: 'FizzBuzz problem',
+        taskDescription: '<p>Write a function that returns FizzBuzz.</p>',
+        mode: 'CODING',
+        link: '',
+        file: null,
+        thumbnail: null
+      });
+
+      renderModal();
+
+      expect(
+        screen.getByPlaceholderText('e.g. Introduction video, Reading material')
+      ).toHaveValue('FizzBuzz problem');
+      expect(screen.getByLabelText('Description')).toHaveValue(
+        '<p>Write a function that returns FizzBuzz.</p>'
+      );
+      expect(screen.getByRole('button', { name: 'Coding' })).toHaveAttribute(
+        'aria-pressed',
+        'true'
+      );
+      // Consumed, so it cannot leak into a later, unrelated open.
+      expect(readTaskDraft()).toBeNull();
+    });
+
+    it('submits the restored draft values', async () => {
+      saveTaskDraft({
+        courseId: 'c1',
+        moduleId: 'm1',
+        taskName: 'FizzBuzz problem',
+        taskDescription: 'Write FizzBuzz',
+        mode: 'CODING',
+        link: '',
+        file: null,
+        thumbnail: null
+      });
+
+      renderModal();
+      fireEvent.click(screen.getByRole('button', { name: 'Add Task' }));
+
+      await waitFor(() => {
+        expect(mockAddTask).toHaveBeenCalledWith(
+          expect.objectContaining({
+            taskName: 'FizzBuzz problem',
+            taskDescription: 'Write FizzBuzz',
+            type: 'CODE'
+          })
+        );
+      });
+    });
+
+    it('ignores a draft that belongs to a different module', () => {
+      saveTaskDraft({
+        courseId: 'c1',
+        moduleId: 'other-module',
+        taskName: 'Not for this module',
+        taskDescription: '',
+        mode: 'LINK',
+        link: '',
+        file: null,
+        thumbnail: null
+      });
+
+      renderModal();
+
+      expect(
+        screen.getByPlaceholderText('e.g. Introduction video, Reading material')
+      ).toHaveValue('');
+      expect(readTaskDraft()).not.toBeNull();
     });
   });
 
@@ -187,9 +676,10 @@ describe('AddTaskModal', () => {
       renderModal(true, 'm1', 'c1');
 
       typeTitle('YouTube video');
+      typeDescription('Watch the intro video.');
       typeLink('https://youtube.com/watch?v=abc123');
 
-      fireEvent.click(screen.getByRole('button', { name: 'Add Content' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Add Task' }));
 
       await waitFor(() => {
         expect(mockAddTask).toHaveBeenCalledTimes(1);
@@ -198,14 +688,16 @@ describe('AddTaskModal', () => {
       expect(mockAddTask).toHaveBeenCalledWith({
         moduleId: 'm1',
         taskName: 'YouTube video',
-        taskDescription: '',
+        taskDescription: 'Watch the intro video.',
+        type: 'LINK',
+        orderIdx: 1,
         link: 'https://youtube.com/watch?v=abc123',
         file: undefined,
         thumbnail: null
       });
 
       expect(mockShowSuccessToast).toHaveBeenCalledWith(
-        'Content added successfully!'
+        'Task added successfully!'
       );
       expect(mockOnClose).toHaveBeenCalled();
     });
@@ -214,6 +706,7 @@ describe('AddTaskModal', () => {
       const { container } = renderModal();
 
       typeTitle('Reading material');
+      typeDescription('Read the attached policy.');
       clickFileMode();
 
       const file = new File(['x'], 'notes.pdf', { type: 'application/pdf' });
@@ -221,14 +714,136 @@ describe('AddTaskModal', () => {
         target: { files: [file] }
       });
 
-      fireEvent.click(screen.getByRole('button', { name: 'Add Content' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Add Task' }));
 
       await waitFor(() => {
         expect(mockAddTask).toHaveBeenCalledWith(
           expect.objectContaining({
+            type: 'FILE',
             link: undefined,
             file
           })
+        );
+      });
+    });
+
+    it('keeps Add Task disabled until the acknowledgement text is provided', () => {
+      const { container } = renderModal();
+
+      typeTitle('Reading material');
+      typeDescription('Read the attached policy.');
+      clickFileMode();
+
+      fireEvent.change(getMainFileInput(container), {
+        target: {
+          files: [new File(['x'], 'notes.pdf', { type: 'application/pdf' })]
+        }
+      });
+      fireEvent.click(screen.getByLabelText(/Require acknowledgement/));
+
+      expect(screen.getByRole('button', { name: 'Add Task' })).toBeDisabled();
+
+      typeAcknowledgement('I confirm I have read this policy.');
+
+      expect(
+        screen.getByRole('button', { name: 'Add Task' })
+      ).not.toBeDisabled();
+    });
+
+    it('sends the acknowledgement text entered when the switch is on', async () => {
+      const { container } = renderModal();
+
+      typeTitle('Reading material');
+      typeDescription('Read the attached policy.');
+      clickFileMode();
+
+      const file = new File(['x'], 'notes.pdf', { type: 'application/pdf' });
+      fireEvent.change(getMainFileInput(container), {
+        target: { files: [file] }
+      });
+      fireEvent.click(screen.getByLabelText(/Require acknowledgement/));
+      typeAcknowledgement('I confirm I have read this policy.');
+
+      fireEvent.click(screen.getByRole('button', { name: 'Add Task' }));
+
+      await waitFor(() => {
+        expect(mockAddTask).toHaveBeenCalledWith(
+          expect.objectContaining({
+            type: 'FILE',
+            acknowledgementText: 'I confirm I have read this policy.'
+          })
+        );
+      });
+    });
+
+    it('sends an empty acknowledgement when the switch is off', async () => {
+      const { container } = renderModal();
+
+      typeTitle('Reading material');
+      typeDescription('Read the attached policy.');
+      clickFileMode();
+
+      const file = new File(['x'], 'notes.pdf', { type: 'application/pdf' });
+      fireEvent.change(getMainFileInput(container), {
+        target: { files: [file] }
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: 'Add Task' }));
+
+      await waitFor(() => {
+        expect(mockAddTask).toHaveBeenCalledWith(
+          expect.objectContaining({ type: 'FILE', acknowledgementText: '' })
+        );
+      });
+    });
+
+    it('submits a coding task with its type', async () => {
+      renderModal(true, 'm1', 'c1');
+
+      typeTitle('FizzBuzz problem');
+      clickCodingMode();
+      typeDescription('Write a function that returns FizzBuzz.');
+
+      fireEvent.click(screen.getByRole('button', { name: 'Add Task' }));
+
+      await waitFor(() => {
+        expect(mockAddTask).toHaveBeenCalledTimes(1);
+      });
+
+      // The title is the question; the description is the problem statement
+      // the backend requires for CODE tasks.
+      expect(mockAddTask).toHaveBeenCalledWith({
+        moduleId: 'm1',
+        taskName: 'FizzBuzz problem',
+        taskDescription: 'Write a function that returns FizzBuzz.',
+        type: 'CODE',
+        orderIdx: 1,
+        link: undefined,
+        file: undefined,
+        thumbnail: null
+      });
+
+      expect(mockShowSuccessToast).toHaveBeenCalledWith(
+        'Task added successfully!'
+      );
+      expect(mockOnClose).toHaveBeenCalled();
+    });
+
+    it('shows the backend success message when the API returns one', async () => {
+      mockAddTask.mockResolvedValueOnce({
+        message: 'New Task added to Module Successfully !'
+      });
+
+      renderModal();
+      typeTitle('YouTube video');
+      typeDescription('Watch the intro video.');
+      typeLink('https://youtube.com/watch?v=abc123');
+
+      fireEvent.click(screen.getByRole('button', { name: 'Add Task' }));
+
+      await waitFor(() => {
+        expect(mockShowSuccessToast).toHaveBeenCalledWith(
+          'New Task added to Module Successfully !'
         );
       });
     });
@@ -237,9 +852,10 @@ describe('AddTaskModal', () => {
       renderModal();
 
       typeTitle('  Trimmed Title  ');
+      typeDescription('  Watch the video.  ');
       typeLink('  https://youtube.com/watch?v=def456  ');
 
-      fireEvent.click(screen.getByRole('button', { name: 'Add Content' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Add Task' }));
 
       await waitFor(() => {
         expect(mockAddTask).toHaveBeenCalledWith(
@@ -253,14 +869,16 @@ describe('AddTaskModal', () => {
 
     it('shows an error toast when the mutation fails', async () => {
       mockAddTask.mockRejectedValueOnce({
+        isAxiosError: true,
         response: { data: { message: 'File too large' } }
       });
 
       renderModal();
       typeTitle('Intro video');
+      typeDescription('Watch the intro video.');
       typeLink('https://youtube.com/watch?v=abc123');
 
-      fireEvent.click(screen.getByRole('button', { name: 'Add Content' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Add Task' }));
 
       await waitFor(() => {
         expect(mockShowErrorToast).toHaveBeenCalledWith('File too large');
@@ -269,19 +887,46 @@ describe('AddTaskModal', () => {
       expect(mockOnClose).not.toHaveBeenCalled();
     });
 
+    it('toasts the backend validation details, not the generic message', async () => {
+      mockAddTask.mockRejectedValueOnce({
+        isAxiosError: true,
+        response: {
+          data: {
+            message: 'Invalid course task request.',
+            errors: [
+              'Task name is required.',
+              'A valid HTTP or HTTPS link is required for LINK tasks.'
+            ]
+          }
+        }
+      });
+
+      renderModal();
+      typeTitle('Intro video');
+      typeDescription('Watch the intro video.');
+      typeLink('https://youtube.com/watch?v=abc123');
+
+      fireEvent.click(screen.getByRole('button', { name: 'Add Task' }));
+
+      await waitFor(() => {
+        expect(mockShowErrorToast).toHaveBeenCalledWith(
+          'Task name is required. A valid HTTP or HTTPS link is required for LINK tasks.'
+        );
+      });
+    });
+
     it('shows a fallback error message when the error has no message', async () => {
       mockAddTask.mockRejectedValueOnce({});
 
       renderModal();
       typeTitle('Intro video');
+      typeDescription('Watch the intro video.');
       typeLink('https://youtube.com/watch?v=abc123');
 
-      fireEvent.click(screen.getByRole('button', { name: 'Add Content' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Add Task' }));
 
       await waitFor(() => {
-        expect(mockShowErrorToast).toHaveBeenCalledWith(
-          'Failed to add content'
-        );
+        expect(mockShowErrorToast).toHaveBeenCalledWith('Failed to add task');
       });
     });
   });
@@ -291,6 +936,186 @@ describe('AddTaskModal', () => {
       renderModal();
       fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
       expect(mockOnClose).toHaveBeenCalled();
+    });
+  });
+
+  describe('Quiz tasks', () => {
+    it('shows quiz guidance and action buttons in Quiz mode', () => {
+      renderModal();
+      expect(
+        screen.getByRole('button', { name: 'Add Task' })
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: 'Save Quiz Task' })
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: 'Save & Add Questions' })
+      ).not.toBeInTheDocument();
+
+      clickQuizMode();
+
+      expect(
+        screen.getByRole('button', { name: 'Save & Add Questions' })
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'Save Quiz Task' })
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: 'Add Task' })
+      ).not.toBeInTheDocument();
+      expect(screen.getByText(/Quiz Assessment Task/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/Enter the quiz title and instructions above/i)
+      ).toBeInTheDocument();
+    });
+
+    it('creates the quiz task via Save Quiz Task button and closes modal without redirect', async () => {
+      mockAddTask.mockResolvedValueOnce({
+        data: { _id: 'task-quiz-1' },
+        message: 'Quiz task added successfully!'
+      });
+
+      renderModal();
+
+      typeTitle('Colour quiz');
+      clickQuizMode();
+      typeDescription('Pick a colour.');
+
+      fireEvent.click(screen.getByRole('button', { name: 'Save Quiz Task' }));
+
+      await waitFor(() => {
+        expect(mockAddTask).toHaveBeenCalledWith({
+          moduleId: 'm1',
+          taskName: 'Colour quiz',
+          taskDescription: 'Pick a colour.',
+          type: 'QUIZ',
+          orderIdx: 1,
+          thumbnail: null
+        });
+      });
+
+      expect(mockShowSuccessToast).toHaveBeenCalledWith(
+        'Quiz task added successfully!'
+      );
+      expect(mockOnClose).toHaveBeenCalled();
+      expect(mockNavigate).not.toHaveBeenCalled();
+    });
+
+    it('creates the quiz task and redirects to quiz-questions when Save & Add Questions is clicked', async () => {
+      mockAddTask.mockResolvedValueOnce({
+        task: { _id: 'task-quiz-2' },
+        message: 'Quiz task created successfully!'
+      });
+
+      renderModal();
+
+      typeTitle('Colour quiz');
+      clickQuizMode();
+      typeDescription('Pick a colour.');
+
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Save & Add Questions' })
+      );
+
+      await waitFor(() => {
+        expect(mockAddTask).toHaveBeenCalledWith({
+          moduleId: 'm1',
+          taskName: 'Colour quiz',
+          taskDescription: 'Pick a colour.',
+          type: 'QUIZ',
+          orderIdx: 1,
+          thumbnail: null
+        });
+      });
+
+      expect(mockShowSuccessToast).toHaveBeenCalledWith(
+        'Quiz task created successfully!'
+      );
+      expect(mockOnClose).toHaveBeenCalled();
+
+      const params = new URLSearchParams({
+        taskId: 'task-quiz-2',
+        courseId: 'c1',
+        moduleId: 'm1',
+        taskName: 'Colour quiz'
+      });
+      expect(mockNavigate).toHaveBeenCalledWith(
+        `/acme/employee/dashboard/quiz-questions?${params.toString()}`
+      );
+    });
+
+    it('shows Saving... only on Save & Add Questions when clicked during pending state', async () => {
+      let resolveTask: any;
+      mockAddTask.mockImplementation(
+        () =>
+          new Promise(resolve => {
+            resolveTask = resolve;
+          })
+      );
+
+      renderModal();
+      typeTitle('Colour quiz');
+      clickQuizMode();
+      typeDescription('Pick a colour.');
+
+      mockIsPending = true;
+
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Save & Add Questions' })
+      );
+
+      expect(
+        screen.getByRole('button', { name: 'Saving...' })
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'Save Quiz Task' })
+      ).toBeInTheDocument();
+
+      mockIsPending = false;
+      resolveTask?.({
+        data: { _id: 'task-123' },
+        message: 'Task added successfully!'
+      });
+
+      await waitFor(() => {
+        expect(mockOnClose).toHaveBeenCalled();
+      });
+    });
+
+    it('shows Saving... only on Save Quiz Task when clicked during pending state', async () => {
+      let resolveTask: any;
+      mockAddTask.mockImplementation(
+        () =>
+          new Promise(resolve => {
+            resolveTask = resolve;
+          })
+      );
+
+      renderModal();
+      typeTitle('Colour quiz');
+      clickQuizMode();
+      typeDescription('Pick a colour.');
+
+      mockIsPending = true;
+
+      fireEvent.click(screen.getByRole('button', { name: 'Save Quiz Task' }));
+
+      expect(
+        screen.getByRole('button', { name: 'Saving...' })
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'Save & Add Questions' })
+      ).toBeInTheDocument();
+
+      mockIsPending = false;
+      resolveTask?.({
+        data: { _id: 'task-123' },
+        message: 'Task added successfully!'
+      });
+
+      await waitFor(() => {
+        expect(mockOnClose).toHaveBeenCalled();
+      });
     });
   });
 });

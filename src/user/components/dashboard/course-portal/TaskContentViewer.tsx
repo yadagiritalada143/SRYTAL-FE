@@ -1,5 +1,7 @@
 import { Box, Center, Stack, Text, ThemeIcon } from '@mantine/core';
+import { useNavigate } from 'react-router-dom';
 import {
+  IconCode,
   IconExternalLink,
   IconFileDownload,
   IconLink
@@ -8,20 +10,91 @@ import { useAppTheme } from '@hooks/use-app-theme';
 import { CommonButton } from '@components/common/button/CommonButton';
 import { AssignedTask } from '@interfaces/course-assignment';
 import { getCourseTaskContentUrl } from '@services/user-services';
-import { resolveTaskContent } from './task-content';
+import { resolveTaskContent, isCodingTask, isQuizTask } from './task-content';
+import QuizTaskViewer from './QuizTaskViewer';
 
 interface TaskContentViewerProps {
   task: AssignedTask;
+  courseAssignmentId?: string;
   onFinished?: () => void;
+  onNext?: () => void;
+  hasNext?: boolean;
+  nextTaskName?: string;
+  onBackToCourse?: () => void;
+  embedded?: boolean;
 }
 
-const TaskContentViewer = ({ task, onFinished }: TaskContentViewerProps) => {
+const TaskContentViewer = ({
+  task,
+  onFinished,
+  onNext,
+  hasNext,
+  nextTaskName,
+  onBackToCourse,
+  embedded = false
+}: TaskContentViewerProps) => {
   const { themeConfig } = useAppTheme();
+  const navigate = useNavigate();
+
+  const framedBox = embedded
+    ? { backgroundColor: 'transparent' }
+    : {
+        borderRadius: 12,
+        border: `1px solid ${themeConfig.borderColor}`,
+        backgroundColor: themeConfig.cardBackground
+      };
+
+  const dashedBox = embedded
+    ? { backgroundColor: 'transparent' }
+    : {
+        borderRadius: 12,
+        border: `1px dashed ${themeConfig.borderColor}`,
+        backgroundColor: themeConfig.cardBackground
+      };
+
+  if (isCodingTask(task)) {
+    return (
+      <Center p='xl' style={{ minHeight: 260, ...dashedBox }}>
+        <Stack align='center' gap='sm' maw={420}>
+          <ThemeIcon size={56} radius='xl' variant='light'>
+            <IconCode size={28} />
+          </ThemeIcon>
+          <Text fw={600} ta='center'>
+            Coding challenge
+          </Text>
+          <Text size='sm' c={themeConfig.mutedTextColor} ta='center'>
+            This problem opens in a dedicated editor where you can solve it and
+            run it against the test cases.
+          </Text>
+          <CommonButton
+            leftSection={<IconExternalLink size={16} />}
+            onClick={() => navigate(`task/${task._id}`)}
+          >
+            Open coding problem
+          </CommonButton>
+        </Stack>
+      </Center>
+    );
+  }
+
+  if (isQuizTask(task)) {
+    return (
+      <QuizTaskViewer
+        task={task}
+        onPassed={onFinished}
+        onNext={onNext}
+        hasNext={hasNext}
+        nextTaskName={nextTaskName}
+        onBackToCourse={onBackToCourse}
+      />
+    );
+  }
+
   const content = resolveTaskContent(task, getCourseTaskContentUrl(task._id));
 
   const surface = {
     backgroundColor: '#000',
-    borderRadius: 12,
+    borderRadius: embedded ? 0 : 12,
     overflow: 'hidden' as const
   };
 
@@ -63,14 +136,7 @@ const TaskContentViewer = ({ task, onFinished }: TaskContentViewerProps) => {
 
   if (content.kind === 'audio') {
     return (
-      <Box
-        p='xl'
-        style={{
-          borderRadius: 12,
-          border: `1px solid ${themeConfig.borderColor}`,
-          backgroundColor: themeConfig.cardBackground
-        }}
-      >
+      <Box p='xl' style={framedBox}>
         <audio
           key={content.url}
           src={content.url}
@@ -84,14 +150,7 @@ const TaskContentViewer = ({ task, onFinished }: TaskContentViewerProps) => {
 
   if (content.kind === 'image') {
     return (
-      <Box
-        style={{
-          borderRadius: 12,
-          border: `1px solid ${themeConfig.borderColor}`,
-          backgroundColor: themeConfig.cardBackground,
-          overflow: 'hidden'
-        }}
-      >
+      <Box style={{ ...framedBox, overflow: 'hidden' }}>
         <img
           src={content.url}
           alt={task.taskName}
@@ -108,14 +167,7 @@ const TaskContentViewer = ({ task, onFinished }: TaskContentViewerProps) => {
 
   if (content.kind === 'pdf' || content.kind === 'text') {
     return (
-      <Box
-        style={{
-          borderRadius: 12,
-          border: `1px solid ${themeConfig.borderColor}`,
-          overflow: 'hidden',
-          backgroundColor: themeConfig.cardBackground
-        }}
-      >
+      <Box style={{ ...framedBox, overflow: 'hidden' }}>
         <iframe
           key={content.url}
           src={content.url}
@@ -130,15 +182,7 @@ const TaskContentViewer = ({ task, onFinished }: TaskContentViewerProps) => {
   const openUrl = content.externalUrl || content.url;
 
   return (
-    <Center
-      p='xl'
-      style={{
-        minHeight: 260,
-        borderRadius: 12,
-        border: `1px dashed ${themeConfig.borderColor}`,
-        backgroundColor: themeConfig.cardBackground
-      }}
-    >
+    <Center p='xl' style={{ minHeight: 260, ...dashedBox }}>
       <Stack align='center' gap='sm' maw={420}>
         <ThemeIcon size={56} radius='xl' variant='light'>
           {isExternal ? <IconLink size={28} /> : <IconFileDownload size={28} />}

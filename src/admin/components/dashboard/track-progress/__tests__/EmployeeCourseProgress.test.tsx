@@ -325,6 +325,26 @@ describe('EmployeeCourseProgress', () => {
     expect(screen.queryByTestId('due-date-input')).not.toBeInTheDocument();
   });
 
+  it('allows resetting the modified due date with the Reset button', async () => {
+    renderComponent();
+    fireEvent.click(screen.getByText('Onboarding Course'));
+
+    const dateInput = screen.getByTestId('due-date-input');
+    await act(async () => {
+      fireEvent.change(dateInput, { target: { value: '2025-02-10' } });
+    });
+
+    const resetButton = screen.getByRole('button', { name: /Reset/i });
+    expect(resetButton).toBeInTheDocument();
+
+    await act(async () => {
+      fireEvent.click(resetButton);
+    });
+
+    const saveButton = screen.getByRole('button', { name: 'Save' });
+    expect(saveButton).toBeDisabled();
+  });
+
   it('blocks due date edits on completed courses', () => {
     mockDetail = {
       ...mockDetailData,

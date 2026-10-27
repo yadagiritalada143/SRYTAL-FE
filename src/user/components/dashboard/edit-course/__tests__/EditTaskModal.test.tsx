@@ -3,6 +3,13 @@ import '@testing-library/jest-dom';
 import { MantineProvider } from '@mantine/core';
 import EditTaskModal from '../EditTaskModal';
 
+const mockNavigate = jest.fn();
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  useNavigate: () => mockNavigate,
+  useParams: () => ({ organization: 'acme' })
+}));
+
 jest.mock('@hooks/mutations/useUserMutations', () => ({
   useUpdateCourseTask: () => ({
     mutateAsync: mockUpdateTask,
@@ -26,12 +33,23 @@ jest.mock('@utils/common/get-error-message', () => ({
     error?.response?.data?.message || error?.message || fallback
 }));
 
+jest.mock('@utils/common/constants', () => ({
+  commonUrls: (org: string) => `/${org}/admin`
+}));
+
 jest.mock('@hooks/use-app-theme', () => ({
   useAppTheme: () => ({
     themeConfig: {
       color: '#212529',
+      backgroundColor: '#ffffff',
+      cardBackground: '#ffffff',
       headerBackgroundColor: '#ffffff',
       borderColor: '#dee2e6',
+      accentColor: '#1c7ed6',
+      iconColor: '#228be6',
+      successColor: '#2f9e44',
+      dangerColor: '#c92a2a',
+      mutedTextColor: '#6c757d',
       button: { color: '#495057', textColor: '#ffffff' }
     },
     isDarkTheme: false
@@ -48,6 +66,19 @@ jest.mock('@components/common/button/CommonButton', () => ({
 
 jest.mock('../../content-writer/CourseThumbnail', () => (props: any) => (
   <span data-testid='course-thumbnail' aria-label={props.name} />
+));
+
+jest.mock('../DescriptionEditor', () => (props: any) => (
+  <div>
+    <label>{props.label}</label>
+    <input
+      aria-label={props.label}
+      value={props.value}
+      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+        props.onChange(e.target.value)
+      }
+    />
+  </div>
 ));
 
 jest.mock('@mantine/core', () => {
@@ -118,9 +149,9 @@ describe('EditTaskModal', () => {
   });
 
   describe('Rendering', () => {
-    it('renders the dialog with Edit Content title', () => {
+    it('renders the dialog with Edit Task title', () => {
       renderModal(makeTask());
-      expect(screen.getByText('Edit Content')).toBeInTheDocument();
+      expect(screen.getByText('Edit Task')).toBeInTheDocument();
     });
 
     it('seeds the title field from the task prop', () => {
@@ -148,9 +179,28 @@ describe('EditTaskModal', () => {
       expect(screen.queryByText('Current thumbnail')).not.toBeInTheDocument();
     });
 
+    it('hides the attached content for coding tasks but keeps the thumbnail', () => {
+      renderModal(
+        makeTask({
+          isCoding: true,
+          thumbnailUrl: 'http://example.com/thumb.png',
+          content: 'https://youtube.com/watch?v=abc123'
+        })
+      );
+      expect(screen.getByText('Current thumbnail')).toBeInTheDocument();
+      expect(screen.queryByText('Attached File')).not.toBeInTheDocument();
+    });
+
     it('renders the status select', () => {
       renderModal(makeTask());
       expect(screen.getByLabelText('Status')).toBeInTheDocument();
+    });
+
+    it('shows the coding task hint only for coding tasks, never a Question textarea', () => {
+      renderModal(makeTask({ isCoding: true, question: 'Reverse a string.' }));
+      // The title is the question, so no Question field is editable.
+      expect(screen.queryByLabelText(/Question/)).not.toBeInTheDocument();
+      expect(screen.queryByText('Attached File')).not.toBeInTheDocument();
     });
   });
 
@@ -190,6 +240,119 @@ describe('EditTaskModal', () => {
     });
   });
 
+  describe('Description', () => {
+    it('disables Save Changes until the description is provided', () => {
+      renderModal(makeTask({ taskDescription: 'Watch this intro' }));
+
+      fireEvent.change(screen.getByLabelText('Description'), {
+        target: { value: '' }
+      });
+      expect(
+        screen.getByRole('button', { name: 'Save Changes' })
+      ).toBeDisabled();
+
+      fireEvent.change(screen.getByLabelText('Description'), {
+        target: { value: 'Watch the updated intro.' }
+      });
+      expect(
+        screen.getByRole('button', { name: 'Save Changes' })
+      ).not.toBeDisabled();
+    });
+
+    it('shows the description required message once the editor is blurred', () => {
+      renderModal(makeTask({ taskDescription: 'Watch this intro' }));
+
+      fireEvent.change(screen.getByLabelText('Description'), {
+        target: { value: '' }
+      });
+      fireEvent.blur(screen.getByLabelText('Description'));
+
+      expect(
+        screen.getByText('Task description is required.')
+      ).toBeInTheDocument();
+    });
+  });
+
+  describe('Acknowledgement', () => {
+    it('shows and seeds the acknowledgement switch for FILE tasks', () => {
+      renderModal(
+        makeTask({
+          type: 'FILE',
+          contentFileName: 'policy.pdf',
+          acknowledgementText: 'I have read the policy.'
+        })
+      );
+      expect(screen.getByLabelText(/Require acknowledgement/)).toBeChecked();
+    });
+
+    it('seeds the acknowledgement text field from the task', () => {
+      renderModal(
+        makeTask({
+          type: 'FILE',
+          contentFileName: 'policy.pdf',
+          acknowledgementText: 'I have read the policy.'
+        })
+      );
+      expect(screen.getByLabelText(/Acknowledgement text/)).toHaveValue(
+        'I have read the policy.'
+      );
+    });
+
+    it('hides the acknowledgement text field when the switch is off', () => {
+      renderModal(makeTask({ type: 'FILE', contentFileName: 'policy.pdf' }));
+      expect(
+        screen.queryByLabelText(/Acknowledgement text/)
+      ).not.toBeInTheDocument();
+    });
+
+    it('hides the acknowledgement switch for non-FILE tasks', () => {
+      renderModal(makeTask({ type: 'LINK' }));
+      expect(
+        screen.queryByLabelText(/Require acknowledgement/)
+      ).not.toBeInTheDocument();
+    });
+
+    it('submits the acknowledgement text entered when the switch is turned on', async () => {
+      renderModal(makeTask({ type: 'FILE', contentFileName: 'policy.pdf' }));
+
+      fireEvent.click(screen.getByLabelText(/Require acknowledgement/));
+      fireEvent.change(screen.getByLabelText(/Acknowledgement text/), {
+        target: { value: 'I have read and understood the policy.' }
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: 'Save Changes' }));
+
+      await waitFor(() => {
+        expect(mockUpdateTask).toHaveBeenCalledWith(
+          expect.objectContaining({
+            acknowledgementText: 'I have read and understood the policy.'
+          })
+        );
+      });
+    });
+
+    it('sends an empty acknowledgement to clear it when the switch is off', async () => {
+      renderModal(
+        makeTask({
+          type: 'FILE',
+          contentFileName: 'policy.pdf',
+          acknowledgementText: 'Old statement'
+        })
+      );
+
+      // Seeded as on; turning it off clears the stored acknowledgement.
+      fireEvent.click(screen.getByLabelText(/Require acknowledgement/));
+
+      fireEvent.click(screen.getByRole('button', { name: 'Save Changes' }));
+
+      await waitFor(() => {
+        expect(mockUpdateTask).toHaveBeenCalledWith(
+          expect.objectContaining({ acknowledgementText: '' })
+        );
+      });
+    });
+  });
+
   describe('Submit', () => {
     it('calls updateTask with the form values on success', async () => {
       renderModal(makeTask());
@@ -219,7 +382,7 @@ describe('EditTaskModal', () => {
       });
 
       expect(mockShowSuccessToast).toHaveBeenCalledWith(
-        'Content updated successfully!'
+        'Task updated successfully!'
       );
       expect(mockOnClose).toHaveBeenCalled();
     });
@@ -236,6 +399,41 @@ describe('EditTaskModal', () => {
       await waitFor(() => {
         expect(mockUpdateTask).toHaveBeenCalledWith(
           expect.objectContaining({ taskName: 'Padded' })
+        );
+      });
+    });
+
+    it('does not send question or isCoding fields for coding tasks', async () => {
+      renderModal(makeTask({ type: 'CODE', question: 'Reverse.' }));
+
+      fireEvent.change(screen.getByLabelText(/Title/), {
+        target: { value: 'Reverse a string.' }
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: 'Save Changes' }));
+
+      await waitFor(() => {
+        expect(mockUpdateTask).toHaveBeenCalledWith({
+          id: 't1',
+          taskName: 'Reverse a string.',
+          taskDescription: 'Watch this intro',
+          thumbnail: null,
+          status: 'ACTIVE'
+        });
+      });
+    });
+
+    it('does not send question fields for non-coding tasks', async () => {
+      renderModal(makeTask({ isCoding: false, question: '' }));
+
+      fireEvent.click(screen.getByRole('button', { name: 'Save Changes' }));
+
+      await waitFor(() => {
+        expect(mockUpdateTask).toHaveBeenCalledWith(
+          expect.not.objectContaining({ question: expect.anything() })
+        );
+        expect(mockUpdateTask).toHaveBeenCalledWith(
+          expect.not.objectContaining({ isCoding: expect.anything() })
         );
       });
     });
@@ -273,7 +471,7 @@ describe('EditTaskModal', () => {
 
       await waitFor(() => {
         expect(mockShowErrorToast).toHaveBeenCalledWith(
-          'Failed to update content'
+          'Failed to update task'
         );
       });
     });
@@ -284,6 +482,28 @@ describe('EditTaskModal', () => {
       renderModal(makeTask());
       fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
       expect(mockOnClose).toHaveBeenCalled();
+    });
+  });
+
+  describe('Manage Quiz Questions', () => {
+    it('navigates using the role-aware prefix from commonUrls, never a hardcoded employee path', () => {
+      renderModal(
+        makeTask({ type: 'QUIZ', moduleId: 'm1', taskName: 'Safety quiz' })
+      );
+
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Manage Quiz Questions' })
+      );
+
+      // commonUrls is mocked to return the admin prefix here; the real bug was
+      // a hardcoded `/${organization}/employee` that bounced admins to the
+      // employee login page (ContentWriter-only guard).
+      expect(mockNavigate).toHaveBeenCalledTimes(1);
+      const target = mockNavigate.mock.calls[0][0] as string;
+      expect(target).toMatch(/^\/acme\/admin\/dashboard\/quiz-questions\?/);
+      expect(target).toContain('taskId=t1');
+      expect(target).toContain('courseId=c1');
+      expect(target).toContain('moduleId=m1');
     });
   });
 });

@@ -10,6 +10,10 @@ import {
   getEmployeeDashboard,
   getMyAssignedCourses,
   getMyAssignedCourseById,
+  getCodingQuestion,
+  getAllQuizQuestions,
+  getQuizQuestionById,
+  getQuizById,
   getUserOpenRouterKey
 } from '@services/user-services';
 import { getProfileImage } from '@services/common-services';
@@ -28,7 +32,12 @@ export const userQueryKeys = {
   myCourses: ['myAssignedCourses'] as const,
   myCourse: (courseAssignmentId: string) =>
     ['myAssignedCourse', courseAssignmentId] as const,
-  openRouterKey: (userId: string) => ['userOpenRouterKey', userId] as const
+  openRouterKey: (userId: string) => ['userOpenRouterKey', userId] as const,
+  codingQuestion: (taskId: string, questionId: string, languageId: string) =>
+    ['codingQuestion', taskId, questionId, languageId] as const,
+  quizQuestions: (taskId: string) => ['quizQuestions', taskId] as const,
+  quizQuestion: (questionId: string) => ['quizQuestion', questionId] as const,
+  quizAttempt: (taskId: string) => ['quizAttempt', taskId] as const
 };
 
 export const useGetCompanyDetails = () => {
@@ -120,6 +129,47 @@ export const useGetUserOpenRouterKey = (userId?: string, enabled = true) => {
     queryKey: userQueryKeys.openRouterKey(userId || 'current'),
     queryFn: getUserOpenRouterKey,
     enabled,
+    retry: false
+  });
+};
+
+export const useGetCodingQuestion = (
+  taskId: string,
+  questionId: string,
+  languageId: string,
+  enabled = true
+) => {
+  return useQuery({
+    queryKey: userQueryKeys.codingQuestion(taskId, questionId, languageId),
+    queryFn: () => getCodingQuestion(taskId, questionId, languageId),
+    enabled: !!taskId && !!languageId && enabled
+  });
+};
+
+export const useGetAllQuizQuestions = (taskId: string, enabled = true) => {
+  return useQuery({
+    queryKey: userQueryKeys.quizQuestions(taskId),
+    queryFn: () => getAllQuizQuestions(taskId),
+    enabled: !!taskId && enabled
+  });
+};
+
+export const useGetQuizQuestion = (questionId: string, enabled = true) => {
+  return useQuery({
+    queryKey: userQueryKeys.quizQuestion(questionId),
+    queryFn: () => getQuizQuestionById(questionId),
+    enabled: !!questionId && enabled
+  });
+};
+
+export const useGetQuiz = (taskId: string, enabled = true) => {
+  return useQuery({
+    queryKey: userQueryKeys.quizAttempt(taskId),
+    queryFn: () => getQuizById(taskId),
+    enabled: !!taskId && enabled,
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
     retry: false
   });
 };

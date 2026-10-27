@@ -53,10 +53,6 @@ const EditCourseModal = ({ opened, onClose, course }: EditCourseModalProps) => {
     reader.readAsDataURL(thumbnail);
   }, [thumbnail]);
 
-  // Refill the form each time the modal opens so a cancelled edit does not
-  // leak into the next one. This seeds during render rather than in an effect
-  // because the rich-text editor reads its content once, on mount — an effect
-  // would run too late and the editor would show the previous description.
   const [seededFor, setSeededFor] = useState<string | null>(null);
   if (opened && course && seededFor !== course._id) {
     setSeededFor(course._id);
@@ -65,7 +61,6 @@ const EditCourseModal = ({ opened, onClose, course }: EditCourseModalProps) => {
     setThumbnail(null);
     setStatus((course.status as CourseStatus) || 'ACTIVE');
   } else if (!opened && seededFor !== null) {
-    // Clear on close so reopening the same course re-reads fresh data.
     setSeededFor(null);
   }
 
@@ -81,8 +76,6 @@ const EditCourseModal = ({ opened, onClose, course }: EditCourseModalProps) => {
         id: course._id,
         courseName: courseName.trim(),
         courseDescription,
-        // A selected file replaces the stored thumbnail; leaving it empty
-        // (the modal's default) keeps the existing image.
         thumbnail,
         status
       });
@@ -100,14 +93,35 @@ const EditCourseModal = ({ opened, onClose, course }: EditCourseModalProps) => {
       title='Edit Course'
       centered
       size='lg'
+      radius='lg'
+      overlayProps={{ backgroundOpacity: 0.5, blur: 4 }}
+      transitionProps={{ transition: 'pop', duration: 200 }}
+      styles={{
+        header: {
+          backgroundColor: currentThemeConfig.cardBackground,
+          borderBottom: `1px solid ${currentThemeConfig.borderColor}`,
+          paddingBottom: '12px'
+        },
+        title: {
+          fontWeight: 700,
+          fontSize: '1.1rem',
+          color: currentThemeConfig.color
+        },
+        content: {
+          backgroundColor: currentThemeConfig.cardBackground,
+          color: currentThemeConfig.color,
+          borderRadius: '16px'
+        }
+      }}
     >
-      <Stack gap='md'>
+      <Stack gap='md' className='mt-4'>
         <TextInput
           label='Course Name'
           placeholder='Enter course name'
           required
           value={courseName}
           onChange={e => setCourseName(e.target.value)}
+          radius='md'
         />
 
         <DescriptionEditor
@@ -192,6 +206,7 @@ const EditCourseModal = ({ opened, onClose, course }: EditCourseModalProps) => {
             value={thumbnail}
             onChange={setThumbnail}
             clearable
+            radius='md'
             description={
               !course?.thumbnailUrl && !course?.thumbnail && !thumbPreview
                 ? 'No thumbnail yet — optional, but recommended'
@@ -207,6 +222,7 @@ const EditCourseModal = ({ opened, onClose, course }: EditCourseModalProps) => {
           onChange={value => setStatus((value as CourseStatus) || 'ACTIVE')}
           allowDeselect={false}
           comboboxProps={{ withinPortal: true }}
+          radius='md'
         />
 
         <Group justify='flex-end' mt='sm'>

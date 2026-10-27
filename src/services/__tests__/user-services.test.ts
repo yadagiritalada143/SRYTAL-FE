@@ -19,11 +19,23 @@ import {
   updateCourseContentWriter,
   updateCourseModuleContentWriter,
   updateCourseTaskContentWriter,
+  reorderCourseModulesContentWriter,
+  reorderCourseTasksContentWriter,
   getCourseTaskContentUrl,
+  getAllQuizQuestions,
+  createQuizQuestion,
+  copyQuizQuestionsToTask,
+  getQuizQuestionById,
+  updateQuizQuestion,
+  updateQuizQuestionStatus,
+  deleteQuizQuestion,
   getMyAssignedCourses,
   getMyAssignedCourseById,
   updateMyTaskProgress,
   getEmployeeDashboard,
+  getCodingQuestion,
+  runCode,
+  submitCode,
   saveUserOpenRouterKey,
   getUserOpenRouterKey
 } from '../user-services';
@@ -33,6 +45,7 @@ jest.mock('@utils/api-client', () => {
     get: jest.fn().mockResolvedValue({ data: {} }),
     post: jest.fn().mockResolvedValue({ data: {} }),
     put: jest.fn().mockResolvedValue({ data: {} }),
+    patch: jest.fn().mockResolvedValue({ data: {} }),
     delete: jest.fn().mockResolvedValue({ data: {} }),
     request: jest.fn().mockResolvedValue({ data: {} })
   });
@@ -48,6 +61,7 @@ interface ApiClientMock {
   get: jest.Mock;
   post: jest.Mock;
   put: jest.Mock;
+  patch: jest.Mock;
   delete: jest.Mock;
 }
 
@@ -262,7 +276,7 @@ describe('user-services', () => {
 
       expect(mock.post).toHaveBeenCalled();
       const [url, formData, config] = mock.post.mock.calls[0];
-      expect(url).toBe('/contentwriter/addCourse');
+      expect(url).toBe('/addCourse');
       expect(formData.get('courseName')).toBe('Course');
       expect(formData.get('courseDescription')).toBe('Desc');
       expect(formData.get('coursethumbnail')).toBe(file);
@@ -286,13 +300,15 @@ describe('user-services', () => {
         courseId: 'c1',
         moduleName: 'M1',
         moduleDescription: 'desc',
+        orderIdx: 7,
         thumbnail: thumb
       } as any);
 
       const [, formData] = mock.post.mock.calls[0];
-      expect(mock.post.mock.calls[0][0]).toBe('/contentwriter/addCourseModule');
+      expect(mock.post.mock.calls[0][0]).toBe('/addCourseModule');
       expect(formData.get('courseId')).toBe('c1');
       expect(formData.get('moduleName')).toBe('M1');
+      expect(formData.get('orderIdx')).toBe('7');
       expect(formData.get('coursemodulethumbnail')).toBe(thumb);
     });
 
@@ -304,12 +320,14 @@ describe('user-services', () => {
         moduleId: 'm1',
         taskName: 'T1',
         taskDescription: 'desc',
+        orderIdx: 2,
         file
       } as any);
 
       const [, formData] = mock.post.mock.calls[0];
       expect(formData.get('moduleId')).toBe('m1');
       expect(formData.get('taskName')).toBe('T1');
+      expect(formData.get('orderIdx')).toBe('2');
       expect(formData.get('taskFile')).toBe(file);
       expect(formData.has('link')).toBe(false);
     });
@@ -329,6 +347,25 @@ describe('user-services', () => {
       expect(formData.has('taskFile')).toBe(false);
     });
 
+    it('addCourseTaskContentWriter sends the type for coding tasks only', async () => {
+      mock.post.mockResolvedValue({ data: { ok: 1 } });
+
+      await addCourseTaskContentWriter({
+        moduleId: 'm1',
+        taskName: 'FizzBuzz',
+        taskDescription: 'desc',
+        type: 'CODE'
+      } as any);
+
+      const [, formData] = mock.post.mock.calls[0];
+      expect(formData.get('moduleId')).toBe('m1');
+      expect(formData.get('type')).toBe('CODE');
+      expect(formData.has('isCoding')).toBe(false);
+      expect(formData.has('question')).toBe(false);
+      expect(formData.has('link')).toBe(false);
+      expect(formData.has('taskFile')).toBe(false);
+    });
+
     it('updateCourseContentWriter puts the updated course', async () => {
       mock.put.mockResolvedValue({ data: { ok: 1 } });
 
@@ -341,7 +378,7 @@ describe('user-services', () => {
 
       expect(mock.put).toHaveBeenCalled();
       const [url, formData, config] = mock.put.mock.calls[0];
-      expect(url).toBe('/contentwriter/updatecourse');
+      expect(url).toBe('/updatecourse');
       expect(formData.get('id')).toBe('c1');
       expect(formData.get('courseName')).toBe('New');
       expect(formData.get('status')).toBe('active');
@@ -355,15 +392,47 @@ describe('user-services', () => {
         id: 'm1',
         moduleName: 'New',
         moduleDescription: 'desc',
-        status: 'draft'
+        status: 'draft',
+        orderIdx: 3
       } as any);
 
-      expect(mock.put.mock.calls[0][0]).toBe(
-        '/contentwriter/updatecoursemodule'
-      );
+      expect(mock.put.mock.calls[0][0]).toBe('/updatecoursemodule');
       const [, formData] = mock.put.mock.calls[0];
       expect(formData.get('id')).toBe('m1');
       expect(formData.get('status')).toBe('draft');
+      expect(formData.get('orderIdx')).toBe('3');
+    });
+
+    it('reorderCourseModulesContentWriter puts the reordered modules', async () => {
+      mock.put.mockResolvedValue({ data: { success: true } });
+      const payload = {
+        courseId: 'c1',
+        modules: [
+          { moduleId: 'm2', orderIdx: 1 },
+          { moduleId: 'm1', orderIdx: 2 }
+        ]
+      };
+
+      const result = await reorderCourseModulesContentWriter(payload);
+
+      expect(mock.put).toHaveBeenCalledWith('/reordermodules', payload);
+      expect(result).toEqual({ success: true });
+    });
+
+    it('reorderCourseTasksContentWriter puts the reordered tasks', async () => {
+      mock.put.mockResolvedValue({ data: { success: true } });
+      const payload = {
+        moduleId: 'm1',
+        tasks: [
+          { taskId: 't2', orderIdx: 1 },
+          { taskId: 't1', orderIdx: 2 }
+        ]
+      };
+
+      const result = await reorderCourseTasksContentWriter(payload);
+
+      expect(mock.put).toHaveBeenCalledWith('/reordertasks', payload);
+      expect(result).toEqual({ success: true });
     });
 
     it('updateCourseTaskContentWriter puts the updated task', async () => {
@@ -376,9 +445,29 @@ describe('user-services', () => {
         status: 'active'
       } as any);
 
-      expect(mock.put.mock.calls[0][0]).toBe('/contentwriter/updatecoursetask');
+      expect(mock.put.mock.calls[0][0]).toBe('/updatecoursetask');
       const [, formData] = mock.put.mock.calls[0];
       expect(formData.get('taskName')).toBe('New');
+      expect(formData.has('isCoding')).toBe(false);
+      expect(formData.has('question')).toBe(false);
+    });
+
+    it('updateCourseTaskContentWriter never sends question or isCoding', async () => {
+      mock.put.mockResolvedValue({ data: { ok: 1 } });
+
+      await updateCourseTaskContentWriter({
+        id: 't1',
+        taskName: 'FizzBuzz',
+        taskDescription: 'desc',
+        status: 'active',
+        isCoding: true,
+        question: 'Return fizz for multiples of three.'
+      } as any);
+
+      const [, formData] = mock.put.mock.calls[0];
+      expect(formData.get('taskName')).toBe('FizzBuzz');
+      expect(formData.has('isCoding')).toBe(false);
+      expect(formData.has('question')).toBe(false);
     });
   });
 
@@ -389,8 +478,199 @@ describe('user-services', () => {
       const url = getCourseTaskContentUrl('task1');
 
       expect(url).toBe(
-        'http://localhost:3000/contentwriter/getCourseTaskContent/task1?auth_token=tok123'
+        'http://localhost:3000/getCourseTaskContent/task1?auth_token=tok123'
       );
+    });
+  });
+
+  describe('quiz question services', () => {
+    it('getAllQuizQuestions returns the questions for a task', async () => {
+      mock.get.mockResolvedValue({
+        data: { success: true, data: [{ _id: 'q1' }] }
+      });
+
+      const result = await getAllQuizQuestions('task1');
+
+      expect(mock.get).toHaveBeenCalledWith('/getAllQuizQuestions/task1');
+      expect(result).toEqual([{ _id: 'q1' }]);
+    });
+
+    it('getAllQuizQuestions falls back to an empty list', async () => {
+      mock.get.mockResolvedValue({ data: { success: true } });
+
+      expect(await getAllQuizQuestions('task1')).toEqual([]);
+    });
+
+    it('createQuizQuestion posts the payload and returns the response', async () => {
+      mock.post.mockResolvedValue({
+        data: { success: true, message: 'created', data: { _id: 'q1' } }
+      });
+
+      const payload = {
+        taskId: 'task1',
+        question: 'Pick one',
+        type: 'RADIO' as const,
+        status: 'SHOW' as const,
+        options: [
+          { value: 'A', isanswer: true },
+          { value: 'B', isanswer: false }
+        ]
+      };
+
+      const result = await createQuizQuestion(payload);
+
+      expect(mock.post).toHaveBeenCalledWith('/createQuizQuestion', payload);
+      expect(result).toEqual({
+        success: true,
+        message: 'created',
+        data: { _id: 'q1' }
+      });
+    });
+
+    it('copyQuizQuestionsToTask re-creates every question on the target task', async () => {
+      mock.get.mockResolvedValue({
+        data: {
+          success: true,
+          data: [
+            {
+              _id: 'q1',
+              question: 'Pick one',
+              type: 'RADIO',
+              status: 'SHOW',
+              options: [
+                { value: 'A', isanswer: true },
+                { value: 'B', isanswer: false }
+              ]
+            },
+            {
+              _id: 'q2',
+              question: 'Describe it',
+              type: 'TEXTAREA',
+              status: 'HIDE'
+            }
+          ]
+        }
+      });
+      mock.post.mockResolvedValue({ data: { success: true } });
+
+      const copied = await copyQuizQuestionsToTask('sourceTask', 'targetTask');
+
+      expect(mock.get).toHaveBeenCalledWith('/getAllQuizQuestions/sourceTask');
+      expect(mock.post).toHaveBeenCalledTimes(2);
+      expect(mock.post).toHaveBeenNthCalledWith(1, '/createQuizQuestion', {
+        taskId: 'targetTask',
+        question: 'Pick one',
+        type: 'RADIO',
+        status: 'SHOW',
+        options: [
+          { value: 'A', isanswer: true },
+          { value: 'B', isanswer: false }
+        ]
+      });
+      // a free-text question never carries an options array
+      expect(mock.post).toHaveBeenNthCalledWith(2, '/createQuizQuestion', {
+        taskId: 'targetTask',
+        question: 'Describe it',
+        type: 'TEXTAREA',
+        status: 'HIDE'
+      });
+      expect(copied).toBe(2);
+    });
+
+    it('copyQuizQuestionsToTask does nothing when the source has no questions', async () => {
+      mock.get.mockResolvedValue({ data: { success: true, data: [] } });
+
+      expect(await copyQuizQuestionsToTask('sourceTask', 'targetTask')).toBe(0);
+      expect(mock.post).not.toHaveBeenCalled();
+    });
+
+    it('getQuizQuestionById returns the single question', async () => {
+      mock.get.mockResolvedValue({
+        data: { success: true, data: { _id: 'q1' } }
+      });
+
+      const result = await getQuizQuestionById('q1');
+
+      expect(mock.get).toHaveBeenCalledWith('/getQuizQuestion/q1');
+      expect(result).toEqual({ _id: 'q1' });
+    });
+
+    it('getQuizQuestionById falls back to null', async () => {
+      mock.get.mockResolvedValue({ data: { success: true } });
+
+      expect(await getQuizQuestionById('q1')).toBeNull();
+    });
+
+    it('updateQuizQuestion puts the payload and returns the response', async () => {
+      mock.put.mockResolvedValue({
+        data: { success: true, message: 'updated', data: { _id: 'q1' } }
+      });
+
+      const data = { question: 'Updated?' };
+      const result = await updateQuizQuestion('q1', data);
+
+      expect(mock.put).toHaveBeenCalledWith('/updateQuizQuestion/q1', data);
+      expect(result).toEqual({
+        success: true,
+        message: 'updated',
+        data: { _id: 'q1' }
+      });
+    });
+
+    it('updateQuizQuestionStatus patches the status', async () => {
+      mock.patch.mockResolvedValue({
+        data: { success: true, message: 'hidden', data: { _id: 'q1' } }
+      });
+
+      const result = await updateQuizQuestionStatus('q1', 'HIDE');
+
+      expect(mock.patch).toHaveBeenCalledWith('/updateQuizQuestionStatus/q1', {
+        status: 'HIDE'
+      });
+      expect(result).toEqual({
+        success: true,
+        message: 'hidden',
+        data: { _id: 'q1' }
+      });
+    });
+
+    it('deleteQuizQuestion deletes by id', async () => {
+      mock.delete.mockResolvedValue({
+        data: { success: true, message: 'deleted' }
+      });
+
+      const result = await deleteQuizQuestion('q1');
+
+      expect(mock.delete).toHaveBeenCalledWith('/deleteQuizQuestion/q1');
+      expect(result).toEqual({ success: true, message: 'deleted' });
+    });
+
+    it('deleteQuizQuestion deletes by object with questionId', async () => {
+      mock.delete.mockResolvedValue({
+        data: { success: true, message: 'deleted' }
+      });
+
+      const result = await deleteQuizQuestion({ questionId: 'q2' });
+
+      expect(mock.delete).toHaveBeenCalledWith('/deleteQuizQuestion/q2');
+      expect(result).toEqual({ success: true, message: 'deleted' });
+    });
+
+    it('getAllQuizQuestions filters out soft-deleted questions', async () => {
+      mock.get.mockResolvedValue({
+        data: {
+          success: true,
+          data: [
+            { _id: 'q1', isDeleted: false },
+            { _id: 'q2', isDeleted: true },
+            { _id: 'q3' }
+          ]
+        }
+      });
+
+      const result = await getAllQuizQuestions('task1');
+
+      expect(result).toEqual([{ _id: 'q1', isDeleted: false }, { _id: 'q3' }]);
     });
   });
 
@@ -419,6 +699,109 @@ describe('user-services', () => {
 
       expect(mock.put).toHaveBeenCalledWith('/updateMyTaskProgress', payload);
       expect(result).toEqual({ progress: 50 });
+    });
+  });
+
+  describe('coding question services', () => {
+    it('getCodingQuestion fetches via the 3-param route', async () => {
+      mock.get.mockResolvedValue({
+        data: {
+          success: true,
+          message: 'ok',
+          data: { questionId: 'q1', starterCode: 'print(1)' }
+        }
+      });
+
+      expect(await getCodingQuestion('t1', 'q1', 'lang-123')).toEqual({
+        questionId: 'q1',
+        starterCode: 'print(1)'
+      });
+      expect(mock.get).toHaveBeenCalledWith('/getquestion/t1/q1/lang-123');
+    });
+
+    it('getCodingQuestion unwraps the response envelope', async () => {
+      mock.get.mockResolvedValue({
+        data: {
+          success: true,
+          message: 'ok',
+          data: {
+            taskId: 't1',
+            questionId: 'q1',
+            allowedLanguages: [
+              {
+                languageId: 'lang-123',
+                languageName: 'Python',
+                canonicalKey: 'python'
+              }
+            ],
+            language: 'python',
+            languageId: 'lang-123',
+            starterCode: 'print(1)',
+            lastSubmittedCode: null
+          }
+        }
+      });
+
+      expect(await getCodingQuestion('t1', 'q1', 'lang-123')).toEqual({
+        taskId: 't1',
+        questionId: 'q1',
+        allowedLanguages: [
+          {
+            languageId: 'lang-123',
+            languageName: 'Python',
+            canonicalKey: 'python'
+          }
+        ],
+        language: 'python',
+        languageId: 'lang-123',
+        starterCode: 'print(1)',
+        lastSubmittedCode: null
+      });
+    });
+
+    it('runCode posts to /runcode and returns the execution result', async () => {
+      mock.post.mockResolvedValue({
+        data: { success: true, message: 'ok', data: { score: 80 } }
+      });
+
+      const result = await runCode({
+        questionId: 't1',
+        language: 'Python',
+        code: 'print(1)'
+      });
+
+      expect(mock.post).toHaveBeenCalledWith('/runcode', {
+        questionId: 't1',
+        language: 'Python',
+        code: 'print(1)'
+      });
+      expect(result).toEqual({ score: 80 });
+    });
+
+    it('submitCode posts to /submitcode and returns the message and execution result', async () => {
+      mock.post.mockResolvedValue({
+        data: {
+          success: true,
+          message: 'Code submitted successfully !',
+          data: { score: 95 }
+        }
+      });
+
+      const result = await submitCode({
+        questionId: 't1',
+        language: 'Python',
+        code: 'print(1)'
+      });
+
+      expect(mock.post).toHaveBeenCalledWith('/submitcode', {
+        questionId: 't1',
+        language: 'Python',
+        code: 'print(1)'
+      });
+      expect(result).toEqual({
+        message: 'Code submitted successfully !',
+        result: { score: 95 }
+      });
     });
   });
 

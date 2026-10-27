@@ -65,7 +65,7 @@ describe('EmployeeInfoCard Component', () => {
     expect(screen.getByText('PAN')).toBeInTheDocument();
     expect(screen.getByText('ABCDE1234F')).toBeInTheDocument();
     expect(screen.getByText('Aadhar Number')).toBeInTheDocument();
-    expect(screen.getByText('123456789012')).toBeInTheDocument();
+    expect(screen.getByText('1234 5678 9012')).toBeInTheDocument();
   });
 
   it('renders dash placeholders for missing values', () => {

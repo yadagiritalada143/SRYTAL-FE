@@ -1,4 +1,4 @@
-export type TaskContentType = 'FILE' | 'LINK';
+export type TaskContentType = 'FILE' | 'LINK' | 'CODE' | 'QUIZ';
 
 // Mirrors the backend `validStatusValues` whitelist. The update endpoints
 // reject anything else with a 400.
@@ -13,11 +13,15 @@ export interface Task {
   taskDescription: string;
   thumbnail?: string;
   status: string;
+  orderIdx?: number;
   // 'FILE' (uploaded file served from S3) or 'LINK' (external URL).
   type?: TaskContentType | string;
   content?: string;
   contentMimeType?: string;
   contentFileName?: string;
+  acknowledgementText?: string;
+  isCoding?: boolean;
+  question?: string;
   thumbnailUrl?: string;
   updatedAt?: string;
 }
@@ -31,6 +35,7 @@ export interface Module {
   thumbnailUrl?: string;
   tasks: Task[];
   status: string;
+  orderIdx?: number;
   updatedAt?: string;
 }
 
@@ -38,6 +43,7 @@ export interface AddModulePayload {
   courseId: string;
   moduleName: string;
   moduleDescription: string;
+  orderIdx: number;
   thumbnail?: File | null;
 }
 
@@ -55,6 +61,7 @@ export interface UpdateModulePayload {
   id: string;
   moduleName: string;
   moduleDescription: string;
+  orderIdx: number;
   // A new file uploads over the existing thumbnail (multer field `thumbnail`).
   // When omitted, the stored thumbnail is kept as-is.
   thumbnail?: File | null;
@@ -69,17 +76,40 @@ export interface UpdateTaskPayload {
   // `thumbnailFile`). When omitted, the stored thumbnail is kept as-is.
   thumbnail?: File | null;
   status: CourseStatus;
+  acknowledgementText?: string;
 }
 
 export interface AddTaskPayload {
   moduleId: string;
   taskName: string;
   taskDescription: string;
-  // Provide exactly one of `file` or `link`.
+  type?: TaskContentType;
   file?: File | null;
   link?: string;
+  acknowledgementText?: string;
+  orderIdx: number;
   // Optional task thumbnail image (multer field `thumbnailFile`).
   thumbnail?: File | null;
+}
+
+export interface ReorderModuleItem {
+  moduleId: string;
+  orderIdx: number;
+}
+
+export interface ReorderModulesPayload {
+  courseId: string;
+  modules: ReorderModuleItem[];
+}
+
+export interface ReorderTaskItem {
+  taskId: string;
+  orderIdx: number;
+}
+
+export interface ReorderTasksPayload {
+  moduleId: string;
+  tasks: ReorderTaskItem[];
 }
 
 export interface Course {
@@ -118,4 +148,42 @@ export interface DashboardData {
     type: string;
     updatedAt?: string;
   }[];
+}
+
+export interface CloneCourseModuleSelection {
+  moduleId: string;
+  taskIds: string[];
+}
+
+export interface CloneCoursePayload {
+  courseId: string;
+  courseName: string;
+  modules: CloneCourseModuleSelection[];
+}
+
+export interface ClonedCourseTask {
+  taskId: string;
+  taskName: string;
+  type?: string;
+  status?: string;
+}
+
+export interface ClonedCourseModule {
+  moduleId: string;
+  moduleName: string;
+  status?: string;
+  tasks: ClonedCourseTask[];
+}
+
+export interface ClonedCourseData {
+  courseId: string;
+  courseName: string;
+  status: string;
+  modules: ClonedCourseModule[];
+}
+
+export interface CloneCourseResponse {
+  success: boolean;
+  message?: string;
+  data?: ClonedCourseData;
 }

@@ -5,14 +5,24 @@ import TaskContentViewer from '../TaskContentViewer';
 import { AssignedTask } from '@interfaces/course-assignment';
 
 let mockResolved: any = null;
+let mockIsCodingTask: jest.Mock;
+const mockNavigate = jest.fn();
+
+jest.mock('react-router-dom', () => ({
+  useNavigate: () => mockNavigate
+}));
 
 jest.mock('../task-content', () => ({
-  resolveTaskContent: () => mockResolved
+  resolveTaskContent: () => mockResolved,
+  isCodingTask: (task: any) => mockIsCodingTask(task),
+  isQuizTask: (task: any) => String(task?.type || '').toUpperCase() === 'QUIZ'
 }));
+
+jest.mock('../QuizTaskViewer', () => () => <div>QuizTaskViewer</div>);
 
 jest.mock('@services/user-services', () => ({
   getCourseTaskContentUrl: (taskId: string) =>
-    `http://localhost:3000/contentwriter/getCourseTaskContent/${taskId}?auth_token=fake`
+    `http://localhost:3000/getCourseTaskContent/${taskId}?auth_token=fake`
 }));
 
 jest.mock('@hooks/use-app-theme', () => ({
@@ -64,12 +74,13 @@ const renderViewer = (task: AssignedTask = makeTask()) => {
 describe('TaskContentViewer', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockIsCodingTask = jest.fn(() => false);
   });
 
   it('renders a video element with the resolved url and controls', () => {
     mockResolved = {
       kind: 'video',
-      url: 'http://localhost:3000/contentwriter/getCourseTaskContent/t1?auth_token=fake',
+      url: 'http://localhost:3000/getCourseTaskContent/t1?auth_token=fake',
       label: 'Video'
     };
     const { container } = renderViewer(makeTask({ type: 'FILE' }));
@@ -77,7 +88,7 @@ describe('TaskContentViewer', () => {
     expect(video).toBeInTheDocument();
     expect(video).toHaveAttribute(
       'src',
-      'http://localhost:3000/contentwriter/getCourseTaskContent/t1?auth_token=fake'
+      'http://localhost:3000/getCourseTaskContent/t1?auth_token=fake'
     );
     expect(video).toHaveAttribute('controls');
     expect(video).toHaveAttribute('controlslist', 'nodownload');
@@ -86,7 +97,7 @@ describe('TaskContentViewer', () => {
   it('calls onFinished when a video ends', () => {
     mockResolved = {
       kind: 'video',
-      url: 'http://localhost:3000/contentwriter/getCourseTaskContent/t1?auth_token=fake',
+      url: 'http://localhost:3000/getCourseTaskContent/t1?auth_token=fake',
       label: 'Video'
     };
     const { container } = renderViewer();
@@ -98,7 +109,7 @@ describe('TaskContentViewer', () => {
   it('renders an audio element and calls onFinished when it ends', () => {
     mockResolved = {
       kind: 'audio',
-      url: 'http://localhost:3000/contentwriter/getCourseTaskContent/t1?auth_token=fake',
+      url: 'http://localhost:3000/getCourseTaskContent/t1?auth_token=fake',
       label: 'Audio'
     };
     const { container } = renderViewer();
@@ -130,7 +141,7 @@ describe('TaskContentViewer', () => {
   it('renders an image with the task name as alt text', () => {
     mockResolved = {
       kind: 'image',
-      url: 'http://localhost:3000/contentwriter/getCourseTaskContent/t1?auth_token=fake',
+      url: 'http://localhost:3000/getCourseTaskContent/t1?auth_token=fake',
       label: 'Image'
     };
     renderViewer();
@@ -138,27 +149,27 @@ describe('TaskContentViewer', () => {
     expect(img).toBeInTheDocument();
     expect(img).toHaveAttribute(
       'src',
-      'http://localhost:3000/contentwriter/getCourseTaskContent/t1?auth_token=fake'
+      'http://localhost:3000/getCourseTaskContent/t1?auth_token=fake'
     );
   });
 
   it('renders a pdf in an iframe', () => {
     mockResolved = {
       kind: 'pdf',
-      url: 'http://localhost:3000/contentwriter/getCourseTaskContent/t1?auth_token=fake',
+      url: 'http://localhost:3000/getCourseTaskContent/t1?auth_token=fake',
       label: 'PDF'
     };
     renderViewer();
     expect(screen.getByTitle('Intro video')).toHaveAttribute(
       'src',
-      'http://localhost:3000/contentwriter/getCourseTaskContent/t1?auth_token=fake'
+      'http://localhost:3000/getCourseTaskContent/t1?auth_token=fake'
     );
   });
 
   it('renders a text document in an iframe', () => {
     mockResolved = {
       kind: 'text',
-      url: 'http://localhost:3000/contentwriter/getCourseTaskContent/t1?auth_token=fake',
+      url: 'http://localhost:3000/getCourseTaskContent/t1?auth_token=fake',
       label: 'Document'
     };
     renderViewer();
@@ -196,7 +207,7 @@ describe('TaskContentViewer', () => {
     const openSpy = jest.spyOn(window, 'open').mockImplementation(() => null);
     mockResolved = {
       kind: 'download',
-      url: 'http://localhost:3000/contentwriter/getCourseTaskContent/t1?auth_token=fake',
+      url: 'http://localhost:3000/getCourseTaskContent/t1?auth_token=fake',
       label: 'File'
     };
     renderViewer(makeTask({ type: 'FILE', contentFileName: 'notes.pdf' }));
@@ -210,7 +221,7 @@ describe('TaskContentViewer', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Open file' }));
 
     expect(openSpy).toHaveBeenCalledWith(
-      'http://localhost:3000/contentwriter/getCourseTaskContent/t1?auth_token=fake',
+      'http://localhost:3000/getCourseTaskContent/t1?auth_token=fake',
       '_blank',
       'noopener'
     );
@@ -220,10 +231,44 @@ describe('TaskContentViewer', () => {
   it('falls back to "Attached file" when a download task has no file name', () => {
     mockResolved = {
       kind: 'download',
-      url: 'http://localhost:3000/contentwriter/getCourseTaskContent/t1?auth_token=fake',
+      url: 'http://localhost:3000/getCourseTaskContent/t1?auth_token=fake',
       label: 'File'
     };
     renderViewer(makeTask({ type: 'FILE', contentFileName: undefined }));
     expect(screen.getByText('Attached file')).toBeInTheDocument();
+  });
+
+  it('opens the coding problem on its own page for coding tasks', () => {
+    mockResolved = {
+      kind: 'external',
+      url: '',
+      label: 'Article'
+    };
+    mockIsCodingTask.mockReturnValue(true);
+    renderViewer(makeTask({ type: 'LINK', link: '' }));
+
+    fireEvent.click(screen.getByText('Open coding problem'));
+
+    expect(mockNavigate).toHaveBeenCalledWith('task/t1');
+  });
+
+  it('does not offer the coding problem for a LINK task with a real url', () => {
+    mockResolved = {
+      kind: 'external',
+      url: 'https://blog.example.com/article',
+      label: 'Article',
+      externalUrl: 'https://blog.example.com/article'
+    };
+    renderViewer(
+      makeTask({ type: 'LINK', link: 'https://blog.example.com/article' })
+    );
+
+    expect(screen.queryByText('Open coding problem')).not.toBeInTheDocument();
+    expect(screen.getByText('External resource')).toBeInTheDocument();
+  });
+
+  it('renders QuizTaskViewer for quiz tasks', () => {
+    renderViewer(makeTask({ type: 'QUIZ' }));
+    expect(screen.getByText('QuizTaskViewer')).toBeInTheDocument();
   });
 });

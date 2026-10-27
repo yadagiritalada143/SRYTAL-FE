@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Box, Image, Text } from '@mantine/core';
+import { useCallback, useRef, useState } from 'react';
+import { Box, Image, Skeleton, Text } from '@mantine/core';
 
 interface CourseThumbnailProps {
   /** Course/module name — drives the placeholder's initials and colour. */
@@ -48,6 +48,9 @@ const initialsFor = (name: string) =>
     .map(word => word[0]?.toUpperCase() ?? '')
     .join('') || '?';
 
+const isLoadableSrc = (value?: string): boolean =>
+  /^(https?:\/\/|\/|data:|blob:)/i.test((value ?? '').trim());
+
 /**
  * Course/module thumbnail. Replaces the old stock `course-thumbnail.png`
  * placeholder — every course showing the same photo read as a broken image.
@@ -59,21 +62,62 @@ const CourseThumbnail = ({
   height,
   radius = 'sm'
 }: CourseThumbnailProps) => {
-  const [failed, setFailed] = useState(false);
-  const resolvedHeight = height ?? size;
+  const thumbnailSrc = isLoadableSrc(src) ? src : undefined;
+  const [loadedSrc, setLoadedSrc] = useState<string | undefined>();
+  const [failedSrc, setFailedSrc] = useState<string | undefined>();
 
-  if (src && !failed) {
+  const srcRef = useRef(thumbnailSrc);
+  srcRef.current = thumbnailSrc;
+
+  const handleImageRef = useCallback((node: HTMLImageElement | null) => {
+    if (node?.complete && node.naturalWidth > 0) {
+      setLoadedSrc(srcRef.current);
+    }
+  }, []);
+
+  const resolvedHeight = height ?? size;
+  const failed = !!thumbnailSrc && failedSrc === thumbnailSrc;
+  const loaded = !!thumbnailSrc && loadedSrc === thumbnailSrc;
+  const borderRadius =
+    typeof radius === 'number' ? radius : `var(--mantine-radius-${radius})`;
+
+  if (thumbnailSrc && !failed) {
     return (
-      <Image
-        src={src}
+      <Box
         w={size}
         h={resolvedHeight}
-        radius={radius}
-        fit='cover'
-        alt={name}
-        onError={() => setFailed(true)}
-        style={{ flexShrink: 0 }}
-      />
+        style={{
+          flexShrink: 0,
+          position: 'relative',
+          overflow: 'hidden',
+          borderRadius
+        }}
+      >
+        {!loaded && (
+          <Skeleton
+            w='100%'
+            h='100%'
+            radius={0}
+            aria-hidden='true'
+            style={{ position: 'absolute', inset: 0 }}
+          />
+        )}
+        <Image
+          ref={handleImageRef}
+          src={thumbnailSrc}
+          w='100%'
+          h='100%'
+          fit='cover'
+          alt={name}
+          onLoad={() => setLoadedSrc(thumbnailSrc)}
+          onError={() => setFailedSrc(thumbnailSrc)}
+          style={{
+            display: 'block',
+            opacity: loaded ? 1 : 0,
+            transition: 'opacity 150ms ease'
+          }}
+        />
+      </Box>
     );
   }
 
@@ -84,10 +128,7 @@ const CourseThumbnail = ({
       style={{
         flexShrink: 0,
         background: gradientFor(name),
-        borderRadius:
-          typeof radius === 'number'
-            ? radius
-            : `var(--mantine-radius-${radius})`,
+        borderRadius,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center'

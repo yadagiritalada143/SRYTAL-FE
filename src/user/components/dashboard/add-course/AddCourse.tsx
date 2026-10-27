@@ -22,14 +22,15 @@ import TextAlign from '@tiptap/extension-text-align';
 import Superscript from '@tiptap/extension-superscript';
 import SubScript from '@tiptap/extension-subscript';
 import Highlight from '@tiptap/extension-highlight';
+import { Placeholder } from '@tiptap/extensions';
 import {
   IconUpload,
   IconX,
-  IconPhoto,
   IconArrowLeft,
+  IconPhoto,
   IconCheck
 } from '@tabler/icons-react';
-import React, { useState } from 'react';
+import React, { useReducer, useState } from 'react';
 import { useMediaQuery } from '@mantine/hooks';
 import { useNavigate } from 'react-router-dom';
 import { useCustomToast } from '@utils/common/toast';
@@ -49,6 +50,11 @@ const AddCourse = () => {
   const { mutateAsync: addCourse, isPending: isSubmitting } = useAddCourse();
 
   const isMobile = useMediaQuery('(max-width: 768px)');
+  const [, forceDescriptionCheck] = useReducer((tick: number) => tick + 1, 0);
+
+  const activeBg =
+    currentThemeConfig?.button?.color || 'var(--mantine-color-indigo-6)';
+  const activeText = currentThemeConfig?.button?.textColor || '#ffffff';
 
   const editor = useEditor({
     extensions: [
@@ -58,10 +64,29 @@ const AddCourse = () => {
       Superscript,
       SubScript,
       Highlight,
-      TextAlign.configure({ types: ['heading', 'paragraph'] })
+      TextAlign.configure({ types: ['heading', 'paragraph'] }),
+      Placeholder.configure({
+        placeholder: 'Write your course description here...'
+      })
     ],
-    content: '<p>Write your course description here...</p>'
+    onUpdate: () => forceDescriptionCheck(),
+    onTransaction: () => forceDescriptionCheck(),
+    onSelectionUpdate: () => forceDescriptionCheck()
   });
+
+  const handleToolbarMouseDown = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (
+      target.closest('.mantine-RichTextEditor-control') ||
+      target.closest('.mantine-RichTextEditor-controlsGroup')
+    ) {
+      setTimeout(() => {
+        if (editor && !editor.isFocused) {
+          editor.commands?.focus();
+        }
+      }, 0);
+    }
+  };
 
   const handleThumbnailChange = (file: File | null) => {
     setThumbnailFile(file);
@@ -96,8 +121,9 @@ const AddCourse = () => {
     }
   };
 
-  const isFormValid =
-    courseName.trim() && thumbnailFile && editor?.getText().trim();
+  const isFormValid = Boolean(
+    courseName.trim() && thumbnailFile && editor?.getText().trim()
+  );
 
   return (
     <Container
@@ -280,6 +306,37 @@ const AddCourse = () => {
 
             {/* Course Description */}
             <Box>
+              <style>{`
+                .mantine-RichTextEditor-control[data-active],
+                .mantine-RichTextEditor-control[data-active="true"],
+                .mantine-RichTextEditor-control[aria-pressed="true"],
+                button[data-active="true"].mantine-RichTextEditor-control {
+                  background-color: ${activeBg} !important;
+                  color: ${activeText} !important;
+                  font-weight: 600 !important;
+                  box-shadow: 0 2px 8px ${activeBg}45 !important;
+                }
+                .mantine-RichTextEditor-control[data-active] svg,
+                .mantine-RichTextEditor-control[data-active="true"] svg,
+                .mantine-RichTextEditor-control[aria-pressed="true"] svg {
+                  color: ${activeText} !important;
+                  stroke: ${activeText} !important;
+                }
+                .mantine-RichTextEditor-control:hover:not([data-active]):not([aria-pressed="true"]) {
+                  background-color: ${activeBg}20 !important;
+                }
+                .mantine-RichTextEditor-controlsGroup {
+                  margin-right: ${isMobile ? '4px' : '10px'} !important;
+                  padding-right: ${isMobile ? '4px' : '10px'} !important;
+                  border-right: 1px solid ${currentThemeConfig.borderColor} !important;
+                  gap: 4px !important;
+                }
+                .mantine-RichTextEditor-controlsGroup:last-child {
+                  margin-right: 0 !important;
+                  padding-right: 0 !important;
+                  border-right: none !important;
+                }
+              `}</style>
               <Text
                 size={isMobile ? 'sm' : 'md'}
                 fw={600}
@@ -302,34 +359,41 @@ const AddCourse = () => {
                     backgroundColor: currentThemeConfig.headerBackgroundColor,
                     color: currentThemeConfig.color,
                     borderColor: currentThemeConfig.borderColor,
+                    borderRadius: '12px',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
                     fontSize: isMobile ? '13px' : '14px'
                   },
                   toolbar: {
-                    backgroundColor: currentThemeConfig.headerBackgroundColor,
+                    backgroundColor: currentThemeConfig.cardBackground,
                     color: currentThemeConfig.color,
-                    border: 'none',
-                    padding: isMobile ? '4px' : '8px',
-                    gap: isMobile ? '2px' : '4px',
+                    borderBottom: `1px solid ${currentThemeConfig.borderColor}`,
+                    padding: isMobile ? '6px 8px' : '10px 14px',
+                    gap: isMobile ? '6px' : '10px',
                     flexWrap: 'wrap'
                   },
                   control: {
-                    backgroundColor: currentThemeConfig.headerBackgroundColor,
                     color: currentThemeConfig.color,
                     border: 'none',
+                    borderRadius: '6px',
                     minWidth: isMobile ? '28px' : '32px',
                     minHeight: isMobile ? '28px' : '32px',
-                    padding: isMobile ? '4px' : '6px'
+                    transition: 'all 0.15s ease'
                   },
                   content: {
                     backgroundColor: currentThemeConfig.headerBackgroundColor,
                     color: currentThemeConfig.color,
                     minHeight: isMobile ? 150 : 200,
                     padding: isMobile ? '0.5rem' : '1rem',
-                    fontSize: isMobile ? '13px' : '14px'
+                    fontSize: isMobile ? '13px' : '14px',
+                    lineHeight: 1.6
                   }
                 }}
               >
-                <RichTextEditor.Toolbar sticky stickyOffset={isMobile ? 0 : 60}>
+                <RichTextEditor.Toolbar
+                  sticky
+                  stickyOffset={isMobile ? 0 : 60}
+                  onMouseDown={handleToolbarMouseDown}
+                >
                   <RichTextEditor.ControlsGroup>
                     <RichTextEditor.Bold />
                     <RichTextEditor.Italic />
@@ -393,12 +457,11 @@ const AddCourse = () => {
             </CommonButton>
             <CommonButton
               leftSection={<IconCheck size={18} />}
-              disabled={!isFormValid}
-              loading={isSubmitting}
+              disabled={!isFormValid || isSubmitting}
               onClick={handleSubmit}
               fullWidth={isMobile}
             >
-              Create Course
+              {isSubmitting ? 'Creating...' : 'Create Course'}
             </CommonButton>
           </Group>
         </Card>

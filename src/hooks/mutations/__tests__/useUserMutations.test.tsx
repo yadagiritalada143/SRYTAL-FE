@@ -21,7 +21,15 @@ jest.mock('@services/user-services', () => {
   const mockUpdateCourseContentWriter = jest.fn();
   const mockUpdateCourseModuleContentWriter = jest.fn();
   const mockUpdateCourseTaskContentWriter = jest.fn();
+  const mockReorderCourseModulesContentWriter = jest.fn();
+  const mockReorderCourseTasksContentWriter = jest.fn();
   const mockUpdateMyTaskProgress = jest.fn();
+  const mockRunCode = jest.fn();
+  const mockSubmitCode = jest.fn();
+  const mockCreateQuizQuestion = jest.fn();
+  const mockUpdateQuizQuestion = jest.fn();
+  const mockUpdateQuizQuestionStatus = jest.fn();
+  const mockDeleteQuizQuestion = jest.fn();
   const mockSaveUserOpenRouterKey = jest.fn();
   return {
     addCompanyByRecruiter: mockAddCompanyByRecruiter,
@@ -37,7 +45,15 @@ jest.mock('@services/user-services', () => {
     updateCourseContentWriter: mockUpdateCourseContentWriter,
     updateCourseModuleContentWriter: mockUpdateCourseModuleContentWriter,
     updateCourseTaskContentWriter: mockUpdateCourseTaskContentWriter,
+    reorderCourseModulesContentWriter: mockReorderCourseModulesContentWriter,
+    reorderCourseTasksContentWriter: mockReorderCourseTasksContentWriter,
     updateMyTaskProgress: mockUpdateMyTaskProgress,
+    runCode: mockRunCode,
+    submitCode: mockSubmitCode,
+    createQuizQuestion: mockCreateQuizQuestion,
+    updateQuizQuestion: mockUpdateQuizQuestion,
+    updateQuizQuestionStatus: mockUpdateQuizQuestionStatus,
+    deleteQuizQuestion: mockDeleteQuizQuestion,
     saveUserOpenRouterKey: mockSaveUserOpenRouterKey
   };
 });
@@ -81,7 +97,15 @@ import {
   useUpdateCourse,
   useUpdateCourseModule,
   useUpdateCourseTask,
+  useReorderCourseModules,
+  useReorderCourseTasks,
   useUpdateMyTaskProgress,
+  useRunCode,
+  useSubmitCode,
+  useCreateQuizQuestion,
+  useUpdateQuizQuestion,
+  useUpdateQuizQuestionStatus,
+  useDeleteQuizQuestion,
   useSaveUserOpenRouterKey
 } from '@hooks/mutations/useUserMutations';
 
@@ -336,15 +360,96 @@ describe('useAddCourseModule', () => {
       await result.current.mutateAsync({
         courseId: 'course1',
         moduleName: 'Intro',
-        moduleDescription: 'First module'
+        moduleDescription: 'First module',
+        orderIdx: 1
       });
     });
 
     expectCalledWithArgs(getMock('addCourseModuleContentWriter'), {
       courseId: 'course1',
       moduleName: 'Intro',
-      moduleDescription: 'First module'
+      moduleDescription: 'First module',
+      orderIdx: 1
     });
+    await waitFor(() => {
+      expect(
+        queryClient
+          .getQueryCache()
+          .findAll({ queryKey: ['userCourse', 'course1'] })
+      ).toHaveLength(1);
+      expect(
+        queryClient.getQueryCache().findAll({ queryKey: ['userCourses'] })
+      ).toHaveLength(1);
+    });
+  });
+});
+
+describe('useReorderCourseModules', () => {
+  it('calls reorderCourseModulesContentWriter and invalidates course + courses', async () => {
+    const { queryClient, wrapper } = createWrapper();
+    getMock('reorderCourseModulesContentWriter').mockResolvedValue({
+      success: true
+    });
+    queryClient.setQueryData(['userCourse', 'course1'], { modules: [] });
+    queryClient.setQueryData(['userCourses'], ['old']);
+
+    const { result } = renderHook(() => useReorderCourseModules(), { wrapper });
+
+    const payload = {
+      courseId: 'course1',
+      modules: [
+        { moduleId: 'm2', orderIdx: 1 },
+        { moduleId: 'm1', orderIdx: 2 }
+      ]
+    };
+
+    await act(async () => {
+      await result.current.mutateAsync(payload);
+    });
+
+    expectCalledWithArgs(
+      getMock('reorderCourseModulesContentWriter'),
+      payload
+    );
+    await waitFor(() => {
+      expect(
+        queryClient
+          .getQueryCache()
+          .findAll({ queryKey: ['userCourse', 'course1'] })
+      ).toHaveLength(1);
+      expect(
+        queryClient.getQueryCache().findAll({ queryKey: ['userCourses'] })
+      ).toHaveLength(1);
+    });
+  });
+});
+
+describe('useReorderCourseTasks', () => {
+  it('calls reorderCourseTasksContentWriter and invalidates course + courses', async () => {
+    const { queryClient, wrapper } = createWrapper();
+    getMock('reorderCourseTasksContentWriter').mockResolvedValue({
+      success: true
+    });
+    queryClient.setQueryData(['userCourse', 'course1'], { modules: [] });
+    queryClient.setQueryData(['userCourses'], ['old']);
+
+    const { result } = renderHook(() => useReorderCourseTasks('course1'), {
+      wrapper
+    });
+
+    const payload = {
+      moduleId: 'm1',
+      tasks: [
+        { taskId: 't2', orderIdx: 1 },
+        { taskId: 't1', orderIdx: 2 }
+      ]
+    };
+
+    await act(async () => {
+      await result.current.mutateAsync(payload);
+    });
+
+    expectCalledWithArgs(getMock('reorderCourseTasksContentWriter'), payload);
     await waitFor(() => {
       expect(
         queryClient
@@ -373,7 +478,8 @@ describe('useAddCourseTask', () => {
         moduleId: 'm1',
         taskName: 'Task 1',
         taskDescription: 'Do it',
-        link: 'https://example.com'
+        link: 'https://example.com',
+        orderIdx: 1
       });
     });
 
@@ -381,7 +487,8 @@ describe('useAddCourseTask', () => {
       moduleId: 'm1',
       taskName: 'Task 1',
       taskDescription: 'Do it',
-      link: 'https://example.com'
+      link: 'https://example.com',
+      orderIdx: 1
     });
     await waitFor(() => {
       expect(
@@ -403,7 +510,8 @@ describe('useAddCourseTask', () => {
         moduleId: 'm1',
         taskName: 'Task 1',
         taskDescription: 'Do it',
-        link: 'https://example.com'
+        link: 'https://example.com',
+        orderIdx: 1
       });
     });
 
@@ -412,6 +520,162 @@ describe('useAddCourseTask', () => {
         .getQueryCache()
         .findAll({ queryKey: ['userCourse', 'course1'] })
     ).toHaveLength(0);
+  });
+});
+
+describe('useCreateQuizQuestion', () => {
+  const payload = {
+    taskId: 'task1',
+    question: 'Pick one',
+    type: 'RADIO' as const,
+    status: 'SHOW' as const,
+    options: [
+      { value: 'A', isanswer: true },
+      { value: 'B', isanswer: false }
+    ]
+  };
+
+  it('calls createQuizQuestion and invalidates that task questions', async () => {
+    const { queryClient, wrapper } = createWrapper();
+    getMock('createQuizQuestion').mockResolvedValue({ success: true });
+    queryClient.setQueryData(['quizQuestions', 'task1'], []);
+
+    const { result } = renderHook(() => useCreateQuizQuestion('task1'), {
+      wrapper
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync(payload);
+    });
+
+    expectCalledWithArgs(getMock('createQuizQuestion'), payload);
+    await waitFor(() => {
+      expect(
+        queryClient
+          .getQueryCache()
+          .findAll({ queryKey: ['quizQuestions', 'task1'] })
+      ).toHaveLength(1);
+    });
+  });
+
+  it('does not invalidate anything when taskId is omitted', async () => {
+    const { queryClient, wrapper } = createWrapper();
+    getMock('createQuizQuestion').mockResolvedValue({ success: true });
+    queryClient.setQueryData(['quizQuestions', 'task1'], []);
+
+    const { result } = renderHook(() => useCreateQuizQuestion(), { wrapper });
+
+    await act(async () => {
+      await result.current.mutateAsync(payload);
+    });
+
+    expectCalledWithArgs(getMock('createQuizQuestion'), payload);
+  });
+});
+
+describe('useUpdateQuizQuestion', () => {
+  it('updates a question and invalidates the question + task list', async () => {
+    const { queryClient, wrapper } = createWrapper();
+    getMock('updateQuizQuestion').mockResolvedValue({ success: true });
+    queryClient.setQueryData(['quizQuestions', 'task1'], []);
+    queryClient.setQueryData(['quizQuestion', 'q1'], { _id: 'q1' });
+    const data = { question: 'Updated?' };
+
+    const { result } = renderHook(() => useUpdateQuizQuestion('task1'), {
+      wrapper
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync({ questionId: 'q1', data });
+    });
+
+    expectCalledWithArgs(getMock('updateQuizQuestion'), 'q1', data);
+    await waitFor(() => {
+      expect(
+        queryClient
+          .getQueryCache()
+          .findAll({ queryKey: ['quizQuestions', 'task1'] })
+      ).toHaveLength(1);
+    });
+  });
+
+  it('still invalidates the single question when taskId is omitted', async () => {
+    const { queryClient, wrapper } = createWrapper();
+    getMock('updateQuizQuestion').mockResolvedValue({ success: true });
+    queryClient.setQueryData(['quizQuestion', 'q1'], { _id: 'q1' });
+
+    const { result } = renderHook(() => useUpdateQuizQuestion(), { wrapper });
+
+    await act(async () => {
+      await result.current.mutateAsync({
+        questionId: 'q1',
+        data: { status: 'HIDE' }
+      });
+    });
+
+    expectCalledWithArgs(getMock('updateQuizQuestion'), 'q1', {
+      status: 'HIDE'
+    });
+  });
+});
+
+describe('useUpdateQuizQuestionStatus', () => {
+  it('updates the status and passes the question id + status', async () => {
+    const { queryClient, wrapper } = createWrapper();
+    getMock('updateQuizQuestionStatus').mockResolvedValue({ success: true });
+    queryClient.setQueryData(['quizQuestions', 'task1'], []);
+
+    const { result } = renderHook(() => useUpdateQuizQuestionStatus('task1'), {
+      wrapper
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync({
+        questionId: 'q1',
+        status: 'HIDE'
+      });
+    });
+
+    expectCalledWithArgs(getMock('updateQuizQuestionStatus'), 'q1', 'HIDE');
+  });
+});
+
+describe('useDeleteQuizQuestion', () => {
+  it('deletes a question and invalidates that task questions', async () => {
+    const { queryClient, wrapper } = createWrapper();
+    getMock('deleteQuizQuestion').mockResolvedValue({ success: true });
+    queryClient.setQueryData(['quizQuestions', 'task1'], []);
+
+    const { result } = renderHook(() => useDeleteQuizQuestion('task1'), {
+      wrapper
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync('q1');
+    });
+
+    expectCalledWithArgs(getMock('deleteQuizQuestion'), 'q1');
+    await waitFor(() => {
+      expect(
+        queryClient
+          .getQueryCache()
+          .findAll({ queryKey: ['quizQuestions', 'task1'] })
+      ).toHaveLength(1);
+    });
+  });
+
+  it('does not invalidate anything when taskId is omitted', async () => {
+    const { queryClient, wrapper } = createWrapper();
+    getMock('deleteQuizQuestion').mockResolvedValue({ success: true });
+    queryClient.setQueryData(['quizQuestions', 'task1'], []);
+
+    const { result } = renderHook(() => useDeleteQuizQuestion(), { wrapper });
+
+    await act(async () => {
+      await result.current.mutateAsync('q1');
+    });
+
+    expectCalledWithArgs(getMock('deleteQuizQuestion'), 'q1');
   });
 });
 
@@ -470,6 +734,7 @@ describe('useUpdateCourseModule', () => {
         id: 'm1',
         moduleName: 'Intro v2',
         moduleDescription: 'Updated',
+        orderIdx: 2,
         status: 'ACTIVE'
       });
     });
@@ -478,6 +743,7 @@ describe('useUpdateCourseModule', () => {
       id: 'm1',
       moduleName: 'Intro v2',
       moduleDescription: 'Updated',
+      orderIdx: 2,
       status: 'ACTIVE'
     });
     await waitFor(() => {
@@ -568,6 +834,60 @@ describe('useUpdateMyTaskProgress', () => {
       expect(
         queryClient.getQueryCache().findAll({ queryKey: ['myAssignedCourses'] })
       ).toHaveLength(1);
+    });
+  });
+});
+
+describe('useRunCode', () => {
+  it('posts the run payload to the runCode service', async () => {
+    const { wrapper } = createWrapper();
+    getMock('runCode').mockResolvedValue({ score: 80 });
+
+    const { result } = renderHook(() => useRunCode(), { wrapper });
+
+    await act(async () => {
+      await result.current.mutateAsync({
+        questionId: 't1',
+        language: 'Python',
+        code: 'print(1)'
+      });
+    });
+
+    expectCalledWithArgs(getMock('runCode'), {
+      questionId: 't1',
+      language: 'Python',
+      code: 'print(1)'
+    });
+  });
+});
+
+describe('useSubmitCode', () => {
+  it('posts the submit payload and invalidates the coding question', async () => {
+    const { queryClient, wrapper } = createWrapper();
+    getMock('submitCode').mockResolvedValue({ score: 95 });
+    queryClient.setQueryData(['codingQuestion', 't1', ''], {
+      questionId: 't1'
+    });
+
+    const { result } = renderHook(() => useSubmitCode(), { wrapper });
+
+    await act(async () => {
+      await result.current.mutateAsync({
+        questionId: 't1',
+        language: 'Python',
+        code: 'print(1)'
+      });
+    });
+
+    expectCalledWithArgs(getMock('submitCode'), {
+      questionId: 't1',
+      language: 'Python',
+      code: 'print(1)'
+    });
+    await waitFor(() => {
+      expect(
+        queryClient.getQueryState(['codingQuestion', 't1', ''])?.isInvalidated
+      ).toBe(true);
     });
   });
 });

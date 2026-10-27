@@ -13,7 +13,19 @@ import {
   updateCourseContentWriter,
   updateCourseModuleContentWriter,
   updateCourseTaskContentWriter,
+  cloneCourseContentWriter,
+  reorderCourseModulesContentWriter,
+  reorderCourseTasksContentWriter,
+  updateMyTaskAcknowledgement,
   updateMyTaskProgress,
+  runCode,
+  submitCode,
+  createQuizQuestion,
+  updateQuizQuestion,
+  updateQuizQuestionStatus,
+  deleteQuizQuestion,
+  validateQuiz,
+  submitQuiz,
   saveUserOpenRouterKey
 } from '@services/user-services';
 import { userQueryKeys } from '../queries/useUserQueries';
@@ -29,9 +41,24 @@ import {
   AddTaskPayload,
   UpdateCoursePayload,
   UpdateModulePayload,
-  UpdateTaskPayload
+  UpdateTaskPayload,
+  CloneCoursePayload,
+  ReorderModulesPayload,
+  ReorderTasksPayload
 } from '@interfaces/contentwriter';
-import { UpdateTaskProgressPayload } from '@interfaces/course-assignment';
+import {
+  RunCodePayload,
+  UpdateMyTaskAcknowledgementPayload,
+  UpdateTaskProgressPayload
+} from '@interfaces/course-assignment';
+import {
+  QuizQuestionApiModel,
+  QuizQuestionApiPayload,
+  QuizQuestionApiUpdatePayload,
+  QuizQuestionStatus,
+  QuizValidatePayload,
+  QuizSubmitPayload
+} from '@interfaces/quiz';
 
 export const useAddCompany = () => {
   const queryClient = useQueryClient();
@@ -156,7 +183,101 @@ export const useAddCourseTask = (courseId?: string) => {
           queryKey: userQueryKeys.course(courseId)
         });
       }
+      queryClient.invalidateQueries({ queryKey: userQueryKeys.courses });
     }
+  });
+};
+
+export const useCreateQuizQuestion = (taskId?: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: QuizQuestionApiPayload) => createQuizQuestion(data),
+    onSuccess: () => {
+      if (taskId) {
+        queryClient.invalidateQueries({
+          queryKey: userQueryKeys.quizQuestions(taskId)
+        });
+      }
+    }
+  });
+};
+
+export const useUpdateQuizQuestion = (taskId?: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      questionId,
+      data
+    }: {
+      questionId: string;
+      data: QuizQuestionApiUpdatePayload;
+    }) => updateQuizQuestion(questionId, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: userQueryKeys.quizQuestion(variables.questionId)
+      });
+      if (taskId) {
+        queryClient.invalidateQueries({
+          queryKey: userQueryKeys.quizQuestions(taskId)
+        });
+      }
+    }
+  });
+};
+
+export const useUpdateQuizQuestionStatus = (taskId?: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      questionId,
+      status
+    }: {
+      questionId: string;
+      status: QuizQuestionStatus;
+    }) => updateQuizQuestionStatus(questionId, status),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: userQueryKeys.quizQuestion(variables.questionId)
+      });
+      if (taskId) {
+        queryClient.invalidateQueries({
+          queryKey: userQueryKeys.quizQuestions(taskId)
+        });
+      }
+    }
+  });
+};
+
+export const useDeleteQuizQuestion = (taskId?: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (questionId: string) => deleteQuizQuestion(questionId),
+    onSuccess: (_, questionId) => {
+      if (taskId) {
+        queryClient.setQueryData<QuizQuestionApiModel[]>(
+          userQueryKeys.quizQuestions(taskId),
+          old => (old ? old.filter(q => q._id !== questionId) : [])
+        );
+        queryClient.invalidateQueries({
+          queryKey: userQueryKeys.quizQuestions(taskId)
+        });
+        queryClient.invalidateQueries({
+          queryKey: userQueryKeys.courses
+        });
+      }
+    }
+  });
+};
+
+export const useValidateQuiz = () => {
+  return useMutation({
+    mutationFn: (data: QuizValidatePayload) => validateQuiz(data)
+  });
+};
+
+export const useSubmitQuiz = () => {
+  return useMutation({
+    mutationFn: (data: QuizSubmitPayload) => submitQuiz(data)
   });
 };
 
@@ -209,6 +330,46 @@ export const useUpdateCourseTask = (courseId?: string) => {
   });
 };
 
+export const useCloneCourse = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: CloneCoursePayload) => cloneCourseContentWriter(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: userQueryKeys.courses });
+    }
+  });
+};
+
+export const useReorderCourseModules = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: ReorderModulesPayload) =>
+      reorderCourseModulesContentWriter(data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: userQueryKeys.course(variables.courseId)
+      });
+      queryClient.invalidateQueries({ queryKey: userQueryKeys.courses });
+    }
+  });
+};
+
+export const useReorderCourseTasks = (courseId?: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: ReorderTasksPayload) =>
+      reorderCourseTasksContentWriter(data),
+    onSuccess: () => {
+      if (courseId) {
+        queryClient.invalidateQueries({
+          queryKey: userQueryKeys.course(courseId)
+        });
+      }
+      queryClient.invalidateQueries({ queryKey: userQueryKeys.courses });
+    }
+  });
+};
+
 /**
  * Marking a task complete changes both the open course's tree and the summary
  * shown in the course list, so both cache entries are refreshed.
@@ -226,12 +387,44 @@ export const useUpdateMyTaskProgress = () => {
   });
 };
 
+export const useUpdateMyTaskAcknowledgement = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: UpdateMyTaskAcknowledgementPayload) =>
+      updateMyTaskAcknowledgement(data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: userQueryKeys.myCourse(variables.courseAssignmentId)
+      });
+      queryClient.invalidateQueries({ queryKey: userQueryKeys.myCourses });
+    }
+  });
+};
+
 export const useSaveUserOpenRouterKey = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (openrouterKey: string) => saveUserOpenRouterKey(openrouterKey),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['userOpenRouterKey'] });
+    }
+  });
+};
+
+export const useRunCode = () => {
+  return useMutation({
+    mutationFn: (data: RunCodePayload) => runCode(data)
+  });
+};
+
+export const useSubmitCode = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: RunCodePayload) => submitCode(data),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ['codingQuestion', variables.questionId]
+      });
     }
   });
 };

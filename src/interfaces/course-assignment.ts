@@ -1,21 +1,10 @@
 import { TaskContentType } from './contentwriter';
 
-/**
- * Employee-facing view of a course. These mirror the response of
- * `/getMyAssignedCourses`, `/getMyAssignedCourseById/:courseAssignmentId` and
- * `/updateMyTaskProgress` — deliberately different from the content-writer
- * `Course`/`Module`/`Task` types in `contentwriter.ts`, which are the authoring
- * shapes and carry S3 keys the employee never receives.
- */
-
-// Mirrors the enum stored on `course-assignments.status`. The backend re-derives
-// it from task progress on every write, so it is read-only for the client.
 export type CourseAssignmentStatus = 'Assigned' | 'In Progress' | 'Completed';
 
 export interface CourseProgress {
   totalTasks: number;
   completedTasks: number;
-  /** Whole-number percentage (0-100). */
   percentComplete: number;
 }
 
@@ -25,12 +14,79 @@ export interface AssignedTask {
   taskDescription: string;
   status?: string;
   type?: TaskContentType | string;
-  /** External URL — only present on LINK tasks. */
+  isCoding?: boolean;
   link?: string;
   contentMimeType?: string;
   contentFileName?: string;
+  acknowledgementText?: string;
+  acknowledged?: boolean;
+  acknowledgedAt?: string | null;
   isCompleted: boolean;
   completedAt?: string | null;
+  orderIdx?: number;
+}
+
+export interface CodingLanguageOption {
+  languageId: string;
+  languageName: string;
+  canonicalKey: string;
+}
+
+export interface CodingQuestion {
+  taskId?: string;
+  questionId: string;
+  taskName?: string;
+  question?: string;
+  description?: string;
+  allowedLanguages: CodingLanguageOption[];
+  language: string;
+  languageId: string;
+  starterCode: string;
+  lastSubmittedCode?: { language: string; code: string } | null;
+}
+
+export interface CodeRunTestCaseResult {
+  name: string;
+  input: string;
+  expectedOutput: string;
+  isSample?: boolean;
+  actualOutput: string;
+  passed: boolean;
+  status: string;
+  stderr?: string;
+  compilationError?: string;
+  runtimeError?: string;
+  errorDetails?: string;
+}
+
+export interface CodeQualityEvaluation {
+  score: number;
+  suggestions: string[];
+  failedTests: string[];
+  codingStandards: {
+    readability: string;
+    efficiency: string;
+    errorHandling: string;
+    namingConventions: string;
+  };
+  explanation: string;
+}
+
+export interface CodeRunResult {
+  questionId: string;
+  language: string;
+  totalTestCases: number;
+  passedTestCases: number;
+  failedTestCases: number;
+  score: number;
+  results: CodeRunTestCaseResult[];
+  aiEvaluation: CodeQualityEvaluation | null;
+}
+
+export interface RunCodePayload {
+  questionId: string;
+  language: string;
+  code: string;
 }
 
 export interface AssignedModule {
@@ -41,6 +97,8 @@ export interface AssignedModule {
   tasks: AssignedTask[];
   totalTasks: number;
   completedTasks: number;
+  // 1-based position of the module inside its course.
+  orderIdx?: number;
 }
 
 export interface AssignedCourse {
@@ -74,6 +132,23 @@ export interface UpdateTaskProgressResponse {
   courseStatus: CourseAssignmentStatus;
   progress: CourseProgress;
   task: { taskId: string; isCompleted: boolean; completedAt?: string | null };
+}
+
+export interface UpdateMyTaskAcknowledgementPayload {
+  courseAssignmentId: string;
+  taskId: string;
+  acknowledged: boolean;
+}
+
+export interface UpdateMyTaskAcknowledgementResponse {
+  success: boolean;
+  message?: string;
+  data?: {
+    courseAssignmentId: string;
+    taskId: string;
+    acknowledged: boolean;
+    acknowledgedAt?: string | null;
+  };
 }
 
 export interface AdminAssignmentEmployee {

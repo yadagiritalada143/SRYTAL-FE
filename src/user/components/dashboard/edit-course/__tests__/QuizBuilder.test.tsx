@@ -1,0 +1,687 @@
+import { useState } from 'react';
+import {
+  render,
+  screen,
+  fireEvent,
+  within,
+  waitFor
+} from '@testing-library/react';
+import '@testing-library/jest-dom';
+import { MantineProvider } from '@mantine/core';
+import QuizBuilder from '../QuizBuilder';
+import {
+  countCorrectOptions,
+  QuizQuestionValidationError,
+  toQuizQuestionPayload,
+  toQuizQuestionUpdatePayload,
+  validateQuizQuestion
+} from '../quiz-helpers';
+import { QuizQuestion } from '@interfaces/quiz';
+
+// The editor renders a lot of Mantine widgets, so a single render is slow on
+// CI. Give the assertions of this file room to breathe.
+jest.setTimeout(30000);
+
+jest.mock('@hooks/use-app-theme', () => ({
+  useAppTheme: () => ({
+    themeConfig: {
+      color: '#212529',
+      backgroundColor: '#ffffff',
+      cardBackground: '#ffffff',
+      borderColor: '#dee2e6',
+      accentColor: '#1c7ed6',
+      iconColor: '#228be6',
+      successColor: '#2f9e44',
+      dangerColor: '#c92a2a',
+      mutedTextColor: '#6c757d'
+    },
+    isDarkTheme: false
+  })
+}));
+
+const baseQuestion = (overrides: Partial<QuizQuestion> = {}): QuizQuestion => ({
+  id: 'q1',
+  question: 'What is your favourite colour?',
+  type: 'RADIO',
+  status: 'SHOW',
+  options: [
+    { id: 'o1', text: 'Red', isCorrect: true },
+    { id: 'o2', text: 'Green', isCorrect: false },
+    { id: 'o3', text: 'Blue', isCorrect: false },
+    { id: 'o4', text: 'Yellow', isCorrect: false }
+  ],
+  ...overrides
+});
+
+const Harness = ({
+  initial = [] as QuizQuestion[],
+  onAddQuestion = undefined as
+    | ((question: QuizQuestion) => Promise<void> | void)
+    | undefined,
+  onUpdateQuestion = undefined as
+    | ((question: QuizQuestion) => Promise<void> | void)
+    | undefined,
+  onToggleStatus = undefined as
+    | ((question: QuizQuestion) => Promise<void> | void)
+    | undefined,
+  onDeleteQuestion = undefined as
+    | ((question: QuizQuestion) => Promise<void> | void)
+    | undefined,
+  isLoading = false,
+  isSubmitting = false,
+  allowEdit = false
+}: {
+  initial?: QuizQuestion[];
+  onAddQuestion?: (question: QuizQuestion) => Promise<void> | void;
+  onUpdateQuestion?: (question: QuizQuestion) => Promise<void> | void;
+  onToggleStatus?: (question: QuizQuestion) => Promise<void> | void;
+  onDeleteQuestion?: (question: QuizQuestion) => Promise<void> | void;
+  isLoading?: boolean;
+  isSubmitting?: boolean;
+  allowEdit?: boolean;
+}) => {
+  const [questions, setQuestions] = useState<QuizQuestion[]>(initial);
+  return (
+    <MantineProvider>
+      <QuizBuilder
+        questions={questions}
+        isLoading={isLoading}
+        isSubmitting={isSubmitting}
+        allowEdit={allowEdit}
+        onUpdateQuestion={onUpdateQuestion}
+        onToggleStatus={onToggleStatus}
+        onDeleteQuestion={
+          onDeleteQuestion ??
+          (question =>
+            setQuestions(prev => prev.filter(item => item.id !== question.id)))
+        }
+        onAddQuestion={
+          onAddQuestion ??
+          (question => setQuestions(prev => [...prev, question]))
+        }
+      />
+    </MantineProvider>
+  );
+};
+
+/** Opens a Mantine Select by label and clicks one of its options. */
+const chooseSelectOption = (label: string, optionText: string) => {
+  const input = screen
+    .getAllByLabelText(label)
+    .find(element => element.tagName === 'INPUT') as HTMLInputElement;
+  fireEvent.click(input);
+  const option = screen
+    .getAllByText(optionText)
+    .find(el => el.closest('[data-combobox-option]'));
+  fireEvent.click(option as HTMLElement);
+};
+
+const fillOption = (index: number, value: string) =>
+  fireEvent.change(screen.getByLabelText(`Option ${index}`), {
+    target: { value }
+  });
+
+const cardFor = (questionText: string) => {
+  const elements = screen.getAllByText(questionText);
+  const nonTextarea = elements.find(el => el.tagName !== 'TEXTAREA');
+  return (nonTextarea || elements[0]).closest(
+    '.mantine-Card-root'
+  ) as HTMLElement;
+};
+
+describe('validateQuizQuestion', () => {
+  it('requires the question text', () => {
+    expect(validateQuizQuestion(baseQuestion({ question: '  ' }))).toBe(
+      'Question is required.'
+    );
+  });
+
+  it('accepts a text answer type without options', () => {
+    expect(
+      validateQuizQuestion(baseQuestion({ type: 'TEXTAREA', options: [] }))
+    ).toBeNull();
+  });
+
+  it('requires at least two filled options for choice types', () => {
+    expect(
+      validateQuizQuestion(
+        baseQuestion({
+          options: [{ id: 'o1', text: 'Red', isCorrect: true }]
+        })
+      )
+    ).toBe('Add at least 2 answer options.');
+  });
+
+  it('requires at least one correct answer', () => {
+    expect(
+      validateQuizQuestion(
+        baseQuestion({
+          options: baseQuestion().options.map(option => ({
+            ...option,
+            isCorrect: false
+          }))
+        })
+      )
+    ).toBe('Mark at least one option as the answer.');
+  });
+
+  it('rejects more than one correct answer for single-answer types', () => {
+    expect(
+      validateQuizQuestion(
+        baseQuestion({
+          options: baseQuestion().options.map(option => ({
+            ...option,
+            isCorrect: option.id === 'o1' || option.id === 'o2'
+          }))
+        })
+      )
+    ).toBe('Only one option can be the correct answer for this type.');
+  });
+
+  it('allows multiple correct answers for checkbox types', () => {
+    expect(
+      validateQuizQuestion(
+        baseQuestion({
+          type: 'CHECKBOX',
+          options: baseQuestion().options.map(option => ({
+            ...option,
+            isCorrect: option.id === 'o1' || option.id === 'o2'
+          }))
+        })
+      )
+    ).toBeNull();
+  });
+
+  it('requires at least two correct answers for checkbox types', () => {
+    expect(
+      validateQuizQuestion(
+        baseQuestion({
+          type: 'CHECKBOX',
+          options: baseQuestion().options.map(option => ({
+            ...option,
+            isCorrect: option.id === 'o1'
+          }))
+        })
+      )
+    ).toBe('Mark at least 2 options as the correct answers.');
+  });
+
+  it('requires exactly two options for toggle questions', () => {
+    expect(
+      validateQuizQuestion(
+        baseQuestion({
+          type: 'TOGGLE',
+          options: [
+            { id: 'o1', text: 'Yes', isCorrect: true },
+            { id: 'o2', text: 'No', isCorrect: false },
+            { id: 'o3', text: 'Maybe', isCorrect: false }
+          ]
+        })
+      )
+    ).toBe('Toggle questions must have exactly two options.');
+  });
+
+  it('requires exactly one correct option for toggle questions', () => {
+    expect(
+      validateQuizQuestion(
+        baseQuestion({
+          type: 'TOGGLE',
+          options: [
+            { id: 'o1', text: 'Yes', isCorrect: true },
+            { id: 'o2', text: 'No', isCorrect: true }
+          ]
+        })
+      )
+    ).toBe('Toggle questions must have exactly one correct option.');
+  });
+});
+
+describe('countCorrectOptions', () => {
+  it('counts only filled options that are flagged as correct', () => {
+    expect(
+      countCorrectOptions(
+        baseQuestion({
+          type: 'CHECKBOX',
+          options: [
+            { id: 'o1', text: 'Red', isCorrect: true },
+            { id: 'o2', text: 'Green', isCorrect: true },
+            { id: 'o3', text: '  ', isCorrect: true },
+            { id: 'o4', text: 'Blue', isCorrect: false }
+          ]
+        })
+      )
+    ).toBe(2);
+  });
+});
+
+describe('question payload guards', () => {
+  it('refuses to build a payload for a multiple choice question with one correct answer', () => {
+    const draft = baseQuestion({
+      type: 'CHECKBOX',
+      options: baseQuestion().options.map(option => ({
+        ...option,
+        isCorrect: option.id === 'o1'
+      }))
+    });
+
+    expect(() => toQuizQuestionPayload(draft, 'task-1')).toThrow(
+      QuizQuestionValidationError
+    );
+    expect(() => toQuizQuestionPayload(draft, 'task-1')).toThrow(
+      'Mark at least 2 options as the correct answers.'
+    );
+    expect(() => toQuizQuestionUpdatePayload(draft)).toThrow(
+      QuizQuestionValidationError
+    );
+  });
+
+  it('builds a payload for a multiple choice question with two correct answers', () => {
+    const draft = baseQuestion({
+      type: 'CHECKBOX',
+      options: baseQuestion().options.map(option => ({
+        ...option,
+        isCorrect: option.id === 'o1' || option.id === 'o2'
+      }))
+    });
+
+    const payload = toQuizQuestionPayload(draft, 'task-1');
+
+    expect(payload.taskId).toBe('task-1');
+    expect(payload.type).toBe('CHECKBOX');
+    expect(payload.options?.filter(option => option.isanswer)).toHaveLength(2);
+  });
+});
+
+describe('QuizBuilder', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('shows the empty state when there are no questions', () => {
+    render(<Harness />);
+    expect(
+      screen.getByText(
+        'No questions yet. Add your first question to build this quiz.'
+      )
+    ).toBeInTheDocument();
+    expect(screen.getByText('0 questions')).toBeInTheDocument();
+    expect(screen.getByText('Add a question')).toBeInTheDocument();
+    expect(screen.getByText('Existing questions')).toBeInTheDocument();
+  });
+
+  it('shows a loader while the questions are loading', () => {
+    render(<Harness isLoading />);
+    expect(
+      screen.queryByText(
+        'No questions yet. Add your first question to build this quiz.'
+      )
+    ).not.toBeInTheDocument();
+  });
+
+  it('lists saved questions with their type, status and options', () => {
+    render(<Harness initial={[baseQuestion()]} />);
+
+    const card = cardFor('What is your favourite colour?');
+    expect(within(card).getByText('Single choice')).toBeInTheDocument();
+    expect(within(card).getByText('Show')).toBeInTheDocument();
+    expect(within(card).getByText('Red')).toBeInTheDocument();
+    expect(within(card).getByText('Green')).toBeInTheDocument();
+  });
+
+  it('adds a single-answer question after filling the options', async () => {
+    render(<Harness />);
+
+    fireEvent.change(screen.getByLabelText(/Question/), {
+      target: { value: 'What best describes your role?' }
+    });
+    fillOption(1, 'Engineer');
+    fillOption(2, 'Manager');
+    fillOption(3, 'Designer');
+    fillOption(4, 'Sales');
+
+    fireEvent.click(screen.getAllByRole('radio', { name: 'Correct' })[0]);
+    fireEvent.click(screen.getByRole('button', { name: 'Add question' }));
+
+    await screen.findByText('1 question');
+    const card = cardFor('What best describes your role?');
+    expect(within(card).getByText('Single choice')).toBeInTheDocument();
+    expect(within(card).getByText('Engineer')).toBeInTheDocument();
+    expect(within(card).getByText('Manager')).toBeInTheDocument();
+  });
+
+  it('clears the editor after a question is added', async () => {
+    render(<Harness />);
+
+    fireEvent.change(screen.getByLabelText(/Question/), {
+      target: { value: 'What best describes your role?' }
+    });
+    fillOption(1, 'Engineer');
+    fillOption(2, 'Manager');
+    fillOption(3, 'Designer');
+    fillOption(4, 'Sales');
+    fireEvent.click(screen.getAllByRole('radio', { name: 'Correct' })[0]);
+    fireEvent.click(screen.getByRole('button', { name: 'Add question' }));
+
+    await screen.findByText('1 question');
+    expect(screen.getByLabelText(/Question/)).toHaveValue('');
+    expect(screen.getByLabelText('Option 1')).toHaveValue('');
+  });
+
+  it('passes the draft to onAddQuestion instead of mutating the list', async () => {
+    const onAddQuestion = jest.fn().mockResolvedValue(undefined);
+    render(<Harness onAddQuestion={onAddQuestion} />);
+
+    fireEvent.change(screen.getByLabelText(/Question/), {
+      target: { value: 'Pick one' }
+    });
+    fillOption(1, 'A');
+    fillOption(2, 'B');
+    fillOption(3, 'C');
+    fillOption(4, 'D');
+    fireEvent.click(screen.getAllByRole('radio', { name: 'Correct' })[0]);
+    fireEvent.click(screen.getByRole('button', { name: 'Add question' }));
+
+    await screen.findByText('0 questions');
+    expect(onAddQuestion).toHaveBeenCalledWith(
+      expect.objectContaining({ question: 'Pick one' })
+    );
+  });
+
+  it('keeps the draft when the request fails', async () => {
+    const onAddQuestion = jest.fn().mockRejectedValue(new Error('boom'));
+    render(<Harness onAddQuestion={onAddQuestion} />);
+
+    fireEvent.change(screen.getByLabelText(/Question/), {
+      target: { value: 'Pick one' }
+    });
+    fillOption(1, 'A');
+    fillOption(2, 'B');
+    fillOption(3, 'C');
+    fillOption(4, 'D');
+    fireEvent.click(screen.getAllByRole('radio', { name: 'Correct' })[0]);
+    fireEvent.click(screen.getByRole('button', { name: 'Add question' }));
+
+    expect(await screen.findByText('0 questions')).toBeInTheDocument();
+    expect(screen.getByLabelText(/Question/)).toHaveValue('Pick one');
+  });
+
+  it('keeps Add question disabled while mandatory fields are missing', () => {
+    render(<Harness />);
+
+    expect(screen.getByRole('button', { name: 'Add question' })).toBeDisabled();
+  });
+
+  it('keeps Add question disabled when only the question text is provided', () => {
+    render(<Harness />);
+
+    fireEvent.change(screen.getByLabelText(/Question/), {
+      target: { value: 'What best describes your role?' }
+    });
+
+    expect(screen.getByRole('button', { name: 'Add question' })).toBeDisabled();
+  });
+
+  it('shows the question validation message after the field is blurred', () => {
+    render(<Harness />);
+
+    fireEvent.blur(screen.getByLabelText(/Question/));
+
+    expect(screen.getByText('Question is required.')).toBeInTheDocument();
+  });
+
+  it('shows the missing answer options message once an option is edited', () => {
+    render(<Harness />);
+
+    fireEvent.change(screen.getByLabelText(/Question/), {
+      target: { value: 'What best describes your role?' }
+    });
+    fillOption(1, 'Engineer');
+    fireEvent.blur(screen.getByLabelText('Option 1'));
+
+    expect(
+      screen.getByText('Add at least 2 answer options.')
+    ).toBeInTheDocument();
+  });
+
+  it('shows the missing correct answer message once an answer is marked', () => {
+    render(<Harness />);
+
+    fireEvent.click(screen.getAllByRole('radio', { name: 'Correct' })[0]);
+
+    expect(
+      screen.getByText('Mark at least one option as the answer.')
+    ).toBeInTheDocument();
+  });
+
+  it('keeps Add question disabled for multiple choice until two answers are correct', () => {
+    render(<Harness />);
+
+    chooseSelectOption('Type', 'Multiple choice');
+    fireEvent.change(screen.getByLabelText(/Question/), {
+      target: { value: 'Which are primary colours?' }
+    });
+    fillOption(1, 'Red');
+    fillOption(2, 'Green');
+    fillOption(3, 'Blue');
+    fillOption(4, 'Yellow');
+
+    const checkboxes = screen.getAllByRole('checkbox');
+    fireEvent.click(checkboxes[0]);
+
+    expect(
+      screen.getByText('Mark at least 2 options as the correct answers.')
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Add question' })).toBeDisabled();
+
+    fireEvent.click(checkboxes[2]);
+    expect(
+      screen.queryByText('Mark at least 2 options as the correct answers.')
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Add question' })).toBeEnabled();
+  });
+
+  it('states the multiple choice requirement as soon as the type is picked', () => {
+    render(<Harness />);
+
+    chooseSelectOption('Type', 'Multiple choice');
+
+    expect(
+      screen.getByText('Mark at least 2 options as the correct answers.')
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('0 correct answers marked (minimum 2)')
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Add question' })).toBeDisabled();
+  });
+
+  it('counts the marked correct answers of a multiple choice question', () => {
+    render(<Harness />);
+
+    chooseSelectOption('Type', 'Multiple choice');
+    fireEvent.change(screen.getByLabelText(/Question/), {
+      target: { value: 'Which are primary colours?' }
+    });
+    fillOption(1, 'Red');
+    fillOption(2, 'Green');
+    fillOption(3, 'Blue');
+
+    const checkboxes = screen.getAllByRole('checkbox');
+    fireEvent.click(checkboxes[0]);
+
+    expect(
+      screen.getByText('1 correct answer marked (minimum 2)')
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText('Mark at least 2 options as the correct answers.')
+    ).toBeInTheDocument();
+
+    fireEvent.click(checkboxes[1]);
+
+    expect(
+      screen.getByText('2 correct answers marked (minimum 2)')
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText('Mark at least 2 options as the correct answers.')
+    ).not.toBeInTheDocument();
+  });
+
+  it('enables Add question when the question, options, and correct answer are provided', () => {
+    render(<Harness />);
+
+    fireEvent.change(screen.getByLabelText(/Question/), {
+      target: { value: 'What best describes your role?' }
+    });
+    fillOption(1, 'Engineer');
+    fillOption(2, 'Manager');
+    fillOption(3, 'Designer');
+    fillOption(4, 'Sales');
+    fireEvent.click(screen.getAllByRole('radio', { name: 'Correct' })[0]);
+
+    expect(
+      screen.getByRole('button', { name: 'Add question' })
+    ).not.toBeDisabled();
+  });
+
+  it('does not render an edit button for existing questions', () => {
+    render(<Harness initial={[baseQuestion()]} />);
+    expect(screen.queryByLabelText('Edit question')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Duplicate question')).toBeInTheDocument();
+    expect(screen.getByLabelText('Hide question')).toBeInTheDocument();
+    expect(screen.getByLabelText('Delete question')).toBeInTheDocument();
+  });
+
+  it('hides the answer options for a short text question', async () => {
+    render(<Harness />);
+
+    chooseSelectOption('Type', 'Short text');
+
+    expect(screen.queryByLabelText('Option 1')).not.toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Learners type their answer into a free-text box. No options are needed for this type.'
+      )
+    ).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText(/Question/), {
+      target: { value: 'Tell us about yourself?' }
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Add question' }));
+
+    await screen.findByText('1 question');
+    const card = cardFor('Tell us about yourself?');
+    expect(within(card).getByText('Short text')).toBeInTheDocument();
+  });
+
+  it('lets multiple answers be correct for multiple choice questions', async () => {
+    render(<Harness />);
+
+    chooseSelectOption('Type', 'Multiple choice');
+    fireEvent.change(screen.getByLabelText(/Question/), {
+      target: { value: 'Which are primary colours?' }
+    });
+    fillOption(1, 'Red');
+    fillOption(2, 'Green');
+    fillOption(3, 'Blue');
+    fillOption(4, 'Yellow');
+
+    const checkboxes = screen.getAllByRole('checkbox');
+    fireEvent.click(checkboxes[0]);
+    fireEvent.click(checkboxes[2]);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Add question' }));
+
+    await screen.findByText('1 question');
+    const card = cardFor('Which are primary colours?');
+    expect(within(card).getByText('Multiple choice')).toBeInTheDocument();
+    expect(within(card).getByText('Red')).toBeInTheDocument();
+    expect(within(card).getByText('Blue')).toBeInTheDocument();
+  });
+
+  it('trims the available options down to two for toggle questions', () => {
+    render(<Harness />);
+
+    chooseSelectOption('Type', 'Toggle');
+
+    expect(screen.getByLabelText('Option 1')).toBeInTheDocument();
+    expect(screen.getByLabelText('Option 2')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Option 3')).not.toBeInTheDocument();
+  });
+
+  it('adds answer options on demand', () => {
+    render(<Harness />);
+
+    expect(screen.queryByLabelText('Option 5')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Add option' }));
+    expect(screen.getByLabelText('Option 5')).toBeInTheDocument();
+  });
+
+  it('resets the editor when Cancel is clicked', () => {
+    render(<Harness />);
+
+    fireEvent.change(screen.getByLabelText(/Question/), {
+      target: { value: 'Draft question' }
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    expect(screen.getByLabelText(/Question/)).toHaveValue('');
+  });
+
+  it('disables the save button while submitting', () => {
+    render(<Harness isSubmitting />);
+    expect(screen.getByRole('button', { name: 'Add question' })).toBeDisabled();
+  });
+
+  it('requests a status change when the visibility action is used', () => {
+    const onToggleStatus = jest.fn();
+    render(
+      <Harness initial={[baseQuestion()]} onToggleStatus={onToggleStatus} />
+    );
+
+    fireEvent.click(screen.getByLabelText('Hide question'));
+
+    expect(onToggleStatus).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'q1', status: 'SHOW' })
+    );
+  });
+
+  it('offers to show a hidden question', () => {
+    render(<Harness initial={[baseQuestion({ status: 'HIDE' })]} />);
+
+    expect(screen.getByLabelText('Show question')).toBeInTheDocument();
+  });
+
+  it('deletes a question only after the confirmation is accepted', async () => {
+    const onDeleteQuestion = jest.fn().mockResolvedValue(undefined);
+    render(
+      <Harness initial={[baseQuestion()]} onDeleteQuestion={onDeleteQuestion} />
+    );
+
+    fireEvent.click(screen.getByLabelText('Delete question'));
+    expect(onDeleteQuestion).not.toHaveBeenCalled();
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Yes, delete' }));
+
+    await waitFor(() =>
+      expect(onDeleteQuestion).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'q1' })
+      )
+    );
+  }, 15000);
+
+  it('keeps the question when the confirmation is dismissed', async () => {
+    const onDeleteQuestion = jest.fn();
+    render(
+      <Harness initial={[baseQuestion()]} onDeleteQuestion={onDeleteQuestion} />
+    );
+
+    fireEvent.click(screen.getByLabelText('Delete question'));
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Keep question' })
+    );
+
+    expect(onDeleteQuestion).not.toHaveBeenCalled();
+    expect(
+      screen.getByText('What is your favourite colour?')
+    ).toBeInTheDocument();
+  }, 15000);
+});

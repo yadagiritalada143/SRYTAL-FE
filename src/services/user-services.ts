@@ -14,14 +14,34 @@ import {
   AddTaskPayload,
   UpdateCoursePayload,
   UpdateModulePayload,
-  UpdateTaskPayload
+  UpdateTaskPayload,
+  CloneCoursePayload,
+  ReorderModulesPayload,
+  ReorderTasksPayload
 } from '@interfaces/contentwriter';
+import { sortCourseContent } from '@utils/common/course-order';
 import {
   AssignedCourse,
   AssignedCourseDetail,
+  CodeRunResult,
+  CodingQuestion,
+  RunCodePayload,
+  UpdateMyTaskAcknowledgementPayload,
+  UpdateMyTaskAcknowledgementResponse,
   UpdateTaskProgressPayload,
   UpdateTaskProgressResponse
 } from '@interfaces/course-assignment';
+import {
+  QuizQuestionApiModel,
+  QuizQuestionApiPayload,
+  QuizQuestionApiUpdatePayload,
+  QuizQuestionStatus,
+  QuizAttempt,
+  QuizValidatePayload,
+  QuizValidationResult,
+  QuizSubmitPayload,
+  QuizSubmitResult
+} from '@interfaces/quiz';
 
 export const getCompanyDetails = async () => {
   try {
@@ -172,8 +192,11 @@ export const getUserDetails = async () => {
 export const getAllCoursesByUser = async () => {
   // The apiClient interceptor already attaches the auth_token header.
   try {
-    const response = await apiClient.get('/contentwriter/getAllCourses');
-    return response.data.courses;
+    const response = await apiClient.get('/getAllCourses');
+    const courses = response.data.courses;
+    return Array.isArray(courses)
+      ? courses.map(course => sortCourseContent(course))
+      : courses;
   } catch (error) {
     throw error;
   }
@@ -181,9 +204,9 @@ export const getAllCoursesByUser = async () => {
 
 export const getCourseByIdContentWriter = async (id: string) => {
   try {
-    const response = await apiClient.get(`/contentwriter/getCourseById/${id}`);
+    const response = await apiClient.get(`/getCourseById/${id}`);
     // Backend responds with { success, coursedata }.
-    return response.data.coursedata;
+    return sortCourseContent(response.data.coursedata);
   } catch (error) {
     throw error;
   }
@@ -201,11 +224,9 @@ export const addCourseContentWriter = async (
     if (image) {
       formData.append('coursethumbnail', image);
     }
-    const response = await apiClient.post(
-      '/contentwriter/addCourse',
-      formData,
-      { headers: { 'Content-Type': 'multipart/form-data' } }
-    );
+    const response = await apiClient.post('/addCourse', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
     return response.data;
   } catch (error) {
     throw error;
@@ -218,14 +239,13 @@ export const addCourseModuleContentWriter = async (data: AddModulePayload) => {
     formData.append('courseId', data.courseId);
     formData.append('moduleName', data.moduleName);
     formData.append('moduleDescription', data.moduleDescription);
+    formData.append('orderIdx', String(data.orderIdx));
     if (data.thumbnail) {
       formData.append('coursemodulethumbnail', data.thumbnail);
     }
-    const response = await apiClient.post(
-      '/contentwriter/addCourseModule',
-      formData,
-      { headers: { 'Content-Type': 'multipart/form-data' } }
-    );
+    const response = await apiClient.post('/addCourseModule', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
     return response.data;
   } catch (error) {
     throw error;
@@ -238,6 +258,11 @@ export const addCourseTaskContentWriter = async (data: AddTaskPayload) => {
     formData.append('moduleId', data.moduleId);
     formData.append('taskName', data.taskName);
     formData.append('taskDescription', data.taskDescription);
+    formData.append('type', data.type || 'LINK');
+    formData.append('orderIdx', String(data.orderIdx));
+    if (data.acknowledgementText !== undefined) {
+      formData.append('acknowledgementText', data.acknowledgementText);
+    }
     // A task carries either an uploaded file or an external link.
     if (data.file) {
       formData.append('taskFile', data.file);
@@ -247,11 +272,9 @@ export const addCourseTaskContentWriter = async (data: AddTaskPayload) => {
     if (data.thumbnail) {
       formData.append('thumbnailFile', data.thumbnail);
     }
-    const response = await apiClient.post(
-      '/contentwriter/addCourseTask',
-      formData,
-      { headers: { 'Content-Type': 'multipart/form-data' } }
-    );
+    const response = await apiClient.post('/addcoursetask', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
     return response.data;
   } catch (error) {
     throw error;
@@ -271,11 +294,9 @@ export const updateCourseContentWriter = async (data: UpdateCoursePayload) => {
     if (data.thumbnail) {
       formData.append('thumbnail', data.thumbnail);
     }
-    const response = await apiClient.put(
-      '/contentwriter/updatecourse',
-      formData,
-      { headers: { 'Content-Type': 'multipart/form-data' } }
-    );
+    const response = await apiClient.put('/updatecourse', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
     return response.data;
   } catch (error) {
     throw error;
@@ -293,14 +314,14 @@ export const updateCourseModuleContentWriter = async (
     formData.append('moduleName', data.moduleName);
     formData.append('moduleDescription', data.moduleDescription);
     formData.append('status', data.status);
+    // The backend validates orderIdx on update too.
+    formData.append('orderIdx', String(data.orderIdx));
     if (data.thumbnail) {
       formData.append('thumbnail', data.thumbnail);
     }
-    const response = await apiClient.put(
-      '/contentwriter/updatecoursemodule',
-      formData,
-      { headers: { 'Content-Type': 'multipart/form-data' } }
-    );
+    const response = await apiClient.put('/updatecoursemodule', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
     return response.data;
   } catch (error) {
     throw error;
@@ -319,14 +340,50 @@ export const updateCourseTaskContentWriter = async (
     formData.append('taskName', data.taskName);
     formData.append('taskDescription', data.taskDescription);
     formData.append('status', data.status);
+    if (data.acknowledgementText !== undefined) {
+      formData.append('acknowledgementText', data.acknowledgementText);
+    }
     if (data.thumbnail) {
       formData.append('thumbnailFile', data.thumbnail);
     }
-    const response = await apiClient.put(
-      '/contentwriter/updatecoursetask',
-      formData,
-      { headers: { 'Content-Type': 'multipart/form-data' } }
-    );
+    const response = await apiClient.put('/updatecoursetask', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const cloneCourseContentWriter = async (data: CloneCoursePayload) => {
+  try {
+    const response = await apiClient.post('/clonecourse', data);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+/**
+ * Persists the position of every module in a course. The backend expects the
+ * complete list with unique, 1-based `orderIdx` values.
+ */
+export const reorderCourseModulesContentWriter = async (
+  data: ReorderModulesPayload
+) => {
+  try {
+    const response = await apiClient.put('/reordermodules', data);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const reorderCourseTasksContentWriter = async (
+  data: ReorderTasksPayload
+) => {
+  try {
+    const response = await apiClient.put('/reordertasks', data);
     return response.data;
   } catch (error) {
     throw error;
@@ -341,7 +398,110 @@ export const updateCourseTaskContentWriter = async (
 export const getCourseTaskContentUrl = (taskId: string) => {
   const token = localStorage.getItem('token');
   const base = (BASE_URL || '').replace(/\/+$/, '');
-  return `${base}/contentwriter/getCourseTaskContent/${taskId}?auth_token=${token}`;
+  return `${base}/getCourseTaskContent/${taskId}?auth_token=${token}`;
+};
+
+export const getAllQuizQuestions = async (
+  taskId: string
+): Promise<QuizQuestionApiModel[]> => {
+  const response = await apiClient.get(`/getAllQuizQuestions/${taskId}`);
+  const list: QuizQuestionApiModel[] = response.data.data ?? [];
+  return Array.isArray(list) ? list.filter(q => !q.isDeleted) : [];
+};
+
+export const createQuizQuestion = async (data: QuizQuestionApiPayload) => {
+  const response = await apiClient.post('/createQuizQuestion', data);
+  return response.data;
+};
+
+export const getQuizQuestionById = async (
+  questionId: string
+): Promise<QuizQuestionApiModel | null> => {
+  const response = await apiClient.get(`/getQuizQuestion/${questionId}`);
+  return response.data.data ?? null;
+};
+
+export const updateQuizQuestion = async (
+  questionId: string,
+  data: QuizQuestionApiUpdatePayload
+) => {
+  const response = await apiClient.put(
+    `/updateQuizQuestion/${questionId}`,
+    data
+  );
+  return response.data;
+};
+
+export const updateQuizQuestionStatus = async (
+  questionId: string,
+  status: QuizQuestionStatus
+) => {
+  const response = await apiClient.patch(
+    `/updateQuizQuestionStatus/${questionId}`,
+    { status }
+  );
+  return response.data;
+};
+
+export const deleteQuizQuestion = async (
+  questionIdOrObj: string | { questionId: string }
+) => {
+  const questionId =
+    typeof questionIdOrObj === 'string'
+      ? questionIdOrObj
+      : questionIdOrObj?.questionId;
+  const response = await apiClient.delete(`/deleteQuizQuestion/${questionId}`);
+  return response.data;
+};
+
+export const copyQuizQuestionsToTask = async (
+  sourceTaskId: string,
+  targetTaskId: string
+): Promise<number> => {
+  const questions = await getAllQuizQuestions(sourceTaskId);
+  if (questions.length === 0) return 0;
+
+  let copied = 0;
+
+  for (const question of questions) {
+    const payload: QuizQuestionApiPayload = {
+      taskId: targetTaskId,
+      question: question.question,
+      type: question.type,
+      status: question.status ?? 'SHOW'
+    };
+
+    if (question.type !== 'TEXTAREA') {
+      payload.options = (question.options ?? []).map(option => ({
+        value: option.value,
+        isanswer: Boolean(option.isanswer)
+      }));
+    }
+
+    await createQuizQuestion(payload);
+    copied += 1;
+  }
+
+  return copied;
+};
+
+export const getQuizById = async (taskId: string): Promise<QuizAttempt> => {
+  const response = await apiClient.get(`/getQuizById/${taskId}`);
+  return response.data.data;
+};
+
+export const validateQuiz = async (
+  data: QuizValidatePayload
+): Promise<QuizValidationResult> => {
+  const response = await apiClient.post('/validateQuiz', data);
+  return response.data.data;
+};
+
+export const submitQuiz = async (
+  data: QuizSubmitPayload
+): Promise<QuizSubmitResult> => {
+  const response = await apiClient.post('/submitQuiz', data);
+  return response.data.data;
 };
 
 // ── My Courses (assigned to the logged-in employee) ──────────────────────────
@@ -359,7 +519,7 @@ export const getMyAssignedCourseById = async (
     `/getMyAssignedCourseById/${courseAssignmentId}`
   );
   // Backend responds with { success, course }.
-  return response.data.course;
+  return sortCourseContent(response.data.course);
 };
 
 /**
@@ -372,6 +532,53 @@ export const updateMyTaskProgress = async (
 ): Promise<UpdateTaskProgressResponse> => {
   const response = await apiClient.put('/updateMyTaskProgress', data);
   return response.data;
+};
+
+export const updateMyTaskAcknowledgement = async (
+  data: UpdateMyTaskAcknowledgementPayload
+): Promise<UpdateMyTaskAcknowledgementResponse> => {
+  const response = await apiClient.put('/updateMyTaskAcknowledgement', data);
+  return response.data;
+};
+
+/**
+ * Fetches a coding question's allowed languages + starter code for the given
+ * language (omitting `language`/`languageId` returns the default). Only
+ * assigned employees may fetch it, so the payload never leaks authoring data.
+ */
+export const getCodingQuestion = async (
+  taskId: string,
+  questionId: string,
+  languageId: string
+): Promise<CodingQuestion> => {
+  const response = await apiClient.get(
+    `/getquestion/${taskId}/${questionId}/${languageId}`
+  );
+  // Backend responds with { success, message, data }.
+  return response.data.data;
+};
+/**
+ * Runs the learner's code against the question's test cases (trial run).
+ * The scoring + per-test-case results + AI feedback come back in `data`.
+ */
+export const runCode = async (data: RunCodePayload): Promise<CodeRunResult> => {
+  const response = await apiClient.post('/runcode', data);
+  // Backend responds with { success, message, data: executionResult }.
+  return response.data.data;
+};
+
+/**
+ * Submits the learner's code as their final answer. The backend grades it with
+ * the same engine as Run Code but only accepts when every test case passes,
+ * persisting the attempt as a `type: 'submit'` record. Returns the backend
+ * message (for toasts) alongside the execution result.
+ */
+export const submitCode = async (
+  data: RunCodePayload
+): Promise<{ message: string; result: CodeRunResult }> => {
+  const response = await apiClient.post('/submitcode', data);
+  // Backend responds with { success, message, data: executionResult }.
+  return { message: response.data.message, result: response.data.data };
 };
 
 // ── Employee Dashboard ───────────────────────────────────────────────────────

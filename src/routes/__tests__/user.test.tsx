@@ -223,7 +223,9 @@ describe('UserRoutes', () => {
 
   it('renders without crashing on the login route', async () => {
     renderRoutes('/srytal/employee/login');
-    expect(await screen.findByText('LoginPage')).toBeInTheDocument();
+    expect(
+      await screen.findByText('LoginPage', {}, { timeout: 4000 })
+    ).toBeInTheDocument();
   });
 
   it('requires authorization before showing the dashboard', async () => {

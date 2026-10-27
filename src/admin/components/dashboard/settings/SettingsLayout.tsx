@@ -6,7 +6,8 @@ import {
   IconMessage2,
   IconUserCheck,
   IconBuildingBank,
-  IconLock
+  IconLock,
+  IconCode
 } from '@tabler/icons-react';
 import { useMediaQuery } from '@mantine/hooks';
 import { useAppTheme } from '@hooks/use-app-theme';
@@ -21,7 +22,7 @@ const SettingsLayout = () => {
 
   return (
     <Box pt={{ base: 'xl', sm: 'md' }}>
-      <Container size='lg' mt={{ base: 'xl', sm: 'lg' }} mb='lg'>
+      <Container size='lg' mt='xl' mb='lg'>
         <Tabs
           value={currentTab}
           onChange={value => navigate(value || 'blood-groups')}
@@ -34,10 +35,17 @@ const SettingsLayout = () => {
             list: {
               flexWrap: isMobile ? 'wrap' : 'nowrap',
               justifyContent: isMobile ? 'center' : 'flex-start',
-              gap: isMobile ? 8 : 0
+              gap: isMobile ? 8 : 0,
+              ...(isMobile
+                ? {}
+                : {
+                    overflowX: 'auto',
+                    scrollbarWidth: 'thin'
+                  })
             },
             tab: {
               fontWeight: 500,
+              flexShrink: 0,
               transition: 'color 0.2s ease',
               ...(isDarkTheme && {
                 color: currentThemeConfig.color,
@@ -91,6 +99,13 @@ const SettingsLayout = () => {
               leftSection={<IconLock size={16} stroke={1.8} />}
             >
               Menu Access
+            </Tabs.Tab>
+
+            <Tabs.Tab
+              value='programming-languages'
+              leftSection={<IconCode size={16} stroke={1.8} />}
+            >
+              Programming Languages
             </Tabs.Tab>
           </Tabs.List>
         </Tabs>

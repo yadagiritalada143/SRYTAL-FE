@@ -44,6 +44,10 @@ import {
   addDepartmentByAdmin,
   updateDepartmentByAdmin,
   deleteDepartmentByAdmin,
+  getAllProgrammingLanguages,
+  addProgrammingLanguage,
+  updateProgrammingLanguage,
+  deleteProgrammingLanguage,
   getNavCatalogByAdmin,
   getNavRoleAccessByAdmin,
   updateNavRoleAccessByAdmin,
@@ -51,6 +55,7 @@ import {
   updateNavUserAccessByAdmin,
   getAllCoursesByAdmin,
   getCourseByIdAdmin,
+  getAllActiveCoursesByAdmin,
   assignCourseToEmployee,
   getAllCourseAssignments,
   fetchAssignedCoursesForEmployee,
@@ -787,6 +792,59 @@ describe('admin-services', () => {
     });
   });
 
+  describe('programming language functions', () => {
+    it('getAllProgrammingLanguages returns languages', async () => {
+      getItem.mockReturnValue('token');
+      mock.mockResolvedValue({
+        data: { data: [{ _id: 'l1', languageName: 'JavaScript' }] }
+      });
+
+      expect(await getAllProgrammingLanguages()).toEqual([
+        { _id: 'l1', languageName: 'JavaScript' }
+      ]);
+    });
+
+    it('addProgrammingLanguage posts', async () => {
+      getItem.mockReturnValue('token');
+      mock.post.mockResolvedValue({ data: { success: true } });
+
+      expect(
+        await addProgrammingLanguage({ languageName: 'JavaScript' })
+      ).toEqual({ success: true });
+
+      expect(mock.post).toHaveBeenCalledWith(
+        '/addprogramminglanguage',
+        { languageName: 'JavaScript' },
+        { headers: { auth_token: 'token' } }
+      );
+    });
+
+    it('updateProgrammingLanguage puts', async () => {
+      getItem.mockReturnValue('token');
+      mock.put.mockResolvedValue({ data: { success: true } });
+
+      await updateProgrammingLanguage('l1', 'JavaScript ES6');
+
+      expect(mock.put).toHaveBeenCalledWith(
+        '/updateprogramminglanguage',
+        { id: 'l1', languageName: 'JavaScript ES6' },
+        { headers: { auth_token: 'token' } }
+      );
+    });
+
+    it('deleteProgrammingLanguage deletes', async () => {
+      getItem.mockReturnValue('token');
+      mock.delete.mockResolvedValue({ data: { ok: 1 } });
+
+      await deleteProgrammingLanguage('l1');
+
+      expect(mock.delete).toHaveBeenCalledWith(
+        '/deleteprogramminglanguage/l1',
+        { headers: { auth_token: 'token' } }
+      );
+    });
+  });
+
   describe('navigation access functions', () => {
     it('getNavCatalogByAdmin gets the catalog with the surface param', async () => {
       getItem.mockReturnValue('token');
@@ -858,6 +916,13 @@ describe('admin-services', () => {
       mock.get.mockResolvedValue({ data: { courses: ['c1'] } });
 
       expect(await getAllCoursesByAdmin()).toEqual(['c1']);
+    });
+
+    it('getAllActiveCoursesByAdmin returns only active courses', async () => {
+      mock.get.mockResolvedValue({ data: { courses: ['active1'] } });
+
+      expect(await getAllActiveCoursesByAdmin()).toEqual(['active1']);
+      expect(mock.get).toHaveBeenCalledWith('/getAllActiveCourses');
     });
 
     it('getCourseByIdAdmin returns coursedata', async () => {

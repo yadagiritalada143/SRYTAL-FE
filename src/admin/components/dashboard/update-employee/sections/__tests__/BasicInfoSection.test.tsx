@@ -106,7 +106,6 @@ describe('BasicInfoSection', () => {
     expect(mockRegister).toHaveBeenCalledWith('lastName');
     expect(mockRegister).toHaveBeenCalledWith('email');
     expect(mockRegister).toHaveBeenCalledWith('mobileNumber');
-    expect(mockRegister).toHaveBeenCalledWith('aadharNumber');
     expect(mockRegister).toHaveBeenCalledWith('panCardNumber');
   });
 
@@ -137,5 +136,23 @@ describe('BasicInfoSection', () => {
     expect(mockFieldChange).toHaveBeenCalled();
     const isoValue = mockFieldChange.mock.calls[0][0];
     expect(isoValue).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+
+  it('stores only digits when the Aadhaar input is typed with formatting', () => {
+    renderSection();
+    const aadhaarInput = screen.getByPlaceholderText('Enter Aadhaar number');
+    fireEvent.change(aadhaarInput, { target: { value: '8794-5648-9574' } });
+
+    expect(mockFieldChange).toHaveBeenCalledWith('879456489574');
+  });
+
+  it('stores at most 12 digits when the Aadhaar input is pasted', () => {
+    renderSection();
+    const aadhaarInput = screen.getByPlaceholderText('Enter Aadhaar number');
+    fireEvent.change(aadhaarInput, {
+      target: { value: '8794564895741234' }
+    });
+
+    expect(mockFieldChange).toHaveBeenCalledWith('879456489574');
   });
 });

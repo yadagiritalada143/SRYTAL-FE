@@ -9,6 +9,7 @@ let mockCourse: AssignedCourseDetail | null | undefined = undefined;
 let mockIsLoading = false;
 let mockError: any = null;
 let mockMutateFn: jest.Mock = jest.fn();
+let mockAcknowledgeFn: jest.Mock = jest.fn();
 
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
@@ -28,6 +29,10 @@ jest.mock('@hooks/queries/useUserQueries', () => ({
 jest.mock('@hooks/mutations/useUserMutations', () => ({
   useUpdateMyTaskProgress: () => ({
     mutate: mockMutateFn,
+    isPending: false
+  }),
+  useUpdateMyTaskAcknowledgement: () => ({
+    mutateAsync: mockAcknowledgeFn,
     isPending: false
   })
 }));
@@ -84,7 +89,19 @@ jest.mock('@components/common/loaders/DataView', () => ({ children }: any) => (
 jest.mock('../CurriculumSidebar', () => (props: any) => (
   <div data-testid='curriculum'>
     {props.modules.map((m: any) => (
-      <span key={m._id}>{m.moduleName}</span>
+      <div key={m._id}>
+        <span>{m.moduleName}</span>
+        {m.tasks.map((t: any) => (
+          <button
+            key={t._id}
+            type='button'
+            data-testid={`select-${t._id}`}
+            onClick={() => props.onSelectTask(t, m._id)}
+          >
+            {t.taskName}
+          </button>
+        ))}
+      </div>
     ))}
   </div>
 ));
@@ -175,8 +192,11 @@ const renderPlayer = () => {
   );
 };
 
+const ACKNOWLEDGEMENT_LABEL = 'I have read the acceptable use policy.';
+
 describe('CoursePlayer', () => {
   beforeEach(() => {
+    window.history.pushState({}, '', '/');
     mockCourse = makeCourse();
     mockIsLoading = false;
     mockError = null;
@@ -186,6 +206,7 @@ describe('CoursePlayer', () => {
         progress: { totalTasks: 4, completedTasks: 2, percentComplete: 50 }
       });
     });
+    mockAcknowledgeFn = jest.fn().mockResolvedValue({ success: true });
     mockNavigate.mockClear();
     mockShowSuccessToast.mockClear();
     mockShowErrorToast.mockClear();
@@ -205,10 +226,18 @@ describe('CoursePlayer', () => {
     expect(screen.getByText(/Due/)).toBeInTheDocument();
   });
 
-  it('navigates back to the courses list', () => {
+  it('returns to course content view on first Back, then navigates back to courses list', async () => {
     renderPlayer();
-    fireEvent.click(screen.getByLabelText('Back to my courses'));
+    await waitFor(() => {
+      expect(screen.getByTestId('task-viewer')).toHaveTextContent('Intro');
+    });
 
+    // First click from a task returns to the Course Content view
+    fireEvent.click(screen.getByRole('button', { name: 'Back' }));
+    expect(screen.getByText('Course Content')).toBeInTheDocument();
+
+    // Second click from Course Content view navigates back to courses list
+    fireEvent.click(screen.getByRole('button', { name: 'Back' }));
     expect(mockNavigate).toHaveBeenCalledWith('../course-assignments');
   });
 
@@ -224,8 +253,31 @@ describe('CoursePlayer', () => {
     renderPlayer();
 
     await waitFor(() => {
-      expect(screen.getByText(/Item 1 of 4/)).toBeInTheDocument();
+      expect(screen.getByText(/Item 1 of 2/)).toBeInTheDocument();
     });
+  });
+
+  it('scopes the item count to the active module, restarting per module', async () => {
+    renderPlayer();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('task-viewer')).toHaveTextContent('Intro');
+    });
+    expect(screen.getByText(/Item 1 of 2/)).toBeInTheDocument();
+
+    // Second (last) task of the first module.
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }));
+    await waitFor(() => {
+      expect(screen.getByTestId('task-viewer')).toHaveTextContent('Video');
+    });
+    expect(screen.getByText(/Item 2 of 2/)).toBeInTheDocument();
+
+    // First task of the second module — numbering starts over.
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }));
+    await waitFor(() => {
+      expect(screen.getByTestId('task-viewer')).toHaveTextContent('Hooks');
+    });
+    expect(screen.getByText(/Item 1 of 2/)).toBeInTheDocument();
   });
 
   it('navigates to the next task when Next is clicked', async () => {
@@ -379,6 +431,65 @@ describe('CoursePlayer', () => {
     });
   });
 
+  it('displays the curriculum panel when the active task is a quiz', async () => {
+    mockCourse = makeCourse({
+      modules: [
+        {
+          _id: 'm1',
+          moduleName: 'Quiz module',
+          moduleDescription: '',
+          totalTasks: 1,
+          completedTasks: 0,
+          tasks: [
+            makeTask({ _id: 'q1', taskName: 'Python quiz', type: 'QUIZ' })
+          ]
+        }
+      ]
+    });
+
+    renderPlayer();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('task-viewer')).toHaveTextContent(
+        'Python quiz'
+      );
+    });
+    expect(screen.getByTestId('curriculum')).toBeInTheDocument();
+    expect(screen.getByText('Course content')).toBeInTheDocument();
+  });
+
+  it('displays Next Task button when quiz task is completed and has a next task', async () => {
+    window.history.pushState({}, '', '/course-assignments/ca1?taskId=q1');
+    mockCourse = makeCourse({
+      modules: [
+        {
+          _id: 'm1',
+          moduleName: 'Quiz module',
+          moduleDescription: '',
+          totalTasks: 2,
+          completedTasks: 1,
+          tasks: [
+            makeTask({
+              _id: 'q1',
+              taskName: 'Python quiz',
+              type: 'QUIZ',
+              isCompleted: true
+            }),
+            makeTask({ _id: 't2', taskName: 'Advanced Patterns', type: 'LINK' })
+          ]
+        }
+      ]
+    });
+
+    renderPlayer();
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('button', { name: /Next Task/i })
+      ).toBeInTheDocument();
+    });
+  });
+
   it('shows an empty state message when the course has no tasks', async () => {
     mockCourse = makeCourse({
       modules: [
@@ -398,5 +509,213 @@ describe('CoursePlayer', () => {
     expect(
       screen.getByText(/This course has no published content yet/)
     ).toBeInTheDocument();
+  });
+
+  describe('Task acknowledgement', () => {
+    const makeAckCourse = () =>
+      makeCourse({
+        modules: [
+          {
+            _id: 'm1',
+            moduleName: 'Policies',
+            moduleDescription: '',
+            totalTasks: 2,
+            completedTasks: 0,
+            tasks: [
+              makeTask({
+                _id: 't1',
+                taskName: 'Acceptable use policy',
+                type: 'FILE',
+                acknowledgementText: 'I have read the acceptable use policy.',
+                acknowledged: false
+              }),
+              makeTask({ _id: 't2', taskName: 'Next item', type: 'LINK' })
+            ]
+          }
+        ]
+      });
+
+    it('shows the acknowledgement gate for a FILE task that needs it', async () => {
+      mockCourse = makeAckCourse();
+      renderPlayer();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('task-viewer')).toHaveTextContent(
+          'Acceptable use policy'
+        );
+      });
+
+      expect(screen.getByText('Acknowledgement')).toBeInTheDocument();
+    });
+
+    it('blocks completing and moving on until the task is acknowledged', async () => {
+      mockCourse = makeAckCourse();
+      renderPlayer();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('task-viewer')).toHaveTextContent(
+          'Acceptable use policy'
+        );
+      });
+
+      expect(
+        screen.getByRole('button', { name: 'Complete and continue' })
+      ).toBeDisabled();
+      expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled();
+    });
+
+    it('disables Previous while the task requires acknowledgement', async () => {
+      mockCourse = makeCourse({
+        modules: [
+          {
+            _id: 'm1',
+            moduleName: 'Policies',
+            moduleDescription: '',
+            totalTasks: 2,
+            completedTasks: 0,
+            tasks: [
+              makeTask({ _id: 't1', taskName: 'Intro', type: 'LINK' }),
+              makeTask({
+                _id: 't2',
+                taskName: 'Acceptable use policy',
+                type: 'FILE',
+                acknowledgementText: 'I have read the acceptable use policy.',
+                acknowledged: false
+              })
+            ]
+          }
+        ]
+      });
+      renderPlayer();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('task-viewer')).toHaveTextContent('Intro');
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: 'Next' }));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('task-viewer')).toHaveTextContent(
+          'Acceptable use policy'
+        );
+      });
+
+      expect(screen.getByRole('button', { name: 'Previous' })).toBeDisabled();
+      expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled();
+    });
+
+    it('records the acknowledgement once the checkbox is ticked and confirmed', async () => {
+      mockCourse = makeAckCourse();
+      renderPlayer();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('task-viewer')).toHaveTextContent(
+          'Acceptable use policy'
+        );
+      });
+
+      const acknowledgeButton = screen.getByRole('button', {
+        name: 'Acknowledge'
+      });
+      expect(acknowledgeButton).toBeDisabled();
+
+      fireEvent.click(screen.getByLabelText(ACKNOWLEDGEMENT_LABEL));
+      expect(acknowledgeButton).not.toBeDisabled();
+
+      fireEvent.click(acknowledgeButton);
+
+      await waitFor(() => {
+        expect(mockAcknowledgeFn).toHaveBeenCalledWith({
+          courseAssignmentId: 'ca1',
+          taskId: 't1',
+          acknowledged: true
+        });
+      });
+      expect(mockShowSuccessToast).toHaveBeenCalledWith(
+        'Acknowledgement recorded'
+      );
+
+      // Acknowledging the document also completes the task.
+      await waitFor(() => {
+        expect(mockMutateFn).toHaveBeenCalledWith(
+          { courseAssignmentId: 'ca1', taskId: 't1', isCompleted: true },
+          expect.objectContaining({ onSuccess: expect.any(Function) })
+        );
+      });
+    });
+
+    it('does not gate a FILE task without an acknowledgement statement', async () => {
+      mockCourse = makeCourse();
+      renderPlayer();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('task-viewer')).toHaveTextContent('Intro');
+      });
+
+      expect(screen.queryByText('Acknowledgement')).not.toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'Complete and continue' })
+      ).not.toBeDisabled();
+    });
+
+    it('blocks jumping to another task from the curriculum until acknowledged', async () => {
+      mockCourse = makeAckCourse();
+      renderPlayer();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('task-viewer')).toHaveTextContent(
+          'Acceptable use policy'
+        );
+      });
+
+      fireEvent.click(screen.getByTestId('select-t2'));
+
+      expect(screen.getByTestId('task-viewer')).toHaveTextContent(
+        'Acceptable use policy'
+      );
+      expect(mockShowErrorToast).toHaveBeenCalledWith(
+        'Acknowledge this document before moving on.'
+      );
+    });
+
+    it('allows moving to another task once the acknowledgement is recorded', async () => {
+      mockCourse = makeCourse({
+        modules: [
+          {
+            _id: 'm1',
+            moduleName: 'Policies',
+            moduleDescription: '',
+            totalTasks: 2,
+            completedTasks: 0,
+            tasks: [
+              makeTask({
+                _id: 't1',
+                taskName: 'Acceptable use policy',
+                type: 'FILE',
+                acknowledgementText: 'I have read the acceptable use policy.',
+                acknowledged: true,
+                acknowledgedAt: '2024-06-01T00:00:00Z'
+              }),
+              makeTask({ _id: 't2', taskName: 'Next item', type: 'LINK' })
+            ]
+          }
+        ]
+      });
+      renderPlayer();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('task-viewer')).toHaveTextContent(
+          'Acceptable use policy'
+        );
+      });
+
+      fireEvent.click(screen.getByTestId('select-t2'));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('task-viewer')).toHaveTextContent(
+          'Next item'
+        );
+      });
+    });
   });
 });

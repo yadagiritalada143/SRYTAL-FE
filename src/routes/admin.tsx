@@ -83,6 +83,12 @@ const FeedbackTable = lazy(
 const DepartmentTable = lazy(
   () => import('@admin/components/dashboard/settings/DepartmentTable')
 );
+const ProgrammingLanguagesTable = lazy(
+  () => import('@admin/components/dashboard/settings/ProgrammingLanguagesTable')
+);
+const QuizSettingsTab = lazy(
+  () => import('@admin/components/dashboard/settings/QuizSettingsTab')
+);
 const DateTableComponent = lazy(
   () => import('@components/common/timesheet/timesheet')
 );
@@ -106,9 +112,19 @@ const TrackProgress = lazy(
 );
 const EmployeeCourseProgress = lazy(
   () =>
-    import(
-      '@admin/components/dashboard/track-progress/EmployeeCourseProgress'
-    )
+    import('@admin/components/dashboard/track-progress/EmployeeCourseProgress')
+);
+const WriterDashboard = lazy(
+  () => import('@user/components/dashboard/content-writer/WriterDashboard')
+);
+const AddCourse = lazy(
+  () => import('@user/components/dashboard/add-course/AddCourse')
+);
+const CourseDetails = lazy(
+  () => import('@user/components/dashboard/edit-course/CourseDetails')
+);
+const QuizQuestionsPage = lazy(
+  () => import('@user/components/dashboard/edit-course/QuizQuestionsPage')
 );
 // User domain components reused in Admin
 const Companies = lazy(
@@ -285,22 +301,31 @@ const AdminRoutes = () => {
           })
         },
         Button: {
-          styles: () => ({
-            root: {
-              backgroundColor: currentThemeConfig.button.color,
-              color: currentThemeConfig.button.textColor,
-              borderColor: currentThemeConfig.borderColor,
-              transition:
-                'background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out',
-              '&:hover': {
-                backgroundColor:
-                  currentThemeConfig.button.hoverColor ||
-                  currentThemeConfig.button.color,
-                transform: 'translateY(-1px)',
-                transition: 'all 0.2s ease-in-out'
+          styles: (_theme, props) => {
+            const isDisabled =
+              Boolean(props?.disabled || props?.['data-disabled']) &&
+              !props?.loading;
+            return {
+              root: {
+                ...(isDisabled
+                  ? {}
+                  : {
+                      backgroundColor: currentThemeConfig.button.color,
+                      color: currentThemeConfig.button.textColor,
+                      borderColor: currentThemeConfig.borderColor
+                    }),
+                transition:
+                  'background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out',
+                '&:hover': {
+                  backgroundColor:
+                    currentThemeConfig.button.hoverColor ||
+                    currentThemeConfig.button.color,
+                  transform: 'translateY(-1px)',
+                  transition: 'all 0.2s ease-in-out'
+                }
               }
-            }
-          })
+            };
+          }
         },
         TextInput: {
           styles: () => ({
@@ -586,12 +611,36 @@ const AdminRoutes = () => {
                 path='track-progress/:employeeId'
                 element={<EmployeeCourseProgress />}
               />
+              <Route path='content-writer' element={<WriterDashboard />} />
+              <Route
+                path='content-writer/programming-languages'
+                element={<ProgrammingLanguagesTable showBackButton />}
+              />
+              <Route path='quiz-questions' element={<QuizQuestionsPage />} />
+              <Route
+                path='quizzes'
+                element={<QuizSettingsTab showBackButton />}
+              />
+              <Route
+                path='content-writer/quizzes'
+                element={<QuizSettingsTab showBackButton />}
+              />
+              <Route
+                path='content-writer/quiz-questions'
+                element={<QuizQuestionsPage />}
+              />
+              <Route path='add-course' element={<AddCourse />} />
+              <Route path='course/:id' element={<CourseDetails />} />
               <Route path='settings' element={<SettingsLayout />}>
                 <Route index element={<Navigate to='blood-groups' replace />} />
                 <Route path='blood-groups' element={<BloodGroupTable />} />
                 <Route path='employment-types' element={<EmploymentTypes />} />
                 <Route path='employment-roles' element={<EmploymentRoles />} />
                 <Route path='departments' element={<DepartmentTable />} />
+                <Route
+                  path='programming-languages'
+                  element={<ProgrammingLanguagesTable />}
+                />
                 <Route path='feedback' element={<FeedbackTable />} />
                 <Route path='menu-access' element={<NavAccess />} />
               </Route>

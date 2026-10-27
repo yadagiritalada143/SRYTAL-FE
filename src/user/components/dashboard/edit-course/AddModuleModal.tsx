@@ -1,35 +1,39 @@
 import { useState } from 'react';
-import {
-  Modal,
-  Stack,
-  TextInput,
-  Textarea,
-  FileInput,
-  Group,
-  Loader
-} from '@mantine/core';
+import { Modal, Stack, TextInput, FileInput, Group } from '@mantine/core';
 import { IconUpload, IconCheck } from '@tabler/icons-react';
 import { CommonButton } from '@components/common/button/CommonButton';
 import { useAddCourseModule } from '@hooks/mutations/useUserMutations';
 import { useCustomToast } from '@utils/common/toast';
 import { getErrorMessage } from '@utils/common/get-error-message';
+import DescriptionEditor from './DescriptionEditor';
 
 interface AddModuleModalProps {
   opened: boolean;
   onClose: () => void;
   courseId: string;
+  orderIdx?: number;
 }
 
-const AddModuleModal = ({ opened, onClose, courseId }: AddModuleModalProps) => {
+const AddModuleModal = ({
+  opened,
+  onClose,
+  courseId,
+  orderIdx = 1
+}: AddModuleModalProps) => {
   const [moduleName, setModuleName] = useState('');
+  const [moduleNameTouched, setModuleNameTouched] = useState(false);
   const [moduleDescription, setModuleDescription] = useState('');
   const [thumbnail, setThumbnail] = useState<File | null>(null);
 
   const { mutateAsync: addModule, isPending } = useAddCourseModule();
   const { showSuccessToast, showErrorToast } = useCustomToast();
 
+  const moduleNameError =
+    moduleNameTouched && !moduleName.trim() ? 'Module Name is required' : '';
+
   const reset = () => {
     setModuleName('');
+    setModuleNameTouched(false);
     setModuleDescription('');
     setThumbnail(null);
   };
@@ -41,11 +45,16 @@ const AddModuleModal = ({ opened, onClose, courseId }: AddModuleModalProps) => {
   };
 
   const handleSubmit = async () => {
+    if (!moduleName.trim()) {
+      setModuleNameTouched(true);
+      return;
+    }
     try {
       await addModule({
         courseId,
         moduleName: moduleName.trim(),
         moduleDescription: moduleDescription.trim(),
+        orderIdx,
         thumbnail
       });
       showSuccessToast('Module added successfully!');
@@ -57,22 +66,44 @@ const AddModuleModal = ({ opened, onClose, courseId }: AddModuleModalProps) => {
   };
 
   return (
-    <Modal opened={opened} onClose={handleClose} title='Add Module' centered>
-      <Stack gap='md'>
+    <Modal
+      opened={opened}
+      onClose={handleClose}
+      title='Add Module'
+      centered
+      size='lg'
+      radius='lg'
+      overlayProps={{ backgroundOpacity: 0.5, blur: 4 }}
+      transitionProps={{ transition: 'pop', duration: 200 }}
+      styles={{
+        header: {
+          borderBottom: '1px solid var(--mantine-color-default-border)',
+          paddingBottom: '12px'
+        },
+        title: {
+          fontWeight: 700,
+          fontSize: '1.1rem'
+        },
+        content: {
+          borderRadius: '16px'
+        }
+      }}
+    >
+      <Stack gap='md' className='mt-4'>
         <TextInput
           label='Module Name'
           placeholder='Enter module name'
           required
           value={moduleName}
           onChange={e => setModuleName(e.target.value)}
+          onBlur={() => setModuleNameTouched(true)}
+          error={moduleNameError}
+          radius='md'
         />
-        <Textarea
+        <DescriptionEditor
           label='Module Description'
-          placeholder='What does this module cover?'
-          autosize
-          minRows={3}
           value={moduleDescription}
-          onChange={e => setModuleDescription(e.target.value)}
+          onChange={setModuleDescription}
         />
         <FileInput
           label='Thumbnail (optional)'
@@ -82,16 +113,16 @@ const AddModuleModal = ({ opened, onClose, courseId }: AddModuleModalProps) => {
           value={thumbnail}
           onChange={setThumbnail}
           clearable
+          radius='md'
         />
         <Group justify='flex-end' mt='sm'>
           <CommonButton variant='default' onClick={handleClose}>
             Cancel
           </CommonButton>
           <CommonButton
-            leftSection={
-              isPending ? <Loader size='xs' color='white' /> : <IconCheck size={16} />
-            }
-            disabled={!moduleName.trim() || isPending}
+            leftSection={<IconCheck size={16} />}
+            disabled={!moduleName.trim()}
+            loading={isPending}
             onClick={handleSubmit}
           >
             {isPending ? 'Adding...' : 'Add Module'}

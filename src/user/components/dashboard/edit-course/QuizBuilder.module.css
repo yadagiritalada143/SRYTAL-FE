@@ -1,0 +1,172 @@
+@keyframes quizFadeInScale {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.985);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes quizPulseBorder {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0);
+  }
+}
+
+@keyframes quizShimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.quizContainer {
+  animation: quizFadeInScale 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.questionCard {
+  transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.questionCard:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 24px -6px rgba(0, 0, 0, 0.08),
+    0 2px 6px -2px rgba(0, 0, 0, 0.04);
+}
+
+.questionCardEditing {
+  border-color: var(--mantine-color-indigo-5) !important;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25) !important;
+}
+
+.correctAnswerBadge {
+  animation: quizPulseBorder 2.5s infinite;
+}
+
+.statCard {
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.statCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px -4px rgba(0, 0, 0, 0.06);
+}
+
+@keyframes tickPopIn {
+  0% {
+    transform: scale(0) rotate(-20deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.3) rotate(6deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes tickRipple {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+.animatedTick {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  animation: tickPopIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.tickBadgeActive {
+  animation: tickRipple 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.optionRow {
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+  border-radius: 8px;
+}
+
+.optionRow:hover {
+  background-color: rgba(99, 102, 241, 0.03);
+}
+
+.optionRowCorrect {
+  border-color: rgba(16, 185, 129, 0.45) !important;
+  background: linear-gradient(
+    90deg,
+    rgba(16, 185, 129, 0.08) 0%,
+    rgba(16, 185, 129, 0.02) 100%
+  ) !important;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.12) !important;
+}
+
+.presetButton {
+  transition: all 0.2s ease;
+}
+
+.presetButton:hover {
+  transform: scale(1.03);
+}
+
+.previewBox {
+  background: linear-gradient(
+    135deg,
+    rgba(99, 102, 241, 0.03) 0%,
+    rgba(168, 85, 247, 0.03) 100%
+  );
+  border-radius: 12px;
+  border: 1px dashed var(--mantine-color-indigo-3);
+  transition: all 0.3s ease;
+}
+
+.typeCard {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  user-select: none;
+}
+
+.typeCard:hover {
+  transform: translateY(-2px);
+  border-color: var(--mantine-color-indigo-4) !important;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.12);
+}
+
+.filterPill {
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.filterPill:hover {
+  transform: translateY(-1px);
+}
+
+.editorCard {
+  transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
+  border-radius: 14px;
+}

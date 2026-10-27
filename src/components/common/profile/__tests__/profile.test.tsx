@@ -131,7 +131,7 @@ describe('Profile', () => {
     expect(screen.getByText('First Name')).toBeInTheDocument();
     expect(screen.getByText('Last Name')).toBeInTheDocument();
     expect(screen.getByText('O+')).toBeInTheDocument();
-    expect(screen.getByText('123456789012')).toBeInTheDocument();
+    expect(screen.getByText('1234 5678 9012')).toBeInTheDocument();
     expect(screen.getByText(/May 1990/)).toBeInTheDocument();
   });
 

@@ -17,6 +17,14 @@ export interface ResolvedTaskContent {
   externalUrl?: string;
 }
 
+export const isCodingTask = (
+  task: Pick<AssignedTask, 'type' | 'isCoding'>
+): boolean =>
+  task.isCoding === true || String(task.type || '').toUpperCase() === 'CODE';
+
+export const isQuizTask = (task: Pick<AssignedTask, 'type'>): boolean =>
+  String(task.type || '').toUpperCase() === 'QUIZ';
+
 const EXTENSION_MIME_TYPES: Record<string, string> = {
   mp4: 'video/mp4',
   webm: 'video/webm',
@@ -154,3 +162,18 @@ export const resolveTaskContent = (
   const kind = kindForMimeType(mimeTypeOf(task));
   return { kind, url: fileUrl, label: CONTENT_LABELS[kind] };
 };
+
+export const hasTaskAcknowledgement = (
+  task: Pick<AssignedTask, 'type' | 'isCoding' | 'acknowledgementText'>
+): boolean => {
+  const isFileTask =
+    !isCodingTask(task) && String(task.type || '').toUpperCase() === 'FILE';
+  return isFileTask && Boolean(task.acknowledgementText?.trim());
+};
+
+export const requiresTaskAcknowledgement = (
+  task: Pick<
+    AssignedTask,
+    'type' | 'isCoding' | 'acknowledgementText' | 'acknowledged'
+  >
+): boolean => hasTaskAcknowledgement(task) && task.acknowledged !== true;

@@ -39,6 +39,7 @@ import { useAppTheme } from '@hooks/use-app-theme';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGetUserOpenRouterKey } from '@hooks/queries/useUserQueries';
+import { formatAadhaarNumber } from '@utils/common/aadhaar';
 import { OPENROUTER_API_KEY_STORAGE } from '@user/components/dashboard/course-portal/OpenRouterSetup';
 import OpenRouterKeyModal from './OpenRouterKeyModal';
 
@@ -432,7 +433,7 @@ const Profile = ({ details }: { details: EmployeeInterface }) => {
               {
                 icon: <IconFingerprint size={18} />,
                 label: 'Aadhar Number',
-                value: details.aadharNumber
+                value: formatAadhaarNumber(details.aadharNumber)
               },
               {
                 icon: <IconId size={18} />,
