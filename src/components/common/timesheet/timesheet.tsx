@@ -142,6 +142,7 @@ const DateTableComponent = () => {
       Array.from(
         new Map(
           timeEntries
+            .filter(entry => !(entry as any).isPackageExpired)
             .filter(
               entry =>
                 entry.project_name
@@ -170,6 +171,7 @@ const DateTableComponent = () => {
       Array.from(
         new Map(
           timeEntries
+            .filter(entry => !(entry as any).isPackageExpired)
             .filter(
               entry =>
                 entry.project_name
