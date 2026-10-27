@@ -61,28 +61,41 @@ export const navigateDateRange = (
 };
 
 export const formatData = (data: { packageId: Package; tasks: Task[] }[]) => {
-  return data.flatMap(pkg =>
-    pkg.tasks.flatMap(task =>
-      task.timesheet.map(timesheet => {
-        const status = timesheet.status;
-        return {
-          date: moment.utc(timesheet.date).format('YYYY-MM-DD'),
-          isVacation: timesheet.isVacation ?? false,
-          isHoliday: timesheet.isHoliday ?? false,
-          isWeekOff: timesheet.isWeekOff ?? false,
-          project_id: pkg.packageId._id,
-          task_id: task.taskId._id,
-          project_name: pkg.packageId.title,
-          task_name: task.taskId.title,
-          hours: timesheet.hours ?? 0,
-          comments: timesheet.comments ?? '',
-          id: timesheet._id,
-          leaveReason: timesheet.leaveReason,
-          status: status as TimesheetStatus
-        };
-      })
-    )
-  );
+  const today = moment().startOf('day');
+  return data.flatMap(pkg => {
+    const packageEndDate = pkg.packageId?.endDate
+      ? moment(pkg.packageId.endDate).startOf('day')
+      : null;
+    const isPackageExpired = packageEndDate ? packageEndDate.isBefore(today) : false;
+
+    return pkg.tasks.flatMap(task =>
+      task.timesheet
+        .filter(timesheet => {
+          if (!packageEndDate) return true;
+          const entryDate = moment.utc(timesheet.date).startOf('day');
+          return !entryDate.isAfter(packageEndDate);
+        })
+        .map(timesheet => {
+          const status = timesheet.status;
+          return {
+            date: moment.utc(timesheet.date).format('YYYY-MM-DD'),
+            isVacation: timesheet.isVacation ?? false,
+            isHoliday: timesheet.isHoliday ?? false,
+            isWeekOff: timesheet.isWeekOff ?? false,
+            project_id: pkg.packageId._id,
+            task_id: task.taskId._id,
+            project_name: pkg.packageId.title,
+            task_name: task.taskId.title,
+            hours: timesheet.hours ?? 0,
+            comments: timesheet.comments ?? '',
+            id: timesheet._id,
+            leaveReason: timesheet.leaveReason,
+            status: status as TimesheetStatus,
+            isPackageExpired
+          };
+        })
+    );
+  });
 };
 
 export const trackChanges = (
@@ -147,7 +160,9 @@ export const getProjectTotalHours = (
   return timeEntries
     .filter(
       entry =>
-        entry.project_id === projectId && filteredTasksIds.has(entry.task_id)
+        entry.project_id === projectId &&
+        filteredTasksIds.has(entry.task_id) &&
+        !(entry as any).isPackageExpired
     )
     .reduce((total, entry) => {
       if (dateStrings.includes(moment(entry.date).format('YYYY-MM-DD'))) {
@@ -279,6 +294,7 @@ export const getTasksByProject = (
     .filter(
       entry =>
         entry.project_id === projectId &&
+        !(entry as any).isPackageExpired &&
         (entry.project_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           entry.task_name.toLowerCase().includes(searchQuery.toLowerCase()))
     )

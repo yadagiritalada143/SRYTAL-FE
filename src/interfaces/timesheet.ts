@@ -26,6 +26,7 @@ export interface Package {
   title: string;
   description: string;
   isDeleted: boolean;
+  endDate?: string | Date;
 }
 export enum TimesheetStatus {
   WaitingForApproval = 'Waiting For Approval',
@@ -47,4 +48,5 @@ export interface EmployeeTimesheet {
   leaveReason: string;
   id: string;
   status: TimesheetStatus;
+  isPackageExpired?: boolean;
 }

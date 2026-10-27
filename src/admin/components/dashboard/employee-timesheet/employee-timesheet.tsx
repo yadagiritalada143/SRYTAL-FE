@@ -236,9 +236,7 @@ export const EmployeeTimesheetAdminView = () => {
         );
 
         const formattedTimesheet = formatData(responseData);
-        setTimesheets(
-          formattedTimesheet.filter(ts => ts.hours > 0 || ts.isVacation)
-        );
+        setTimesheets(formattedTimesheet.filter(ts => ts.hours > 0 || ts.isVacation));
       } catch (error: any) {
         const errorMessage =
           error?.response?.data?.message || 'Failed to load timesheets';
